@@ -8,6 +8,16 @@ export const auth = betterAuth({
     database: drizzleAdapter(db, {
         provider: "pg", // or "mysql", "sqlite"
     }),
-    plugins: [bearer()]
+    emailAndPassword: {
+        enabled: true,
+        minPasswordLength: 8,
+        maxPasswordLength: 128,
+    },
+    trustedOrigins: [
+        "http://localhost:3000",
+        "aceclub://"
+    ],
     
+    plugins: [bearer()]
+
 });

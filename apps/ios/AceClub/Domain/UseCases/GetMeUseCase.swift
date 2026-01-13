@@ -1,7 +1,9 @@
 import Foundation
 
 class GetMeUseCase {
+
+    let userRepository = UserRepository()
     func execute() async throws -> User {
-        return try await UserAPIDataSource().getMe()
+        return try await userRepository.getMe()
     }
 }
