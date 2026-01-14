@@ -184,6 +184,11 @@ services/api/
 
 ## Détail des dossiers API
 
+### Conventions HTTP Admin
+
+- GET : `/admin/list-users`, `/admin/list-user-sessions` (query params)
+- POST/PUT : mutations `/admin/*` avec payload JSON (ex: `/admin/set-role`)
+
 ### `index.ts`
 **Objectif** : Point d'entrée de l'API. Configure l'app Hono, les middlewares globaux (logging, CORS), et monte les routes.
 
