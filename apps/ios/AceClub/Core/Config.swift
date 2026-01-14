@@ -14,17 +14,14 @@ enum Config {
         if let envURL = ProcessInfo.processInfo.environment["API_BASE_URL"], !envURL.isEmpty {
             return envURL
         }
-
+        
         // Fallback to default localhost for development
-        #if DEBUG
-        return "http://localhost:3000"
-        #else
+#if DEBUG
+        return "http://localhost:3000/api"
+#else
         // Production URL - à remplacer par ton URL de production
         return "https://api.yourproductiondomain.com"
-        #endif
-    }
-
-    static var apiAuthURL: String {
-        return "\(apiBaseURL)/api/auth"
+#endif
     }
 }
+

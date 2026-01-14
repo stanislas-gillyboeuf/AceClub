@@ -10,7 +10,7 @@ enum UserAPIDateSourceError: Error {
 
 class UserAPIDataSource {
     func getMe() async throws -> UserDTO {
-        guard let url = URL(string: "\(Config.apiBaseURL)/api/user/me") else {
+        guard let url = URL(string: "\(Config.apiBaseURL)/user/me") else {
             throw UserAPIDateSourceError.invalidURL
         }
 

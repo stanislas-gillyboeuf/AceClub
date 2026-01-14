@@ -15,7 +15,5 @@ export const setRole = async (c: Context<HonoContext>) => {
         },
         headers: c.req.raw.headers,
     });
-
-    console.log(setRoleResponse);
     return c.json(setRoleResponse);
 };

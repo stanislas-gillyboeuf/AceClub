@@ -19,20 +19,20 @@ struct HomeView: View {
                         Text("Welcome!")
                             .font(.largeTitle)
                             .fontWeight(.bold)
-
+                        
                         Text(user.name)
                             .font(.title2)
                             .foregroundColor(.secondary)
-
+                        
                         Text(user.email)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
                     .padding(.top, 40)
                 }
-
+                
                 Spacer()
-
+                
                 Button(action: handleSignOut) {
                     if authViewModel.isLoading {
                         ProgressView()
@@ -61,6 +61,5 @@ struct HomeView: View {
             await authViewModel.signOut()
         }
     }
-    
-    
 }
+

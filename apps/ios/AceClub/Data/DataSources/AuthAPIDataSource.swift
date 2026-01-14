@@ -35,7 +35,7 @@ class AuthAPIDataSource {
 
     // MARK: - Sign Up
     func signUp(name: String, email: String, password: String) async throws -> AuthResponseDTO {
-        guard let url = URL(string: "\(Config.apiBaseURL)/sign-up/email") else {
+        guard let url = URL(string: "\(Config.apiBaseURL)/auth/sign-up/email") else {
             throw AuthError.invalidURL
         }
 
@@ -74,7 +74,7 @@ class AuthAPIDataSource {
 
     // MARK: - Sign In
     func signIn(email: String, password: String, rememberMe: Bool = true) async throws -> AuthResponseDTO {
-        guard let url = URL(string: "\(Config.apiBaseURL)/sign-in/email") else {
+        guard let url = URL(string: "\(Config.apiBaseURL)/auth/sign-in/email") else {
             throw AuthError.invalidURL
         }
 
@@ -119,7 +119,7 @@ class AuthAPIDataSource {
 
     // MARK: - Sign Out
     func signOut(token: String) async throws {
-        guard let url = URL(string: "\(Config.apiBaseURL)/sign-out") else {
+        guard let url = URL(string: "\(Config.apiBaseURL)/auth/sign-out") else {
             throw AuthError.invalidURL
         }
 
@@ -150,7 +150,7 @@ class AuthAPIDataSource {
 
     // MARK: - Get Session
     func getSession() async throws -> SessionResponseDTO {
-        guard let url = URL(string: "\(Config.apiBaseURL)/api/session") else {
+        guard let url = URL(string: "\(Config.apiBaseURL)/session") else {
             throw AuthError.invalidURL
         }
 
