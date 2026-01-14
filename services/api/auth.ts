@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./db"; 
 import { bearer } from "better-auth/plugins";
+import { admin } from "better-auth/plugins/admin";
 
 
 export const auth = betterAuth({
@@ -18,6 +19,6 @@ export const auth = betterAuth({
         "aceclub://"
     ],
     
-    plugins: [bearer()]
+    plugins: [bearer(), admin()]
 
 });
