@@ -6,7 +6,7 @@ import { z } from "zod";
 
 export const createUser = async (c: Context<HonoContext>) => {
     // @ts-ignore
-    const validated = c.req.valid('body') as z.infer<typeof createUserValidator>;
+    const validated = c.req.valid('json') as z.infer<typeof createUserValidator>;
 
     const createdUser = await auth.api.createUser({
         body: {

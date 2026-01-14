@@ -6,7 +6,7 @@ import { auth } from "../../../auth";
 
 export const banUser = async (c: Context<HonoContext>) => {
     // @ts-ignore
-    const validated = c.req.valid('body') as z.infer<typeof banUserValidator>;
+    const validated = c.req.valid('json') as z.infer<typeof banUserValidator>;
 
     const bannedUser = await auth.api.banUser({
         body: {

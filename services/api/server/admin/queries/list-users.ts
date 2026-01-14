@@ -25,6 +25,6 @@ export const listUsers = async (c: Context<HonoContext>) => {
         },
         headers: c.req.raw.headers,
     });
-
+    console.log(listUsersResponse);
         return c.json(listUsersResponse);
 };

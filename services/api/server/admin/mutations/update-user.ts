@@ -6,7 +6,7 @@ import { auth } from "../../../auth";
 
 export const updateUser = async (c: Context<HonoContext>) => {
     // @ts-ignore
-    const validated = c.req.valid('body') as z.infer<typeof updateUserValidator>;
+    const validated = c.req.valid('json') as z.infer<typeof updateUserValidator>;
 
     const updatedUser = await auth.api.adminUpdateUser({
         body: {

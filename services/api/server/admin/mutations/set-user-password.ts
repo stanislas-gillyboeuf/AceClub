@@ -6,7 +6,7 @@ import { auth } from "../../../auth";
 
 export const setUserPassword = async (c: Context<HonoContext>) => {
     // @ts-ignore
-    const validated = c.req.valid('body') as z.infer<typeof setUserPasswordValidator>;
+    const validated = c.req.valid('json') as z.infer<typeof setUserPasswordValidator>;
 
     const setUserPasswordResponse = await auth.api.setUserPassword({
         body: {

@@ -6,7 +6,7 @@ import { auth } from "../../../auth";
 
 export const revokeUserSession = async (c: Context<HonoContext>) => {
     // @ts-ignore
-    const validated = c.req.valid('body') as z.infer<typeof revokeUserSessionValidator>;
+    const validated = c.req.valid('json') as z.infer<typeof revokeUserSessionValidator>;
 
     const revokedUserSession = await auth.api.revokeUserSession({
         body: {

@@ -14,8 +14,7 @@ adminRouter.use("/*", requireAuth, isAdmin);
 adminRouter.get(
   "/list-users",
   zValidator("query", listUsersValidator),
-    listUsers
-  
+  listUsers
 );
 
 adminRouter.get(
@@ -30,7 +29,7 @@ adminRouter.put(
   updateUser
 );
 
-adminRouter.put(
+adminRouter.post(
   "/set-role",
   zValidator("json", setRoleValidator),
   setRole
@@ -71,5 +70,4 @@ adminRouter.post(
   zValidator("json", revokeUserSessionsValidator),
   revokeUserSessions
 );
-
 

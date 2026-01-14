@@ -6,7 +6,7 @@ import { auth } from "../../../auth";
 
 export const setRole = async (c: Context<HonoContext>) => {
     // @ts-ignore
-    const validated = c.req.valid('body') as z.infer<typeof setRoleValidator>;
+    const validated = c.req.valid('json') as z.infer<typeof setRoleValidator>;
 
     const setRoleResponse = await auth.api.setRole({
         body: {
@@ -16,5 +16,6 @@ export const setRole = async (c: Context<HonoContext>) => {
         headers: c.req.raw.headers,
     });
 
+    console.log(setRoleResponse);
     return c.json(setRoleResponse);
 };
