@@ -64,6 +64,7 @@ app.get('/api/session', async (c) => {
 
 // routes
 app.route('/api/user', serverRouter)
+app.route('/api/admin', serverRouter)
 
 // Health check
 app.get('/health', (c) => c.json({ status: 'ok' }))
