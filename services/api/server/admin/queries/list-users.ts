@@ -4,11 +4,9 @@ import { auth } from "../../../auth";
 import { listUsersValidator } from "../validators";
 import { z } from "zod";
 
-
-
 export const listUsers = async (c: Context<HonoContext>) => {
-    // @ts-ignore
-    const validated = c.req.valid('query') as z.infer<typeof listUsersValidator>;
+  // @ts-ignore
+  const validated = c.req.valid("query") as z.infer<typeof listUsersValidator>;
 
     const listUsersResponse = await auth.api.listUsers({
         query: {

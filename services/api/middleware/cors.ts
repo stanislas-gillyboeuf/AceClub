@@ -22,15 +22,11 @@ const getCorsOrigin = (): string | string[] | ((origin: string) => boolean) => {
       return true;
     }
 
-    if (
-      origin.startsWith("http://localhost:") ||
-      origin.startsWith("http://127.0.0.1:")
-    ) {
+    if (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) {
       return true;
     }
 
-    const localIPPattern =
-      /^https?:\/\/(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/;
+    const localIPPattern = /^https?:\/\/(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/;
     if (localIPPattern.test(origin)) {
       return true;
     }
