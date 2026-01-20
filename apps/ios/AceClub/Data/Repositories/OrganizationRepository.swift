@@ -5,8 +5,8 @@ protocol OrganizationRepositoryProtocol {
     func getFullOrganization(slug: String) async throws -> (Organization, [Member])
     func setActiveOrganization(slug: String) async throws
     func listMembers(organizationId: String?) async throws -> ListMembersResult
-    func getActiveMember() async throws -> Member
-    func getActiveMemberRole() async throws -> MemberRole
+    func getActiveMember() async throws -> Member?
+    func getActiveMemberRole() async throws -> MemberRole?
     func addMember(userId: String, role: String, organizationId: String?) async throws -> Member
     func removeMember(memberIdOrEmail: String, organizationId: String?) async throws
     func updateMemberRole(memberId: String, role: String, organizationId: String?) async throws -> Member
@@ -48,14 +48,18 @@ class OrganizationRepository: OrganizationRepositoryProtocol {
         return MemberMapper.map(listMembersDTO: membersDTO)
     }
 
-    func getActiveMember() async throws -> Member {
-        let activeMemberDTO = try await dataSource.getActiveMember()
+    func getActiveMember() async throws -> Member? {
+        guard let activeMemberDTO = try await dataSource.getActiveMember() else {
+            return nil
+        }
         return MemberMapper.map(activeMemberDTO: activeMemberDTO)
     }
 
-    func getActiveMemberRole() async throws -> MemberRole {
-        let role = try await dataSource.getActiveMemberRole()
-        return MemberRole(rawValue: role) ?? .member
+    func getActiveMemberRole() async throws -> MemberRole? {
+        guard let role = try await dataSource.getActiveMemberRole() else {
+            return nil
+        }
+        return MemberRole(rawValue: role)
     }
 
     func addMember(userId: String, role: String, organizationId: String? = nil) async throws -> Member {

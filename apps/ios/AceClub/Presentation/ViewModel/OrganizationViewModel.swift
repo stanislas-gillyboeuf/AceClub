@@ -59,7 +59,6 @@ class OrganizationViewModel: ObservableObject {
 
         do {
             try await setActiveOrganizationUseCase.execute(slug: slug)
-            // Reload organization data
             await loadFullOrganization(slug: slug)
             await loadActiveMember()
         } catch {

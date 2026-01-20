@@ -124,7 +124,7 @@ class InvitationAPIDataSource {
             throw InvitationError.invalidURL
         }
 
-        let requestBody = ["invitationId": invitationId]
+        let requestBody = InvitationActionRequestDTO(invitationId: invitationId)
         let bodyData = try JSONEncoder().encode(requestBody)
 
         let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)
@@ -145,7 +145,7 @@ class InvitationAPIDataSource {
             throw InvitationError.invalidURL
         }
 
-        let requestBody = ["invitationId": invitationId]
+        let requestBody = InvitationActionRequestDTO(invitationId: invitationId)
         let bodyData = try JSONEncoder().encode(requestBody)
 
         let (_, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)
@@ -160,7 +160,7 @@ class InvitationAPIDataSource {
             throw InvitationError.invalidURL
         }
 
-        let requestBody = ["invitationId": invitationId]
+        let requestBody = InvitationActionRequestDTO(invitationId: invitationId)
         let bodyData = try JSONEncoder().encode(requestBody)
 
         let (_, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)

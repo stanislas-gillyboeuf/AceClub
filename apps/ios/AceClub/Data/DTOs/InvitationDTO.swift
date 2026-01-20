@@ -49,6 +49,19 @@ struct InvitationActionRequestDTO: Codable {
 
 // MARK: - Accept Invitation Response
 struct AcceptInvitationResponseDTO: Codable {
-    let invitation: InvitationDTO
+    let invitation: AcceptedInvitationDTO
     let member: MemberDTO
+}
+
+// MARK: - Accepted Invitation DTO
+struct AcceptedInvitationDTO: Codable {
+    let id: String
+    let organizationId: String
+    let email: String
+    let role: String
+    let status: String
+    let inviterId: String
+    let expiresAt: String
+    let createdAt: String
+    let teamId: String?
 }

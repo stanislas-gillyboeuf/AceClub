@@ -17,6 +17,20 @@ class InvitationMapper {
         )
     }
 
+    static func map(acceptedInvitationDTO: AcceptedInvitationDTO) -> Invitation {
+        return Invitation(
+            id: acceptedInvitationDTO.id,
+            organizationId: acceptedInvitationDTO.organizationId,
+            email: acceptedInvitationDTO.email,
+            role: MemberRole(rawValue: acceptedInvitationDTO.role) ?? .member,
+            status: InvitationStatus(rawValue: acceptedInvitationDTO.status) ?? .pending,
+            expiresAt: acceptedInvitationDTO.expiresAt,
+            createdAt: acceptedInvitationDTO.createdAt,
+            inviterId: acceptedInvitationDTO.inviterId,
+            organization: nil
+        )
+    }
+
     static func map(listInvitationsDTO: ListInvitationsResponseDTO) -> [Invitation] {
         guard let invitations = listInvitationsDTO.invitations else {
             return []

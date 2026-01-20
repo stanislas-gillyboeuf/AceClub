@@ -10,10 +10,13 @@ import SwiftUI
 struct RootView: View {
     @Environment(AuthViewModel.self) private var authViewModel
     @State private var selection: Tab = .feed
+    @StateObject private var profileViewModel = ProfileViewModel()
+    @StateObject private var organizationViewModel = OrganizationViewModel()
 
     private enum Tab {
         case feed
         case admin
+        case profile
     }
 
     private var isAdmin: Bool {
@@ -27,6 +30,13 @@ struct RootView: View {
                     Label("Feed", systemImage: "list.dash")
                 }
                 .tag(Tab.feed)
+            ProfileView()
+                .environmentObject(profileViewModel)
+                .environmentObject(organizationViewModel)
+                .tabItem {
+                    Label("Profile", systemImage: "person")
+                }
+                .tag(Tab.profile)
             if isAdmin {
                 AdminView()
                     .tabItem {
