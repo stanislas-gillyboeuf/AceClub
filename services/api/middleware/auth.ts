@@ -8,18 +8,18 @@ import type { HonoContext } from "../types/hono";
  * Use this for routes where auth is optional.
  */
 export const authMiddleware = async (c: Context<HonoContext>, next: Next) => {
-    const session = await auth.api.getSession({ headers: c.req.raw.headers });
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
 
-    if (!session) {
-        c.set("user", null);
-        c.set("session", null);
-        await next();
-        return;
-    }
-
-    c.set("user", session.user);
-    c.set("session", session.session);
+  if (!session) {
+    c.set("user", null);
+    c.set("session", null);
     await next();
+    return;
+  }
+
+  c.set("user", session.user);
+  c.set("session", session.session);
+  await next();
 };
 
 /**
@@ -28,13 +28,13 @@ export const authMiddleware = async (c: Context<HonoContext>, next: Next) => {
  * Use this for protected routes.
  */
 export const requireAuth = async (c: Context<HonoContext>, next: Next) => {
-    const session = await auth.api.getSession({ headers: c.req.raw.headers });
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
 
-    if (!session) {
-        return c.json({ error: "Unauthorized", message: "Valid authentication required" }, 401);
-    }
+  if (!session) {
+    return c.json({ error: "Unauthorized", message: "Valid authentication required" }, 401);
+  }
 
-    c.set("user", session.user);
-    c.set("session", session.session);
-    await next();
+  c.set("user", session.user);
+  c.set("session", session.session);
+  await next();
 };

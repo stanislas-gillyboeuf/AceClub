@@ -5,16 +5,16 @@ import { z } from "zod";
 import { auth } from "../../../auth";
 
 export const updateUser = async (c: Context<HonoContext>) => {
-    // @ts-ignore
-    const validated = c.req.valid('json') as z.infer<typeof updateUserValidator>;
+  // @ts-ignore
+  const validated = c.req.valid("json") as z.infer<typeof updateUserValidator>;
 
-    const updatedUser = await auth.api.adminUpdateUser({
-        body: {
-            userId: validated.userId,
-            data: validated.data,
-        },
-        headers: c.req.raw.headers,
-    });
+  const updatedUser = await auth.api.adminUpdateUser({
+    body: {
+      userId: validated.userId,
+      data: validated.data,
+    },
+    headers: c.req.raw.headers,
+  });
 
-    return c.json(updatedUser);
+  return c.json(updatedUser);
 };
