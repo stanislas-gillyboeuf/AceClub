@@ -6,7 +6,7 @@ struct OrganizationDTO: Codable {
     let name: String
     let slug: String
     let logo: String?
-    let createdAt: String
+    let createdAt: String?
     let metadata: String?
 }
 
@@ -16,7 +16,7 @@ struct FullOrganizationDTO: Codable {
     let name: String
     let slug: String
     let logo: String?
-    let createdAt: String
+    let createdAt: Date
     let metadata: String?
     let members: [MemberDTO]
 }

@@ -119,7 +119,7 @@ class InvitationAPIDataSource {
         }
     }
 
-    func acceptInvitation(invitationId: String) async throws -> MemberDTO {
+    func acceptInvitation(invitationId: String) async throws -> AcceptInvitationResponseDTO {
         guard let url = URL(string: "\(Config.apiBaseURL)/organization/accept-invitation") else {
             throw InvitationError.invalidURL
         }
@@ -134,7 +134,7 @@ class InvitationAPIDataSource {
         }
 
         do {
-            return try JSONDecoder().decode(MemberDTO.self, from: data)
+            return try JSONDecoder().decode(AcceptInvitationResponseDTO.self, from: data)
         } catch {
             throw InvitationError.decodingError
         }
