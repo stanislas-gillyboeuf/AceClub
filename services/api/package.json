@@ -5,7 +5,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepush": "bun run lint && bun run format:check && bun run typecheck"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.8",

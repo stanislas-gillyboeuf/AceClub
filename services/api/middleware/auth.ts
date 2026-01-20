@@ -28,7 +28,9 @@ export const authMiddleware = async (c: Context<HonoContext>, next: Next) => {
  * Use this for protected routes.
  */
 export const requireAuth = async (c: Context<HonoContext>, next: Next) => {
+  console.log("requireAuth middleware called");
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
+  console.log("session", session);
 
   if (!session) {
     return c.json({ error: "Unauthorized", message: "Valid authentication required" }, 401);

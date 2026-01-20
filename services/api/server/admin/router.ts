@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { requireAuth } from "../../middleware/auth";
 import type { HonoContext } from "../../types/hono";
+import { requireAuth } from "../../middleware/auth";
 import { isAdmin } from "../../middleware/admin";
 import { listUsers, listUserSessions } from "./queries";
 import { zValidator } from "@hono/zod-validator";
@@ -29,7 +29,9 @@ import {
 
 export const adminRouter = new Hono<HonoContext>();
 
-adminRouter.use("/*", requireAuth, isAdmin);
+// requireAuth MUST come before isAdmin to inject user into context
+adminRouter.use("/*", requireAuth);
+adminRouter.use("/*", isAdmin);
 
 adminRouter.get("/list-users", zValidator("query", listUsersValidator), listUsers);
 
