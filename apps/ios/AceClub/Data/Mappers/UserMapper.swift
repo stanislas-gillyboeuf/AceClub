@@ -16,8 +16,20 @@ class UserMapper {
             emailVerified: userDTO.emailVerified,
             image: userDTO.image,
             createdAt: userDTO.createdAt,
-            updatedAt: userDTO.updatedAt
+            updatedAt: userDTO.updatedAt,
+            role: userDTO.role,
+            banned: userDTO.banned,
+            banReason: userDTO.banReason,
+            banExpires: userDTO.banExpires
+        )
+    }
+
+    static func map(listUsersResponseDTO: ListUsersResponseDTO) -> ListUsersResult {
+        return ListUsersResult(
+            users: listUsersResponseDTO.users.map { map(userDTO: $0) },
+            total: listUsersResponseDTO.total,
+            limit: listUsersResponseDTO.limit,
+            offset: listUsersResponseDTO.offset
         )
     }
 }
-

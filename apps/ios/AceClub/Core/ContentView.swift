@@ -15,7 +15,7 @@ struct ContentView: View {
             if authViewModel.isLoading {
                 ProgressView()
             } else if authViewModel.isAuthenticated {
-                HomeView()
+                RootView()
             } else {
                 SignInView()
             }
