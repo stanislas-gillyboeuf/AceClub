@@ -11,7 +11,7 @@ struct AdminView: View {
     @StateObject private var viewModel = AdminViewModel()
     @State private var selectedUser: User? = nil
     @State private var isCreateUserPresented = false
-
+    @State private var isCreateOrganizationPresented = false
     var body: some View {
         NavigationStack {
             List {
@@ -48,12 +48,20 @@ struct AdminView: View {
             .navigationTitle("Admin")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        isCreateUserPresented = true
+                    Menu {
+                        Button {
+                            isCreateUserPresented = true
+                        } label: {
+                            Label("Create user", systemImage: "person")
+                        }
+                        Button {
+                            isCreateOrganizationPresented = true
+                        } label: {
+                            Label("Create organization", systemImage: "building")
+                        }
                     } label: {
-                        Image(systemName: "plus")
+                        Label("Actions", systemImage: "plus")
                     }
-                    .accessibilityLabel("Create user")
                 }
             }
             .task {
@@ -67,6 +75,9 @@ struct AdminView: View {
             }
             .sheet(isPresented: $isCreateUserPresented) {
                 CreateUserSheet(viewModel: viewModel, isPresented: $isCreateUserPresented)
+            }
+            .sheet(isPresented: $isCreateOrganizationPresented) {
+                CreateOrganizationSheet(viewModel: viewModel, isPresented: $isCreateOrganizationPresented)
             }
         }
     }
