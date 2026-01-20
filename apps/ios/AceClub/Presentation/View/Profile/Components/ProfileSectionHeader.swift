@@ -13,22 +13,18 @@ struct ProfileSectionHeader: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.headline)
-                .foregroundColor(.blue)
-
+            
             Text(title)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .font(.headline)
+                .fontWeight(.semibold)
 
             Spacer()
 
             if let action = action {
                 Button(action: action) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title3)
-                        .foregroundColor(.blue)
+                    Image(systemName: "plus")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
             }
         }
@@ -36,3 +32,5 @@ struct ProfileSectionHeader: View {
         .padding(.vertical, 8)
     }
 }
+
+

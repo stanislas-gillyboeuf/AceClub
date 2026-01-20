@@ -12,11 +12,8 @@ struct AdminView: View {
     @State private var selectedUser: User? = nil
     @State private var isCreateUserPresented = false
     @State private var isCreateOrganizationPresented = false
-<<<<<<<< HEAD:apps/ios/AceClub/Presentation/Admin/AdminView.swift
-========
     @Environment(AuthViewModel.self) private var authViewModel
 
->>>>>>>> 4e3b74c (feature/create-organization):apps/ios/AceClub/Presentation/View/Admin/AdminView.swift
     var body: some View {
         NavigationStack {
             List {

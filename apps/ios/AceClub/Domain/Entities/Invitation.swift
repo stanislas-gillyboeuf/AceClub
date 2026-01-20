@@ -9,13 +9,12 @@ struct Invitation: Identifiable {
     let expiresAt: String
     let createdAt: String?
     let inviterId: String
+    let organizationName: String?
     let organization: Organization?
-
     var isExpired: Bool {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         guard let expireDate = formatter.date(from: expiresAt) else {
-            // Try without fractional seconds
             formatter.formatOptions = [.withInternetDateTime]
             guard let expireDate = formatter.date(from: expiresAt) else {
                 return false

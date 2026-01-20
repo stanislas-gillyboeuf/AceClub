@@ -79,4 +79,9 @@ class OrganizationRepository: OrganizationRepositoryProtocol {
     func leaveOrganization(organizationId: String) async throws {
         try await dataSource.leaveOrganization(organizationId: organizationId)
     }
+    
+    func createOrganization(name: String, slug: String, logo: String? = nil, metadata: String? = nil) async throws -> Organization {
+        let organizationDTO = try await dataSource.createOrganization(name: name, slug: slug, logo: logo, metadata: metadata)
+        return OrganizationMapper.map(organizationDTO: organizationDTO)
+    }
 }

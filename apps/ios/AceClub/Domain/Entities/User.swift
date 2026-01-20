@@ -4,12 +4,12 @@ struct User: Identifiable {
     let id: String
     let name: String
     let email: String
-    let emailVerified: Bool
+    let emailVerified: Bool?
     let image: String?
-    let createdAt: String
-    let updatedAt: String
+    let createdAt: String?
+    let updatedAt: String?
     let role: String?
-    let banned: Bool
+    let banned: Bool?
     let banReason: String?
     let banExpires: String?
 
@@ -21,10 +21,13 @@ struct User: Identifiable {
     }
 
     /// Indique si l'email est vérifié.
-    var isEmailVerified: Bool { emailVerified }
+    var isEmailVerified: Bool { emailVerified ?? false }
 
     /// Message convivial pour l'état de vérification.
     var emailVerificationStatusText: String {
-        emailVerified ? "Email vérifié" : "Email non vérifié"
+        (emailVerified ?? false) ? "Email vérifié" : "Email non vérifié"
     }
+
+    /// Indique si l'utilisateur est banni.
+    var isBanned: Bool { banned ?? false }
 }

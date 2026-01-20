@@ -40,3 +40,12 @@ struct ListOrganizationsResponseDTO: Codable {
         case organizations
     }
 }
+
+
+// MARK: - Create Organization Request
+struct CreateOrganizationRequestDTO: Codable {
+    let name: String
+    let slug: String
+    let logo: String?
+    let metadata: String?
+}
