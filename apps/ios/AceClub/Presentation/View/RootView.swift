@@ -10,12 +10,14 @@ import SwiftUI
 struct RootView: View {
     @Environment(AuthViewModel.self) private var authViewModel
     @State private var selection: Tab = .feed
+    @State private var showingCreateMatch = false
     @StateObject private var profileViewModel = ProfileViewModel()
     @StateObject private var organizationViewModel = OrganizationViewModel()
     @StateObject private var invitationViewModel = InvitationViewModel()
 
     private enum Tab {
         case feed
+        case matches
         case admin
         case profile
     }
@@ -31,6 +33,13 @@ struct RootView: View {
                     Label("Feed", systemImage: "list.dash")
                 }
                 .tag(Tab.feed)
+
+            MatchesView()
+                .tabItem {
+                    Label("Matchs", systemImage: "tennis.racket")
+                }
+                .tag(Tab.matches)
+
             ProfileView(
                 profileViewModel: profileViewModel,
                 organizationViewModel: organizationViewModel,
@@ -40,6 +49,7 @@ struct RootView: View {
                     Label("Profile", systemImage: "person")
                 }
                 .tag(Tab.profile)
+
             if isAdmin {
                 AdminView()
                     .tabItem {
@@ -49,6 +59,7 @@ struct RootView: View {
                     .tag(Tab.admin)
             }
         }
+        .tabViewStyle(.sidebarAdaptable)
         .onChange(of: isAdmin) { _, newValue in
             if !newValue {
                 selection = .feed

@@ -19,3 +19,17 @@ struct ListUsersResponseDTO: Codable {
     let limit: Int?
     let offset: Int?
 }
+
+
+struct UserSearchResponseDTO: Codable {
+    let users: [UserSearchItemDTO]
+    let count: Int
+}
+
+// MARK: - User Search Item
+struct UserSearchItemDTO: Codable {
+    let id: String
+    let name: String
+    let email: String
+    let image: String?
+}

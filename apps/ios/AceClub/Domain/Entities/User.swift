@@ -30,4 +30,20 @@ struct User: Identifiable {
 
     /// Indique si l'utilisateur est banni.
     var isBanned: Bool { banned ?? false }
+
+    /// Nom d'affichage de l'utilisateur
+    var displayName: String { name }
+
+    /// Initiales de l'utilisateur pour l'affichage dans les avatars
+    var initials: String {
+        let components = name.split(separator: " ")
+        if components.count >= 2 {
+            let firstInitial = components[0].prefix(1)
+            let lastInitial = components[1].prefix(1)
+            return "\(firstInitial)\(lastInitial)".uppercased()
+        } else if let first = components.first {
+            return String(first.prefix(2)).uppercased()
+        }
+        return "??"
+    }
 }

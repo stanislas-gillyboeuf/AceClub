@@ -21,7 +21,8 @@
     "drizzle-orm": "^0.45.1",
     "hono": "^4.11.3",
     "pg": "^8.16.3",
-    "tsup": "^8.5.1"
+    "tsup": "^8.5.1",
+    "ulid": "^3.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

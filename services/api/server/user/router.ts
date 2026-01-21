@@ -1,7 +1,9 @@
 import { Hono } from "hono";
 import { requireAuth } from "../../middleware/auth";
 import type { HonoContext } from "../../types/hono";
-import { me } from "./queries";
+import { zValidator } from "@hono/zod-validator";
+import { me, searchUsers } from "./queries";
+import { searchUsersValidator } from "./validators";
 
 export const userRouter = new Hono<HonoContext>();
 
@@ -9,3 +11,4 @@ export const userRouter = new Hono<HonoContext>();
 userRouter.use("/*", requireAuth);
 
 userRouter.get("/me", me);
+userRouter.get("/search", zValidator("query", searchUsersValidator), searchUsers);

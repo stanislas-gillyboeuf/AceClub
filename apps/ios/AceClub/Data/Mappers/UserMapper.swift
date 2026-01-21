@@ -32,4 +32,24 @@ class UserMapper {
             offset: listUsersResponseDTO.offset
         )
     }
+
+    static func map(userSearchItemDTO: UserSearchItemDTO) -> User {
+        return User(
+            id: userSearchItemDTO.id,
+            name: userSearchItemDTO.name,
+            email: userSearchItemDTO.email,
+            emailVerified: nil,
+            image: userSearchItemDTO.image,
+            createdAt: nil,
+            updatedAt: nil,
+            role: nil,
+            banned: nil,
+            banReason: nil,
+            banExpires: nil
+        )
+    }
+
+    static func map(userSearchResponseDTO: UserSearchResponseDTO) -> [User] {
+        return userSearchResponseDTO.users.map { map(userSearchItemDTO: $0) }
+    }
 }

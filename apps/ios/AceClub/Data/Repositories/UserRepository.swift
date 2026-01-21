@@ -13,4 +13,9 @@ class UserRepository {
         let userDTO = try await userDataSource.getMe()
         return UserMapper.map(userDTO: userDTO)
     }
+
+    func searchUsers(query: String, limit: Int) async throws -> [User] {
+        let userSearchResponse = try await userDataSource.searchUsers(query: query, limit: limit)
+        return UserMapper.map(userSearchResponseDTO: userSearchResponse)
+    }
 }
