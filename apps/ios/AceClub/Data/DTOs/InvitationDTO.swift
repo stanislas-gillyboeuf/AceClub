@@ -10,6 +10,7 @@ struct InvitationDTO: Codable {
     let expiresAt: String
     let createdAt: String?
     let inviterId: String
+    let teamId: String?
     let organization: OrganizationDTO?
 }
 
@@ -44,4 +45,10 @@ struct CreateInvitationRequestDTO: Codable {
 // MARK: - Invitation Action Request
 struct InvitationActionRequestDTO: Codable {
     let invitationId: String
+}
+
+// MARK: - Accept Invitation Response
+struct AcceptInvitationResponseDTO: Codable {
+    let invitation: InvitationDTO
+    let member: MemberDTO
 }
