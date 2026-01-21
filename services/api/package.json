@@ -1,9 +1,12 @@
 {
   "name": "api",
   "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "bun run --hot index.ts",
-    "build": "bun build ./api/[[...route]].ts --outdir=dist --target=node --format=esm --external=pg-native",
+    "build": "bun build ./api/[[...route]].ts --outfile=api/index.js --target=node --format=esm --external=pg-native",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

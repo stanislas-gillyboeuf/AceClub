@@ -1,14 +1,9 @@
 {
   "buildCommand": "bun run build",
-  "functions": {
-    "dist/[[...route]].js": {
-      "runtime": "nodejs20.x"
-    }
-  },
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/dist/[[...route]].js"
+      "destination": "/api"
     }
   ]
 }
