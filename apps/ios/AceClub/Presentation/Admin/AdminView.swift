@@ -11,7 +11,12 @@ struct AdminView: View {
     @StateObject private var viewModel = AdminViewModel()
     @State private var selectedUser: User? = nil
     @State private var isCreateUserPresented = false
+    @State private var isCreateOrganizationPresented = false
+<<<<<<<< HEAD:apps/ios/AceClub/Presentation/Admin/AdminView.swift
+========
+    @Environment(AuthViewModel.self) private var authViewModel
 
+>>>>>>>> 4e3b74c (feature/create-organization):apps/ios/AceClub/Presentation/View/Admin/AdminView.swift
     var body: some View {
         NavigationStack {
             List {
@@ -48,12 +53,20 @@ struct AdminView: View {
             .navigationTitle("Admin")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        isCreateUserPresented = true
+                    Menu {
+                        Button {
+                            isCreateUserPresented = true
+                        } label: {
+                            Label("Create user", systemImage: "person")
+                        }
+                        Button {
+                            isCreateOrganizationPresented = true
+                        } label: {
+                            Label("Create organization", systemImage: "building")
+                        }
                     } label: {
-                        Image(systemName: "plus")
+                        Label("Actions", systemImage: "plus")
                     }
-                    .accessibilityLabel("Create user")
                 }
             }
             .task {
@@ -68,6 +81,9 @@ struct AdminView: View {
             .sheet(isPresented: $isCreateUserPresented) {
                 CreateUserSheet(viewModel: viewModel, isPresented: $isCreateUserPresented)
             }
+            .sheet(isPresented: $isCreateOrganizationPresented) {
+                CreateOrganizationSheet(viewModel: viewModel, isPresented: $isCreateOrganizationPresented)
+            }
         }
     }
 
@@ -77,7 +93,7 @@ struct AdminView: View {
                 Text(user.name)
                     .font(.headline)
 
-                if user.banned {
+                if user.banned! {
                     Text("BANNED")
                         .font(.caption2)
                         .padding(.horizontal, 6)
@@ -146,7 +162,7 @@ struct AdminUserDetailView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
-                    if user.banned {
+                    if user.isBanned {
                         Text("User is banned")
                             .font(.footnote)
                             .foregroundColor(.red)
@@ -156,13 +172,14 @@ struct AdminUserDetailView: View {
                 Section("Update Info") {
                     TextField("Name", text: $name)
                     TextField("Email", text: $email)
-                        .textInputAutocapitalization(.never)
+                        .autocapitalization(.none)
                         .keyboardType(.emailAddress)
                     SecureField("Password (optional)", text: $updatePassword)
                     Button("Update User") {
                         Task {
                             if let updated = await viewModel.updateUser(userId: user.id, name: name, email: email, password: updatePassword) {
                                 user = updated
+                                syncCurrentUserIfNeeded(updated)
                             }
                         }
                     }
@@ -175,6 +192,7 @@ struct AdminUserDetailView: View {
                         Task {
                             if let updated = await viewModel.setPassword(userId: user.id, password: newPassword) {
                                 user = updated
+                                syncCurrentUserIfNeeded(updated)
                                 newPassword = ""
                             }
                         }
@@ -188,6 +206,7 @@ struct AdminUserDetailView: View {
                         Task {
                             if let updated = await viewModel.revokeUserSession(userId: user.id, sessionId: sessionId) {
                                 user = updated
+                                syncCurrentUserIfNeeded(updated)
                                 sessionId = ""
                             }
                         }
@@ -198,6 +217,7 @@ struct AdminUserDetailView: View {
                         Task {
                             if let updated = await viewModel.revokeUserSessions(userId: user.id) {
                                 user = updated
+                                syncCurrentUserIfNeeded(updated)
                             }
                         }
                     }
@@ -205,15 +225,17 @@ struct AdminUserDetailView: View {
                 }
 
                 Section("Access") {
-                    Button(user.banned ? "Unban User" : "Ban User") {
+                    Button(user.isBanned ? "Unban User" : "Ban User") {
                         Task {
-                            if user.banned {
+                            if user.isBanned {
                                 if let updated = await viewModel.unbanUser(userId: user.id) {
                                     user = updated
+                                    syncCurrentUserIfNeeded(updated)
                                 }
                             } else {
                                 if let updated = await viewModel.banUser(userId: user.id) {
                                     user = updated
+                                    syncCurrentUserIfNeeded(updated)
                                 }
                             }
                         }
@@ -259,7 +281,7 @@ struct CreateUserSheet: View {
                 Section("Create User") {
                     TextField("Name", text: $name)
                     TextField("Email", text: $email)
-                        .textInputAutocapitalization(.never)
+                        .autocapitalization(.none)
                         .keyboardType(.emailAddress)
                     SecureField("Password", text: $password)
                 }

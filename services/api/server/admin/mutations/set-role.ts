@@ -8,12 +8,12 @@ export const setRole = async (c: Context<HonoContext>) => {
   // @ts-ignore
   const validated = c.req.valid("json") as z.infer<typeof setRoleValidator>;
 
-    const setRoleResponse = await auth.api.setRole({
-        body: {
-            userId: validated.userId,
-            role: validated.role as "user" | "admin" | ("user" | "admin")[],
-        },
-        headers: c.req.raw.headers,
-    });
-    return c.json(setRoleResponse);
+  const setRoleResponse = await auth.api.setRole({
+    body: {
+      userId: validated.userId,
+      role: validated.role as "user" | "admin" | ("user" | "admin")[],
+    },
+    headers: c.req.raw.headers,
+  });
+  return c.json(setRoleResponse);
 };

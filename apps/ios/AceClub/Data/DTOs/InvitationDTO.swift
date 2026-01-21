@@ -12,13 +12,13 @@ struct InvitationDTO: Codable {
     let inviterId: String
     let teamId: String?
     let organization: OrganizationDTO?
+    let organizationName: String?
 }
 
 // MARK: - List Invitations Response
 struct ListInvitationsResponseDTO: Codable {
     let invitations: [InvitationDTO]?
 
-    // Handle array response directly
     init(from decoder: Decoder) throws {
         if let container = try? decoder.container(keyedBy: CodingKeys.self) {
             invitations = try container.decodeIfPresent([InvitationDTO].self, forKey: .invitations)

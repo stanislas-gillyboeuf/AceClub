@@ -12,6 +12,7 @@ struct RootView: View {
     @State private var selection: Tab = .feed
     @StateObject private var profileViewModel = ProfileViewModel()
     @StateObject private var organizationViewModel = OrganizationViewModel()
+    @StateObject private var invitationViewModel = InvitationViewModel()
 
     private enum Tab {
         case feed
@@ -30,9 +31,11 @@ struct RootView: View {
                     Label("Feed", systemImage: "list.dash")
                 }
                 .tag(Tab.feed)
-            ProfileView()
-                .environmentObject(profileViewModel)
-                .environmentObject(organizationViewModel)
+            ProfileView(
+                profileViewModel: profileViewModel,
+                organizationViewModel: organizationViewModel,
+                invitationViewModel: invitationViewModel
+            )
                 .tabItem {
                     Label("Profile", systemImage: "person")
                 }
@@ -46,15 +49,10 @@ struct RootView: View {
                     .tag(Tab.admin)
             }
         }
-        .onChange(of: isAdmin) { newValue in
+        .onChange(of: isAdmin) { _, newValue in
             if !newValue {
                 selection = .feed
             }
         }
     }
-}
-
-#Preview {
-    RootView()
-        .environment(AuthViewModel())
 }

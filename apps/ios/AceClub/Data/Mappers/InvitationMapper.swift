@@ -11,9 +11,10 @@ class InvitationMapper {
             expiresAt: invitationDTO.expiresAt,
             createdAt: invitationDTO.createdAt,
             inviterId: invitationDTO.inviterId,
+            organizationName: invitationDTO.organizationName,
             organization: invitationDTO.organization != nil
                 ? OrganizationMapper.map(organizationDTO: invitationDTO.organization!)
-                : nil
+                : nil,
         )
     }
 
@@ -27,7 +28,7 @@ class InvitationMapper {
             expiresAt: acceptedInvitationDTO.expiresAt,
             createdAt: acceptedInvitationDTO.createdAt,
             inviterId: acceptedInvitationDTO.inviterId,
-            organization: nil
+            organizationName: nil, organization: nil
         )
     }
 

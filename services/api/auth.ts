@@ -15,6 +15,5 @@ export const auth = betterAuth({
   },
   trustedOrigins: ["http://localhost:3000", "aceclub://"],
 
-  plugins: [bearer(), admin(), organization(),    
-  ],
+  plugins: [bearer(), admin(), organization()],
 });

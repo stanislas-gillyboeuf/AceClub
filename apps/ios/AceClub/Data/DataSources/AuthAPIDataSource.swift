@@ -93,11 +93,6 @@ class AuthAPIDataSource {
                 throw AuthError.invalidResponse
             }
 
-            // DEBUG: Print raw response
-            if let jsonString = String(data: data, encoding: .utf8) {
-                print("🔵 Sign In Response: \(jsonString)")
-            }
-
             if httpResponse.statusCode != 200 {
                 if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
                    let message = errorResponse["message"] {
@@ -112,7 +107,6 @@ class AuthAPIDataSource {
         } catch let error as AuthError {
             throw error
         } catch {
-            print("🔴 Decoding error: \(error)")
             throw AuthError.networkError(error)
         }
     }

@@ -33,23 +33,13 @@ class OrganizationAPIDataSource {
             throw OrganizationError.serverError("List organizations failed: \(response.statusCode)")
         }
 
-        // Debug: print raw JSON
-        if let jsonString = String(data: data, encoding: .utf8) {
-            print("📦 Raw JSON listOrganizationsUser: \(jsonString)")
-        }
-
         do {
-            // First try: array directly
             return try JSONDecoder().decode([OrganizationDTO].self, from: data)
         } catch let directError {
-            print("❌ Direct array decoding failed: \(directError)")
-
-            // Second try: object with organizations key
             do {
                 let response = try JSONDecoder().decode(ListOrganizationsResponseDTO.self, from: data)
                 return response.organizations ?? []
             } catch let wrappedError {
-                print("❌ Wrapped object decoding failed: \(wrappedError)")
                 throw OrganizationError.decodingError
             }
         }
@@ -75,10 +65,6 @@ class OrganizationAPIDataSource {
         do {
             return try JSONDecoder().decode(FullOrganizationDTO.self, from: data)
         } catch {
-            print("❌ Decoding failed: \(error)")
-            if let jsonString = String(data: data, encoding: .utf8) {
-                print("📦 Raw JSON: \(jsonString)")
-            }
             throw OrganizationError.decodingError
         }
     }
@@ -161,7 +147,6 @@ class OrganizationAPIDataSource {
             throw OrganizationError.serverError("Get active member role failed: \(response.statusCode)")
         }
 
-        // Handle null response (no active organization)
         if let jsonString = String(data: data, encoding: .utf8), jsonString == "null" {
             return nil
         }
@@ -170,7 +155,6 @@ class OrganizationAPIDataSource {
             let roleResponse = try JSONDecoder().decode(ActiveMemberRoleDTO.self, from: data)
             return roleResponse.role
         } catch {
-            print("❌ getActiveMemberRole decoding failed: \(error)")
             throw OrganizationError.decodingError
         }
     }
@@ -255,6 +239,26 @@ class OrganizationAPIDataSource {
 
         guard response.statusCode == 200 else {
             throw OrganizationError.serverError("Leave organization failed: \(response.statusCode)")
+        }
+    }
+
+    func createOrganization(name: String, slug: String, logo: String? = nil, metadata: String? = nil) async throws -> OrganizationDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/organization/create") else {
+            throw OrganizationError.invalidURL
+        }
+
+        let requestBody = CreateOrganizationRequestDTO(name: name, slug: slug, logo: logo, metadata: metadata)
+        let bodyData = try JSONEncoder().encode(requestBody)
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)
+
+        guard response.statusCode == 200 else {
+            throw OrganizationError.serverError("Create organization failed: \(response.statusCode)")
+        }
+
+        do {
+            return try JSONDecoder().decode(OrganizationDTO.self, from: data)
+        } catch {
+            throw OrganizationError.decodingError
         }
     }
 }

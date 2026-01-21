@@ -19,6 +19,8 @@ class AdminViewModel: ObservableObject {
     private let unbanUserUseCase = AdminUnbanUserUseCase()
     private let revokeUserSessionUseCase = AdminRevokeUserSessionUseCase()
     private let revokeUserSessionsUseCase = AdminRevokeUserSessionsUseCase()
+    private let createOrganizationUseCase = CreateOrganizationUseCase()
+    private let createInvitationUseCase = CreateInvitationUseCase()
 
     func loadUsers() async {
         isLoading = true
@@ -159,6 +161,34 @@ class AdminViewModel: ObservableObject {
             users[index] = user
         } else {
             users.insert(user, at: 0)
+        }
+    }
+
+    func createOrganization(name: String, slug: String) async -> Organization? {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        do {
+            let organization = try await createOrganizationUseCase.execute(name: name, slug: slug)
+            return organization
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
+        }
+    }
+
+    func createInvitation(email: String, role: String = "member", organizationId: String? = nil) async -> Invitation? {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        do {
+            let invitation = try await createInvitationUseCase.execute(email: email, role: role, organizationId: organizationId)
+            return invitation
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
         }
     }
 }

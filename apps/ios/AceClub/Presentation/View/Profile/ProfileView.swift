@@ -1,8 +1,10 @@
 import SwiftUI
 
 struct ProfileView: View {
-    @EnvironmentObject private var profileViewModel: ProfileViewModel
-    @EnvironmentObject private var organizationViewModel: OrganizationViewModel
+    @ObservedObject var profileViewModel: ProfileViewModel
+    @ObservedObject var organizationViewModel: OrganizationViewModel
+    @ObservedObject var invitationViewModel: InvitationViewModel
+    @Environment(AuthViewModel.self) private var authViewModel
 
     var body: some View {
         NavigationStack {
@@ -19,27 +21,49 @@ struct ProfileView: View {
                                 icon: "building.2.fill"
                             )
 
+                            if !invitationViewModel.pendingUserInvitations.isEmpty {
+                                VStack(spacing: 8) {
+                                    ForEach(invitationViewModel.pendingUserInvitations) { invitation in
+                                        InvitationCard(
+                                            invitation: invitation,
+                                            onAccept: {
+                                                Task {
+                                                    if let member = await invitationViewModel.acceptInvitation(invitationId: invitation.id) {
+                                                        await organizationViewModel.loadOrganizations()
+                                                        await organizationViewModel.loadActiveMember()
+                                                    }
+                                                }
+                                            },
+                                            onReject: {
+                                                Task {
+                                                    await invitationViewModel.rejectInvitation(invitationId: invitation.id)
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 8)
+
+                                Divider()
+                                    .padding(.horizontal, 20)
+                            }
+
                             if organizationViewModel.isLoading {
                                 ProgressView()
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 40)
                             } else if organizationViewModel.organizations.isEmpty {
-                                VStack(spacing: 12) {
-                                    Image(systemName: "building.2.slash")
-                                        .font(.system(size: 48))
-                                        .foregroundColor(.secondary.opacity(0.5))
-
-                                    Text("Aucun club")
-                                        .font(.headline)
-                                        .foregroundColor(.secondary)
-
-                                    Text("Vous n'êtes membre d'aucun club pour le moment")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                        .multilineTextAlignment(.center)
+                                
+                                VStack(alignment: .leading, spacing: 12) {
+                                    
+                                    
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 40)
+                                ContentUnavailableView {
+                                    Label("No Club", systemImage: "tray.fill")
+                                } description: {
+                                    Text("Check later for invitation")
+                                }
                             } else {
                                 ForEach(organizationViewModel.organizations) { organization in
                                     let memberRole = getMemberRole(for: organization.id)
@@ -79,19 +103,37 @@ struct ProfileView: View {
                             .padding()
                     }
                 }
-                .padding(.bottom, 20)
+                Spacer()
+                
+                Button(action: handleSignOut) {
+                    if authViewModel.isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                    } else {
+                        Text("Sign Out")
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                    }
+                }
+                .buttonStyle(.bordered)
+                .tint(.red)
+                .padding(.horizontal, 24)
             }
-            .background(Color(.systemGroupedBackground))
             .navigationTitle("Mon Profil")
             .task {
                 await profileViewModel.getMe()
                 await organizationViewModel.loadOrganizations()
                 await organizationViewModel.loadActiveMember()
+                await invitationViewModel.loadUserInvitations()
             }
             .refreshable {
                 await profileViewModel.getMe()
                 await organizationViewModel.loadOrganizations()
                 await organizationViewModel.loadActiveMember()
+                await invitationViewModel.loadUserInvitations()
             }
         }
     }
@@ -100,5 +142,11 @@ struct ProfileView: View {
         organizationViewModel.members
             .first { $0.organizationId == organizationId }?
             .role
+    }
+
+    private func handleSignOut() {
+        Task {
+            await authViewModel.signOut()
+        }
     }
 }
