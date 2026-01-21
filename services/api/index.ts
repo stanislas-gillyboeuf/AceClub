@@ -68,6 +68,9 @@ app.get("/api/session", async (c) => {
 // routes
 app.route("/api", serverRouter);
 
+// Root route
+app.get("/", (c) => c.json({ message: "AceClub API", status: "ok" }));
+
 // Health check
 app.get("/health", (c) => c.json({ status: "ok" }));
 
