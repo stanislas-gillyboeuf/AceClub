@@ -6,7 +6,7 @@
   },
   "scripts": {
     "dev": "bun run --hot index.ts",
-    "build": "tsup index.ts --format esm --platform node --out-dir dist --target node20",
+    "build": "tsup",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
