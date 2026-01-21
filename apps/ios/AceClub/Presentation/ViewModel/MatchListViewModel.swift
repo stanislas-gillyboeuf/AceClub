@@ -93,7 +93,6 @@ class MatchListViewModel: ObservableObject {
                 limit: pageLimit
             )
 
-            // Remplacer ou ajouter les matchs seulement après succès
             if clearExisting {
                 matches = result.matches
             } else {

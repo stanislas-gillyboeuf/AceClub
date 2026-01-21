@@ -3,6 +3,7 @@ import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { db } from "../../../db";
 import { match, matchParticipant } from "../../../db/schema/match/schema";
+import { user } from "../../../db/schema/auth/schema";
 import { and, eq, desc, sql, inArray } from "drizzle-orm";
 
 const listMatchesQuerySchema = z.object({
@@ -88,15 +89,31 @@ export const listMatches = async (c: Context<HonoContext>) => {
       });
     }
 
-    // Get all participants for these matches in one query
+    // Get all participants for these matches in one query with user details
     const matchIds = matches.map(m => m.id);
     const participants = await db
-      .select()
+      .select({
+        id: matchParticipant.id,
+        matchId: matchParticipant.matchId,
+        userId: matchParticipant.userId,
+        side: matchParticipant.side,
+        isWinner: matchParticipant.isWinner,
+        createdAt: matchParticipant.createdAt,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          emailVerified: user.emailVerified,
+          image: user.image,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
+      })
       .from(matchParticipant)
+      .leftJoin(user, eq(matchParticipant.userId, user.id))
       .where(inArray(matchParticipant.matchId, matchIds))
       .orderBy(matchParticipant.side);
 
-    // Group participants by match (more efficient than filter)
     const participantsByMatch = new Map<string, typeof participants>();
     for (const participant of participants) {
       if (!participantsByMatch.has(participant.matchId)) {

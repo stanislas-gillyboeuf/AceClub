@@ -79,7 +79,8 @@ class MatchMapper {
             userId: participantDTO.userId,
             side: mapSide(participantDTO.side),
             isWinner: participantDTO.isWinner,
-            createdAt: parseDate(participantDTO.createdAt) ?? Date()
+            createdAt: parseDate(participantDTO.createdAt) ?? Date(),
+            user: participantDTO.user.map { UserMapper.map(userDTO: $0) }
         )
     }
 

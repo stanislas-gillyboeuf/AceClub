@@ -2,6 +2,7 @@ import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { match, matchParticipant, set, setScore } from "../../../db/schema/match/schema";
+import { user } from "../../../db/schema/auth/schema";
 import { eq } from "drizzle-orm";
 
 export const getMatch = async (c: Context<HonoContext>) => {
@@ -27,10 +28,27 @@ export const getMatch = async (c: Context<HonoContext>) => {
 
     // Get all related data in parallel for better performance
     const [participants, setsData] = await Promise.all([
-      // Get participants
+      // Get participants with user details
       db
-        .select()
+        .select({
+          id: matchParticipant.id,
+          matchId: matchParticipant.matchId,
+          userId: matchParticipant.userId,
+          side: matchParticipant.side,
+          isWinner: matchParticipant.isWinner,
+          createdAt: matchParticipant.createdAt,
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            emailVerified: user.emailVerified,
+            image: user.image,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+          },
+        })
         .from(matchParticipant)
+        .leftJoin(user, eq(matchParticipant.userId, user.id))
         .where(eq(matchParticipant.matchId, matchId))
         .orderBy(matchParticipant.side),
 

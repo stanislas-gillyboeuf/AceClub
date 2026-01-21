@@ -4,7 +4,9 @@ import { z } from "zod";
 import { createMatchValidator } from "../validators";
 import { db } from "../../../db";
 import { match, matchParticipant, set, setScore } from "../../../db/schema/match/schema";
+import { user } from "../../../db/schema/auth/schema";
 import { NewSetScore } from "../../../db/schema/match/type";
+import { eq, inArray } from "drizzle-orm";
 
 export const createMatch = async (c: Context<HonoContext>) => {
   try {
@@ -173,9 +175,33 @@ export const createMatch = async (c: Context<HonoContext>) => {
       // Insert all scores at once
       const setScores = await tx.insert(setScore).values(scoresToInsert).returning();
 
+      // Fetch participants with user details
+      const participantIds = participants.map(p => p.id);
+      const participantsWithUsers = await tx
+        .select({
+          id: matchParticipant.id,
+          matchId: matchParticipant.matchId,
+          userId: matchParticipant.userId,
+          side: matchParticipant.side,
+          isWinner: matchParticipant.isWinner,
+          createdAt: matchParticipant.createdAt,
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            emailVerified: user.emailVerified,
+            image: user.image,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+          },
+        })
+        .from(matchParticipant)
+        .leftJoin(user, eq(matchParticipant.userId, user.id))
+        .where(inArray(matchParticipant.id, participantIds));
+
       return {
         match: createdMatch,
-        participants,
+        participants: participantsWithUsers,
         sets: matchSets,
         scores: setScores,
       };

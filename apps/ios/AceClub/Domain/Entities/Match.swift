@@ -112,6 +112,7 @@ struct MatchParticipant: Identifiable {
     let side: MatchSide
     let isWinner: Bool
     let createdAt: Date
+    let user: User?
 
     // MARK: - Computed Properties
 

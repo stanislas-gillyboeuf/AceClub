@@ -25,7 +25,9 @@ struct MatchParticipantDTO: Codable {
     let side: String
     let isWinner: Bool
     let createdAt: String
+    let user: UserDTO?
 }
+
 
 // MARK: - Set DTO
 struct SetDTO: Codable {
