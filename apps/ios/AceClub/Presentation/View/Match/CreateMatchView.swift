@@ -327,11 +327,22 @@ class CreateMatchViewModel: ObservableObject {
             let startDate: Date? = (status == .scheduled || status == .ongoing || status == .finished) ? startedAt : nil
             let endDate: Date? = status == .finished ? finishedAt : nil
 
+            let now = Date()
+            var creationDate = now
+
+            if let startDate = startDate, startDate < now {
+                creationDate = startDate
+            }
+
+            if let endDate = endDate, endDate < creationDate {
+                creationDate = endDate
+            }
+
             // Create match
             let match = try await createMatchUseCase.execute(
                 createdBy: currentUser.id,
                 status: status,
-                createdAt: Date(),
+                createdAt: creationDate,
                 startedAt: startDate,
                 finishedAt: endDate,
                 participants: participants,
@@ -358,4 +369,3 @@ struct SetInput {
 #Preview {
     CreateMatchView(isPresented: .constant(true))
 }
-
