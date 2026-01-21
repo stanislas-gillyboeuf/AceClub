@@ -9,8 +9,7 @@ export default defineConfig({
   splitting: false,
   sourcemap: false,
   clean: true,
-  // Bundle all local imports into single file
-  noExternal: [/.*/],
-  // But keep these as external (will be installed on Vercel)
-  external: ["pg-native"],
+  // Bundle everything except pg (uses CommonJS dynamic requires)
+  noExternal: [/^(?!pg).*/],
+  external: ["pg", "pg-native", "pg-pool", "pg-protocol", "pg-types", "pgpass"],
 });
