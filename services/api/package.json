@@ -6,7 +6,7 @@
   },
   "scripts": {
     "dev": "bun run --hot index.ts",
-    "build": "bun build ./api/[[...route]].ts --outfile=api/index.js --target=node --format=esm --external=pg-native",
+    "build": "tsup index.ts --format esm --platform node --out-dir dist --target node20",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -20,7 +20,8 @@
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",
     "hono": "^4.11.3",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "tsup": "^8.5.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

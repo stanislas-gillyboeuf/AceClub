@@ -2,4 +2,3 @@ node_modules
 dist
 build
 bun.lock
-api/index.js
