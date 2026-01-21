@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { cors } from "hono/cors";
-import { serve } from "@hono/node-server";
 import { auth } from "./auth";
 import { serverRouter } from "./server/router";
 import type { HonoContext } from "./types/hono";
@@ -74,7 +73,14 @@ app.get("/", (c) => c.json({ message: "AceClub API", status: "ok" }));
 // Health check
 app.get("/health", (c) => c.json({ status: "ok" }));
 
-const port = Number(process.env.PORT) || 3000;
-console.log(`Server running on port ${port}`);
+// For local development with Bun
+if (typeof Bun !== "undefined") {
+  const port = Number(process.env.PORT) || 3000;
+  console.log(`Server running on port ${port}`);
+  Bun.serve({
+    fetch: app.fetch,
+    port,
+  });
+}
 
-export default serve({ fetch: app.fetch, port });
+export default app;
