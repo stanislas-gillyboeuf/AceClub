@@ -28,6 +28,10 @@ class UserAPIDataSource {
             let me = try JSONDecoder().decode(UserDTO.self, from: data)
             return me
         } catch {
+            print("❌ Decoding failed: \(error)")
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("📦 Raw JSON: \(jsonString)")
+            }
             throw UserAPIDateSourceError.decodingFailed
         }
     }

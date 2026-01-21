@@ -33,10 +33,25 @@ class OrganizationAPIDataSource {
             throw OrganizationError.serverError("List organizations failed: \(response.statusCode)")
         }
 
+        // Debug: print raw JSON
+        if let jsonString = String(data: data, encoding: .utf8) {
+            print("📦 Raw JSON listOrganizationsUser: \(jsonString)")
+        }
+
         do {
+            // First try: array directly
             return try JSONDecoder().decode([OrganizationDTO].self, from: data)
-        } catch {
-            throw OrganizationError.decodingError
+        } catch let directError {
+            print("❌ Direct array decoding failed: \(directError)")
+
+            // Second try: object with organizations key
+            do {
+                let response = try JSONDecoder().decode(ListOrganizationsResponseDTO.self, from: data)
+                return response.organizations ?? []
+            } catch let wrappedError {
+                print("❌ Wrapped object decoding failed: \(wrappedError)")
+                throw OrganizationError.decodingError
+            }
         }
     }
 
@@ -60,6 +75,10 @@ class OrganizationAPIDataSource {
         do {
             return try JSONDecoder().decode(FullOrganizationDTO.self, from: data)
         } catch {
+            print("❌ Decoding failed: \(error)")
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("📦 Raw JSON: \(jsonString)")
+            }
             throw OrganizationError.decodingError
         }
     }
@@ -109,7 +128,7 @@ class OrganizationAPIDataSource {
         }
     }
 
-    func getActiveMember() async throws -> ActiveMemberDTO {
+    func getActiveMember() async throws -> ActiveMemberDTO? {
         guard let url = URL(string: "\(Config.apiBaseURL)/organization/get-active-member") else {
             throw OrganizationError.invalidURL
         }
@@ -120,6 +139,10 @@ class OrganizationAPIDataSource {
             throw OrganizationError.serverError("Get active member failed: \(response.statusCode)")
         }
 
+        if let jsonString = String(data: data, encoding: .utf8), jsonString == "null" {
+            return nil
+        }
+
         do {
             return try JSONDecoder().decode(ActiveMemberDTO.self, from: data)
         } catch {
@@ -127,7 +150,7 @@ class OrganizationAPIDataSource {
         }
     }
 
-    func getActiveMemberRole() async throws -> String {
+    func getActiveMemberRole() async throws -> String? {
         guard let url = URL(string: "\(Config.apiBaseURL)/organization/get-active-member-role") else {
             throw OrganizationError.invalidURL
         }
@@ -138,10 +161,16 @@ class OrganizationAPIDataSource {
             throw OrganizationError.serverError("Get active member role failed: \(response.statusCode)")
         }
 
+        // Handle null response (no active organization)
+        if let jsonString = String(data: data, encoding: .utf8), jsonString == "null" {
+            return nil
+        }
+
         do {
             let roleResponse = try JSONDecoder().decode(ActiveMemberRoleDTO.self, from: data)
             return roleResponse.role
         } catch {
+            print("❌ getActiveMemberRole decoding failed: \(error)")
             throw OrganizationError.decodingError
         }
     }

@@ -12,5 +12,9 @@ export const me = async (c: Context<HonoContext>) => {
     image: user!.image,
     createdAt: user!.createdAt,
     updatedAt: user!.updatedAt,
+    role: user!.role,
+    banned: user!.banned,
+    banReason: user!.banReason,
+    banExpires: user!.banExpires,
   });
 };
