@@ -3,6 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run --hot index.ts",
+    "build": "bun build ./api/[[...route]].ts --outdir=dist --target=node --format=esm --external=pg-native",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
