@@ -1,0 +1,16 @@
+//
+//  UserRepository.swift
+//  AceClub
+//
+//  Created by Nicolas Becharat on 12/01/2026.
+//
+
+import Foundation
+class UserRepository {
+
+    let userDataSource = UserAPIDataSource() 
+    func getMe() async throws -> User {
+        let userDTO = try await userDataSource.getMe()
+        return UserMapper.map(userDTO: userDTO)
+    }
+}

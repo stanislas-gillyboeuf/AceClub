@@ -1,21 +1,33 @@
 import Foundation
 
-struct UserEntity :Identifiable {
+struct User: Identifiable {
     let id: String
     let name: String
     let email: String
-    let emailVerified: Bool
+    let emailVerified: Bool?
     let image: String?
-    let createdAt: Date
-    let updatedAt: Date
-}
+    let createdAt: String?
+    let updatedAt: String?
+    let role: String?
+    let banned: Bool?
+    let banReason: String?
+    let banExpires: String?
 
-struct Session :Identifiable {
-    let id: String
-    let expiresAt: Date
-}
+    // MARK: - Derived safe accessors
+    /// URL construite à partir de `image` si valide, sinon `nil`.
+    var imageURL: URL? {
+        guard let image, !image.isEmpty else { return nil }
+        return URL(string: image)
+    }
 
-struct User :Identifiable {
-    let user: UserEntity
-    let session: Session
+    /// Indique si l'email est vérifié.
+    var isEmailVerified: Bool { emailVerified ?? false }
+
+    /// Message convivial pour l'état de vérification.
+    var emailVerificationStatusText: String {
+        (emailVerified ?? false) ? "Email vérifié" : "Email non vérifié"
+    }
+
+    /// Indique si l'utilisateur est banni.
+    var isBanned: Bool { banned ?? false }
 }

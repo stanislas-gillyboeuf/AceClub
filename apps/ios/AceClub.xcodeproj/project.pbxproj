@@ -6,7 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B20531552F183FFF009CEE8C /* UserHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20531542F183FFF009CEE8C /* UserHeaderView.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		B20531542F183FFF009CEE8C /* UserHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserHeaderView.swift; sourceTree = "<group>"; };
 		B2BECE342F15801D008700D8 /* AceClub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AceClub.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -34,6 +39,7 @@
 			children = (
 				B2BECE362F15801D008700D8 /* AceClub */,
 				B2BECE352F15801D008700D8 /* Products */,
+				B20531542F183FFF009CEE8C /* UserHeaderView.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -119,6 +125,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B20531552F183FFF009CEE8C /* UserHeaderView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

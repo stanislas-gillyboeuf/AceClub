@@ -1,2 +1,2 @@
 export { authMiddleware } from "./auth";
-export { corsMiddleware } from "./cors"
+export { corsMiddleware } from "./cors";

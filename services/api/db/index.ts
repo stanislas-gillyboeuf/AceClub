@@ -5,11 +5,11 @@ import { Pool } from "pg";
 import * as schema from "./schema/index";
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL,
 });
 
 const db = drizzle(pool, {
-    schema,
+  schema,
 });
 
 type Database = typeof db;

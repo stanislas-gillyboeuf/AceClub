@@ -1,22 +1,24 @@
 import Foundation
+import Combine
 
 @MainActor
 class ProfileViewModel: ObservableObject {
-    @Published var user: User
+    @Published var user: User? = nil
     @Published var errorMessage: String? = nil
     @Published var isLoading: Bool = false
 
-
     private let getMeUseCase = GetMeUseCase()
-    func getUser() async {
+
+    func getMe() async {
         isLoading = true
         errorMessage = nil
         do {
-            result = try await getMeUseCase.execute()
-            self.user = result
+            let result = try await getMeUseCase.execute()
+            user = result
         } catch {
             errorMessage = error.localizedDescription
         }
         isLoading = false
     }
 }
+

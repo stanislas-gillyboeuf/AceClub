@@ -1,20 +1,21 @@
-struct User: Codable {
+// MARK: - User DTO
+struct UserDTO: Codable {
     let id: String
     let name: String
     let email: String
-    let emailVerified: Bool
+    let emailVerified: Bool?
     let image: String?
-    let createdAt: Date
-    let updatedAt: Date
+    let createdAt: String?
+    let updatedAt: String?
+    let role: String?
+    let banned: Bool?
+    let banReason: String?
+    let banExpires: String?
 }
 
-struct Session: Codable {
-    let id: String
-    let expiresAt: Date
+struct ListUsersResponseDTO: Codable {
+    let users: [UserDTO]
+    let total: Int
+    let limit: Int?
+    let offset: Int?
 }
-
-struct UserDTO: Codable {
-    let user: User
-    let session: Session
-}
-
