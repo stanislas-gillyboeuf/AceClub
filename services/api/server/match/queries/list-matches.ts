@@ -9,19 +9,23 @@ import { and, eq, desc, sql, inArray } from "drizzle-orm";
 const listMatchesQuerySchema = z.object({
   status: z.enum(["scheduled", "ongoing", "finished"]).optional(),
   userId: z.string().optional(),
+  participantOnly: z
+    .enum(["true", "false"])
+    .default("true")
+    .transform((val) => val === "true"),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
 });
 
 export const listMatches = async (c: Context<HonoContext>) => {
   try {
+    const currentUser = c.get("user");
     const query = c.req.query();
     const validatedQuery = listMatchesQuerySchema.parse(query);
 
-    const { status, userId, page, limit } = validatedQuery;
+    const { status, userId, participantOnly, page, limit } = validatedQuery;
     const offset = (page - 1) * limit;
 
-    // Build where conditions
     const conditions = [];
 
     if (status) {
@@ -30,15 +34,20 @@ export const listMatches = async (c: Context<HonoContext>) => {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
+    // Determine which user to filter by
+    // If participantOnly is true, filter by the current user
+    // If userId is explicitly provided, use that instead
+    const filterUserId = userId || (participantOnly && currentUser ? currentUser.id : null);
+
     // If filtering by userId, get matching match IDs first (more efficient)
     let matchIdsFilter: string[] | undefined;
-    if (userId) {
+    if (filterUserId) {
       const userMatches = await db
         .select({ matchId: matchParticipant.matchId })
         .from(matchParticipant)
-        .where(eq(matchParticipant.userId, userId));
+        .where(eq(matchParticipant.userId, filterUserId));
 
-      matchIdsFilter = userMatches.map(m => m.matchId);
+      matchIdsFilter = userMatches.map((m) => m.matchId);
 
       // If user has no matches, return early
       if (matchIdsFilter.length === 0) {
@@ -90,7 +99,7 @@ export const listMatches = async (c: Context<HonoContext>) => {
     }
 
     // Get all participants for these matches in one query with user details
-    const matchIds = matches.map(m => m.id);
+    const matchIds = matches.map((m) => m.id);
     const participants = await db
       .select({
         id: matchParticipant.id,
@@ -123,7 +132,7 @@ export const listMatches = async (c: Context<HonoContext>) => {
     }
 
     // Build response
-    const matchesWithParticipants = matches.map(matchData => ({
+    const matchesWithParticipants = matches.map((matchData) => ({
       ...matchData,
       participants: participantsByMatch.get(matchData.id) || [],
     }));

@@ -23,6 +23,7 @@ class MatchRepository {
     func listMatches(
         status: MatchStatus? = nil,
         userId: String? = nil,
+        participantOnly: Bool = true,
         page: Int = 1,
         limit: Int = 10
     ) async throws -> MatchListResult {
@@ -30,6 +31,7 @@ class MatchRepository {
         let listDTO = try await matchDataSource.listMatches(
             status: statusString,
             userId: userId,
+            participantOnly: participantOnly,
             page: page,
             limit: limit
         )
@@ -109,6 +111,7 @@ class MatchRepository {
         return try await listMatches(
             status: status,
             userId: userId,
+            participantOnly: false,
             page: page,
             limit: limit
         )
@@ -116,13 +119,13 @@ class MatchRepository {
 
     /// Liste uniquement les matchs en cours
     func listOngoingMatches(
-        userId: String? = nil,
+        participantOnly: Bool = true,
         page: Int = 1,
         limit: Int = 10
     ) async throws -> MatchListResult {
         return try await listMatches(
             status: .ongoing,
-            userId: userId,
+            participantOnly: participantOnly,
             page: page,
             limit: limit
         )
@@ -130,13 +133,13 @@ class MatchRepository {
 
     /// Liste uniquement les matchs terminés
     func listFinishedMatches(
-        userId: String? = nil,
+        participantOnly: Bool = true,
         page: Int = 1,
         limit: Int = 10
     ) async throws -> MatchListResult {
         return try await listMatches(
             status: .finished,
-            userId: userId,
+            participantOnly: participantOnly,
             page: page,
             limit: limit
         )

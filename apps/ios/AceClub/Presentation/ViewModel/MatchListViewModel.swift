@@ -26,6 +26,7 @@ class MatchListViewModel: ObservableObject {
     // Filters
     @Published var selectedStatus: MatchStatus? = nil
     @Published var filterUserId: String? = nil
+    @Published var participantOnly: Bool = true
     @Published var pageLimit: Int = 10
 
     // MARK: - Use Cases
@@ -72,10 +73,17 @@ class MatchListViewModel: ObservableObject {
         await loadMatches()
     }
 
+    /// Change le filtre participantOnly et recharge
+    func setParticipantOnly(_ value: Bool) async {
+        participantOnly = value
+        await loadMatches()
+    }
+
     /// Supprime tous les filtres
     func clearFilters() async {
         selectedStatus = nil
         filterUserId = nil
+        participantOnly = true
         await loadMatches()
     }
 
@@ -89,6 +97,7 @@ class MatchListViewModel: ObservableObject {
             let result = try await listMatchesUseCase.execute(
                 status: selectedStatus,
                 userId: filterUserId,
+                participantOnly: participantOnly,
                 page: currentPage,
                 limit: pageLimit
             )
@@ -116,7 +125,7 @@ class MatchListViewModel: ObservableObject {
 
     /// Indique si des filtres sont actifs
     var hasActiveFilters: Bool {
-        selectedStatus != nil || filterUserId != nil
+        selectedStatus != nil || filterUserId != nil || !participantOnly
     }
 
     /// Nombre de matchs affichés

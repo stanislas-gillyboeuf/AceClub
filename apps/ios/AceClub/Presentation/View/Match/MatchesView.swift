@@ -66,7 +66,7 @@ struct MatchesView: View {
                         } label: {
                             Image(systemName: "line.3.horizontal.decrease.circle")
                         }
-                    }
+                    }.lineSpacing(10)
                 }
             }
             .sheet(isPresented: $showingCreateMatch) {

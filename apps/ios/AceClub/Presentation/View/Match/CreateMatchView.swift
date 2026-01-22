@@ -324,7 +324,8 @@ class CreateMatchViewModel: ObservableObject {
                 }
             }
 
-            let startDate: Date? = (status == .scheduled || status == .ongoing || status == .finished) ? startedAt : nil
+            // Pour les matchs scheduled, pas de startedAt ni finishedAt
+            let startDate: Date? = (status == .ongoing || status == .finished) ? startedAt : nil
             let endDate: Date? = status == .finished ? finishedAt : nil
 
             let now = Date()

@@ -131,9 +131,6 @@ struct MatchDetailView: View {
                 Text("Statut")
                     .font(.headline)
                 Spacer()
-            }
-
-            HStack {
                 Text(match.status.displayName)
                     .font(.title2)
                     .fontWeight(.bold)
@@ -142,9 +139,8 @@ struct MatchDetailView: View {
                     .padding(.vertical, 8)
                     .background(statusColor(for: match.status))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
-
-                Spacer()
             }
+
 
             if let duration = match.formattedDuration {
                 HStack {
@@ -196,7 +192,7 @@ struct MatchDetailView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                Text(participant.userId)
+                Text(participant.user?.name ?? "NA")
                     .font(.body)
                     .fontWeight(isWinner ? .bold : .regular)
             }
@@ -212,6 +208,9 @@ struct MatchDetailView: View {
                         .fontWeight(.semibold)
                 }
             }
+        }
+        .onAppear {
+            print(participant)
         }
     }
 

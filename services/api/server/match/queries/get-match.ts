@@ -13,7 +13,6 @@ export const getMatch = async (c: Context<HonoContext>) => {
       return c.json({ error: "Match ID is required" }, 400);
     }
 
-    // Get match with all related data in optimized queries
     const matchData = await db
       .select()
       .from(match)
@@ -26,9 +25,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
 
     const foundMatch = matchData[0];
 
-    // Get all related data in parallel for better performance
     const [participants, setsData] = await Promise.all([
-      // Get participants with user details
       db
         .select({
           id: matchParticipant.id,
@@ -52,7 +49,6 @@ export const getMatch = async (c: Context<HonoContext>) => {
         .where(eq(matchParticipant.matchId, matchId))
         .orderBy(matchParticipant.side),
 
-      // Get sets with scores in a single query using JOIN
       db
         .select({
           setId: set.id,

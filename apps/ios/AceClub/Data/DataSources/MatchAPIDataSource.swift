@@ -72,6 +72,7 @@ class MatchAPIDataSource {
     func listMatches(
         status: String? = nil,
         userId: String? = nil,
+        participantOnly: Bool = true,
         page: Int = 1,
         limit: Int = 10
     ) async throws -> ListMatchesResponseDTO {
@@ -79,7 +80,8 @@ class MatchAPIDataSource {
 
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "page", value: "\(page)"),
-            URLQueryItem(name: "limit", value: "\(limit)")
+            URLQueryItem(name: "limit", value: "\(limit)"),
+            URLQueryItem(name: "participantOnly", value: participantOnly ? "true" : "false")
         ]
 
         if let status = status {
@@ -139,7 +141,6 @@ class MatchAPIDataSource {
                 throw MatchAPIDataSourceError.decodingFailed(error)
             }
         case 400:
-            // Try to decode error message
             if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
                let message = errorResponse["message"] ?? errorResponse["error"] {
                 throw MatchAPIDataSourceError.badRequest(message)

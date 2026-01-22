@@ -4,14 +4,13 @@ import { z } from "zod";
 import { searchUsersValidator } from "../validators";
 import { db } from "../../../db";
 import { user } from "../../../db/schema/auth/schema";
-import { ilike, or } from "drizzle-orm";
+import { and, eq, ilike, or } from "drizzle-orm";
 
 export const searchUsers = async (c: Context<HonoContext>) => {
   try {
     // @ts-ignore
     const validated = c.req.valid("query") as z.infer<typeof searchUsersValidator>;
 
-    // Search users by name or email
     const users = await db
       .select({
         id: user.id,
@@ -21,10 +20,10 @@ export const searchUsers = async (c: Context<HonoContext>) => {
       })
       .from(user)
       .where(
-        or(
-          ilike(user.name, `%${validated.query}%`),
-          ilike(user.email, `%${validated.query}%`)
-        )
+        and(
+          or(ilike(user.name, `%${validated.query}%`), ilike(user.email, `%${validated.query}%`)),
+          eq(user.banned, false),
+        ),
       )
       .limit(validated.limit);
 
@@ -39,7 +38,7 @@ export const searchUsers = async (c: Context<HonoContext>) => {
         error: "Internal server error",
         message: errorMessage,
       },
-      500
+      500,
     );
   }
 };

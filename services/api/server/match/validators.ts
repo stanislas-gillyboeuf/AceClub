@@ -1,10 +1,8 @@
 import { z } from "zod";
 
-// Score validation: must be between 0 and 11 for regular games,
-// can go higher in deuce situations
-const scoreSchema = z.number().int().min(0).max(30);
+// Score validation: aucune restriction stricte, juste un nombre positif raisonnable
+const scoreSchema = z.number().int().min(0).max(100);
 
-// Participant schema with business rules
 const participantSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
   side: z.enum(["home", "away"], {
@@ -13,13 +11,11 @@ const participantSchema = z.object({
   isWinner: z.boolean().optional().default(false),
 });
 
-// Set score schema
 const setScoreSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
   score: scoreSchema,
 });
 
-// Set schema with validation
 const setSchema = z.object({
   setNumber: z
     .number()
@@ -52,8 +48,9 @@ export const createMatchValidator = z
       .max(2, "Cannot have more than 2 participants"),
     sets: z
       .array(setSchema)
-      .min(1, "Must have at least 1 set")
-      .max(5, "Cannot have more than 5 sets"),
+      .max(5, "Cannot have more than 5 sets")
+      .optional()
+      .default([]),
   })
   .refine(
     (data) => {
@@ -90,7 +87,8 @@ export const createMatchValidator = z
   )
   .refine(
     (data) => {
-      // Validate set numbers are sequential
+      if (!data.sets || data.sets.length === 0) return true;
+
       const setNumbers = data.sets.map((s) => s.setNumber).sort((a, b) => a - b);
       return setNumbers.every((num, idx) => num === idx + 1);
     },
@@ -101,6 +99,9 @@ export const createMatchValidator = z
   )
   .refine(
     (data) => {
+      // Skip if no sets
+      if (!data.sets || data.sets.length === 0) return true;
+
       // Validate each set has scores for both participants
       const participantUserIds = data.participants.map((p) => p.userId);
       return data.sets.every((set) => {
@@ -115,21 +116,24 @@ export const createMatchValidator = z
   )
   .refine(
     (data) => {
-      // Validate status consistency
+      // Validate status consistency with timestamps
       if (data.status === "scheduled") {
+        // scheduled: pas de startedAt ni finishedAt
         return !data.startedAt && !data.finishedAt;
       }
       if (data.status === "ongoing") {
-        return data.startedAt && !data.finishedAt;
+        // ongoing: startedAt requis, pas de finishedAt
+        return !!data.startedAt && !data.finishedAt;
       }
       if (data.status === "finished") {
-        return data.startedAt && data.finishedAt;
+        // finished: startedAt et finishedAt requis
+        return !!data.startedAt && !!data.finishedAt;
       }
       return true;
     },
     {
       message:
-        "Status must be consistent with startedAt/finishedAt timestamps",
+        "Status must be consistent with startedAt/finishedAt timestamps (scheduled: no dates, ongoing: startedAt only, finished: both dates)",
       path: ["status"],
     }
   )
@@ -232,15 +236,17 @@ export const updateMatchScoresValidator = z
     }
   );
 
-// Query parameters validator for listing matches
 export const listMatchesQueryValidator = z.object({
   status: z.enum(["scheduled", "ongoing", "finished"]).optional(),
   userId: z.string().optional(),
+  participantOnly: z
+    .enum(["true", "false"])
+    .default("true")
+    .transform((val) => val === "true"),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
 });
 
-// ID parameter validator
 export const matchIdValidator = z.object({
   id: z.string().min(1, "Match ID is required"),
 });

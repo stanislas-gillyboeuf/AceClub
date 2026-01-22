@@ -14,12 +14,14 @@ class ListMatchesUseCase {
     func execute(
         status: MatchStatus? = nil,
         userId: String? = nil,
+        participantOnly: Bool = true,
         page: Int = 1,
         limit: Int = 10
     ) async throws -> MatchListResult {
         return try await matchRepository.listMatches(
             status: status,
             userId: userId,
+            participantOnly: participantOnly,
             page: page,
             limit: limit
         )
