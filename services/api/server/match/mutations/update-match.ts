@@ -20,11 +20,7 @@ export const updateMatch = async (c: Context<HonoContext>) => {
     // Update in transaction for consistency
     const result = await db.transaction(async (tx) => {
       // Check if match exists
-      const existingMatch = await tx
-        .select()
-        .from(match)
-        .where(eq(match.id, matchId))
-        .limit(1);
+      const existingMatch = await tx.select().from(match).where(eq(match.id, matchId)).limit(1);
 
       if (existingMatch.length === 0) {
         throw new Error("Match not found");
@@ -80,8 +76,10 @@ export const updateMatch = async (c: Context<HonoContext>) => {
 
       // Business validation: status must be consistent with timestamps
       const finalStatus = updateData.status ?? currentMatch.status;
-      const finalStartedAt = updateData.startedAt !== undefined ? updateData.startedAt : currentMatch.startedAt;
-      const finalFinishedAt = updateData.finishedAt !== undefined ? updateData.finishedAt : currentMatch.finishedAt;
+      const finalStartedAt =
+        updateData.startedAt !== undefined ? updateData.startedAt : currentMatch.startedAt;
+      const finalFinishedAt =
+        updateData.finishedAt !== undefined ? updateData.finishedAt : currentMatch.finishedAt;
 
       if (finalStatus === "scheduled" && (finalStartedAt || finalFinishedAt)) {
         throw new Error("Scheduled matches cannot have startedAt or finishedAt timestamps");
@@ -127,15 +125,21 @@ export const updateMatch = async (c: Context<HonoContext>) => {
 
     // Handle database constraint errors
     if (errorMessage.includes("foreign key constraint")) {
-      return c.json({
-        error: "Invalid reference",
-        message: "Referenced entity does not exist"
-      }, 400);
+      return c.json(
+        {
+          error: "Invalid reference",
+          message: "Referenced entity does not exist",
+        },
+        400,
+      );
     }
 
-    return c.json({
-      error: "Internal server error",
-      message: errorMessage
-    }, 500);
+    return c.json(
+      {
+        error: "Internal server error",
+        message: errorMessage,
+      },
+      500,
+    );
   }
 };

@@ -17,46 +17,58 @@ export const createMatch = async (c: Context<HonoContext>) => {
     // Business validation: exactly 2 participants
     if (validated.participants.length !== 2) {
       console.log("❌ [CREATE MATCH] Invalid participants count:", validated.participants.length);
-      return c.json({
-        error: "Invalid participants count",
-        message: "A match must have exactly 2 participants"
-      }, 400);
+      return c.json(
+        {
+          error: "Invalid participants count",
+          message: "A match must have exactly 2 participants",
+        },
+        400,
+      );
     }
     console.log("✅ [CREATE MATCH] Participants count valid: 2");
 
     // Business validation: one home, one away
-    const homePlayers = validated.participants.filter(p => p.side === "home");
-    const awayPlayers = validated.participants.filter(p => p.side === "away");
+    const homePlayers = validated.participants.filter((p) => p.side === "home");
+    const awayPlayers = validated.participants.filter((p) => p.side === "away");
     console.log(`✅ [CREATE MATCH] Sides: ${homePlayers.length} home, ${awayPlayers.length} away`);
 
     if (homePlayers.length !== 1 || awayPlayers.length !== 1) {
       console.log("❌ [CREATE MATCH] Invalid sides distribution");
-      return c.json({
-        error: "Invalid sides",
-        message: "Must have exactly one home and one away participant"
-      }, 400);
+      return c.json(
+        {
+          error: "Invalid sides",
+          message: "Must have exactly one home and one away participant",
+        },
+        400,
+      );
     }
 
     // Business validation: unique user IDs
-    const userIds = validated.participants.map(p => p.userId);
+    const userIds = validated.participants.map((p) => p.userId);
     console.log("✅ [CREATE MATCH] User IDs:", userIds);
     if (new Set(userIds).size !== userIds.length) {
       console.log("❌ [CREATE MATCH] Duplicate user IDs detected");
-      return c.json({
-        error: "Duplicate participants",
-        message: "Each participant must be unique"
-      }, 400);
+      return c.json(
+        {
+          error: "Duplicate participants",
+          message: "Each participant must be unique",
+        },
+        400,
+      );
     }
 
     // Business validation: at most one winner
-    const winners = validated.participants.filter(p => p.isWinner);
+    const winners = validated.participants.filter((p) => p.isWinner);
     console.log(`✅ [CREATE MATCH] Winners count: ${winners.length}`);
     if (winners.length > 1) {
       console.log("❌ [CREATE MATCH] Multiple winners detected");
-      return c.json({
-        error: "Multiple winners",
-        message: "A match can have at most one winner"
-      }, 400);
+      return c.json(
+        {
+          error: "Multiple winners",
+          message: "A match can have at most one winner",
+        },
+        400,
+      );
     }
 
     // Business validation: sets consistency
@@ -64,23 +76,31 @@ export const createMatch = async (c: Context<HonoContext>) => {
     console.log(`✅ [CREATE MATCH] Sets count: ${validated.sets.length}`);
     if (validated.sets.length > 5) {
       console.log("❌ [CREATE MATCH] Too many sets:", validated.sets.length);
-      return c.json({
-        error: "Invalid sets count",
-        message: "A match cannot have more than 5 sets"
-      }, 400);
+      return c.json(
+        {
+          error: "Invalid sets count",
+          message: "A match cannot have more than 5 sets",
+        },
+        400,
+      );
     }
 
     // Business validation: set numbers must be sequential starting from 1 (only if there are sets)
     if (validated.sets.length > 0) {
-      const setNumbers = validated.sets.map(s => s.setNumber).sort((a, b) => a - b);
+      const setNumbers = validated.sets.map((s) => s.setNumber).sort((a, b) => a - b);
       console.log("✅ [CREATE MATCH] Set numbers:", setNumbers);
       for (let i = 0; i < setNumbers.length; i++) {
         if (setNumbers[i] !== i + 1) {
-          console.log(`❌ [CREATE MATCH] Set numbers not sequential. Expected ${i + 1}, got ${setNumbers[i]}`);
-          return c.json({
-            error: "Invalid set numbers",
-            message: `Set numbers must be sequential starting from 1. Expected ${i + 1}, got ${setNumbers[i]}`
-          }, 400);
+          console.log(
+            `❌ [CREATE MATCH] Set numbers not sequential. Expected ${i + 1}, got ${setNumbers[i]}`,
+          );
+          return c.json(
+            {
+              error: "Invalid set numbers",
+              message: `Set numbers must be sequential starting from 1. Expected ${i + 1}, got ${setNumbers[i]}`,
+            },
+            400,
+          );
         }
       }
     }
@@ -91,26 +111,34 @@ export const createMatch = async (c: Context<HonoContext>) => {
         console.log(`✅ [CREATE MATCH] Set ${setData.setNumber}: ${setData.scores.length} scores`);
         if (setData.scores.length !== 2) {
           console.log(`❌ [CREATE MATCH] Set ${setData.setNumber}: invalid scores count`);
-          return c.json({
-            error: "Invalid scores count",
-            message: `Set ${setData.setNumber} must have exactly 2 scores`
-          }, 400);
+          return c.json(
+            {
+              error: "Invalid scores count",
+              message: `Set ${setData.setNumber} must have exactly 2 scores`,
+            },
+            400,
+          );
         }
 
-        const scoreUserIds = setData.scores.map(s => s.userId);
+        const scoreUserIds = setData.scores.map((s) => s.userId);
         console.log(`✅ [CREATE MATCH] Set ${setData.setNumber} user IDs:`, scoreUserIds);
-        if (!userIds.every(uid => scoreUserIds.includes(uid))) {
-          console.log(`❌ [CREATE MATCH] Set ${setData.setNumber}: score participants don't match match participants`);
-          return c.json({
-            error: "Invalid score participants",
-            message: `Set ${setData.setNumber} scores must match match participants`
-          }, 400);
+        if (!userIds.every((uid) => scoreUserIds.includes(uid))) {
+          console.log(
+            `❌ [CREATE MATCH] Set ${setData.setNumber}: score participants don't match match participants`,
+          );
+          return c.json(
+            {
+              error: "Invalid score participants",
+              message: `Set ${setData.setNumber} scores must match match participants`,
+            },
+            400,
+          );
         }
       }
 
       // Log scores (pas de validation stricte sur les règles de ping-pong)
       for (const setData of validated.sets) {
-        const scores = setData.scores.map(s => s.score).sort((a, b) => b - a);
+        const scores = setData.scores.map((s) => s.score).sort((a, b) => b - a);
         const [higher, lower] = scores;
         console.log(`✅ [CREATE MATCH] Set ${setData.setNumber} scores: ${higher}-${lower}`);
       }
@@ -123,29 +151,35 @@ export const createMatch = async (c: Context<HonoContext>) => {
     const result = await db.transaction(async (tx) => {
       console.log("🔄 [CREATE MATCH] Creating match in DB...");
       // Create match
-      const [createdMatch] = await tx.insert(match).values({
-        createdBy: validated.createdBy,
-        status: validated.status,
-        createdAt: new Date(validated.createdAt),
-        startedAt: validated.startedAt ? new Date(validated.startedAt) : undefined,
-        finishedAt: validated.finishedAt ? new Date(validated.finishedAt) : undefined,
-      }).returning();
+      const [createdMatch] = await tx
+        .insert(match)
+        .values({
+          createdBy: validated.createdBy,
+          status: validated.status,
+          createdAt: new Date(validated.createdAt),
+          startedAt: validated.startedAt ? new Date(validated.startedAt) : undefined,
+          finishedAt: validated.finishedAt ? new Date(validated.finishedAt) : undefined,
+        })
+        .returning();
       console.log("✅ [CREATE MATCH] Match created with ID:", createdMatch.id);
 
       console.log("🔄 [CREATE MATCH] Creating participants...");
       // Create participants in batch
-      const participants = await tx.insert(matchParticipant).values(
-        validated.participants.map(participant => ({
-          matchId: createdMatch.id,
-          userId: participant.userId,
-          side: participant.side,
-          isWinner: participant.isWinner || false,
-        }))
-      ).returning();
+      const participants = await tx
+        .insert(matchParticipant)
+        .values(
+          validated.participants.map((participant) => ({
+            matchId: createdMatch.id,
+            userId: participant.userId,
+            side: participant.side,
+            isWinner: participant.isWinner || false,
+          })),
+        )
+        .returning();
       console.log("✅ [CREATE MATCH] Participants created:", participants.length);
 
       // Create lookup map for participants
-      const participantMap = new Map(participants.map(p => [p.userId, p]));
+      const participantMap = new Map(participants.map((p) => [p.userId, p]));
 
       let matchSets: Array<typeof set.$inferSelect> = [];
       let setScores: Array<typeof setScore.$inferSelect> = [];
@@ -153,7 +187,7 @@ export const createMatch = async (c: Context<HonoContext>) => {
       // Créer les sets et scores seulement s'il y en a
       if (validated.sets.length > 0) {
         // Prepare all sets and scores for batch insert
-        const setsToInsert = validated.sets.map(setData => ({
+        const setsToInsert = validated.sets.map((setData) => ({
           matchId: createdMatch.id,
           setNumber: setData.setNumber as 1 | 2 | 3 | 4 | 5,
         }));
@@ -163,7 +197,9 @@ export const createMatch = async (c: Context<HonoContext>) => {
         console.log("✅ [CREATE MATCH] Sets created:", matchSets.length);
 
         // Create lookup map for sets
-        const setMap = new Map<number, typeof matchSets[0]>(matchSets.map(s => [s.setNumber, s]));
+        const setMap = new Map<number, (typeof matchSets)[0]>(
+          matchSets.map((s) => [s.setNumber, s]),
+        );
 
         // Prepare all scores for batch insert
         const scoresToInsert: Array<NewSetScore> = [];
@@ -194,7 +230,7 @@ export const createMatch = async (c: Context<HonoContext>) => {
 
       console.log("🔄 [CREATE MATCH] Fetching participants with user details...");
       // Fetch participants with user details
-      const participantIds = participants.map(p => p.id);
+      const participantIds = participants.map((p) => p.id);
       const participantsWithUsers = await tx
         .select({
           id: matchParticipant.id,
@@ -236,24 +272,33 @@ export const createMatch = async (c: Context<HonoContext>) => {
     // Handle specific database errors
     if (errorMessage.includes("foreign key constraint")) {
       console.error("💥 [CREATE MATCH] Foreign key constraint violation");
-      return c.json({
-        error: "Invalid reference",
-        message: "One or more referenced entities (user, match) do not exist"
-      }, 400);
+      return c.json(
+        {
+          error: "Invalid reference",
+          message: "One or more referenced entities (user, match) do not exist",
+        },
+        400,
+      );
     }
 
     if (errorMessage.includes("unique constraint")) {
       console.error("💥 [CREATE MATCH] Unique constraint violation");
-      return c.json({
-        error: "Duplicate entry",
-        message: "A participant is already registered for this match"
-      }, 409);
+      return c.json(
+        {
+          error: "Duplicate entry",
+          message: "A participant is already registered for this match",
+        },
+        409,
+      );
     }
 
     console.error("💥 [CREATE MATCH] Returning 500 internal server error");
-    return c.json({
-      error: "Internal server error",
-      message: errorMessage
-    }, 500);
+    return c.json(
+      {
+        error: "Internal server error",
+        message: errorMessage,
+      },
+      500,
+    );
   }
 };

@@ -22,9 +22,7 @@ const setSchema = z.object({
     .int()
     .min(1, "Set number must be at least 1")
     .max(5, "Set number cannot exceed 5"),
-  scores: z
-    .array(setScoreSchema)
-    .length(2, "Each set must have exactly 2 scores"),
+  scores: z.array(setScoreSchema).length(2, "Each set must have exactly 2 scores"),
 });
 
 export const createMatchValidator = z
@@ -34,23 +32,13 @@ export const createMatchValidator = z
       message: "Status must be 'scheduled', 'ongoing', or 'finished'",
     }),
     createdAt: z.string().datetime("Invalid datetime format for createdAt"),
-    startedAt: z
-      .string()
-      .datetime("Invalid datetime format for startedAt")
-      .optional(),
-    finishedAt: z
-      .string()
-      .datetime("Invalid datetime format for finishedAt")
-      .optional(),
+    startedAt: z.string().datetime("Invalid datetime format for startedAt").optional(),
+    finishedAt: z.string().datetime("Invalid datetime format for finishedAt").optional(),
     participants: z
       .array(participantSchema)
       .min(2, "Must have at least 2 participants")
       .max(2, "Cannot have more than 2 participants"),
-    sets: z
-      .array(setSchema)
-      .max(5, "Cannot have more than 5 sets")
-      .optional()
-      .default([]),
+    sets: z.array(setSchema).max(5, "Cannot have more than 5 sets").optional().default([]),
   })
   .refine(
     (data) => {
@@ -61,7 +49,7 @@ export const createMatchValidator = z
     {
       message: "Participants must have unique user IDs",
       path: ["participants"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -72,7 +60,7 @@ export const createMatchValidator = z
     {
       message: "Must have exactly one home and one away participant",
       path: ["participants"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -83,7 +71,7 @@ export const createMatchValidator = z
     {
       message: "Can have at most one winner",
       path: ["participants"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -95,7 +83,7 @@ export const createMatchValidator = z
     {
       message: "Set numbers must be sequential starting from 1",
       path: ["sets"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -112,7 +100,7 @@ export const createMatchValidator = z
     {
       message: "Each set must have scores for all participants",
       path: ["sets"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -135,7 +123,7 @@ export const createMatchValidator = z
       message:
         "Status must be consistent with startedAt/finishedAt timestamps (scheduled: no dates, ongoing: startedAt only, finished: both dates)",
       path: ["status"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -151,7 +139,7 @@ export const createMatchValidator = z
     {
       message: "Timestamps must be in chronological order",
       path: ["finishedAt"],
-    }
+    },
   );
 
 export const updateMatchValidator = z
@@ -161,16 +149,8 @@ export const updateMatchValidator = z
         message: "Status must be 'scheduled', 'ongoing', or 'finished'",
       })
       .optional(),
-    startedAt: z
-      .string()
-      .datetime("Invalid datetime format for startedAt")
-      .nullable()
-      .optional(),
-    finishedAt: z
-      .string()
-      .datetime("Invalid datetime format for finishedAt")
-      .nullable()
-      .optional(),
+    startedAt: z.string().datetime("Invalid datetime format for startedAt").nullable().optional(),
+    finishedAt: z.string().datetime("Invalid datetime format for finishedAt").nullable().optional(),
   })
   .refine(
     (data) => {
@@ -188,20 +168,18 @@ export const updateMatchValidator = z
     {
       message: "startedAt must be before or equal to finishedAt",
       path: ["finishedAt"],
-    }
+    },
   )
   .refine(
     (data) => {
       // At least one field must be provided
       return (
-        data.status !== undefined ||
-        data.startedAt !== undefined ||
-        data.finishedAt !== undefined
+        data.status !== undefined || data.startedAt !== undefined || data.finishedAt !== undefined
       );
     },
     {
       message: "At least one field must be provided for update",
-    }
+    },
   );
 
 export const updateMatchScoresValidator = z
@@ -220,7 +198,7 @@ export const updateMatchScoresValidator = z
     {
       message: "Set numbers must be unique",
       path: ["sets"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -233,7 +211,7 @@ export const updateMatchScoresValidator = z
     {
       message: "Each set must have scores for exactly 2 unique participants",
       path: ["sets"],
-    }
+    },
   );
 
 export const listMatchesQueryValidator = z.object({

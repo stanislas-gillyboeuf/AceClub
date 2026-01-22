@@ -13,11 +13,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
       return c.json({ error: "Match ID is required" }, 400);
     }
 
-    const matchData = await db
-      .select()
-      .from(match)
-      .where(eq(match.id, matchId))
-      .limit(1);
+    const matchData = await db.select().from(match).where(eq(match.id, matchId)).limit(1);
 
     if (matchData.length === 0) {
       return c.json({ error: "Match not found" }, 404);
@@ -68,18 +64,21 @@ export const getMatch = async (c: Context<HonoContext>) => {
     ]);
 
     // Group scores by set efficiently
-    const setsMap = new Map<string, {
-      id: string;
-      matchId: string;
-      setNumber: number;
-      createdAt: Date;
-      scores: Array<{
-        participantId: string;
-        userId: string;
-        side: "home" | "away";
-        games: number;
-      }>;
-    }>();
+    const setsMap = new Map<
+      string,
+      {
+        id: string;
+        matchId: string;
+        setNumber: number;
+        createdAt: Date;
+        scores: Array<{
+          participantId: string;
+          userId: string;
+          side: "home" | "away";
+          games: number;
+        }>;
+      }
+    >();
 
     for (const row of setsData) {
       if (!setsMap.has(row.setId)) {

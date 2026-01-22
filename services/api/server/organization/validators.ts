@@ -60,9 +60,7 @@ export const listMembersValidator = z.object({
   sortBy: z.string().optional(),
   sortDirection: z.enum(["asc", "desc"]).optional(),
   filterField: z.string().optional(),
-  filterOperator: z
-    .enum(["eq", "ne", "gt", "gte", "lt", "lte", "contains"])
-    .optional(),
+  filterOperator: z.enum(["eq", "ne", "gt", "gte", "lt", "lte", "contains"]).optional(),
   filterValue: z.string().optional(),
 });
 

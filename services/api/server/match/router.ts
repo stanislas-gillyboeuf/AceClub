@@ -8,12 +8,7 @@ import {
   updateMatchScoresValidator,
   matchIdValidator,
 } from "./validators";
-import {
-  createMatch,
-  updateMatch,
-  updateMatchScores,
-  deleteMatch,
-} from "./mutations";
+import { createMatch, updateMatch, updateMatchScores, deleteMatch } from "./mutations";
 import { getMatch, listMatches } from "./queries";
 import { z } from "zod";
 
@@ -23,14 +18,23 @@ const loggedValidator = (schema: z.ZodSchema, label: string) => {
     if (!result.success) {
       console.error(`❌ [${label}] Zod validation failed`);
       console.error(`📥 [${label}] Input data:`, JSON.stringify(result.data, null, 2));
-      console.error(`❌ [${label}] Validation errors:`, JSON.stringify((result.error as z.ZodError).format(), null, 2));
-      console.error(`❌ [${label}] Flattened errors:`, JSON.stringify((result.error as z.ZodError).flatten(), null, 2));
+      console.error(
+        `❌ [${label}] Validation errors:`,
+        JSON.stringify((result.error as z.ZodError).format(), null, 2),
+      );
+      console.error(
+        `❌ [${label}] Flattened errors:`,
+        JSON.stringify((result.error as z.ZodError).flatten(), null, 2),
+      );
 
-      return c.json({
-        error: "Validation error",
-        message: "Invalid request data",
-        details: (result.error as z.ZodError).flatten()
-      }, 400);
+      return c.json(
+        {
+          error: "Validation error",
+          message: "Invalid request data",
+          details: (result.error as z.ZodError).flatten(),
+        },
+        400,
+      );
     }
     console.log(`✅ [${label}] Zod validation passed`);
   });
@@ -52,17 +56,13 @@ matchRouter.post("/", loggedValidator(createMatchValidator, "CREATE MATCH"), cre
 matchRouter.get("/:id", getMatch);
 
 // Update match status and timestamps
-matchRouter.put(
-  "/:id",
-  loggedValidator(updateMatchValidator, "UPDATE MATCH"),
-  updateMatch
-);
+matchRouter.put("/:id", loggedValidator(updateMatchValidator, "UPDATE MATCH"), updateMatch);
 
 // Update match scores (dedicated endpoint for score updates)
 matchRouter.put(
   "/:id/scores",
   loggedValidator(updateMatchScoresValidator, "UPDATE MATCH SCORES"),
-  updateMatchScores
+  updateMatchScores,
 );
 
 // Delete match and all related data

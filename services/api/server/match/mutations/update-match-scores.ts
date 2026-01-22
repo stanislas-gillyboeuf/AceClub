@@ -35,8 +35,10 @@ export const updateMatchScores = async (c: Context<HonoContext>) => {
       }
 
       // Get all sets and participants in parallel
-      const setNumbers = validated.sets.map(s => s.setNumber as 1 | 2 | 3 | 4 | 5);
-      const userIds = [...new Set(validated.sets.flatMap(s => s.scores.map(score => score.userId)))];
+      const setNumbers = validated.sets.map((s) => s.setNumber as 1 | 2 | 3 | 4 | 5);
+      const userIds = [
+        ...new Set(validated.sets.flatMap((s) => s.scores.map((score) => score.userId))),
+      ];
 
       const [existingSets, participants] = await Promise.all([
         tx
@@ -45,31 +47,28 @@ export const updateMatchScores = async (c: Context<HonoContext>) => {
           .where(
             and(
               eq(set.matchId, matchId),
-              inArray(set.setNumber, setNumbers as readonly (1 | 2 | 3 | 4 | 5)[])
-            )
+              inArray(set.setNumber, setNumbers as readonly (1 | 2 | 3 | 4 | 5)[]),
+            ),
           ),
         tx
           .select()
           .from(matchParticipant)
           .where(
-            and(
-              eq(matchParticipant.matchId, matchId),
-              inArray(matchParticipant.userId, userIds)
-            )
+            and(eq(matchParticipant.matchId, matchId), inArray(matchParticipant.userId, userIds)),
           ),
       ]);
 
       // Validate all sets exist
       for (const setData of validated.sets) {
-        const setExists = existingSets.find(s => s.setNumber === setData.setNumber);
+        const setExists = existingSets.find((s) => s.setNumber === setData.setNumber);
         if (!setExists) {
           throw new Error(`Set ${setData.setNumber} not found in match`);
         }
       }
 
       // Create lookup maps for better performance
-      const setMap = new Map(existingSets.map(s => [s.setNumber, s]));
-      const participantMap = new Map(participants.map(p => [p.userId, p]));
+      const setMap = new Map(existingSets.map((s) => [s.setNumber, s]));
+      const participantMap = new Map(participants.map((p) => [p.userId, p]));
 
       // Validate all participants exist
       for (const userId of userIds) {
@@ -79,7 +78,7 @@ export const updateMatchScores = async (c: Context<HonoContext>) => {
       }
 
       // Get all existing scores for these sets in one query
-      const setIds = existingSets.map(s => s.id);
+      const setIds = existingSets.map((s) => s.id);
       const existingScores = await tx
         .select()
         .from(setScore)
@@ -87,7 +86,7 @@ export const updateMatchScores = async (c: Context<HonoContext>) => {
 
       // Create a map of existing scores: setId-participantId -> scoreId
       const existingScoresMap = new Map(
-        existingScores.map(score => [`${score.setId}-${score.participantId}`, score.id])
+        existingScores.map((score) => [`${score.setId}-${score.participantId}`, score.id]),
       );
 
       // Prepare batch operations
@@ -136,10 +135,7 @@ export const updateMatchScores = async (c: Context<HonoContext>) => {
 
       // Batch insert new scores
       if (scoresToInsert.length > 0) {
-        const inserted = await tx
-          .insert(setScore)
-          .values(scoresToInsert)
-          .returning();
+        const inserted = await tx.insert(setScore).values(scoresToInsert).returning();
         updatedScores.push(...inserted);
       }
 
@@ -149,7 +145,7 @@ export const updateMatchScores = async (c: Context<HonoContext>) => {
     return c.json({
       success: true,
       updatedScoresCount: result.length,
-      updatedScores: result
+      updatedScores: result,
     });
   } catch (error) {
     const errorMessage = (error as Error).message;

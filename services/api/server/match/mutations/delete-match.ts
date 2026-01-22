@@ -26,12 +26,9 @@ export const deleteMatch = async (c: Context<HonoContext>) => {
       }
 
       // Get all sets for this match (single query)
-      const matchSets = await tx
-        .select({ id: set.id })
-        .from(set)
-        .where(eq(set.matchId, matchId));
+      const matchSets = await tx.select({ id: set.id }).from(set).where(eq(set.matchId, matchId));
 
-      const setIds = matchSets.map(s => s.id);
+      const setIds = matchSets.map((s) => s.id);
 
       // Delete in correct order (respecting foreign key constraints)
       // 1. Delete set scores first (depends on sets)
