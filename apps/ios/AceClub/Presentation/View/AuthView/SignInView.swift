@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import GoogleSignIn
+import GoogleSignInSwift
 
 struct SignInView: View {
     @Environment(AuthViewModel.self) private var authViewModel
@@ -110,6 +112,40 @@ struct SignInView: View {
                     .buttonStyle(.borderedProminent)
                     .disabled(authViewModel.isLoading || !isFormValid)
 
+                    // Divider
+                    HStack {
+                        Rectangle()
+                            .frame(height: 1)
+                            .foregroundColor(.secondary.opacity(0.3))
+                        Text("or")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        Rectangle()
+                            .frame(height: 1)
+                            .foregroundColor(.secondary.opacity(0.3))
+                    }
+                    .padding(.vertical, 8)
+
+                    // Google Sign-In Button
+                    Button(action: handleGoogleSignIn) {
+                        HStack(spacing: 12) {
+                            GoogleLogoView()
+                                .frame(width: 20, height: 20)
+                            Text("Continue with Google")
+                                .fontWeight(.medium)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .foregroundColor(.primary)
+                        .background(Color(.systemBackground))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                        )
+                        .cornerRadius(8)
+                    }
+                    .disabled(authViewModel.isLoading)
+
                     // Sign Up Link
                     HStack {
                         Text("Don't have an account?")
@@ -137,6 +173,34 @@ struct SignInView: View {
     private func handleSignIn() {
         Task {
             await authViewModel.signIn(email: email, password: password, rememberMe: rememberMe)
+        }
+    }
+
+    private func handleGoogleSignIn() {
+        Task {
+            await authViewModel.signInWithGoogle()
+        }
+    }
+}
+
+// MARK: - Google Logo View
+struct GoogleLogoView: View {
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white)
+
+            // Google "G" logo approximation using SF Symbols
+            // For production, replace with actual Google logo asset
+            Text("G")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [.red, .yellow, .green, .blue],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
         }
     }
 }

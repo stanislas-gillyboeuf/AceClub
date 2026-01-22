@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import GoogleSignIn
 
 @main
 struct AceClubApp: App {
@@ -15,6 +16,10 @@ struct AceClubApp: App {
         WindowGroup {
             ContentView()
                 .environment(authViewModel)
+                .onOpenURL { url in
+                    // Handle Google Sign-In callback URL
+                    GoogleSignInManager.shared.handle(url)
+                }
         }
     }
 }

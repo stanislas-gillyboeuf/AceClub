@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import GoogleSignIn
+import GoogleSignInSwift
 
 struct SignUpView: View {
     @Environment(AuthViewModel.self) private var authViewModel
@@ -148,6 +150,40 @@ struct SignUpView: View {
                     .buttonStyle(.borderedProminent)
                     .disabled(authViewModel.isLoading || !isFormValid)
 
+                    // Divider
+                    HStack {
+                        Rectangle()
+                            .frame(height: 1)
+                            .foregroundColor(.secondary.opacity(0.3))
+                        Text("or")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        Rectangle()
+                            .frame(height: 1)
+                            .foregroundColor(.secondary.opacity(0.3))
+                    }
+                    .padding(.vertical, 8)
+
+                    // Google Sign-In Button
+                    Button(action: handleGoogleSignIn) {
+                        HStack(spacing: 12) {
+                            GoogleLogoView()
+                                .frame(width: 20, height: 20)
+                            Text("Continue with Google")
+                                .fontWeight(.medium)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .foregroundColor(.primary)
+                        .background(Color(.systemBackground))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                        )
+                        .cornerRadius(8)
+                    }
+                    .disabled(authViewModel.isLoading)
+
                     // Sign In Link
                     HStack {
                         Text("Already have an account?")
@@ -181,6 +217,15 @@ struct SignUpView: View {
 
         Task {
             await authViewModel.signUp(name: name, email: email, password: password)
+            if authViewModel.isAuthenticated {
+                dismiss()
+            }
+        }
+    }
+
+    private func handleGoogleSignIn() {
+        Task {
+            await authViewModel.signInWithGoogle()
             if authViewModel.isAuthenticated {
                 dismiss()
             }

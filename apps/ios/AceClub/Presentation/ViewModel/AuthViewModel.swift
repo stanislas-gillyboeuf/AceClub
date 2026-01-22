@@ -7,6 +7,7 @@
 
 import Foundation
 import Observation
+import UIKit
 
 @Observable
 class AuthViewModel {
@@ -19,6 +20,7 @@ class AuthViewModel {
     // MARK: - Use Cases
     private let signUpUseCase = SignUpUseCase()
     private let signInUseCase = SignInUseCase()
+    private let signInWithGoogleUseCase = SignInWithGoogleUseCase()
     private let signOutUseCase = SignOutUseCase()
     private let checkSessionUseCase = CheckSessionUseCase()
 
@@ -86,6 +88,37 @@ class AuthViewModel {
             let user = try await signInUseCase.execute(email: email, password: password, rememberMe: rememberMe)
             currentUser = user
             isAuthenticated = true
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+
+        isLoading = false
+    }
+
+    // MARK: - Sign In with Google
+    @MainActor
+    func signInWithGoogle() async {
+        isLoading = true
+        errorMessage = nil
+
+        // Get the root view controller to present Google Sign-In
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            errorMessage = "Unable to present Google Sign-In"
+            isLoading = false
+            return
+        }
+
+        do {
+            let user = try await signInWithGoogleUseCase.execute(presentingViewController: rootViewController)
+            currentUser = user
+            isAuthenticated = true
+        } catch let error as GoogleSignInError {
+            if case .cancelled = error {
+                // User cancelled, don't show error
+            } else {
+                errorMessage = error.localizedDescription
+            }
         } catch {
             errorMessage = error.localizedDescription
         }

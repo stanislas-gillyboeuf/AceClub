@@ -142,6 +142,51 @@ class AuthAPIDataSource {
         }
     }
 
+    // MARK: - Sign In with Google (Better Auth callback)
+    func signInWithGoogle(idToken: String, accessToken: String) async throws -> AuthResponseDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/auth/sign-in/social") else {
+            throw AuthError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("aceclub://", forHTTPHeaderField: "Origin")
+
+        let body: [String: Any] = [
+            "provider": "google",
+            "idToken": [
+                "token": idToken,
+                "accessToken": accessToken
+            ]
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        do {
+            let (data, response) = try await session.data(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw AuthError.invalidResponse
+            }
+
+            if httpResponse.statusCode != 200 {
+                if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
+                   let message = errorResponse["message"] {
+                    throw AuthError.serverError(message)
+                }
+                throw AuthError.serverError("Google Sign-In failed with status code: \(httpResponse.statusCode)")
+            }
+
+            let authResponse = try JSONDecoder().decode(AuthResponseDTO.self, from: data)
+            return authResponse
+
+        } catch let error as AuthError {
+            throw error
+        } catch {
+            throw AuthError.networkError(error)
+        }
+    }
+
     // MARK: - Get Session
     func getSession() async throws -> SessionResponseDTO {
         guard let url = URL(string: "\(Config.apiBaseURL)/session") else {
