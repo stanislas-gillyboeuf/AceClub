@@ -28,20 +28,14 @@ struct EditMatchScoresView: View {
         NavigationStack {
             Form {
                 Section {
-                    ForEach(editableSets.indices, id: \.self) { index in
+                    ForEach($editableSets) { $set in
                         EditableSetRow(
-                            setNumber: editableSets[index].setNumber,
-                            homeScore: Binding(
-                                get: { editableSets[index].homeScore },
-                                set: { editableSets[index].homeScore = $0 }
-                            ),
-                            awayScore: Binding(
-                                get: { editableSets[index].awayScore },
-                                set: { editableSets[index].awayScore = $0 }
-                            ),
+                            setNumber: set.setNumber,
+                            homeScore: $set.homeScore,
+                            awayScore: $set.awayScore,
                             canRemove: editableSets.count > 1,
                             onRemove: {
-                                removeSet(editableSets[index])
+                                removeSet(set)
                             }
                         )
                     }
