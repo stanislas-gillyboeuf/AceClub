@@ -4,7 +4,6 @@ import { cors } from "hono/cors";
 import { auth } from "./auth";
 import { serverRouter } from "./server/router";
 import type { HonoContext } from "./types/hono";
-import { serve } from "@hono/node-server";
 
 const app = new Hono<HonoContext>();
 
@@ -73,11 +72,5 @@ app.get("/", (c) => c.json({ message: "AceClub API", status: "ok" }));
 
 // Health check
 app.get("/health", (c) => c.json({ status: "ok" }));
-
-
-serve({
-  fetch: app.fetch,
-  port: Number(process.env.PORT) || 3000,
-});
 
 export default app;

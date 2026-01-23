@@ -5,8 +5,7 @@
     "node": "20.x"
   },
   "scripts": {
-    "dev": "bun run --hot index.ts",
-    "build": "tsup",
+    "dev": "bun run --hot dev.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -21,7 +20,6 @@
     "drizzle-orm": "^0.45.1",
     "hono": "^4.11.3",
     "pg": "^8.16.3",
-    "tsup": "^8.5.1",
     "ulid": "^3.0.2"
   },
   "devDependencies": {
