@@ -29,11 +29,7 @@ matchRouter.get("/:id", getMatch);
 matchRouter.put("/:id", zValidator("json", updateMatchValidator), updateMatch);
 
 // Update match scores (dedicated endpoint for score updates)
-matchRouter.put(
-  "/:id/scores",
-  zValidator("json", updateMatchScoresValidator),
-  updateMatchScores,
-);
+matchRouter.put("/:id/scores", zValidator("json", updateMatchScoresValidator), updateMatchScores);
 
 // Delete match and all related data
 matchRouter.delete("/:id", deleteMatch);

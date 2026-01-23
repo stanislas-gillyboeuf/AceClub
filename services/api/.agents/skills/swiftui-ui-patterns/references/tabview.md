@@ -3,6 +3,7 @@
 ## Intent
 
 Use this pattern for a scalable, multi-platform tab architecture with:
+
 - a single source of truth for tab identity and content,
 - platform-specific tab sets and sidebar sections,
 - dynamic tabs sourced from data,
