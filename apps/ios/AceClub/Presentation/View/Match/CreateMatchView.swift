@@ -118,7 +118,7 @@ private struct SetsSection: View {
         } header: {
             Text("Sets")
         } footer: {
-            Text("Un match de ping-pong peut avoir jusqu'à 5 sets. Le score doit être au moins 11 points avec 2 points d'écart.")
+            Text("Un match de ping-pong peut avoir jusqu'à 5 sets.")
                 .font(.caption)
         }
     }
@@ -251,13 +251,8 @@ class CreateMatchViewModel: ObservableObject {
         guard !sets.isEmpty else { return false }
 
         for set in sets {
+            // Vérifier uniquement que les scores sont positifs
             guard set.homeScore >= 0 && set.awayScore >= 0 else { return false }
-
-            let higher = max(set.homeScore, set.awayScore)
-            let lower = min(set.homeScore, set.awayScore)
-
-            if higher < 11 { return false }
-            if higher - lower < 2 { return false }
         }
 
         if status == .ongoing || status == .finished {

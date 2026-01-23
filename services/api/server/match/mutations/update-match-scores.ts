@@ -58,16 +58,25 @@ export const updateMatchScores = async (c: Context<HonoContext>) => {
           ),
       ]);
 
-      // Validate all sets exist
-      for (const setData of validated.sets) {
-        const setExists = existingSets.find((s) => s.setNumber === setData.setNumber);
-        if (!setExists) {
-          throw new Error(`Set ${setData.setNumber} not found in match`);
-        }
+      // Create missing sets if needed
+      const existingSetNumbers = new Set(existingSets.map((s) => s.setNumber));
+      const setsToCreate = validated.sets
+        .filter((s) => !existingSetNumbers.has(s.setNumber))
+        .map((s) => ({
+          matchId,
+          setNumber: s.setNumber,
+        }));
+
+      let newSets: typeof existingSets = [];
+      if (setsToCreate.length > 0) {
+        newSets = await tx.insert(set).values(setsToCreate).returning();
       }
 
+      // Combine existing and new sets
+      const allSets = [...existingSets, ...newSets];
+
       // Create lookup maps for better performance
-      const setMap = new Map(existingSets.map((s) => [s.setNumber, s]));
+      const setMap = new Map(allSets.map((s) => [s.setNumber, s]));
       const participantMap = new Map(participants.map((p) => [p.userId, p]));
 
       // Validate all participants exist
@@ -78,7 +87,7 @@ export const updateMatchScores = async (c: Context<HonoContext>) => {
       }
 
       // Get all existing scores for these sets in one query
-      const setIds = existingSets.map((s) => s.id);
+      const setIds = allSets.map((s) => s.id);
       const existingScores = await tx
         .select()
         .from(setScore)

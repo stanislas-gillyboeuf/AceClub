@@ -78,7 +78,6 @@ class MatchViewModel: ObservableObject {
                 )
             }
 
-            successMessage = "Match démarré avec succès"
             isLoading = false
             return true
         } catch {
@@ -88,7 +87,6 @@ class MatchViewModel: ObservableObject {
         }
     }
 
-    /// Termine un match
     func finishMatch() async -> Bool {
         guard let matchId = matchDetail?.match.id else { return false }
 
@@ -111,7 +109,6 @@ class MatchViewModel: ObservableObject {
                 )
             }
 
-            successMessage = "Match terminé avec succès"
             isLoading = false
             return true
         } catch {
@@ -139,9 +136,7 @@ class MatchViewModel: ObservableObject {
             )
 
             if success {
-                // Reload match to get updated scores
                 await refreshMatch()
-                successMessage = "Scores mis à jour avec succès"
             }
 
             isUpdatingScores = false
@@ -167,7 +162,6 @@ class MatchViewModel: ObservableObject {
 
             if success {
                 matchDetail = nil
-                successMessage = "Match supprimé avec succès"
             }
 
             isDeletingMatch = false
@@ -191,20 +185,16 @@ class MatchViewModel: ObservableObject {
         matchDetail?.match.isFinished ?? false
     }
 
-    /// Indique si le match peut être démarré
     var canStartMatch: Bool {
         matchDetail?.match.isScheduled ?? false
     }
 
-    /// Indique si le match peut être terminé
     var canFinishMatch: Bool {
         matchDetail?.match.isOngoing ?? false
     }
 
-    /// Indique si les scores peuvent être modifiés
     var canEditScores: Bool {
-        guard let match = matchDetail?.match else { return false }
-        return match.isOngoing || match.isScheduled
+        matchDetail?.match.isOngoing ?? false
     }
 
     // MARK: - Helper Methods

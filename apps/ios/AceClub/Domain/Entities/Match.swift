@@ -147,7 +147,7 @@ struct MatchSet: Identifiable {
         return "\(sortedScores[0].games)-\(sortedScores[1].games)"
     }
 
-    /// Indique si le set est terminé
+/*     /// Indique si le set est terminé
     var isCompleted: Bool {
         guard scores.count == 2 else { return false }
         let sortedScores = scores.sorted { $0.games > $1.games }
@@ -157,7 +157,7 @@ struct MatchSet: Identifiable {
         // Un set est terminé si le score le plus élevé est >= 11
         // et qu'il y a au moins 2 points d'écart
         return higher >= 11 && (higher - lower) >= 2
-    }
+    } */
 
     /// Nom du set (ex: "Set 1")
     var displayName: String {

@@ -101,6 +101,15 @@ struct MatchDetailView: View {
         } message: {
             Text(viewModel.errorMessage ?? viewModel.successMessage ?? "")
         }
+        .sheet(isPresented: $showingEditScores) {
+            if let detail = viewModel.matchDetail {
+                EditMatchScoresView(
+                    viewModel: viewModel,
+                    isPresented: $showingEditScores,
+                    matchDetail: detail
+                )
+            }
+        }
         .task {
             await viewModel.loadMatch(matchId: matchId)
         }
@@ -109,16 +118,12 @@ struct MatchDetailView: View {
     private func matchDetailContent(detail: MatchDetail) -> some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Match Status Card
                 matchStatusCard(match: detail.match)
 
-                // Participants Card
                 participantsCard(detail: detail)
 
-                // Sets and Scores Card
                 setsCard(sets: detail.sets)
 
-                // Match Info Card
                 matchInfoCard(match: detail.match)
             }
             .padding()
@@ -168,6 +173,7 @@ struct MatchDetailView: View {
                     .font(.title3)
                     .fontWeight(.bold)
                     .foregroundStyle(.secondary)
+                    .contentTransition(.numericText())
             }
 
             if let home = detail.homeParticipant {
@@ -183,6 +189,7 @@ struct MatchDetailView: View {
         .padding()
         .background(Color(.systemGray6))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .animation(.smooth, value: detail.formattedMatchScore)
     }
 
     private func participantRow(participant: MatchParticipant, isWinner: Bool) -> some View {
@@ -243,6 +250,9 @@ struct MatchDetailView: View {
         .padding()
         .background(Color(.systemGray6))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .onTapGesture {
+            showingEditScores = true
+        }
     }
 
     private func setRow(set: MatchSet) -> some View {
@@ -255,34 +265,36 @@ struct MatchDetailView: View {
                 Spacer()
 
                 Text(set.formattedScore)
-                    .font(.title3)
+                    .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundStyle(set.isCompleted ? .primary : .secondary)
-
-                if set.isCompleted {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                        .font(.caption)
-                }
+                    .foregroundStyle(.primary)
+                    .contentTransition(.numericText())
             }
 
-            // Score details
             if set.scores.count == 2 {
                 HStack(spacing: 20) {
                     ForEach(set.scores.sorted(by: { $0.side.rawValue < $1.side.rawValue })) { score in
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(score.side.displayName)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
+                            if let participant = viewModel.matchDetail?.participants.first(where: { $0.userId == score.userId }) {
+                                Text(participant.user?.name ?? score.side.displayName)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text(score.side.displayName)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
                             Text("\(score.games)")
                                 .font(.caption)
                                 .fontWeight(.semibold)
+                                .contentTransition(.numericText())
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
             }
         }
+        .animation(.smooth, value: set.formattedScore)
     }
 
     private func matchInfoCard(match: Match) -> some View {
@@ -362,11 +374,5 @@ struct MatchDetailView: View {
         case .finished:
             return .green
         }
-    }
-}
-
-#Preview {
-    NavigationStack {
-        MatchDetailView(matchId: "preview-match-id")
     }
 }
