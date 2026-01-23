@@ -22,7 +22,7 @@ export const auth = betterAuth({
       prompt: "select_account consent",
     },
   },
-  trustedOrigins: ["http://localhost:3000", "aceclub://"],
+  trustedOrigins: ["http://localhost:3000", "aceclub://", "https://ace-club-production.up.railway.app"],
 
   plugins: [bearer(), admin(), organization()],
 });
