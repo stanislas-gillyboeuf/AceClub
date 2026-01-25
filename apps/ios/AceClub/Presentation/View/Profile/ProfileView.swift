@@ -67,15 +67,20 @@ struct ProfileView: View {
                             } else {
                                 ForEach(organizationViewModel.organizations) { organization in
                                     let memberRole = getMemberRole(for: organization.id)
-                                    OrganizationCard(
-                                        organization: organization,
-                                        memberRole: memberRole,
-                                        onTap: {
-                                            Task {
-                                                await organizationViewModel.setActiveOrganization(slug: organization.slug)
-                                            }
-                                        }
-                                    )
+
+                                    NavigationLink {
+                                        OrganizationDetailView(
+                                            organizationViewModel: organizationViewModel,
+                                            invitationViewModel: invitationViewModel,
+                                            organization: organization
+                                        )
+                                    } label: {
+                                        OrganizationCard(
+                                            organization: organization,
+                                            memberRole: memberRole,
+                                            onTap: nil
+                                        )
+                                    }
                                     .padding(.horizontal, 20)
                                 }
                             }
@@ -139,7 +144,7 @@ struct ProfileView: View {
     }
 
     private func getMemberRole(for organizationId: String) -> MemberRole? {
-        organizationViewModel.members
+        organizationViewModel.allMembers
             .first { $0.organizationId == organizationId }?
             .role
     }

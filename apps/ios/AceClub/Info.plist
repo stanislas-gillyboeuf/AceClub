@@ -18,8 +18,33 @@
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>Google Sign-In</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.131274084335-lv3cs6n1eqajr5letmpgm57alipg51gb</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>AceClub Deep Links</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>aceclub</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>GIDClientID</key>
+	<string>131274084335-lv3cs6n1eqajr5letmpgm57alipg51gb.apps.googleusercontent.com</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.sports</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -50,30 +75,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>Google Sign-In</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.googleusercontent.apps.131274084335-lv3cs6n1eqajr5letmpgm57alipg51gb</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>AceClub Deep Links</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>aceclub</string>
-			</array>
-		</dict>
-	</array>
-	<key>GIDClientID</key>
-	<string>131274084335-lv3cs6n1eqajr5letmpgm57alipg51gb.apps.googleusercontent.com</string>
 </dict>
 </plist>

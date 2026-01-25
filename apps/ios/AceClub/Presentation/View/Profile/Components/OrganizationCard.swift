@@ -12,36 +12,47 @@ struct OrganizationCard: View {
     }
 
     var body: some View {
-        Button(action: {
-            onTap?()
-        }) {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(organization.name)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.primary)
+        cardContent
+    }
 
-                    if let role = memberRole {
-                        Text(role.displayName)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
+    @ViewBuilder
+    private var cardContent: some View {
+        if let onTap = onTap {
+            Button(action: onTap) {
+                cardView(showChevron: true)
+            }
+            .buttonStyle(PlainButtonStyle())
+        } else {
+            cardView(showChevron: true)
+        }
+    }
 
-                Spacer()
+    private func cardView(showChevron: Bool) -> some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(organization.name)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.primary)
 
-                if onTap != nil {
-                    Image(systemName: "chevron.right")
+                if let role = memberRole {
+                    Text(role.displayName)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(12)
+
+            Spacer()
+
+            if showChevron {
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
         }
-        .buttonStyle(PlainButtonStyle())
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(12)
     }
 }

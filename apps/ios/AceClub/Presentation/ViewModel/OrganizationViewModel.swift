@@ -6,7 +6,8 @@ class OrganizationViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var organizations: [Organization] = []
     @Published var activeOrganization: Organization?
-    @Published var members: [Member] = []
+    @Published var members: [Member] = [] // Members of active organization
+    @Published var allMembers: [Member] = [] // All members of all user's organizations
     @Published var activeMember: Member?
     @Published var activeMemberRole: MemberRole?
     @Published var isLoading = false
@@ -33,6 +34,22 @@ class OrganizationViewModel: ObservableObject {
 
         do {
             organizations = try await listOrganizationsUseCase.execute()
+            // Load all members for all organizations to determine roles
+            await loadAllMembers()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func loadAllMembers() async {
+        do {
+            // Load members for all organizations
+            var tempMembers: [Member] = []
+            for org in organizations {
+                let result = try await listMembersUseCase.execute(organizationId: org.id)
+                tempMembers.append(contentsOf: result.members)
+            }
+            allMembers = tempMembers
         } catch {
             errorMessage = error.localizedDescription
         }
