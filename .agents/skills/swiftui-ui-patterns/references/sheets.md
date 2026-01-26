@@ -76,7 +76,6 @@ struct StatusRow: View {
 ## Required wiring
 
 For the child view to work, a parent view must:
-
 - own the router instance,
 - attach `withSheetDestinations(sheet: $router.presentedSheet)` (or an equivalent `sheet(item:)` handler), and
 - inject it with `.environment(router)` after the sheet modifier so the modal content inherits it.

@@ -25,6 +25,10 @@ class OrganizationViewModel: ObservableObject {
     private let updateMemberRoleUseCase = UpdateMemberRoleUseCase()
     private let leaveOrganizationUseCase = LeaveOrganizationUseCase()
 
+    // MARK: - Refresh Tasks
+    private var refreshOrganizationsTask: Task<Void, Never>?
+    private var refreshActiveMemberTask: Task<Void, Never>?
+
     // MARK: - Organization Methods
 
     func loadOrganizations() async {
@@ -36,6 +40,8 @@ class OrganizationViewModel: ObservableObject {
             organizations = try await listOrganizationsUseCase.execute()
             // Load all members for all organizations to determine roles
             await loadAllMembers()
+        } catch is CancellationError {
+            // Ignore cancellation - this happens during pull-to-refresh
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -50,6 +56,8 @@ class OrganizationViewModel: ObservableObject {
                 tempMembers.append(contentsOf: result.members)
             }
             allMembers = tempMembers
+        } catch is CancellationError {
+            // Ignore cancellation - this happens during pull-to-refresh
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -102,6 +110,8 @@ class OrganizationViewModel: ObservableObject {
         do {
             activeMember = try await getActiveMemberUseCase.execute()
             activeMemberRole = try await getActiveMemberRoleUseCase.execute()
+        } catch is CancellationError {
+            // Ignore cancellation - this happens during pull-to-refresh
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -168,6 +178,59 @@ class OrganizationViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    // MARK: - Refresh Methods (survive SwiftUI task cancellation)
+
+    /// Refresh organizations - survives SwiftUI task cancellation
+    func refreshOrganizations() async {
+        refreshOrganizationsTask?.cancel()
+
+        refreshOrganizationsTask = Task { [weak self] in
+            guard let self else { return }
+            await MainActor.run { self.isLoading = true; self.errorMessage = nil }
+            do {
+                let orgs = try await self.listOrganizationsUseCase.execute()
+                await MainActor.run { self.organizations = orgs }
+                // Load all members for all organizations
+                var tempMembers: [Member] = []
+                for org in orgs {
+                    let result = try await self.listMembersUseCase.execute(organizationId: org.id)
+                    tempMembers.append(contentsOf: result.members)
+                }
+                await MainActor.run { self.allMembers = tempMembers }
+            } catch is CancellationError {
+                // Only ignore if we intentionally cancelled
+            } catch {
+                await MainActor.run { self.errorMessage = error.localizedDescription }
+            }
+            await MainActor.run { self.isLoading = false }
+        }
+
+        await refreshOrganizationsTask?.value
+    }
+
+    /// Refresh active member - survives SwiftUI task cancellation
+    func refreshActiveMember() async {
+        refreshActiveMemberTask?.cancel()
+
+        refreshActiveMemberTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                let member = try await self.getActiveMemberUseCase.execute()
+                let role = try await self.getActiveMemberRoleUseCase.execute()
+                await MainActor.run {
+                    self.activeMember = member
+                    self.activeMemberRole = role
+                }
+            } catch is CancellationError {
+                // Only ignore if we intentionally cancelled
+            } catch {
+                await MainActor.run { self.errorMessage = error.localizedDescription }
+            }
+        }
+
+        await refreshActiveMemberTask?.value
     }
 
     // MARK: - Computed Properties

@@ -114,10 +114,15 @@ struct UserSearchField: View {
                             .fill(Color.blue.opacity(0.2))
                             .frame(width: 32, height: 32)
                             .overlay {
-                                Text(user.initials)
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.blue)
+                                AsyncImage(url: user.imageURL) { image in
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                } placeholder: {
+                                    ProgressView()
+                                }
+                                .frame(width: 32, height: 32)
+                                .clipShape(Circle())
                             }
 
                         VStack(alignment: .leading, spacing: 2) {
@@ -184,11 +189,5 @@ struct UserSearchField: View {
                 }
             }
         }
-    }
-}
-
-#Preview {
-    Form {
-        UserSearchField(label: "Joueur Domicile", selectedUser: .constant(nil))
     }
 }

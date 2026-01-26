@@ -17,6 +17,9 @@ class InvitationViewModel: ObservableObject {
     private let rejectInvitationUseCase = RejectInvitationUseCase()
     private let cancelInvitationUseCase = CancelInvitationUseCase()
 
+    // MARK: - Refresh Tasks
+    private var refreshUserInvitationsTask: Task<Void, Never>?
+
     // MARK: - Organization Invitations (for owners/admins)
 
     func loadOrganizationInvitations(organizationId: String? = nil) async {
@@ -95,9 +98,32 @@ class InvitationViewModel: ObservableObject {
 
         do {
             userInvitations = try await listUserInvitationsUseCase.execute()
+        } catch is CancellationError {
+            // Ignore cancellation - this happens during pull-to-refresh
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    /// Refresh user invitations - survives SwiftUI task cancellation
+    func refreshUserInvitations() async {
+        refreshUserInvitationsTask?.cancel()
+
+        refreshUserInvitationsTask = Task { [weak self] in
+            guard let self else { return }
+            await MainActor.run { self.isLoading = true; self.errorMessage = nil }
+            do {
+                let invitations = try await self.listUserInvitationsUseCase.execute()
+                await MainActor.run { self.userInvitations = invitations }
+            } catch is CancellationError {
+                // Only ignore if we intentionally cancelled
+            } catch {
+                await MainActor.run { self.errorMessage = error.localizedDescription }
+            }
+            await MainActor.run { self.isLoading = false }
+        }
+
+        await refreshUserInvitationsTask?.value
     }
 
     func acceptInvitation(invitationId: String) async -> Member? {

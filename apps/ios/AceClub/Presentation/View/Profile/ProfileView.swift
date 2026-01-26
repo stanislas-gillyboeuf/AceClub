@@ -52,47 +52,27 @@ struct ProfileView: View {
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 20)
                             }
-                            else {
-                                List {
+                            else if !profileViewModel.myMatchIntents.isEmpty {
+                                VStack(spacing: 0) {
                                     ForEach(profileViewModel.myMatchIntents) { intent in
-                                        HStack(alignment: .center, spacing: 12) {
-                                            VStack(alignment: .leading, spacing: 2) {
-                                                if let displayDate = intent.date ?? intent.time {
-                                                    Text(displayDate, style: .date)
-                                                        .font(.subheadline.weight(.medium))
-                                                    Text(displayDate, style: .time)
-                                                        .font(.caption)
-                                                        .foregroundStyle(.secondary)
-                                                } else {
-                                                    Text("Date non renseignée")
-                                                        .font(.subheadline)
-                                                        .foregroundStyle(.secondary)
-                                                }
-                                                Text(durationLabel(intent.duration))
-                                                    .font(.caption2)
-                                                    .foregroundStyle(.tertiary)
-                                            }
-                                            if profileViewModel.deletingIntentId == intent.id {
-                                                Spacer()
-                                                ProgressView()
-                                                    .scaleEffect(0.8)
-                                            }
-                                        }
-                                        .padding(.vertical, 4)
-                                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                            Button(role: .destructive) {
+                                        MatchIntentRow(
+                                            intent: intent,
+                                            isDeleting: profileViewModel.deletingIntentId == intent.id,
+                                            onDelete: {
                                                 Task { await profileViewModel.deleteMatchIntent(id: intent.id) }
-                                            } label: {
-                                                Label("Supprimer", systemImage: "trash")
                                             }
-                                        }
+                                        )
                                         .disabled(profileViewModel.deletingIntentId != nil)
+
+                                        if intent.id != profileViewModel.myMatchIntents.last?.id {
+                                            Divider()
+                                                .padding(.leading, 16)
+                                        }
                                     }
                                 }
-                                .listStyle(.insetGrouped)
-                                .scrollContentBackground(.hidden)
-                                .scrollDisabled(true)
-                                .frame(minHeight: CGFloat(profileViewModel.myMatchIntents.count) * 72)
+                                .background(Color(.systemGray6))
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .padding(.horizontal, 20)
                             }
                             if let msg = profileViewModel.errorMessageIntents {
                                 Text(msg)
@@ -224,11 +204,13 @@ struct ProfileView: View {
                 await invitationViewModel.loadUserInvitations()
             }
             .refreshable {
-                await profileViewModel.getMe()
-                await profileViewModel.loadMyMatchIntents()
-                await organizationViewModel.loadOrganizations()
-                await organizationViewModel.loadActiveMember()
-                await invitationViewModel.loadUserInvitations()
+                // Use refresh methods that survive SwiftUI task cancellation
+                async let userTask: () = profileViewModel.refreshUser()
+                async let intentsTask: () = profileViewModel.refreshMatchIntents()
+                async let orgsTask: () = organizationViewModel.refreshOrganizations()
+                async let memberTask: () = organizationViewModel.refreshActiveMember()
+                async let invitationsTask: () = invitationViewModel.refreshUserInvitations()
+                _ = await (userTask, intentsTask, orgsTask, memberTask, invitationsTask)
             }
             .sheet(isPresented: $showCreateMatchIntentSheet) {
                 CreateMatchIntentSheet(isPresented: $showCreateMatchIntentSheet) {
@@ -236,15 +218,6 @@ struct ProfileView: View {
                 }
             }
         }
-    }
-
-    private func durationLabel(_ minutes: Int) -> String {
-        if minutes >= 60 {
-            let h = minutes / 60
-            let m = minutes % 60
-            return m > 0 ? "\(h) h \(m) min" : "\(h) h"
-        }
-        return "\(minutes) min"
     }
 
     private func getMemberRole(for organizationId: String) -> MemberRole? {
