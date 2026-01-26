@@ -18,6 +18,7 @@ struct RootView: View {
     private enum Tab {
         case feed
         case matches
+        case discover
         case admin
         case profile
     }
@@ -40,6 +41,11 @@ struct RootView: View {
                 }
                 .tag(Tab.matches)
 
+            MatchIntentsView()
+                .tabItem {
+                    Label("Découvrir", systemImage: "list.dash")
+                }
+                .tag(Tab.discover)
             ProfileView(
                 profileViewModel: profileViewModel,
                 organizationViewModel: organizationViewModel,

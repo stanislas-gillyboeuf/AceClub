@@ -5,6 +5,7 @@ struct ProfileView: View {
     @ObservedObject var organizationViewModel: OrganizationViewModel
     @ObservedObject var invitationViewModel: InvitationViewModel
     @Environment(AuthViewModel.self) private var authViewModel
+    @State private var showCreateMatchIntentSheet = false
 
     var body: some View {
         NavigationStack {
@@ -14,6 +15,93 @@ struct ProfileView: View {
                         ProfileHeaderCard(user: user)
                             .padding(.horizontal, 20)
                             .padding(.top, 20)
+
+                        // Section : Mes dispos publiées
+                        VStack(alignment: .leading, spacing: 12) {
+                            ProfileSectionHeader(title: "Mes dispos", icon: "calendar")
+                            Button {
+                                showCreateMatchIntentSheet = true
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.title2)
+                                        .foregroundStyle(.tint)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Publier ma dispo")
+                                            .font(.subheadline.weight(.medium))
+                                            .foregroundStyle(.primary)
+                                        Text("Indique quand tu es dispo pour un match, tu apparaîtras dans le feed.")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                            .multilineTextAlignment(.leading)
+                                    }
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(.tertiary)
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
+                                .background(Color(.systemGray6))
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.horizontal, 20)
+                            if profileViewModel.isLoadingIntents {
+                                ProgressView()
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 20)
+                            }
+                            else {
+                                List {
+                                    ForEach(profileViewModel.myMatchIntents) { intent in
+                                        HStack(alignment: .center, spacing: 12) {
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                if let displayDate = intent.date ?? intent.time {
+                                                    Text(displayDate, style: .date)
+                                                        .font(.subheadline.weight(.medium))
+                                                    Text(displayDate, style: .time)
+                                                        .font(.caption)
+                                                        .foregroundStyle(.secondary)
+                                                } else {
+                                                    Text("Date non renseignée")
+                                                        .font(.subheadline)
+                                                        .foregroundStyle(.secondary)
+                                                }
+                                                Text(durationLabel(intent.duration))
+                                                    .font(.caption2)
+                                                    .foregroundStyle(.tertiary)
+                                            }
+                                            if profileViewModel.deletingIntentId == intent.id {
+                                                Spacer()
+                                                ProgressView()
+                                                    .scaleEffect(0.8)
+                                            }
+                                        }
+                                        .padding(.vertical, 4)
+                                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                            Button(role: .destructive) {
+                                                Task { await profileViewModel.deleteMatchIntent(id: intent.id) }
+                                            } label: {
+                                                Label("Supprimer", systemImage: "trash")
+                                            }
+                                        }
+                                        .disabled(profileViewModel.deletingIntentId != nil)
+                                    }
+                                }
+                                .listStyle(.insetGrouped)
+                                .scrollContentBackground(.hidden)
+                                .scrollDisabled(true)
+                                .frame(minHeight: CGFloat(profileViewModel.myMatchIntents.count) * 72)
+                            }
+                            if let msg = profileViewModel.errorMessageIntents {
+                                Text(msg)
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                                    .padding(.horizontal, 20)
+                            }
+                        }
+                        .padding(.bottom, 8)
 
                         VStack(alignment: .leading, spacing: 12) {
                             ProfileSectionHeader(
@@ -130,17 +218,33 @@ struct ProfileView: View {
             .navigationTitle("Mon Profil")
             .task {
                 await profileViewModel.getMe()
+                await profileViewModel.loadMyMatchIntents()
                 await organizationViewModel.loadOrganizations()
                 await organizationViewModel.loadActiveMember()
                 await invitationViewModel.loadUserInvitations()
             }
             .refreshable {
                 await profileViewModel.getMe()
+                await profileViewModel.loadMyMatchIntents()
                 await organizationViewModel.loadOrganizations()
                 await organizationViewModel.loadActiveMember()
                 await invitationViewModel.loadUserInvitations()
             }
+            .sheet(isPresented: $showCreateMatchIntentSheet) {
+                CreateMatchIntentSheet(isPresented: $showCreateMatchIntentSheet) {
+                    Task { await profileViewModel.loadMyMatchIntents() }
+                }
+            }
         }
+    }
+
+    private func durationLabel(_ minutes: Int) -> String {
+        if minutes >= 60 {
+            let h = minutes / 60
+            let m = minutes % 60
+            return m > 0 ? "\(h) h \(m) min" : "\(h) h"
+        }
+        return "\(minutes) min"
     }
 
     private func getMemberRole(for organizationId: String) -> MemberRole? {

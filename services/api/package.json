@@ -10,7 +10,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "prepush": "bun run lint && bun run format:check && bun run typecheck"
+    "prepush": "bun run lint && bun run format:check && bun run typecheck",
+    "drizzle:seed": "tsx ./scripts/seed.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.8",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "@faker-js/faker": "^10.2.0",
     "@types/bun": "latest",
     "@types/pg": "^8.16.0",
     "@typescript-eslint/eslint-plugin": "^8.53.0",

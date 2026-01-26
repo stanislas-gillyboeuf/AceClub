@@ -43,6 +43,7 @@ enum ValidationError: Error, LocalizedError {
     case emptyName
     case invalidEmail
     case passwordTooShort
+    case invalidSwipeAction
 
     var errorDescription: String? {
         switch self {
@@ -52,6 +53,8 @@ enum ValidationError: Error, LocalizedError {
             return "Please enter a valid email address"
         case .passwordTooShort:
             return "Password must be at least 8 characters"
+        case .invalidSwipeAction:
+            return "Action must be \"like\" or \"pass\""
         }
     }
 }
