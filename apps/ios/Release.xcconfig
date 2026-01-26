@@ -1,0 +1,5 @@
+// Release Configuration
+// Variables for production environment
+
+API_BASE_URL = https:/$()/ace-club-production.up.railway.app
+APP_ENV = production
