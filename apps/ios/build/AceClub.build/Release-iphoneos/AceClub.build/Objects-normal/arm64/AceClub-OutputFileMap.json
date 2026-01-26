@@ -1,0 +1,696 @@
+{
+  "" : {
+    "const-values" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AceClub-primary.swiftconstvalues",
+    "dependencies" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AceClub-primary.d",
+    "diagnostics" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AceClub-primary.dia",
+    "emit-module-dependencies" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AceClub-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AceClub-primary-emit-module.dia",
+    "pch" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AceClub-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AceClub-primary.swiftdeps"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Core/APIClient.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/APIClient.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/APIClient.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/APIClient.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Core/AceClubApp.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AceClubApp.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AceClubApp.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AceClubApp.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Core/AppConfig.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AppConfig.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AppConfig.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AppConfig.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Core/Config.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Config.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Config.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Config.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Core/ContentView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ContentView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Core/GoogleSignInManager.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GoogleSignInManager.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GoogleSignInManager.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GoogleSignInManager.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Core/KeychainManager.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/KeychainManager.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/KeychainManager.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/KeychainManager.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Core/Utils/DateFormatter+Extension.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DateFormatter+Extension.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DateFormatter+Extension.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DateFormatter+Extension.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/DTOs/AuthDTO.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthDTO.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthDTO.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthDTO.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/DTOs/InvitationDTO.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationDTO.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationDTO.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationDTO.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/DTOs/MatchDTO.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchDTO.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchDTO.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchDTO.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/DTOs/MatchIntentDTO.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentDTO.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentDTO.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentDTO.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/DTOs/MemberDTO.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MemberDTO.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MemberDTO.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MemberDTO.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/DTOs/OrganizationDTO.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationDTO.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationDTO.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationDTO.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/DTOs/UserDTO.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserDTO.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserDTO.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserDTO.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/DataSources/AdminAPIDataSource.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminAPIDataSource.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminAPIDataSource.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminAPIDataSource.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/DataSources/AuthAPIDataSource.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthAPIDataSource.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthAPIDataSource.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthAPIDataSource.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/DataSources/InvitationAPIDataSource.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationAPIDataSource.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationAPIDataSource.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationAPIDataSource.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/DataSources/MatchAPIDataSource.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchAPIDataSource.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchAPIDataSource.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchAPIDataSource.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/DataSources/MatchIntentAPIDataSource.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentAPIDataSource.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentAPIDataSource.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentAPIDataSource.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/DataSources/OrganizationAPIDataSource.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationAPIDataSource.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationAPIDataSource.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationAPIDataSource.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/DataSources/UserAPIDataSource.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserAPIDataSource.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserAPIDataSource.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserAPIDataSource.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Mappers/AuthMapper.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthMapper.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthMapper.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthMapper.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Mappers/InvitationMapper.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationMapper.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationMapper.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationMapper.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Mappers/MatchIntentMapper.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentMapper.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentMapper.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentMapper.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Mappers/MatchMapper.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchMapper.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchMapper.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchMapper.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Mappers/MemberMapper.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MemberMapper.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MemberMapper.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MemberMapper.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Mappers/OrganizationMapper.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationMapper.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationMapper.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationMapper.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Mappers/SessionMapper.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SessionMapper.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SessionMapper.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SessionMapper.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Mappers/UserMapper.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserMapper.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserMapper.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserMapper.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Repositories/AdminRepository.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminRepository.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminRepository.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminRepository.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Repositories/AuthRepository.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthRepository.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthRepository.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthRepository.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Repositories/InvitationRepository.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationRepository.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationRepository.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationRepository.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Repositories/MatchIntentRepository.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentRepository.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentRepository.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentRepository.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Repositories/MatchRepository.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchRepository.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchRepository.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchRepository.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Repositories/OrganizationRepository.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationRepository.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationRepository.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationRepository.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Data/Repositories/UserRepository.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserRepository.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserRepository.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserRepository.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/Entities/AuthSession.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthSession.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthSession.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthSession.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/Entities/Invitation.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Invitation.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Invitation.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Invitation.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/Entities/ListMembersResult.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMembersResult.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMembersResult.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMembersResult.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/Entities/ListUsersResult.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListUsersResult.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListUsersResult.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListUsersResult.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/Entities/Match.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Match.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Match.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Match.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/Entities/MatchIntent.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntent.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntent.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntent.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/Entities/Member.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Member.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Member.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Member.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/Entities/Organization.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Organization.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Organization.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Organization.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/Entities/Session.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Session.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Session.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/Session.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/Entities/User.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/User.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/User.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/User.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AdminUseCases/AdminBanUserUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminBanUserUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminBanUserUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminBanUserUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AdminUseCases/AdminCreateUserUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminCreateUserUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminCreateUserUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminCreateUserUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AdminUseCases/AdminListUserSessionsUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminListUserSessionsUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminListUserSessionsUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminListUserSessionsUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AdminUseCases/AdminListUsersUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminListUsersUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminListUsersUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminListUsersUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AdminUseCases/AdminRevokeUserSessionUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminRevokeUserSessionUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminRevokeUserSessionUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminRevokeUserSessionUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AdminUseCases/AdminRevokeUserSessionsUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminRevokeUserSessionsUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminRevokeUserSessionsUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminRevokeUserSessionsUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AdminUseCases/AdminSetUserPasswordUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminSetUserPasswordUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminSetUserPasswordUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminSetUserPasswordUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AdminUseCases/AdminSetUserRoleUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminSetUserRoleUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminSetUserRoleUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminSetUserRoleUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AdminUseCases/AdminUnbanUserUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminUnbanUserUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminUnbanUserUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminUnbanUserUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AdminUseCases/AdminUpdateUserUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminUpdateUserUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminUpdateUserUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminUpdateUserUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AuthUseCases/CheckSessionUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CheckSessionUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CheckSessionUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CheckSessionUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AuthUseCases/SignInUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignInUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignInUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignInUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AuthUseCases/SignInWithGoogleUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignInWithGoogleUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignInWithGoogleUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignInWithGoogleUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AuthUseCases/SignOutUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignOutUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignOutUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignOutUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/AuthUseCases/SignUpUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignUpUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignUpUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignUpUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/InvitationUseCases/AcceptInvitationUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AcceptInvitationUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AcceptInvitationUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AcceptInvitationUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/InvitationUseCases/CancelInvitationUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CancelInvitationUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CancelInvitationUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CancelInvitationUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/InvitationUseCases/CreateInvitationUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateInvitationUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateInvitationUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateInvitationUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/InvitationUseCases/GetInvitationUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetInvitationUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetInvitationUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetInvitationUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/InvitationUseCases/ListInvitationsUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListInvitationsUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListInvitationsUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListInvitationsUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/InvitationUseCases/ListUserInvitationsUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListUserInvitationsUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListUserInvitationsUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListUserInvitationsUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/InvitationUseCases/RejectInvitationUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/RejectInvitationUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/RejectInvitationUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/RejectInvitationUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/MatchIntentUseCases/AcceptMatchRequestUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AcceptMatchRequestUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AcceptMatchRequestUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AcceptMatchRequestUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/MatchIntentUseCases/CreateMatchIntentUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateMatchIntentUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateMatchIntentUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateMatchIntentUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/MatchIntentUseCases/DeleteMatchIntentUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DeleteMatchIntentUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DeleteMatchIntentUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DeleteMatchIntentUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/MatchIntentUseCases/DiscoverMatchIntentsUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DiscoverMatchIntentsUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DiscoverMatchIntentsUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DiscoverMatchIntentsUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/MatchIntentUseCases/ListMatchIntentsUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMatchIntentsUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMatchIntentsUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMatchIntentsUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/MatchIntentUseCases/ListMatchRequestsUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMatchRequestsUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMatchRequestsUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMatchRequestsUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/MatchIntentUseCases/RejectMatchRequestUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/RejectMatchRequestUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/RejectMatchRequestUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/RejectMatchRequestUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/MatchIntentUseCases/SwipeMatchIntentUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SwipeMatchIntentUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SwipeMatchIntentUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SwipeMatchIntentUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/MatchUseCases/CreateMatchUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateMatchUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateMatchUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateMatchUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/MatchUseCases/DeleteMatchUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DeleteMatchUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DeleteMatchUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DeleteMatchUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/MatchUseCases/GetMatchUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetMatchUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetMatchUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetMatchUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/MatchUseCases/ListMatchesUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMatchesUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMatchesUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMatchesUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/MatchUseCases/UpdateMatchScoresUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UpdateMatchScoresUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UpdateMatchScoresUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UpdateMatchScoresUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/MatchUseCases/UpdateMatchUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UpdateMatchUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UpdateMatchUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UpdateMatchUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/OrganizationUseCases/AddMemberUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AddMemberUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AddMemberUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AddMemberUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/OrganizationUseCases/CreateOrganizationUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateOrganizationUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateOrganizationUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateOrganizationUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/OrganizationUseCases/GetActiveMemberRoleUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetActiveMemberRoleUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetActiveMemberRoleUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetActiveMemberRoleUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/OrganizationUseCases/GetActiveMemberUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetActiveMemberUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetActiveMemberUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetActiveMemberUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/OrganizationUseCases/GetFullOrganizationUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetFullOrganizationUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetFullOrganizationUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetFullOrganizationUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/OrganizationUseCases/LeaveOrganizationUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/LeaveOrganizationUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/LeaveOrganizationUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/LeaveOrganizationUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/OrganizationUseCases/ListMembersUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMembersUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMembersUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListMembersUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/OrganizationUseCases/ListOrganizationsUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListOrganizationsUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListOrganizationsUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ListOrganizationsUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/OrganizationUseCases/RemoveMemberUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/RemoveMemberUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/RemoveMemberUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/RemoveMemberUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/OrganizationUseCases/SetActiveOrganizationUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SetActiveOrganizationUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SetActiveOrganizationUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SetActiveOrganizationUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/OrganizationUseCases/UpdateMemberRoleUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UpdateMemberRoleUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UpdateMemberRoleUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UpdateMemberRoleUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/UserUseCases/GetMeUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetMeUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetMeUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GetMeUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Domain/UseCases/UserUseCases/SearchUsersUseCase.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SearchUsersUseCase.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SearchUsersUseCase.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SearchUsersUseCase.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Admin/AdminView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Admin/CreateOrganizationSheet.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateOrganizationSheet.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateOrganizationSheet.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateOrganizationSheet.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/AuthView/SignInView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignInView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignInView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignInView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/AuthView/SignUpView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignUpView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignUpView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/SignUpView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Components/UserSearchField.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserSearchField.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserSearchField.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserSearchField.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/HomeView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/HomeView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/HomeView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/HomeView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Match/Components/EditableSetRow.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/EditableSetRow.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/EditableSetRow.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/EditableSetRow.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Match/Components/MatchFilterBanner.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchFilterBanner.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchFilterBanner.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchFilterBanner.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Match/Components/MatchListContent.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchListContent.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchListContent.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchListContent.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Match/Components/MatchRowView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchRowView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchRowView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchRowView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Match/Components/ParticipantView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ParticipantView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ParticipantView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ParticipantView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Match/CreateMatchView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateMatchView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateMatchView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateMatchView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Match/EditMatchScoresView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/EditMatchScoresView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/EditMatchScoresView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/EditMatchScoresView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Match/MatchDetailView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchDetailView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchDetailView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchDetailView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Match/MatchesView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchesView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchesView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchesView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/MatchIntent/Components/DiscoverCardView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DiscoverCardView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DiscoverCardView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/DiscoverCardView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/MatchIntent/Components/MatchIntentsContent.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentsContent.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentsContent.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentsContent.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/MatchIntent/MatchIntentsView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentsView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentsView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentsView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Organization/InviteMemberSheet.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InviteMemberSheet.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InviteMemberSheet.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InviteMemberSheet.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Organization/OrganizationDetailView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationDetailView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationDetailView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationDetailView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Profile/Components/CreateMatchIntentSheet.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateMatchIntentSheet.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateMatchIntentSheet.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/CreateMatchIntentSheet.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Profile/Components/InfoRow.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InfoRow.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InfoRow.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InfoRow.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Profile/Components/InvitationCard.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationCard.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationCard.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationCard.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Profile/Components/MatchIntentRow.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentRow.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentRow.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentRow.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Profile/Components/MemberRow.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MemberRow.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MemberRow.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MemberRow.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Profile/Components/OrganizationCard.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationCard.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationCard.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationCard.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Profile/Components/PendingInvitationRow.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/PendingInvitationRow.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/PendingInvitationRow.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/PendingInvitationRow.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Profile/Components/ProfileHeaderCard.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ProfileHeaderCard.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ProfileHeaderCard.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ProfileHeaderCard.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Profile/Components/ProfileSectionHeader.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ProfileSectionHeader.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ProfileSectionHeader.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ProfileSectionHeader.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/Profile/ProfileView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ProfileView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ProfileView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ProfileView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/View/RootView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/RootView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/RootView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/RootView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/ViewModel/AdminViewModel.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminViewModel.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminViewModel.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AdminViewModel.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/ViewModel/AuthViewModel.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthViewModel.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthViewModel.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/AuthViewModel.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/ViewModel/InvitationViewModel.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationViewModel.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationViewModel.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/InvitationViewModel.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/ViewModel/MatchIntentsViewModel.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentsViewModel.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentsViewModel.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchIntentsViewModel.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/ViewModel/MatchListViewModel.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchListViewModel.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchListViewModel.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchListViewModel.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/ViewModel/MatchViewModel.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchViewModel.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchViewModel.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/MatchViewModel.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/ViewModel/OrganizationViewModel.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationViewModel.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationViewModel.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/OrganizationViewModel.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/AceClub/Presentation/ViewModel/ProfileViewModel.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ProfileViewModel.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ProfileViewModel.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/ProfileViewModel.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/UserHeaderView.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserHeaderView.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserHeaderView.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/UserHeaderView.o"
+  },
+  "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/nicolasbecharat/Documents/GitHub/AceClub/apps/ios/build/AceClub.build/Release-iphoneos/AceClub.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  }
+}
