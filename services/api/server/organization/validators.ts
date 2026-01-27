@@ -83,3 +83,9 @@ export const invitationIdValidator = z.object({
 export const listInvitationsValidator = z.object({
   organizationId: z.string().optional(),
 });
+
+export const searchOrganizationsValidator = z.object({
+  query: z.string().optional(),
+  limit: z.coerce.number().min(1).max(100).optional().default(20),
+  offset: z.coerce.number().min(0).optional().default(0),
+});

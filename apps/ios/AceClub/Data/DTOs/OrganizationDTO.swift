@@ -49,3 +49,11 @@ struct CreateOrganizationRequestDTO: Codable {
     let logo: String?
     let metadata: String?
 }
+
+// MARK: - Search Organizations Response
+
+struct SearchOrganizationsResponseDTO: Codable {
+    let organizations: [OrganizationDTO]
+    let total: Int
+    let hasMore: Bool
+}

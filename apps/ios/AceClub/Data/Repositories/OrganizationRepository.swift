@@ -2,6 +2,7 @@ import Foundation
 
 protocol OrganizationRepositoryProtocol {
     func listOrganizations() async throws -> [Organization]
+    func searchOrganizations(query: String?, limit: Int, offset: Int) async throws -> (organizations: [Organization], total: Int, hasMore: Bool)
     func getFullOrganization(slug: String) async throws -> (Organization, [Member])
     func setActiveOrganization(slug: String) async throws
     func listMembers(organizationId: String?) async throws -> ListMembersResult
@@ -23,6 +24,12 @@ class OrganizationRepository: OrganizationRepositoryProtocol {
     func listOrganizations() async throws -> [Organization] {
         let organizationsDTO = try await dataSource.listOrganizationsUser()
         return OrganizationMapper.map(organizationDTOs: organizationsDTO)
+    }
+
+    func searchOrganizations(query: String? = nil, limit: Int = 20, offset: Int = 0) async throws -> (organizations: [Organization], total: Int, hasMore: Bool) {
+        let response = try await dataSource.searchOrganizations(query: query, limit: limit, offset: offset)
+        let organizations = OrganizationMapper.map(organizationDTOs: response.organizations)
+        return (organizations: organizations, total: response.total, hasMore: response.hasMore)
     }
 
     func getFullOrganization(slug: String) async throws -> (Organization, [Member]) {

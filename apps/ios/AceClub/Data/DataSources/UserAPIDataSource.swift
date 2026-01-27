@@ -60,4 +60,32 @@ class UserAPIDataSource {
             throw UserAPIDateSourceError.decodingFailed
         }
     }
+
+    func completeOnboarding(organizationId: String, sport: String, skillLevel: String) async throws -> UserDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/user/complete-onboarding") else {
+            throw UserAPIDateSourceError.invalidURL
+        }
+
+        let requestBody = CompleteOnboardingRequestDTO(
+            organizationId: organizationId,
+            sport: sport,
+            skillLevel: skillLevel
+        )
+        let body = try JSONEncoder().encode(requestBody)
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: body)
+
+        if response.statusCode == 401 {
+            throw UserAPIDateSourceError.unauthorized
+        }
+
+        guard response.statusCode == 200 else {
+            throw UserAPIDateSourceError.requestFailed
+        }
+
+        do {
+            return try JSONDecoder().decode(UserDTO.self, from: data)
+        } catch {
+            throw UserAPIDateSourceError.decodingFailed
+        }
+    }
 }

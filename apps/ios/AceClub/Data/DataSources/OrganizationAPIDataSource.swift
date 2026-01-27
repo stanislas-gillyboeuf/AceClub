@@ -45,6 +45,37 @@ class OrganizationAPIDataSource {
         }
     }
 
+    func searchOrganizations(query: String? = nil, limit: Int = 20, offset: Int = 0) async throws -> SearchOrganizationsResponseDTO {
+        guard var components = URLComponents(string: "\(Config.apiBaseURL)/organization/search") else {
+            throw OrganizationError.invalidURL
+        }
+
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "limit", value: String(limit)),
+            URLQueryItem(name: "offset", value: String(offset))
+        ]
+        if let query, !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            queryItems.append(URLQueryItem(name: "query", value: query))
+        }
+        components.queryItems = queryItems
+
+        guard let url = components.url else {
+            throw OrganizationError.invalidURL
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url)
+
+        guard response.statusCode == 200 else {
+            throw OrganizationError.serverError("Search organizations failed: \(response.statusCode)")
+        }
+
+        do {
+            return try JSONDecoder().decode(SearchOrganizationsResponseDTO.self, from: data)
+        } catch {
+            throw OrganizationError.decodingError
+        }
+    }
+
     func getFullOrganization(slug: String) async throws -> FullOrganizationDTO {
         guard var urlComponents = URLComponents(string: "\(Config.apiBaseURL)/organization/get-full-organization") else {
             throw OrganizationError.invalidURL

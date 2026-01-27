@@ -18,4 +18,13 @@ class UserRepository {
         let userSearchResponse = try await userDataSource.searchUsers(query: query, limit: limit)
         return UserMapper.map(userSearchResponseDTO: userSearchResponse)
     }
+
+    func completeOnboarding(organizationId: String, sport: String, skillLevel: String) async throws -> User {
+        let userDTO = try await userDataSource.completeOnboarding(
+            organizationId: organizationId,
+            sport: sport,
+            skillLevel: skillLevel
+        )
+        return UserMapper.map(userDTO: userDTO)
+    }
 }

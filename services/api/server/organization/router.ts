@@ -41,7 +41,9 @@ import {
   listInvitations,
   listUserInvitations,
   getInvitation,
+  searchOrganizations,
 } from "./queries";
+import { searchOrganizationsValidator } from "./validators";
 
 export const organizationRouter = new Hono<HonoContext>();
 
@@ -49,6 +51,11 @@ export const organizationRouter = new Hono<HonoContext>();
 organizationRouter.use("/*", requireAuth);
 
 // Organization queries (accessible to authenticated users)
+organizationRouter.get(
+  "/search",
+  zValidator("query", searchOrganizationsValidator),
+  searchOrganizations,
+);
 organizationRouter.get("/list-organizations-user", listOrganizationsUser);
 organizationRouter.get(
   "/get-full-organization",

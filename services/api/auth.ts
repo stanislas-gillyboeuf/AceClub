@@ -9,6 +9,16 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg", // or "mysql", "sqlite"
   }),
+  user: {
+    additionalFields: {
+      onboardingCompleted: {
+        type: "boolean",
+        fieldName: "onboarding_completed",
+        defaultValue: false,
+        input: true,
+      },
+    },
+  },
   account: {
     accountLinking: {
         enabled: true, 

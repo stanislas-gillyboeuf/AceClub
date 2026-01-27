@@ -20,7 +20,8 @@ class UserMapper {
             role: userDTO.role,
             banned: userDTO.banned,
             banReason: userDTO.banReason,
-            banExpires: userDTO.banExpires
+            banExpires: userDTO.banExpires,
+            onboardingCompleted: userDTO.onboardingCompleted
         )
     }
 
@@ -45,7 +46,8 @@ class UserMapper {
             role: nil,
             banned: nil,
             banReason: nil,
-            banExpires: nil
+            banExpires: nil,
+            onboardingCompleted: nil
         )
     }
 
@@ -53,3 +55,4 @@ class UserMapper {
         return userSearchResponseDTO.users.map { map(userSearchItemDTO: $0) }
     }
 }
+

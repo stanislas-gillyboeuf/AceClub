@@ -7,7 +7,7 @@ class OrganizationMapper {
             name: organizationDTO.name,
             slug: organizationDTO.slug,
             logo: organizationDTO.logo,
-            createdAt: organizationDTO.createdAt!,
+            createdAt: organizationDTO.createdAt ?? "",
             metadata: organizationDTO.metadata
         )
     }

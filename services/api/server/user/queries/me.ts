@@ -16,5 +16,6 @@ export const me = async (c: Context<HonoContext>) => {
     banned: user!.banned,
     banReason: user!.banReason,
     banExpires: user!.banExpires,
+    onboardingCompleted: user!.onboardingCompleted,
   });
 };

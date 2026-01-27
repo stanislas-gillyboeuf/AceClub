@@ -12,6 +12,7 @@ struct User: Identifiable {
     let banned: Bool?
     let banReason: String?
     let banExpires: String?
+    let onboardingCompleted: Bool?
 
     // MARK: - Derived safe accessors
     /// URL construite à partir de `image` si valide, sinon `nil`.
@@ -30,6 +31,9 @@ struct User: Identifiable {
 
     /// Indique si l'utilisateur est banni.
     var isBanned: Bool { banned ?? false }
+
+    /// Indique si l'onboarding est complété.
+    var isOnboardingCompleted: Bool { onboardingCompleted ?? false }
 
     /// Nom d'affichage de l'utilisateur
     var displayName: String { name }

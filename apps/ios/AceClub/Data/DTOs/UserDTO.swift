@@ -11,6 +11,7 @@ struct UserDTO: Codable {
     let banned: Bool?
     let banReason: String?
     let banExpires: String?
+    let onboardingCompleted: Bool?
 }
 
 struct ListUsersResponseDTO: Codable {
@@ -32,4 +33,22 @@ struct UserSearchItemDTO: Codable {
     let name: String
     let email: String
     let image: String?
+}
+
+// MARK: - Onboarding DTOs
+
+struct UserPreferenceDTO: Codable {
+    let id: String
+    let userId: String
+    let organizationId: String
+    let sport: String
+    let skillLevel: String
+    let createdAt: String
+    let updatedAt: String
+}
+
+struct CompleteOnboardingRequestDTO: Codable {
+    let organizationId: String
+    let sport: String
+    let skillLevel: String
 }
