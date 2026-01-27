@@ -10,113 +10,59 @@ struct MatchIntentRow: View {
     let isDeleting: Bool
     let onDelete: () -> Void
 
-    @State private var offset: CGFloat = 0
-    @State private var isSwiping = false
-
-    private let deleteThreshold: CGFloat = -80
-
     var body: some View {
-        ZStack(alignment: .trailing) {
-            // Delete button background
-            HStack {
-                Spacer()
-                Button(action: onDelete) {
-                    Image(systemName: "trash.fill")
-                        .font(.title3)
-                        .foregroundStyle(.white)
-                        .frame(width: 80)
-                        .frame(maxHeight: .infinity)
+        HStack(alignment: .center, spacing: 12) {
+            // Date icon
+            VStack(spacing: 2) {
+                if let date = intent.date {
+                    Text(date, format: .dateTime.day())
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(.primary)
+                    Text(date, format: .dateTime.month(.abbreviated))
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .textCase(.uppercase)
+                } else {
+                    Image(systemName: "calendar")
+                        .font(.title2)
+                        .foregroundStyle(.secondary)
                 }
-                .background(Color.red)
             }
+            .frame(width: 50)
 
-            // Main content
-            HStack(alignment: .center, spacing: 12) {
-                // Date icon
-                VStack(spacing: 2) {
-                    if let date = intent.date {
-                        Text(date, format: .dateTime.day())
-                            .font(.title2.weight(.bold))
-                            .foregroundStyle(.primary)
-                        Text(date, format: .dateTime.month(.abbreviated))
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                    } else {
-                        Image(systemName: "calendar")
-                            .font(.title2)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .frame(width: 50)
-
-                // Details
-                VStack(alignment: .leading, spacing: 4) {
-                    if let time = intent.time {
-                        Text(time, format: .dateTime.hour().minute())
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.primary)
-                    } else if intent.date != nil {
-                        Text("Heure non définie")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text("Date non renseignée")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Text(durationLabel(intent.duration))
-                        .font(.caption)
+            // Details
+            VStack(alignment: .leading, spacing: 4) {
+                if let time = intent.time {
+                    Text(time, format: .dateTime.hour().minute())
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                } else if intent.date != nil {
+                    Text("Heure non définie")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Date non renseignée")
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
 
-                Spacer()
-
-                if isDeleting {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                } else {
-                    Image(systemName: "chevron.left")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.quaternary)
-                        .opacity(offset == 0 ? 1 : 0)
-                }
+                Text(durationLabel(intent.duration))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .background(Color(.systemGray6))
-            .offset(x: offset)
-            .gesture(
-                DragGesture()
-                    .onChanged { value in
-                        let translation = value.translation.width
-                        if translation < 0 {
-                            offset = translation
-                            isSwiping = true
-                        }
-                    }
-                    .onEnded { value in
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            if offset < deleteThreshold {
-                                offset = deleteThreshold
-                            } else {
-                                offset = 0
-                                isSwiping = false
-                            }
-                        }
-                    }
-            )
-            .onTapGesture {
-                if offset != 0 {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        offset = 0
-                        isSwiping = false
-                    }
-                }
+
+            Spacer()
+
+            if isDeleting {
+                ProgressView()
+                    .scaleEffect(0.9)
+            } else {
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 0))
+        .contentShape(Rectangle())
     }
 
     private func durationLabel(_ minutes: Int) -> String {
