@@ -45,6 +45,10 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>GIDClientID</key>
 	<string>131274084335-lv3cs6n1eqajr5letmpgm57alipg51gb.apps.googleusercontent.com</string>
+	<key>API_BASE_URL</key>
+	<string>$(API_BASE_URL)</string>
+	<key>APP_ENV</key>
+	<string>$(APP_ENV)</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.sports</string>
 	<key>LSRequiresIPhoneOS</key>

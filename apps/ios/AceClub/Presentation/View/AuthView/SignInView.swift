@@ -17,7 +17,13 @@ struct SignInView: View {
             ScrollView {
                 VStack(spacing: 32) {
                     // Header
-                    VStack(spacing: 8) {
+                    VStack(spacing: 16) {
+                        Image("AceClubLogo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 120, height: 120)
+                            .cornerRadius(24)
+
                         Text("Bienvenue")
                             .font(.largeTitle)
                             .fontWeight(.bold)
