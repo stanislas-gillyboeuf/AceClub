@@ -14,7 +14,8 @@ struct OnboardingStep1View: View {
             }
 
             TextField("Rechercher un club…", text: $viewModel.searchQuery)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.automatic)
+                .autocorrectionDisabled()
                 .onChange(of: viewModel.searchQuery) { _ in
                     viewModel.onSearchQueryChanged()
                 }

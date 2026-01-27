@@ -9,7 +9,7 @@ apps/ios/**/*.xcscmblueprint
 apps/ios/**/*.xccheckout
 apps/ios/**/DerivedData/
 apps/ios/**/.DS_Store
-apps/ios/**/build/
+apps/ios/build/
 
 
 # macOS
