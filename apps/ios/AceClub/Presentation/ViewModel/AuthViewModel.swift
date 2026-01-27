@@ -19,6 +19,7 @@ class AuthViewModel {
 
     // MARK: - Use Cases
     private let signInWithGoogleUseCase = SignInWithGoogleUseCase()
+    private let signInWithAppleUseCase = SignInWithAppleUseCase()
     private let signOutUseCase = SignOutUseCase()
     private let checkSessionUseCase = CheckSessionUseCase()
 
@@ -78,6 +79,37 @@ class AuthViewModel {
             currentUser = user
             isAuthenticated = true
         } catch let error as GoogleSignInError {
+            if case .cancelled = error {
+                // User cancelled, don't show error
+            } else {
+                errorMessage = error.localizedDescription
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+
+        isLoading = false
+    }
+
+    // MARK: - Sign In with Apple
+    @MainActor
+    func signInWithApple() async {
+        isLoading = true
+        errorMessage = nil
+
+        // Get window for Apple Sign-In presentation
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first else {
+            errorMessage = "Unable to present Apple Sign-In"
+            isLoading = false
+            return
+        }
+
+        do {
+            let user = try await signInWithAppleUseCase.execute(presentingWindow: window)
+            currentUser = user
+            isAuthenticated = true
+        } catch let error as AppleSignInError {
             if case .cancelled = error {
                 // User cancelled, don't show error
             } else {

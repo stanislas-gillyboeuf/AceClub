@@ -9,6 +9,7 @@ import Foundation
 
 protocol AuthRepositoryProtocol {
     func signInWithGoogle(idToken: String, accessToken: String) async throws -> (user: User, session: AuthSession)
+    func signInWithApple(idToken: String, nonce: String) async throws -> (user: User, session: AuthSession)
     func signOut(token: String) async throws
 }
 
@@ -21,6 +22,11 @@ class AuthRepository: AuthRepositoryProtocol {
 
     func signInWithGoogle(idToken: String, accessToken: String) async throws -> (user: User, session: AuthSession) {
         let response = try await dataSource.signInWithGoogle(idToken: idToken, accessToken: accessToken)
+        return AuthMapper.map(authResponseDTO: response)
+    }
+
+    func signInWithApple(idToken: String, nonce: String) async throws -> (user: User, session: AuthSession) {
+        let response = try await dataSource.signInWithApple(idToken: idToken, nonce: nonce)
         return AuthMapper.map(authResponseDTO: response)
     }
 

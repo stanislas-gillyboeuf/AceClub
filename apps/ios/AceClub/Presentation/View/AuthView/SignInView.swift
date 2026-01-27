@@ -8,9 +8,14 @@
 import SwiftUI
 import GoogleSignIn
 import GoogleSignInSwift
+import AuthenticationServices
 
 struct SignInView: View {
     @Environment(AuthViewModel.self) private var authViewModel
+
+    private var isProductionEnvironment: Bool {
+        Config.environment == "production"
+    }
 
     var body: some View {
         NavigationStack {
@@ -28,7 +33,7 @@ struct SignInView: View {
                             .font(.largeTitle)
                             .fontWeight(.bold)
 
-                        Text("Connectez-vous avec Google pour continuer")
+                        Text("Connectez-vous pour continuer")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -60,6 +65,33 @@ struct SignInView: View {
                     .buttonStyle(.appOutlined)
                     .disabled(authViewModel.isLoading)
                     .padding(.horizontal, Theme.paddingHorizontal)
+
+                    // Apple Sign-In Button
+                    Button(action: handleAppleSignIn) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "apple.logo")
+                                .font(.system(size: 20, weight: .regular))
+                            if authViewModel.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .primary))
+                            } else {
+                                Text("Continuer avec Apple")
+                            }
+                        }
+                    }
+                    .buttonStyle(.appOutlined)
+                    .disabled(!isProductionEnvironment || authViewModel.isLoading)
+                    .opacity(isProductionEnvironment ? 1.0 : 0.5)
+                    .padding(.horizontal, Theme.paddingHorizontal)
+
+                    // Debug mode warning
+                    if !isProductionEnvironment {
+                        Text("La connexion Apple est disponible uniquement en production")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
                 }
             }
         }
@@ -68,6 +100,13 @@ struct SignInView: View {
     private func handleGoogleSignIn() {
         Task {
             await authViewModel.signInWithGoogle()
+        }
+    }
+
+    private func handleAppleSignIn() {
+        guard isProductionEnvironment else { return }
+        Task {
+            await authViewModel.signInWithApple()
         }
     }
 }

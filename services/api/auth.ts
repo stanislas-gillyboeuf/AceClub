@@ -16,11 +16,16 @@ export const auth = betterAuth({
       accessType: "offline",
       prompt: "select_account consent",
     },
+    apple: { 
+      clientId: process.env.APPLE_CLIENT_ID as string, 
+      clientSecret: process.env.APPLE_CLIENT_SECRET as string, 
+    },
   },
   trustedOrigins: [
     "http://localhost:3000",
     "aceclub://",
     "https://ace-club-production.up.railway.app",
+    "https://appleid.apple.com",
   ],
 
   plugins: [bearer(), admin(), organization()],
