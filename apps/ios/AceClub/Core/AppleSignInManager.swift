@@ -53,6 +53,8 @@ class AppleSignInManager: NSObject {
 
     private var currentContinuation: CheckedContinuation<AppleSignInResult, Error>?
     private var currentNonce: String?
+    private var presentingWindow: UIWindow?
+    private var currentAuthController: ASAuthorizationController?
 
     private override init() {
         super.init()
@@ -64,6 +66,7 @@ class AppleSignInManager: NSObject {
     func signIn(presentingWindow: UIWindow) async throws -> AppleSignInResult {
         return try await withCheckedThrowingContinuation { continuation in
             self.currentContinuation = continuation
+            self.presentingWindow = presentingWindow
 
             // Generate cryptographically secure nonce
             let nonce = generateNonce()
@@ -77,6 +80,7 @@ class AppleSignInManager: NSObject {
 
             // Create and configure authorization controller
             let authorizationController = ASAuthorizationController(authorizationRequests: [request])
+            self.currentAuthController = authorizationController  // Retain to prevent deallocation
             authorizationController.delegate = self
             authorizationController.presentationContextProvider = self
             authorizationController.performRequests()
@@ -131,16 +135,14 @@ extension AppleSignInManager: ASAuthorizationControllerDelegate {
     func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
         guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential else {
             currentContinuation?.resume(throwing: AppleSignInError.invalidCredential)
-            currentContinuation = nil
-            currentNonce = nil
+            cleanup()
             return
         }
 
         guard let identityTokenData = appleIDCredential.identityToken,
               let identityToken = String(data: identityTokenData, encoding: .utf8) else {
             currentContinuation?.resume(throwing: AppleSignInError.noIdentityToken)
-            currentContinuation = nil
-            currentNonce = nil
+            cleanup()
             return
         }
 
@@ -171,8 +173,7 @@ extension AppleSignInManager: ASAuthorizationControllerDelegate {
         )
 
         currentContinuation?.resume(returning: result)
-        currentContinuation = nil
-        currentNonce = nil
+        cleanup()
     }
 
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
@@ -195,18 +196,35 @@ extension AppleSignInManager: ASAuthorizationControllerDelegate {
             currentContinuation?.resume(throwing: AppleSignInError.networkError(error))
         }
 
+        cleanup()
+    }
+
+    private func cleanup() {
         currentContinuation = nil
         currentNonce = nil
+        presentingWindow = nil
+        currentAuthController = nil
     }
 }
 
 // MARK: - ASAuthorizationControllerPresentationContextProviding
 extension AppleSignInManager: ASAuthorizationControllerPresentationContextProviding {
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let window = windowScene.windows.first else {
+        // Use the stored window passed to signIn()
+        if let window = presentingWindow {
+            // Ensure the window is key and visible
+            window.makeKeyAndVisible()
+            return window
+        }
+
+        // Fallback: find the foreground active window scene's key window
+        guard let windowScene = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first(where: { $0.activationState == .foregroundActive }),
+              let window = windowScene.windows.first(where: { $0.isKeyWindow }) ?? windowScene.windows.first else {
             fatalError("No window available for presenting Apple Sign-In")
         }
+        window.makeKeyAndVisible()
         return window
     }
 }

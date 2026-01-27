@@ -97,9 +97,11 @@ class AuthViewModel {
         isLoading = true
         errorMessage = nil
 
-        // Get window for Apple Sign-In presentation
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let window = windowScene.windows.first else {
+        // Get the key window for Apple Sign-In presentation
+        guard let windowScene = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first(where: { $0.activationState == .foregroundActive }),
+              let window = windowScene.windows.first(where: { $0.isKeyWindow }) ?? windowScene.windows.first else {
             errorMessage = "Unable to present Apple Sign-In"
             isLoading = false
             return
