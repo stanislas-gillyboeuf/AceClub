@@ -16,6 +16,7 @@ struct AceClubApp: App {
         WindowGroup {
             ContentView()
                 .environment(authViewModel)
+                .tint(Theme.tintColor)
                 .onOpenURL { url in
                     // Handle Google Sign-In callback URL
                     GoogleSignInManager.shared.handle(url)

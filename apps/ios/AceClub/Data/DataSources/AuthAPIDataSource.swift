@@ -110,7 +110,7 @@ class AuthAPIDataSource {
     }
 
     // MARK: - Sign In with Apple (Better Auth callback)
-    func signInWithApple(idToken: String, nonce: String) async throws -> AuthResponseDTO {
+    func signInWithApple(idToken: String, email: String?, name: String?) async throws -> AuthResponseDTO {
         guard let url = URL(string: "\(Config.apiBaseURL)/auth/sign-in/social") else {
             throw AuthError.invalidURL
         }
@@ -120,13 +120,21 @@ class AuthAPIDataSource {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("aceclub://", forHTTPHeaderField: "Origin")
 
-        let body: [String: Any] = [
+        var body: [String: Any] = [
             "provider": "apple",
             "idToken": [
-                "token": idToken,
-                "nonce": nonce
+                "token": idToken
             ]
         ]
+
+        if let email = email {
+            body["email"] = email
+        }
+
+        if let name = name {
+            body["name"] = name
+        }
+
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
         do {

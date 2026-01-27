@@ -24,7 +24,7 @@ export const auth = betterAuth({
     apple: {
       clientId: process.env.APPLE_CLIENT_ID as string,
       clientSecret: process.env.APPLE_CLIENT_SECRET as string,
-      appBundleIdentifier: " dev.aceclub.app",
+      appBundleIdentifier: "dev.aceclub.app",
     },
   },
   trustedOrigins: [

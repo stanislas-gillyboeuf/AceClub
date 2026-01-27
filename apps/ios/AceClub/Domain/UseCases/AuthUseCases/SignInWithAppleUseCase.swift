@@ -17,13 +17,14 @@ class SignInWithAppleUseCase {
 
     @MainActor
     func execute(presentingWindow: UIWindow) async throws -> User {
-        // 1. Get Apple ID token + nonce via AuthenticationServices
+        // 1. Get Apple ID token + user info via AuthenticationServices
         let appleResult = try await AppleSignInManager.shared.signIn(presentingWindow: presentingWindow)
 
         // 2. Exchange with Better Auth backend
         let (user, session) = try await repository.signInWithApple(
             idToken: appleResult.identityToken,
-            nonce: appleResult.nonce
+            email: appleResult.email,
+            name: appleResult.fullName
         )
 
         // 3. Save session token to Keychain

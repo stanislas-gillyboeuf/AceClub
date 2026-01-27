@@ -22,12 +22,13 @@ struct ProfileHeaderCard: View {
 
             Spacer(minLength: 0)
         }
-        .padding(16)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .padding(Theme.paddingCard)
+        // Carte claire sur fond gris (plus lisible / “natif”)
+        .background(Theme.primaryBackground)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(Color(.separator), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous)
+                .strokeBorder(Theme.tintColor.opacity(0.18), lineWidth: 1)
         }
     }
 
@@ -45,7 +46,7 @@ struct ProfileHeaderCard: View {
                     switch phase {
                     case .empty:
                         ProgressView()
-                            .tint(.secondary)
+                            .tint(Theme.tintColor)
                     case .success(let image):
                         image
                             .resizable()
@@ -60,10 +61,7 @@ struct ProfileHeaderCard: View {
         }
         .frame(width: 72, height: 72)
         .clipShape(Circle())
-        .overlay {
-            Circle()
-                .strokeBorder(Color(.separator), lineWidth: 1)
-        }
+        .background(Theme.primaryBackground)
         .accessibilityLabel("Avatar")
     }
 
@@ -74,16 +72,5 @@ struct ProfileHeaderCard: View {
         let letters = parts.compactMap { $0.first }.map { String($0).uppercased() }
         let value = letters.joined()
         return value.isEmpty ? "?" : value
-    }
-
-    private func badge(text: String, systemImage: String, tint: Color) -> some View {
-        Label(text, systemImage: systemImage)
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(tint)
-            .symbolRenderingMode(.hierarchical)
-            .padding(.vertical, 6)
-            .padding(.horizontal, 10)
-            .background(Capsule().fill(Color(.tertiarySystemFill)))
-            .accessibilityLabel(text)
     }
 }

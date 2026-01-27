@@ -183,6 +183,8 @@ struct ProfileView: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .background(Theme.secondaryBackground)
             .navigationTitle("Mon Profil")
             .task(id: "profile-load") {
                 if profileViewModel.user == nil {

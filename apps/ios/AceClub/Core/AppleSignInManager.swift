@@ -41,7 +41,8 @@ enum AppleSignInError: Error, LocalizedError {
 /// Result of a successful Apple Sign-In
 struct AppleSignInResult {
     let identityToken: String
-    let nonce: String
+    let email: String?
+    let fullName: String?
     let authorizationCode: String?
 }
 
@@ -143,12 +144,6 @@ extension AppleSignInManager: ASAuthorizationControllerDelegate {
             return
         }
 
-        guard let nonce = currentNonce else {
-            currentContinuation?.resume(throwing: AppleSignInError.authorizationFailed)
-            currentContinuation = nil
-            return
-        }
-
         let authorizationCode: String?
         if let authorizationCodeData = appleIDCredential.authorizationCode {
             authorizationCode = String(data: authorizationCodeData, encoding: .utf8)
@@ -156,9 +151,22 @@ extension AppleSignInManager: ASAuthorizationControllerDelegate {
             authorizationCode = nil
         }
 
+        // Extract email (only provided on first sign-in)
+        let email = appleIDCredential.email
+
+        // Extract full name (only provided on first sign-in)
+        var fullName: String?
+        if let nameComponents = appleIDCredential.fullName {
+            let givenName = nameComponents.givenName ?? ""
+            let familyName = nameComponents.familyName ?? ""
+            let combinedName = [givenName, familyName].filter { !$0.isEmpty }.joined(separator: " ")
+            fullName = combinedName.isEmpty ? nil : combinedName
+        }
+
         let result = AppleSignInResult(
             identityToken: identityToken,
-            nonce: nonce,
+            email: email,
+            fullName: fullName,
             authorizationCode: authorizationCode
         )
 
