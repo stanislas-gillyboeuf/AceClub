@@ -51,8 +51,7 @@ struct OrganizationCard: View {
             }
         }
         .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(12)
+        .padding(.horizontal, Theme.paddingCard)
+        .cardStyle()
     }
 }

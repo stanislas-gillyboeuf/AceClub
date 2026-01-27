@@ -36,20 +36,18 @@ struct HomeView: View {
                 Button(action: handleSignOut) {
                     if authViewModel.isLoading {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .progressViewStyle(CircularProgressViewStyle(tint: Theme.destructiveColor))
                             .frame(maxWidth: .infinity)
-                            .frame(height: 50)
+                            .frame(height: Theme.buttonHeight)
                     } else {
-                        Text("Sign Out")
-                            .fontWeight(.semibold)
+                        Text("Déconnexion")
                             .frame(maxWidth: .infinity)
-                            .frame(height: 50)
+                            .frame(height: Theme.buttonHeight)
                     }
                 }
-                .buttonStyle(.bordered)
-                .tint(.red)
+                .buttonStyle(.appDestructiveOutlined)
                 .disabled(authViewModel.isLoading)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, Theme.paddingHorizontal)
                 .padding(.bottom, 40)
             }
             .navigationTitle("AceClub")

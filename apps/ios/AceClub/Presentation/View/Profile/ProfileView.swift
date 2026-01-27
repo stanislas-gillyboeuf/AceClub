@@ -13,7 +13,7 @@ struct ProfileView: View {
                 VStack(spacing: 24) {
                     if let user = profileViewModel.user {
                         ProfileHeaderCard(user: user)
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, Theme.paddingHorizontal)
                             .padding(.top, 20)
 
                         // Section : Mes dispos publiées
@@ -25,28 +25,24 @@ struct ProfileView: View {
                                 HStack(spacing: 12) {
                                     Image(systemName: "plus.circle.fill")
                                         .font(.title2)
-                                        .foregroundStyle(.tint)
+                                        .foregroundStyle(Theme.tintColor)
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text("Publier ma dispo")
                                             .font(.subheadline.weight(.medium))
-                                            .foregroundStyle(.primary)
+                                            .foregroundStyle(Theme.labelPrimary)
                                         Text("Indique quand tu es dispo pour un match, tu apparaîtras dans le feed.")
                                             .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(Theme.labelSecondary)
                                             .multilineTextAlignment(.leading)
                                     }
                                     Spacer()
                                     Image(systemName: "chevron.right")
                                         .font(.caption.weight(.semibold))
-                                        .foregroundStyle(.tertiary)
+                                        .foregroundStyle(Theme.labelTertiary)
                                 }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 14)
-                                .background(Color(.systemGray6))
-                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                             }
-                            .buttonStyle(.plain)
-                            .padding(.horizontal, 20)
+                            .buttonStyle(.appCardRow)
+                            .padding(.horizontal, Theme.paddingHorizontal)
                             if profileViewModel.isLoadingIntents {
                                 ProgressView()
                                     .frame(maxWidth: .infinity)
@@ -78,7 +74,7 @@ struct ProfileView: View {
                                 Text(msg)
                                     .font(.caption)
                                     .foregroundStyle(.red)
-                                    .padding(.horizontal, 20)
+                                    .padding(.horizontal, Theme.paddingHorizontal)
                             }
                         }
                         .padding(.bottom, 8)
@@ -110,11 +106,11 @@ struct ProfileView: View {
                                         )
                                     }
                                 }
-                                .padding(.horizontal, 20)
+                                .padding(.horizontal, Theme.paddingHorizontal)
                                 .padding(.bottom, 8)
 
                                 Divider()
-                                    .padding(.horizontal, 20)
+                                    .padding(.horizontal, Theme.paddingHorizontal)
                             }
 
                             if organizationViewModel.isLoading {
@@ -149,7 +145,7 @@ struct ProfileView: View {
                                             onTap: nil
                                         )
                                     }
-                                    .padding(.horizontal, 20)
+                                    .padding(.horizontal, Theme.paddingHorizontal)
                                 }
                             }
                         }
@@ -181,27 +177,24 @@ struct ProfileView: View {
                 Button(action: handleSignOut) {
                     if authViewModel.isLoading {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .progressViewStyle(CircularProgressViewStyle(tint: Theme.destructiveColor))
                             .frame(maxWidth: .infinity)
-                            .frame(height: 50)
+                            .frame(height: Theme.buttonHeight)
                     } else {
-                        Text("Sign Out")
-                            .fontWeight(.semibold)
+                        Text("Déconnexion")
                             .frame(maxWidth: .infinity)
-                            .frame(height: 50)
+                            .frame(height: Theme.buttonHeight)
                     }
                 }
-                .buttonStyle(.bordered)
-                .tint(.red)
-                .padding(.horizontal, 24)
+                .buttonStyle(.appDestructiveOutlined)
+                .padding(.horizontal, Theme.paddingHorizontal)
             }
             .navigationTitle("Mon Profil")
-            .task {
-                await profileViewModel.getMe()
-                await profileViewModel.loadMyMatchIntents()
-                await organizationViewModel.loadOrganizations()
-                await organizationViewModel.loadActiveMember()
-                await invitationViewModel.loadUserInvitations()
+            .task(id: "profile-load") {
+                // Ne charger que si les données ne sont pas déjà présentes
+                if profileViewModel.user == nil {
+                    await loadAllData()
+                }
             }
             .refreshable {
                 // Use refresh methods that survive SwiftUI task cancellation
@@ -229,6 +222,17 @@ struct ProfileView: View {
     private func handleSignOut() {
         Task {
             await authViewModel.signOut()
+        }
+    }
+
+    private func loadAllData() async {
+        // Lancer toutes les requêtes en parallèle avec withTaskGroup
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.profileViewModel.getMe() }
+            group.addTask { await self.profileViewModel.loadMyMatchIntents() }
+            group.addTask { await self.organizationViewModel.loadOrganizations() }
+            group.addTask { await self.organizationViewModel.loadActiveMember() }
+            group.addTask { await self.invitationViewModel.loadUserInvitations() }
         }
     }
 }

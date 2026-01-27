@@ -48,8 +48,7 @@ struct CreateMatchView: View {
                             .ignoresSafeArea()
                         ProgressView("Création du match...")
                             .padding()
-                            .background(Color(.systemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .cardStyle()
                     }
                 }
             }

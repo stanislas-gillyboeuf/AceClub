@@ -67,12 +67,7 @@ struct DiscoverCardView: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
         }
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .cardStyle(cornerRadius: Theme.cornerRadiusLarge, withBorder: true)
         .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 4)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(Color(.systemGray5), lineWidth: 0.5)
-        )
     }
 }

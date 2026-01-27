@@ -101,6 +101,7 @@ class InvitationViewModel: ObservableObject {
         } catch is CancellationError {
             // Ignore cancellation - this happens during pull-to-refresh
         } catch {
+            guard !Task.isCancelled else { return }
             errorMessage = error.localizedDescription
         }
     }

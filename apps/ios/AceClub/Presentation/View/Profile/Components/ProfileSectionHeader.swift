@@ -28,7 +28,7 @@ struct ProfileSectionHeader: View {
                 }
             }
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, Theme.paddingHorizontal)
         .padding(.vertical, 8)
     }
 }

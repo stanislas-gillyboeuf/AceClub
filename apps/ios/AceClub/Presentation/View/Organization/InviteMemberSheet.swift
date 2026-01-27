@@ -44,8 +44,7 @@ struct InviteMemberSheet: View {
                                 .focused($isEmailFocused)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 10)
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(8)
+                                .inputFieldStyle()
                         }
 
                         if !email.isEmpty && !isValidEmail {
@@ -212,8 +211,8 @@ private struct RoleSelectionRow: View {
             }
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
-            .background(isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
-            .cornerRadius(10)
+            .background(isSelected ? Theme.tintColor.opacity(0.1) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
         }
         .buttonStyle(PlainButtonStyle())
     }

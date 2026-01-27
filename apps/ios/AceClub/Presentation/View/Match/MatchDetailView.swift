@@ -143,7 +143,7 @@ struct MatchDetailView: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .background(statusColor(for: match.status))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
             }
 
 
@@ -159,8 +159,7 @@ struct MatchDetailView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .cardStyle()
     }
 
     private func participantsCard(detail: MatchDetail) -> some View {
@@ -187,8 +186,7 @@ struct MatchDetailView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .cardStyle()
         .animation(.smooth, value: detail.formattedMatchScore)
     }
 
@@ -248,8 +246,7 @@ struct MatchDetailView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .cardStyle()
         .onTapGesture {
             showingEditScores = true
         }
@@ -322,8 +319,7 @@ struct MatchDetailView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .cardStyle()
     }
 
     private func infoRow(label: String, value: String) -> some View {
@@ -360,7 +356,7 @@ struct MatchDetailView: View {
                     await viewModel.loadMatch(matchId: matchId)
                 }
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.appPrimary)
         }
         .padding()
     }

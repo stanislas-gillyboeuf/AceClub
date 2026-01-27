@@ -66,8 +66,7 @@ struct UserSearchField: View {
             }
         }
         .padding(8)
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .inputFieldStyle()
     }
 
     private var searchField: some View {
@@ -90,8 +89,7 @@ struct UserSearchField: View {
                 }
             }
             .padding(8)
-            .background(Color(.systemGray6))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .inputFieldStyle()
 
             if showResults && !searchResults.isEmpty {
                 searchResultsList
@@ -146,8 +144,8 @@ struct UserSearchField: View {
                 }
             }
         }
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .background(Theme.primaryBackground)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
         .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
         .padding(.top, 4)
     }

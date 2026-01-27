@@ -22,8 +22,8 @@ struct MatchFilterBanner: View {
             Button("Effacer", action: onClear)
                 .font(.caption)
         }
-        .padding(.horizontal)
+        .padding(.horizontal, Theme.paddingHorizontal)
         .padding(.vertical, 8)
-        .background(Color(.systemGray6))
+        .background(Theme.secondaryBackground)
     }
 }

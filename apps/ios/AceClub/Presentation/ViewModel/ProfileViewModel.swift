@@ -22,26 +22,33 @@ class ProfileViewModel: ObservableObject {
     func getMe() async {
         isLoading = true
         errorMessage = nil
+        defer { isLoading = false }
+
         do {
             let result = try await getMeUseCase.execute()
+            guard !Task.isCancelled else { return }
             user = result
         } catch is CancellationError {
             // Ignore cancellation - this happens during pull-to-refresh
         } catch {
+            guard !Task.isCancelled else { return }
             errorMessage = error.localizedDescription
         }
-        isLoading = false
     }
 
     func loadMyMatchIntents() async {
         isLoadingIntents = true
         errorMessageIntents = nil
+        defer { isLoadingIntents = false }
+
         do {
             let result = try await listMatchIntentsUseCase.execute(cursor: nil, limit: 50)
+            guard !Task.isCancelled else { return }
             myMatchIntents = result.data
         } catch is CancellationError {
             // Ignore cancellation - this happens during pull-to-refresh
         } catch {
+            guard !Task.isCancelled else { return }
             errorMessageIntents = error.localizedDescription
         }
         isLoadingIntents = false

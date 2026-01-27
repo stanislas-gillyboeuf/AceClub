@@ -18,8 +18,6 @@ class AuthViewModel {
     var errorMessage: String?
 
     // MARK: - Use Cases
-    private let signUpUseCase = SignUpUseCase()
-    private let signInUseCase = SignInUseCase()
     private let signInWithGoogleUseCase = SignInWithGoogleUseCase()
     private let signOutUseCase = SignOutUseCase()
     private let checkSessionUseCase = CheckSessionUseCase()
@@ -56,40 +54,6 @@ class AuthViewModel {
             try? KeychainManager.shared.deleteAuthToken()
             currentUser = nil
             isAuthenticated = false
-        }
-
-        isLoading = false
-    }
-
-    // MARK: - Sign Up
-    @MainActor
-    func signUp(name: String, email: String, password: String) async {
-        isLoading = true
-        errorMessage = nil
-
-        do {
-            let user = try await signUpUseCase.execute(name: name, email: email, password: password)
-            currentUser = user
-            isAuthenticated = true
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-
-        isLoading = false
-    }
-
-    // MARK: - Sign In
-    @MainActor
-    func signIn(email: String, password: String, rememberMe: Bool = true) async {
-        isLoading = true
-        errorMessage = nil
-
-        do {
-            let user = try await signInUseCase.execute(email: email, password: password, rememberMe: rememberMe)
-            currentUser = user
-            isAuthenticated = true
-        } catch {
-            errorMessage = error.localizedDescription
         }
 
         isLoading = false

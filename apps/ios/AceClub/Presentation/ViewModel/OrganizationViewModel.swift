@@ -37,12 +37,15 @@ class OrganizationViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            organizations = try await listOrganizationsUseCase.execute()
+            let result = try await listOrganizationsUseCase.execute()
+            guard !Task.isCancelled else { return }
+            organizations = result
             // Load all members for all organizations to determine roles
             await loadAllMembers()
         } catch is CancellationError {
             // Ignore cancellation - this happens during pull-to-refresh
         } catch {
+            guard !Task.isCancelled else { return }
             errorMessage = error.localizedDescription
         }
     }
@@ -52,13 +55,16 @@ class OrganizationViewModel: ObservableObject {
             // Load members for all organizations
             var tempMembers: [Member] = []
             for org in organizations {
+                guard !Task.isCancelled else { return }
                 let result = try await listMembersUseCase.execute(organizationId: org.id)
                 tempMembers.append(contentsOf: result.members)
             }
+            guard !Task.isCancelled else { return }
             allMembers = tempMembers
         } catch is CancellationError {
             // Ignore cancellation - this happens during pull-to-refresh
         } catch {
+            guard !Task.isCancelled else { return }
             errorMessage = error.localizedDescription
         }
     }
@@ -113,6 +119,7 @@ class OrganizationViewModel: ObservableObject {
         } catch is CancellationError {
             // Ignore cancellation - this happens during pull-to-refresh
         } catch {
+            guard !Task.isCancelled else { return }
             errorMessage = error.localizedDescription
         }
     }

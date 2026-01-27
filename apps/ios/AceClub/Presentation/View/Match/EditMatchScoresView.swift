@@ -93,8 +93,7 @@ struct EditMatchScoresView: View {
 
                         ProgressView("Mise à jour des scores...")
                             .padding()
-                            .background(Color(.systemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .cardStyle()
                     }
                 }
             }

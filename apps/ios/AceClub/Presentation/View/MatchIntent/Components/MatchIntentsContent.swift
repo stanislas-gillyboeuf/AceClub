@@ -29,10 +29,10 @@ struct MatchIntentsContent: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.horizontal, 20)
+            .padding(.horizontal, Theme.paddingHorizontal)
 
             actionButtons
-                .padding(.horizontal, 20)
+                .padding(.horizontal, Theme.paddingHorizontal)
                 .padding(.bottom, 32)
                 .padding(.top, 16)
         }
