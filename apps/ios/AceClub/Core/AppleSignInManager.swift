@@ -17,6 +17,7 @@ enum AppleSignInError: Error, LocalizedError {
     case cancelled
     case invalidCredential
     case networkError(Error)
+    case configurationError(String)
 
     var errorDescription: String? {
         switch self {
@@ -29,7 +30,10 @@ enum AppleSignInError: Error, LocalizedError {
         case .invalidCredential:
             return "Identifiants Apple invalides"
         case .networkError(let error):
-            return "Erreur réseau: \(error.localizedDescription)"
+            let nsError = error as NSError
+            return "Erreur Apple Sign-In (code: \(nsError.code)): \(error.localizedDescription)"
+        case .configurationError(let message):
+            return "Erreur de configuration: \(message)"
         }
     }
 }
