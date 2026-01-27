@@ -191,13 +191,15 @@ struct ProfileView: View {
             }
             .navigationTitle("Mon Profil")
             .task(id: "profile-load") {
-                // Ne charger que si les données ne sont pas déjà présentes
                 if profileViewModel.user == nil {
-                    await loadAllData()
+                    await profileViewModel.getMe()
+                    await profileViewModel.loadMyMatchIntents()
+                    await organizationViewModel.loadOrganizations()
+                    await organizationViewModel.loadActiveMember()
+                    await invitationViewModel.loadUserInvitations()
                 }
             }
             .refreshable {
-                // Use refresh methods that survive SwiftUI task cancellation
                 async let userTask: () = profileViewModel.refreshUser()
                 async let intentsTask: () = profileViewModel.refreshMatchIntents()
                 async let orgsTask: () = organizationViewModel.refreshOrganizations()
@@ -222,17 +224,6 @@ struct ProfileView: View {
     private func handleSignOut() {
         Task {
             await authViewModel.signOut()
-        }
-    }
-
-    private func loadAllData() async {
-        // Lancer toutes les requêtes en parallèle avec withTaskGroup
-        await withTaskGroup(of: Void.self) { group in
-            group.addTask { await self.profileViewModel.getMe() }
-            group.addTask { await self.profileViewModel.loadMyMatchIntents() }
-            group.addTask { await self.organizationViewModel.loadOrganizations() }
-            group.addTask { await self.organizationViewModel.loadActiveMember() }
-            group.addTask { await self.invitationViewModel.loadUserInvitations() }
         }
     }
 }
