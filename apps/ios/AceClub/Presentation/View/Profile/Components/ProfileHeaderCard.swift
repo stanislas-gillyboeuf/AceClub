@@ -23,7 +23,6 @@ struct ProfileHeaderCard: View {
             Spacer(minLength: 0)
         }
         .padding(Theme.paddingCard)
-        // Carte claire sur fond gris (plus lisible / “natif”)
         .background(Theme.secondaryBackground)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
         .overlay {
