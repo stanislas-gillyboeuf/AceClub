@@ -16,11 +16,21 @@ export const searchOrganizations = async (c: Context<HonoContext>) => {
 
     const organizationsQuery = whereClause
       ? db
-          .select({ id: organization.id, name: organization.name, slug: organization.slug, logo: organization.logo })
+          .select({
+            id: organization.id,
+            name: organization.name,
+            slug: organization.slug,
+            logo: organization.logo,
+          })
           .from(organization)
           .where(whereClause)
       : db
-          .select({ id: organization.id, name: organization.name, slug: organization.slug, logo: organization.logo })
+          .select({
+            id: organization.id,
+            name: organization.name,
+            slug: organization.slug,
+            logo: organization.logo,
+          })
           .from(organization);
 
     const totalQuery = whereClause
@@ -54,4 +64,3 @@ export const searchOrganizations = async (c: Context<HonoContext>) => {
     );
   }
 };
-

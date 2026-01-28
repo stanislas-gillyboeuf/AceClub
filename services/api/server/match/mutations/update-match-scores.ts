@@ -60,11 +60,12 @@ export const updateMatchScores = async (c: Context<HonoContext>) => {
 
       // Create missing sets if needed
       const existingSetNumbers = new Set(existingSets.map((s) => s.setNumber));
+      const asSetNumber = (n: number) => n as 1 | 2 | 3 | 4 | 5;
       const setsToCreate = validated.sets
-        .filter((s) => !existingSetNumbers.has(s.setNumber))
+        .filter((s) => !existingSetNumbers.has(asSetNumber(s.setNumber)))
         .map((s) => ({
           matchId,
-          setNumber: s.setNumber,
+          setNumber: asSetNumber(s.setNumber),
         }));
 
       let newSets: typeof existingSets = [];

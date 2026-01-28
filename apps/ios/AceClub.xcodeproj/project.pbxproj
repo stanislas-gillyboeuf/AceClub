@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B20531552F183FFF009CEE8C /* UserHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20531542F183FFF009CEE8C /* UserHeaderView.swift */; };
 		B2D1A9272F222F40005966BD /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = B2D1A9262F222F40005966BD /* GoogleSignIn */; };
 		B2D1A9292F222F40005966BD /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B2D1A9282F222F40005966BD /* GoogleSignInSwift */; };
 		B2F5A8152F2827FA00650579 /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B2F5A8142F2827FA00650579 /* Debug.xcconfig */; };
@@ -15,7 +14,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		B20531542F183FFF009CEE8C /* UserHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserHeaderView.swift; sourceTree = "<group>"; };
 		B2BECE342F15801D008700D8 /* AceClub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AceClub.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2F5A8142F2827FA00650579 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		B2F5A8162F28280200650579 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
@@ -60,7 +58,6 @@
 			children = (
 				B2BECE362F15801D008700D8 /* AceClub */,
 				B2BECE352F15801D008700D8 /* Products */,
-				B20531542F183FFF009CEE8C /* UserHeaderView.swift */,
 				B2F5A8142F2827FA00650579 /* Debug.xcconfig */,
 				B2F5A8162F28280200650579 /* Release.xcconfig */,
 			);
@@ -155,7 +152,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B20531552F183FFF009CEE8C /* UserHeaderView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

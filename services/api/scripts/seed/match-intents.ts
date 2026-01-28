@@ -1,16 +1,12 @@
 import { faker } from "@faker-js/faker";
 import { ulid } from "ulid";
-import {
-  matchIntent,
-  matchIntentSwipe,
-  matchRequest,
-} from "../../db/schema/index.js";
+import { matchIntent, matchIntentSwipe, matchRequest } from "../../db/schema/index.js";
 import type { Database } from "./context.js";
 import { SEED_COUNTS } from "./context.js";
 
 export async function seedMatchIntents(
   db: Database,
-  ctx: { userIds: string[] }
+  ctx: { userIds: string[] },
 ): Promise<{ intentIds: string[]; intentIdToUserId: Map<string, string> }> {
   const intentIds: string[] = [];
   const intentIdToUserId = new Map<string, string>();
@@ -22,24 +18,14 @@ export async function seedMatchIntents(
       intentIdToUserId.set(id, ctx.userIds[u]);
       const date = faker.date.soon({ days: 14 });
       const time = new Date(date);
-      time.setHours(
-        faker.helpers.arrayElement([9, 10, 11, 14, 15, 16, 17, 18]),
-        0,
-        0,
-        0
-      );
+      time.setHours(faker.helpers.arrayElement([9, 10, 11, 14, 15, 16, 17, 18]), 0, 0, 0);
       await db.insert(matchIntent).values({
         id,
         userId: ctx.userIds[u],
         date,
         time,
         duration: faker.helpers.arrayElement([60, 90, 120]),
-        status: faker.helpers.arrayElement([
-          "pending",
-          "pending",
-          "accepted",
-          "rejected",
-        ]),
+        status: faker.helpers.arrayElement(["pending", "pending", "accepted", "rejected"]),
       });
     }
   }
@@ -54,7 +40,7 @@ export async function seedSwipes(
     userIds: string[];
     intentIds: string[];
     intentIdToUserId: Map<string, string>;
-  }
+  },
 ): Promise<{ likeSwipes: { matchIntentId: string; swiperUserId: string }[] }> {
   const rows: Array<{
     id: string;
@@ -68,9 +54,7 @@ export async function seedSwipes(
   for (let i = 0; i < SEED_COUNTS.SWIPE_COUNT; i++) {
     const intentId = faker.helpers.arrayElement(ctx.intentIds);
     const ownerId = ctx.intentIdToUserId.get(intentId) ?? ctx.userIds[0];
-    const swiperId = faker.helpers.arrayElement(
-      ctx.userIds.filter((id) => id !== ownerId)
-    );
+    const swiperId = faker.helpers.arrayElement(ctx.userIds.filter((id) => id !== ownerId));
     const key = `${intentId}-${swiperId}`;
     if (swiped.has(key)) continue;
     swiped.add(key);
@@ -100,7 +84,7 @@ export async function seedMatchRequests(
     userIds: string[];
     intentIdToUserId: Map<string, string>;
     likeSwipes: { matchIntentId: string; swiperUserId: string }[];
-  }
+  },
 ): Promise<void> {
   const used = new Set<string>();
   const rows: Array<{
@@ -126,12 +110,10 @@ export async function seedMatchRequests(
       matchIntentId: s.matchIntentId,
       requesterId: s.swiperUserId,
       receiverId,
-      status: faker.helpers.arrayElement([
-        "pending",
-        "accepted",
-        "accepted",
-        "rejected",
-      ]) as "pending" | "accepted" | "rejected",
+      status: faker.helpers.arrayElement(["pending", "accepted", "accepted", "rejected"]) as
+        | "pending"
+        | "accepted"
+        | "rejected",
       createdAt: faker.date.recent({ days: 2 }),
       respondedAt: null,
     });

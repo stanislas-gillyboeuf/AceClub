@@ -7,6 +7,7 @@ final class OnboardingViewModel: ObservableObject {
         case clubSelection = 0
         case sportSelection = 1
         case skillLevelSelection = 2
+        case phoneNumber = 3
     }
 
     // MARK: - State
@@ -15,6 +16,7 @@ final class OnboardingViewModel: ObservableObject {
     @Published var selectedOrganization: Organization?
     @Published var selectedSport: Sport?
     @Published var selectedSkillLevel: SkillLevel?
+    @Published var phoneNumber: String = ""
 
     @Published var organizations: [Organization] = []
     @Published var searchQuery: String = ""
@@ -31,7 +33,7 @@ final class OnboardingViewModel: ObservableObject {
     private var searchTask: Task<Void, Never>?
 
     // MARK: - Computed
-    var isLastStep: Bool { currentStep == .skillLevelSelection }
+    var isLastStep: Bool { currentStep == .phoneNumber }
 
     var canGoBack: Bool { currentStep.rawValue > 0 }
 
@@ -43,7 +45,15 @@ final class OnboardingViewModel: ObservableObject {
             return selectedSport != nil
         case .skillLevelSelection:
             return selectedSkillLevel != nil
+        case .phoneNumber:
+            return isPhoneNumberValid(phoneNumber)
         }
+    }
+
+    private func isPhoneNumberValid(_ value: String) -> Bool {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        let digits = trimmed.filter(\.isNumber)
+        return !trimmed.isEmpty && digits.count >= 8
     }
 
     // MARK: - Navigation
@@ -100,6 +110,9 @@ final class OnboardingViewModel: ObservableObject {
         guard let selectedSkillLevel else {
             throw NSError(domain: "Onboarding", code: 3, userInfo: [NSLocalizedDescriptionKey: "Veuillez sélectionner un niveau."])
         }
+        guard isPhoneNumberValid(phoneNumber) else {
+            throw NSError(domain: "Onboarding", code: 4, userInfo: [NSLocalizedDescriptionKey: "Veuillez renseigner un numéro de téléphone valide."])
+        }
 
         isSubmitting = true
         errorMessage = nil
@@ -108,7 +121,8 @@ final class OnboardingViewModel: ObservableObject {
         let updatedUser = try await completeOnboardingUseCase.execute(
             organizationId: selectedOrganization.id,
             sport: selectedSport.rawValue,
-            skillLevel: selectedSkillLevel.value
+            skillLevel: selectedSkillLevel.value,
+            phoneNumber: phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines)
         )
         return updatedUser
     }

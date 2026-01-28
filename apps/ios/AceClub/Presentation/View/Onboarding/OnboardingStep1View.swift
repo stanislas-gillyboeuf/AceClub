@@ -80,6 +80,7 @@ struct OnboardingStep1View: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 

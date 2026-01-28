@@ -29,7 +29,11 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
     }
 
     // Récupérer l'intent
-    const [intent] = await db.select().from(matchIntent).where(eq(matchIntent.id, request.matchIntentId)).limit(1);
+    const [intent] = await db
+      .select()
+      .from(matchIntent)
+      .where(eq(matchIntent.id, request.matchIntentId))
+      .limit(1);
 
     if (!intent) {
       return c.json({ error: "Match intent not found" }, 404);
@@ -69,7 +73,10 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
       .returning();
 
     // Marquer l'intent comme accepted
-    await db.update(matchIntent).set({ status: "accepted" }).where(eq(matchIntent.id, request.matchIntentId));
+    await db
+      .update(matchIntent)
+      .set({ status: "accepted" })
+      .where(eq(matchIntent.id, request.matchIntentId));
 
     return c.json({
       request: updatedRequest,

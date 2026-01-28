@@ -4,7 +4,11 @@ import { ulid } from "ulid";
 
 export const matchIntentStatus = pgEnum("match_intent_status", ["pending", "accepted", "rejected"]);
 export const swipeAction = pgEnum("swipe_action", ["like", "pass"]);
-export const matchRequestStatus = pgEnum("match_request_status", ["pending", "accepted", "rejected"]);
+export const matchRequestStatus = pgEnum("match_request_status", [
+  "pending",
+  "accepted",
+  "rejected",
+]);
 
 export const matchIntent = pgTable("match_intent", {
   id: text("id")

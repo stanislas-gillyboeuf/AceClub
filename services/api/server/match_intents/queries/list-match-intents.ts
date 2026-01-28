@@ -11,8 +11,8 @@ export const listMatchIntents = async (c: Context<HonoContext>) => {
       return c.json({ error: "User not authenticated" }, 401);
     }
 
-    const cursor = c.req.query("cursor"); 
-    const limit = Math.min(parseInt(c.req.query("limit") || "20"), 100); 
+    const cursor = c.req.query("cursor");
+    const limit = Math.min(parseInt(c.req.query("limit") || "20"), 100);
     const conditions = [eq(matchIntent.userId, userId)];
 
     if (cursor) {

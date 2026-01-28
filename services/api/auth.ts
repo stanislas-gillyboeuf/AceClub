@@ -3,6 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./db";
 import { bearer, organization } from "better-auth/plugins";
 import { admin } from "better-auth/plugins/admin";
+import { phoneNumber } from "better-auth/plugins";
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -21,7 +22,7 @@ export const auth = betterAuth({
   },
   account: {
     accountLinking: {
-        enabled: true, 
+      enabled: true,
     },
   },
   socialProviders: {
@@ -44,5 +45,5 @@ export const auth = betterAuth({
     "https://appleid.apple.com",
   ],
 
-  plugins: [bearer(), admin(), organization()],
+  plugins: [bearer(), admin(), organization(), phoneNumber()],
 });

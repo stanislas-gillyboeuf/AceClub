@@ -3,7 +3,13 @@ import type { HonoContext } from "../../types/hono";
 import { zValidator } from "@hono/zod-validator";
 import { requireAuth } from "../../middleware/auth";
 import { createMatchIntentValidator } from "./validators";
-import { createMatchIntent, deleteMatchIntent, swipe, acceptRequest, rejectRequest } from "./mutations";
+import {
+  createMatchIntent,
+  deleteMatchIntent,
+  swipe,
+  acceptRequest,
+  rejectRequest,
+} from "./mutations";
 import { listMatchIntents, discover, listRequests } from "./queries";
 
 export const matchIntentRouter = new Hono<HonoContext>();

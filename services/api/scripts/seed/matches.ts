@@ -1,17 +1,12 @@
 import { faker } from "@faker-js/faker";
 import { ulid } from "ulid";
-import {
-  match,
-  matchParticipant,
-  set,
-  setScore,
-} from "../../db/schema/index.js";
+import { match, matchParticipant, set, setScore } from "../../db/schema/index.js";
 import type { Database } from "./context.js";
 import { SEED_COUNTS } from "./context.js";
 
 export async function seedMatches(
   db: Database,
-  ctx: { userIds: string[] }
+  ctx: { userIds: string[] },
 ): Promise<{ matchIds: string[]; participantIds: string[] }> {
   const matchIds: string[] = [];
   const participantIds: string[] = [];
@@ -22,11 +17,7 @@ export async function seedMatches(
     await db.insert(match).values({
       id,
       createdBy: faker.helpers.arrayElement(ctx.userIds),
-      status: faker.helpers.arrayElement([
-        "scheduled",
-        "ongoing",
-        "finished",
-      ]),
+      status: faker.helpers.arrayElement(["scheduled", "ongoing", "finished"]),
       startedAt: null,
       finishedAt: null,
     });
@@ -52,7 +43,7 @@ export async function seedMatches(
 
 export async function seedSetsAndScores(
   db: Database,
-  ctx: { matchIds: string[]; participantIds: string[] }
+  ctx: { matchIds: string[]; participantIds: string[] },
 ): Promise<void> {
   for (let m = 0; m < ctx.matchIds.length; m++) {
     const matchId = ctx.matchIds[m];

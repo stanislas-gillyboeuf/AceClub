@@ -5,11 +5,7 @@ import * as schema from "../../db/schema/index.js";
 import type { Database } from "./context.js";
 import { seedUsers } from "./users.js";
 import { seedOrganizations } from "./organizations.js";
-import {
-  seedMatchIntents,
-  seedSwipes,
-  seedMatchRequests,
-} from "./match-intents.js";
+import { seedMatchIntents, seedSwipes, seedMatchRequests } from "./match-intents.js";
 import { seedMatches, seedSetsAndScores } from "./matches.js";
 
 if (!("DATABASE_URL" in process.env)) {

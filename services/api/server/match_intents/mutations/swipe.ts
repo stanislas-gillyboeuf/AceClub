@@ -41,7 +41,12 @@ export const swipe = async (c: Context<HonoContext>) => {
     const [existingSwipe] = await db
       .select()
       .from(matchIntentSwipe)
-      .where(and(eq(matchIntentSwipe.matchIntentId, matchIntentId), eq(matchIntentSwipe.swiperUserId, userId)))
+      .where(
+        and(
+          eq(matchIntentSwipe.matchIntentId, matchIntentId),
+          eq(matchIntentSwipe.swiperUserId, userId),
+        ),
+      )
       .limit(1);
 
     if (existingSwipe) {

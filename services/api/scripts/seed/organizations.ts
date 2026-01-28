@@ -14,7 +14,7 @@ const ORG_NAMES = [
 
 export async function seedOrganizations(
   db: Database,
-  ctx: { userIds: string[] }
+  ctx: { userIds: string[] },
 ): Promise<{ orgIds: string[] }> {
   const orgIds: string[] = [];
   const orgRows = ORG_NAMES.slice(0, SEED_COUNTS.ORG_COUNT).map((name) => {

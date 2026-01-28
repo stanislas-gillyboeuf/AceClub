@@ -41,6 +41,7 @@ struct OnboardingStep2View: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 

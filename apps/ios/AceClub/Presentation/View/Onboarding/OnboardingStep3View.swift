@@ -31,6 +31,7 @@ struct OnboardingStep3View: View {
                     .foregroundStyle(.secondary)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onAppear {
             // Preselect first level if needed
             if viewModel.selectedSkillLevel == nil, let sport = viewModel.selectedSport {

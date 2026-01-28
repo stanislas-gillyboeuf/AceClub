@@ -27,15 +27,20 @@ struct OnboardingView: View {
 
                     OnboardingStep3View(viewModel: viewModel)
                         .tag(OnboardingViewModel.OnboardingStep.skillLevelSelection)
+
+                    OnboardingStep4View(viewModel: viewModel)
+                        .tag(OnboardingViewModel.OnboardingStep.phoneNumber)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .gesture(DragGesture()) // disables swipe navigation
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 
                 OnboardingNavigationButtons(viewModel: viewModel) {
                     Task { await finish() }
                 }
             }
             .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .navigationTitle("Onboarding")
             .navigationBarTitleDisplayMode(.inline)
             .task {

@@ -24,9 +24,9 @@ export const discover = async (c: Context<HonoContext>) => {
           .where(
             and(
               eq(matchIntentSwipe.matchIntentId, matchIntent.id),
-              eq(matchIntentSwipe.swiperUserId, userId)
-            )
-          )
+              eq(matchIntentSwipe.swiperUserId, userId),
+            ),
+          ),
       ),
     ];
 

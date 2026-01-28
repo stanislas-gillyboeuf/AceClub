@@ -1,11 +1,5 @@
 import { relations } from "drizzle-orm";
-import {
-  pgTable,
-  text,
-  timestamp,
-  pgEnum,
-  index,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, pgEnum, index } from "drizzle-orm/pg-core";
 import { ulid } from "ulid";
 import { user } from "../auth/schema";
 import { organization } from "../auth/schema";

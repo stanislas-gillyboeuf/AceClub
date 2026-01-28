@@ -38,8 +38,19 @@ export const completeOnboardingValidator = z
     organizationId: z.string().min(1, "Organization ID is required"),
     sport: z.enum(["tennis", "padel"]),
     skillLevel: z.string().min(1, "Skill level is required"),
+    phoneNumber: z
+      .string()
+      .trim()
+      .min(1, "Phone number is required")
+      .refine((value) => value.replace(/\D/g, "").length >= 8, {
+        message: "Invalid phone number",
+      }),
   })
-  .refine((data) => {
-    if (data.sport === "tennis") return (TENNIS_LEVELS as readonly string[]).includes(data.skillLevel);
-    return (PADEL_LEVELS as readonly string[]).includes(data.skillLevel);
-  }, { message: "Invalid skill level for the selected sport", path: ["skillLevel"] });
+  .refine(
+    (data) => {
+      if (data.sport === "tennis")
+        return (TENNIS_LEVELS as readonly string[]).includes(data.skillLevel);
+      return (PADEL_LEVELS as readonly string[]).includes(data.skillLevel);
+    },
+    { message: "Invalid skill level for the selected sport", path: ["skillLevel"] },
+  );

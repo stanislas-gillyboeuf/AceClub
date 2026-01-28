@@ -51,4 +51,5 @@ struct CompleteOnboardingRequestDTO: Codable {
     let organizationId: String
     let sport: String
     let skillLevel: String
+    let phoneNumber: String
 }

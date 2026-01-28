@@ -10,6 +10,7 @@ export const searchUsers = async (c: Context<HonoContext>) => {
   try {
     // @ts-ignore
     const validated = c.req.valid("query") as z.infer<typeof searchUsersValidator>;
+    const phoneQuery = validated.query.replace(/[^0-9+]/g, "");
 
     const users = await db
       .select({
@@ -21,7 +22,11 @@ export const searchUsers = async (c: Context<HonoContext>) => {
       .from(user)
       .where(
         and(
-          or(ilike(user.name, `%${validated.query}%`), ilike(user.email, `%${validated.query}%`)),
+          or(
+            ilike(user.name, `%${validated.query}%`),
+            ilike(user.email, `%${validated.query}%`),
+            ilike(user.phoneNumber, `%${phoneQuery || validated.query}%`),
+          ),
           eq(user.banned, false),
         ),
       )

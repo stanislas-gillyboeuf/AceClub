@@ -61,7 +61,7 @@ class UserAPIDataSource {
         }
     }
 
-    func completeOnboarding(organizationId: String, sport: String, skillLevel: String) async throws -> UserDTO {
+    func completeOnboarding(organizationId: String, sport: String, skillLevel: String, phoneNumber: String) async throws -> UserDTO {
         guard let url = URL(string: "\(Config.apiBaseURL)/user/complete-onboarding") else {
             throw UserAPIDateSourceError.invalidURL
         }
@@ -69,7 +69,8 @@ class UserAPIDataSource {
         let requestBody = CompleteOnboardingRequestDTO(
             organizationId: organizationId,
             sport: sport,
-            skillLevel: skillLevel
+            skillLevel: skillLevel,
+            phoneNumber: phoneNumber
         )
         let body = try JSONEncoder().encode(requestBody)
         let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: body)

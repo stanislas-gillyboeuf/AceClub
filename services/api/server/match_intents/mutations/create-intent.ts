@@ -13,16 +13,18 @@ export const createMatchIntent = async (c: Context<HonoContext>) => {
     if (!userId) {
       return c.json({ error: "User not authenticated" }, 401);
     }
-    const [createdMatchIntent] = await db.insert(matchIntent).values({
-      userId: userId,
-      date: new Date(validated.date),
-      time: new Date(validated.time),
-      duration: validated.duration,
-    }).returning();
+    const [createdMatchIntent] = await db
+      .insert(matchIntent)
+      .values({
+        userId: userId,
+        date: new Date(validated.date),
+        time: new Date(validated.time),
+        duration: validated.duration,
+      })
+      .returning();
 
     return c.json(createdMatchIntent, 201);
-
-} catch (error) {
+  } catch (error) {
     const errorMessage = (error as Error).message;
     console.error("💥 [CREATE MATCH INTENT] Error message:", errorMessage);
     if (errorMessage.includes("foreign key constraint")) {
