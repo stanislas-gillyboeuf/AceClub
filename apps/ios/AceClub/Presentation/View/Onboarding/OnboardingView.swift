@@ -46,6 +46,7 @@ struct OnboardingView: View {
             .task {
                 await viewModel.searchOrganizations(query: nil)
             }
+            .background(Theme.primaryBackground)
         }
     }
 
@@ -59,9 +60,3 @@ struct OnboardingView: View {
         }
     }
 }
-
-#Preview {
-    OnboardingView()
-        .environment(AuthViewModel())
-}
-

@@ -71,5 +71,6 @@ struct RootView: View {
                 selection = .feed
             }
         }
+        .background(Theme.primaryBackground)
     }
 }

@@ -30,8 +30,8 @@ enum Theme {
 
     // MARK: - Semantic colors (adapt to light/dark)
 
-    static var primaryBackground: Color { Color(.systemBackground) }
-    static var secondaryBackground: Color { Color(.systemGray6) }
+    static var primaryBackground: Color { Color(.systemGray6) }
+    static var secondaryBackground: Color { Color(.systemBackground)}
     static var tertiaryBackground: Color { Color(.systemGray5) }
     static var cardBackground: Color { Color(.systemGray6) }
     static var borderColor: Color { Color(.systemGray5) }

@@ -29,6 +29,7 @@ struct MatchIntentsView: View {
                     Text(msg)
                 }
             }
+            .background(Theme.primaryBackground)
         }
     }
 }

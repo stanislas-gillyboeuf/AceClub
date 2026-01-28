@@ -2,7 +2,7 @@ import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { matchRequest, matchIntent, match, matchParticipant } from "../../../db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 
 export const acceptRequest = async (c: Context<HonoContext>) => {
   try {
@@ -13,7 +13,6 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
 
     const requestId = c.req.param("id");
 
-    // Récupérer la demande
     const [request] = await db
       .select()
       .from(matchRequest)
@@ -62,7 +61,7 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
       },
     ]);
 
-    // Marquer la demande comme acceptée
+    // Marquer la demande courante comme acceptée
     const [updatedRequest] = await db
       .update(matchRequest)
       .set({
@@ -71,6 +70,21 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
       })
       .where(eq(matchRequest.id, requestId))
       .returning();
+
+    // Refuser automatiquement toutes les autres demandes encore en attente
+    await db
+      .update(matchRequest)
+      .set({
+        status: "rejected",
+        respondedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(matchRequest.matchIntentId, request.matchIntentId),
+          ne(matchRequest.id, request.id),
+          eq(matchRequest.status, "pending"),
+        ),
+      );
 
     // Marquer l'intent comme accepted
     await db

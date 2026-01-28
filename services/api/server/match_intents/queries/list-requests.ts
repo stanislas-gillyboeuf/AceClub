@@ -11,7 +11,6 @@ export const listRequests = async (c: Context<HonoContext>) => {
       return c.json({ error: "User not authenticated" }, 401);
     }
 
-    // Récupérer les demandes avec les infos de l'intent et du requester
     const requests = await db.query.matchRequest.findMany({
       where: eq(matchRequest.receiverId, userId),
       orderBy: [desc(matchRequest.createdAt)],

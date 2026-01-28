@@ -184,13 +184,12 @@ struct ProfileView: View {
             }
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
-            .background(Theme.secondaryBackground)
+            .background(Theme.primaryBackground)
             .navigationTitle("Mon Profil")
             .task(id: "profile-load") {
                 if profileViewModel.user == nil {
                     await profileViewModel.getMe()
                 }
-                // Important: si `user` est déjà chargé (cached), on veut quand même charger le reste.
                 await profileViewModel.loadMyMatchIntents()
                 await organizationViewModel.loadOrganizations()
                 await organizationViewModel.loadActiveMember()

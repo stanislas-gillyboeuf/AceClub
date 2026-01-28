@@ -49,7 +49,7 @@ struct MatchListContent: View {
                     .listRowSeparator(.hidden)
                 }
             }
-            .listStyle(.plain)
+            .listStyle(.automatic)
             .refreshable {
                 await viewModel.refreshMatches()
             }
