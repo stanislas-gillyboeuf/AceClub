@@ -1,4 +1,5 @@
 import { SignJWT, importPKCS8 } from "jose";
+import * as http2 from "http2";
 
 const APNS_TEAM_ID = process.env.APNS_TEAM_ID!;
 const APNS_KEY_ID = process.env.APNS_KEY_ID!;
@@ -7,8 +8,8 @@ const APNS_SIGNING_KEY = process.env.APNS_SIGNING_KEY!.replace(/\\n/g, "\n");
 const APNS_BUNDLE_ID = process.env.APNS_BUNDLE_ID!;
 const APNS_HOST =
   process.env.APNS_USE_SANDBOX === "true"
-    ? "https://api.sandbox.push.apple.com"
-    : "https://api.push.apple.com";
+    ? "api.sandbox.push.apple.com"
+    : "api.push.apple.com";
 
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
@@ -54,10 +55,60 @@ export interface APNsResponse {
   deviceToken: string;
 }
 
+function sendHttp2Request(
+  host: string,
+  path: string,
+  headers: Record<string, string>,
+  body: string
+): Promise<{ statusCode: number; body: string }> {
+  return new Promise((resolve, reject) => {
+    const client = http2.connect(`https://${host}`);
+
+    client.on("error", (err) => {
+      client.close();
+      reject(err);
+    });
+
+    const req = client.request({
+      ":method": "POST",
+      ":path": path,
+      ...headers,
+    });
+
+    req.setEncoding("utf8");
+
+    let responseBody = "";
+    let statusCode = 0;
+
+    req.on("response", (headers) => {
+      statusCode = headers[":status"] as number;
+    });
+
+    req.on("data", (chunk) => {
+      responseBody += chunk;
+    });
+
+    req.on("end", () => {
+      client.close();
+      resolve({ statusCode, body: responseBody });
+    });
+
+    req.on("error", (err) => {
+      client.close();
+      reject(err);
+    });
+
+    req.write(body);
+    req.end();
+  });
+}
+
 export async function sendPushNotification(
-  payload: PushNotificationPayload,
+  payload: PushNotificationPayload
 ): Promise<APNsResponse> {
-  console.log(`[APNs] Sending notification to device: ${payload.deviceToken.substring(0, 20)}...`);
+  console.log(
+    `[APNs] Sending notification to device: ${payload.deviceToken.substring(0, 20)}...`
+  );
   console.log(`[APNs] Using host: ${APNS_HOST}`);
 
   try {
@@ -75,38 +126,39 @@ export async function sendPushNotification(
       ...payload.data,
     };
 
-    console.log(`[APNs] Payload:`, JSON.stringify(apnsPayload));
+    const body = JSON.stringify(apnsPayload);
+    console.log(`[APNs] Payload:`, body);
 
-    const response = await fetch(
-      `${APNS_HOST}/3/device/${payload.deviceToken}`,
+    const response = await sendHttp2Request(
+      APNS_HOST,
+      `/3/device/${payload.deviceToken}`,
       {
-        method: "POST",
-        headers: {
-          Authorization: `bearer ${token}`,
-          "apns-topic": APNS_BUNDLE_ID,
-          "apns-push-type": "alert",
-          "apns-priority": "10",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(apnsPayload),
+        authorization: `bearer ${token}`,
+        "apns-topic": APNS_BUNDLE_ID,
+        "apns-push-type": "alert",
+        "apns-priority": "10",
+        "content-type": "application/json",
       },
+      body
     );
 
-    if (response.ok) {
-      console.log(`[APNs] Success! Status: ${response.status}`);
+    if (response.statusCode === 200) {
+      console.log(`[APNs] Success! Status: ${response.statusCode}`);
       return {
         success: true,
-        statusCode: response.status,
+        statusCode: response.statusCode,
         deviceToken: payload.deviceToken,
       };
     }
 
-    const errorBody = await response.json().catch(() => ({}));
-    const reason = (errorBody as { reason?: string }).reason || "Unknown error";
-    console.error(`[APNs] Failed! Status: ${response.status}, Reason: ${reason}`);
+    const errorBody = response.body ? JSON.parse(response.body) : {};
+    const reason = errorBody.reason || "Unknown error";
+    console.error(
+      `[APNs] Failed! Status: ${response.statusCode}, Reason: ${reason}`
+    );
     return {
       success: false,
-      statusCode: response.status,
+      statusCode: response.statusCode,
       reason,
       deviceToken: payload.deviceToken,
     };
@@ -121,7 +173,7 @@ export async function sendPushNotification(
 }
 
 export async function sendPushNotificationBatch(
-  payloads: PushNotificationPayload[],
+  payloads: PushNotificationPayload[]
 ): Promise<APNsResponse[]> {
   const results = await Promise.all(payloads.map(sendPushNotification));
   return results;
