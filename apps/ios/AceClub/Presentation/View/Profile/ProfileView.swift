@@ -240,6 +240,9 @@ struct ProfileView: View {
                 SettingsView { updatedUser in
                     authViewModel.currentUser = updatedUser
                     profileViewModel.user = updatedUser
+                    Task {
+                        await profileViewModel.loadUserPreferences()
+                    }
                 }
             }
         }
