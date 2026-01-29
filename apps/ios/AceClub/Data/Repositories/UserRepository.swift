@@ -28,4 +28,26 @@ class UserRepository {
         )
         return UserMapper.map(userDTO: userDTO)
     }
+
+    func getPreferences() async throws -> UserPreferences {
+        let preferencesDTO = try await userDataSource.getPreferences()
+        return UserMapper.map(userPreferencesDTO: preferencesDTO)
+    }
+
+    func updateProfile(
+        name: String?,
+        phoneNumber: String?,
+        organizationId: String?,
+        sport: String?,
+        skillLevel: String?
+    ) async throws -> User {
+        let userDTO = try await userDataSource.updateProfile(
+            name: name,
+            phoneNumber: phoneNumber,
+            organizationId: organizationId,
+            sport: sport,
+            skillLevel: skillLevel
+        )
+        return UserMapper.map(userDTO: userDTO)
+    }
 }

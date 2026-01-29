@@ -54,3 +54,43 @@ export const completeOnboardingValidator = z
     },
     { message: "Invalid skill level for the selected sport", path: ["skillLevel"] },
   );
+
+export const updateProfileValidator = z
+  .object({
+    name: z.string().min(1, "Name must not be empty").optional(),
+    phoneNumber: z
+      .string()
+      .trim()
+      .refine((value) => value.replace(/\D/g, "").length >= 8, {
+        message: "Invalid phone number",
+      })
+      .optional(),
+    organizationId: z.string().min(1, "Organization ID must not be empty").optional(),
+    sport: z.enum(["tennis", "padel"]).optional(),
+    skillLevel: z.string().min(1, "Skill level must not be empty").optional(),
+  })
+  .refine(
+    (data) => {
+      // At least one field must be provided
+      return (
+        data.name !== undefined ||
+        data.phoneNumber !== undefined ||
+        data.organizationId !== undefined ||
+        data.sport !== undefined ||
+        data.skillLevel !== undefined
+      );
+    },
+    { message: "At least one field must be provided" },
+  )
+  .refine(
+    (data) => {
+      // If skillLevel is provided, validate it against the sport (if sport is also provided)
+      if (data.skillLevel && data.sport) {
+        if (data.sport === "tennis")
+          return (TENNIS_LEVELS as readonly string[]).includes(data.skillLevel);
+        return (PADEL_LEVELS as readonly string[]).includes(data.skillLevel);
+      }
+      return true;
+    },
+    { message: "Invalid skill level for the selected sport", path: ["skillLevel"] },
+  );

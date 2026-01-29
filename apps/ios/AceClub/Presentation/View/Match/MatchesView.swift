@@ -94,7 +94,7 @@ struct MatchesView: View {
                     await viewModel.loadMatches()
                 }
             }
-            .background(Theme.primaryBackground)
-        }
+            
+        }.background(Theme.primaryBackground)
     }
 }

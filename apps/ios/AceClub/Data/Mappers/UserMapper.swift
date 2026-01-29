@@ -21,7 +21,8 @@ class UserMapper {
             banned: userDTO.banned,
             banReason: userDTO.banReason,
             banExpires: userDTO.banExpires,
-            onboardingCompleted: userDTO.onboardingCompleted
+            onboardingCompleted: userDTO.onboardingCompleted,
+            phoneNumber: userDTO.phoneNumber
         )
     }
 
@@ -47,12 +48,26 @@ class UserMapper {
             banned: nil,
             banReason: nil,
             banExpires: nil,
-            onboardingCompleted: nil
+            onboardingCompleted: nil,
+            phoneNumber: nil
         )
     }
 
     static func map(userSearchResponseDTO: UserSearchResponseDTO) -> [User] {
         return userSearchResponseDTO.users.map { map(userSearchItemDTO: $0) }
+    }
+
+    static func map(userPreferencesDTO: UserPreferencesResponseDTO) -> UserPreferences {
+        return UserPreferences(
+            id: userPreferencesDTO.id,
+            userId: userPreferencesDTO.userId,
+            organizationId: userPreferencesDTO.organizationId,
+            organizationName: userPreferencesDTO.organizationName,
+            sport: userPreferencesDTO.sport,
+            skillLevel: userPreferencesDTO.skillLevel,
+            createdAt: userPreferencesDTO.createdAt,
+            updatedAt: userPreferencesDTO.updatedAt
+        )
     }
 }
 

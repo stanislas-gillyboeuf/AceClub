@@ -113,5 +113,6 @@ export const completeOnboarding = async (c: Context<HonoContext>) => {
     banReason: updatedUserRow.banReason,
     banExpires: updatedUserRow.banExpires,
     onboardingCompleted: updatedUserRow.onboarding_completed,
+    phoneNumber: updatedUserRow.phoneNumber,
   });
 };

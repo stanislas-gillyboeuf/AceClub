@@ -6,6 +6,7 @@ struct ProfileView: View {
     @ObservedObject var invitationViewModel: InvitationViewModel
     @Environment(AuthViewModel.self) private var authViewModel
     @State private var showCreateMatchIntentSheet = false
+    @State private var showSettingsSheet = false
 
     var body: some View {
         NavigationStack {
@@ -186,6 +187,15 @@ struct ProfileView: View {
             .scrollContentBackground(.hidden)
             .background(Theme.primaryBackground)
             .navigationTitle("Mon Profil")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showSettingsSheet = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                    }
+                }
+            }
             .task(id: "profile-load") {
                 if profileViewModel.user == nil {
                     await profileViewModel.getMe()
@@ -206,6 +216,12 @@ struct ProfileView: View {
             .sheet(isPresented: $showCreateMatchIntentSheet) {
                 CreateMatchIntentSheet(isPresented: $showCreateMatchIntentSheet) {
                     Task { await profileViewModel.loadMyMatchIntents() }
+                }
+            }
+            .fullScreenCover(isPresented: $showSettingsSheet) {
+                SettingsView { updatedUser in
+                    authViewModel.currentUser = updatedUser
+                    profileViewModel.user = updatedUser
                 }
             }
         }

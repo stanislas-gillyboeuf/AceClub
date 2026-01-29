@@ -13,6 +13,7 @@ struct User: Identifiable {
     let banReason: String?
     let banExpires: String?
     let onboardingCompleted: Bool?
+    let phoneNumber: String?
 
     // MARK: - Derived safe accessors
     /// URL construite à partir de `image` si valide, sinon `nil`.
