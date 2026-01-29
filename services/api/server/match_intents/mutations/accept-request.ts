@@ -113,6 +113,7 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
       .limit(1);
 
     // Envoyer notification au demandeur (celui qui a fait la requete)
+    console.log(`[ACCEPT REQUEST] Sending notification to requester: ${request.requesterId}`);
     sendNotificationToUser({
       userId: request.requesterId,
       type: "match_request_accepted",
@@ -123,7 +124,7 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
       data: {
         matchId: newMatch.id,
       },
-    }).catch((err) => console.error("Failed to send notification:", err));
+    }).catch((err) => console.error("[ACCEPT REQUEST] Failed to send notification:", err));
 
     return c.json({
       request: updatedRequest,
