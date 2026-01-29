@@ -94,13 +94,17 @@ class MatchViewModel: ObservableObject {
         errorMessage = nil
 
         do {
+            // Calculer le vainqueur automatiquement basé sur les sets
+            let winnerId = calculateWinner()
+
             let updatedMatch = try await updateMatchUseCase.execute(
                 matchId: matchId,
                 status: .finished,
-                finishedAt: Date()
+                finishedAt: Date(),
+                winnerId: winnerId
             )
 
-            // Update the match in detail
+            // Update the match in detail and refresh to get updated participants
             if let currentDetail = matchDetail {
                 matchDetail = MatchDetail(
                     match: updatedMatch,
@@ -109,6 +113,9 @@ class MatchViewModel: ObservableObject {
                 )
             }
 
+            // Refresh pour récupérer les participants mis à jour avec isWinner
+            await refreshMatch()
+
             isLoading = false
             return true
         } catch {
@@ -116,6 +123,31 @@ class MatchViewModel: ObservableObject {
             isLoading = false
             return false
         }
+    }
+
+    /// Calcule le vainqueur en comptant les sets gagnés par chaque joueur
+    private func calculateWinner() -> String? {
+        guard let detail = matchDetail, !detail.sets.isEmpty else { return nil }
+
+        var setsWonByUser: [String: Int] = [:]
+
+        for set in detail.sets {
+            guard set.scores.count == 2 else { continue }
+
+            let sortedScores = set.scores.sorted { $0.games > $1.games }
+            guard let winner = sortedScores.first, winner.games > sortedScores.last!.games else {
+                continue // Set nul ou scores égaux
+            }
+
+            setsWonByUser[winner.userId, default: 0] += 1
+        }
+
+        // Le vainqueur est celui qui a gagné le plus de sets
+        guard let (winnerId, _) = setsWonByUser.max(by: { $0.value < $1.value }) else {
+            return nil
+        }
+
+        return winnerId
     }
 
     // MARK: - Update Scores

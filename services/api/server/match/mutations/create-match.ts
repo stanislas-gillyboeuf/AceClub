@@ -156,7 +156,9 @@ export const createMatch = async (c: Context<HonoContext>) => {
         .values({
           createdBy: validated.createdBy,
           status: validated.status,
+          type: validated.type,
           createdAt: new Date(validated.createdAt),
+          scheduledAt: validated.scheduledAt ? new Date(validated.scheduledAt) : undefined,
           startedAt: validated.startedAt ? new Date(validated.startedAt) : undefined,
           finishedAt: validated.finishedAt ? new Date(validated.finishedAt) : undefined,
         })

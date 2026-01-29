@@ -15,13 +15,15 @@ class UpdateMatchUseCase {
         matchId: String,
         status: MatchStatus? = nil,
         startedAt: Date? = nil,
-        finishedAt: Date? = nil
+        finishedAt: Date? = nil,
+        winnerId: String? = nil
     ) async throws -> Match {
         return try await matchRepository.updateMatch(
             id: matchId,
             status: status,
             startedAt: startedAt,
-            finishedAt: finishedAt
+            finishedAt: finishedAt,
+            winnerId: winnerId
         )
     }
 }

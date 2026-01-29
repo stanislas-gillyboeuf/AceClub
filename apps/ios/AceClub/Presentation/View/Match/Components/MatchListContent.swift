@@ -12,16 +12,13 @@ struct MatchListContent: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if viewModel.hasActiveFilters {
-                MatchFilterBanner(
-                    filterText: filterText,
-                    onClear: {
-                        Task {
-                            await viewModel.clearFilters()
-                        }
-                    }
-                )
-            }
+            // Chips de filtre scrollables
+            MatchFilterChips(
+                selectedStatus: $viewModel.selectedStatus,
+                onFilterChange: { status in
+                    await viewModel.filterByStatus(status)
+                }
+            )
 
             // Match list
             List {
@@ -49,17 +46,13 @@ struct MatchListContent: View {
                     .listRowSeparator(.hidden)
                 }
             }
-            .listStyle(.automatic)
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .background(Theme.primaryBackground)
             .refreshable {
                 await viewModel.refreshMatches()
             }
         }
-    }
-
-    private var filterText: String {
-        if let status = viewModel.selectedStatus {
-            return "Filtre: \(status.displayName)"
-        }
-        return "Filtres actifs"
+        .background(Theme.primaryBackground)
     }
 }

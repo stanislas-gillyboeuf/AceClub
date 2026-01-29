@@ -57,6 +57,19 @@ class MatchMapper {
         }
     }
 
+    // MARK: - Match Type Mapping
+
+    private static func mapType(_ typeString: String?) -> MatchType {
+        switch typeString?.lowercased() {
+        case "training":
+            return .training
+        case "match", .none:
+            return .match // Default fallback
+        default:
+            return .match
+        }
+    }
+
     // MARK: - Match Mapping
 
     static func map(matchDTO: MatchDTO) -> Match {
@@ -64,7 +77,9 @@ class MatchMapper {
             id: matchDTO.id,
             createdBy: matchDTO.createdBy,
             status: mapStatus(matchDTO.status),
+            type: mapType(matchDTO.type),
             createdAt: parseDate(matchDTO.createdAt) ?? Date(),
+            scheduledAt: matchDTO.scheduledAt.flatMap { parseDate($0) },
             startedAt: matchDTO.startedAt.flatMap { parseDate($0) },
             finishedAt: matchDTO.finishedAt.flatMap { parseDate($0) }
         )
@@ -133,7 +148,9 @@ class MatchMapper {
             id: matchWithParticipantsDTO.id,
             createdBy: matchWithParticipantsDTO.createdBy,
             status: mapStatus(matchWithParticipantsDTO.status),
+            type: mapType(matchWithParticipantsDTO.type),
             createdAt: parseDate(matchWithParticipantsDTO.createdAt) ?? Date(),
+            scheduledAt: matchWithParticipantsDTO.scheduledAt.flatMap { parseDate($0) },
             startedAt: matchWithParticipantsDTO.startedAt.flatMap { parseDate($0) },
             finishedAt: matchWithParticipantsDTO.finishedAt.flatMap { parseDate($0) },
             participants: participants
@@ -159,7 +176,9 @@ class MatchMapper {
     static func mapToCreateRequest(
         createdBy: String,
         status: MatchStatus,
+        type: MatchType = .match,
         createdAt: Date,
+        scheduledAt: Date?,
         startedAt: Date?,
         finishedAt: Date?,
         participants: [(userId: String, side: MatchSide, isWinner: Bool)],
@@ -193,7 +212,9 @@ class MatchMapper {
         return CreateMatchRequestDTO(
             createdBy: createdBy,
             status: status.rawValue,
+            type: type.rawValue,
             createdAt: formatter.string(from: createdAt),
+            scheduledAt: scheduledAt.map { formatter.string(from: $0) },
             startedAt: startedAt.map { formatter.string(from: $0) },
             finishedAt: finishedAt.map { formatter.string(from: $0) },
             participants: participantDTOs,
@@ -205,16 +226,20 @@ class MatchMapper {
 
     static func mapToUpdateRequest(
         status: MatchStatus?,
-        startedAt: Date?,
-        finishedAt: Date?
+        scheduledAt: Date? = nil,
+        startedAt: Date? = nil,
+        finishedAt: Date? = nil,
+        winnerId: String? = nil
     ) -> UpdateMatchRequestDTO {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
         return UpdateMatchRequestDTO(
             status: status?.rawValue,
+            scheduledAt: scheduledAt.map { formatter.string(from: $0) },
             startedAt: startedAt.map { formatter.string(from: $0) },
-            finishedAt: finishedAt.map { formatter.string(from: $0) }
+            finishedAt: finishedAt.map { formatter.string(from: $0) },
+            winnerId: winnerId
         )
     }
 

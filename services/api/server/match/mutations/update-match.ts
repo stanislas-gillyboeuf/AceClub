@@ -3,8 +3,8 @@ import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { updateMatchValidator } from "../validators";
 import { db } from "../../../db";
-import { match } from "../../../db/schema/match/schema";
-import { eq } from "drizzle-orm";
+import { match, matchParticipant } from "../../../db/schema/match/schema";
+import { eq, and, ne } from "drizzle-orm";
 
 export const updateMatch = async (c: Context<HonoContext>) => {
   try {
@@ -31,6 +31,7 @@ export const updateMatch = async (c: Context<HonoContext>) => {
       // Build update data with validation
       const updateData: Partial<{
         status: "scheduled" | "ongoing" | "finished";
+        scheduledAt: Date | null;
         startedAt: Date | null;
         finishedAt: Date | null;
       }> = {};
@@ -53,7 +54,12 @@ export const updateMatch = async (c: Context<HonoContext>) => {
         updateData.status = validated.status;
       }
 
-      // Handle startedAt
+      // Handle scheduledAt (date/heure prévue du match)
+      if (validated.scheduledAt !== undefined) {
+        updateData.scheduledAt = validated.scheduledAt ? new Date(validated.scheduledAt) : null;
+      }
+
+      // Handle startedAt (date/heure réelle de début)
       if (validated.startedAt !== undefined) {
         updateData.startedAt = validated.startedAt ? new Date(validated.startedAt) : null;
 
@@ -99,6 +105,37 @@ export const updateMatch = async (c: Context<HonoContext>) => {
         .set(updateData)
         .where(eq(match.id, matchId))
         .returning();
+
+      // Handle winner update if provided
+      if (validated.winnerId !== undefined) {
+        if (validated.winnerId === null) {
+          // Clear winner: set all participants to isWinner = false
+          await tx
+            .update(matchParticipant)
+            .set({ isWinner: false })
+            .where(eq(matchParticipant.matchId, matchId));
+        } else {
+          // Set winner: update the winning participant and clear others
+          await tx
+            .update(matchParticipant)
+            .set({ isWinner: false })
+            .where(
+              and(eq(matchParticipant.matchId, matchId), ne(matchParticipant.userId, validated.winnerId))
+            );
+
+          const [winnerUpdate] = await tx
+            .update(matchParticipant)
+            .set({ isWinner: true })
+            .where(
+              and(eq(matchParticipant.matchId, matchId), eq(matchParticipant.userId, validated.winnerId))
+            )
+            .returning();
+
+          if (!winnerUpdate) {
+            throw new Error("Winner user is not a participant in this match");
+          }
+        }
+      }
 
       return updatedMatch;
     });

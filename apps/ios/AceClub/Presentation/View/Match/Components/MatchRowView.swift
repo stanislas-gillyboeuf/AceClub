@@ -11,44 +11,94 @@ struct MatchRowView: View {
     let match: MatchListItem
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(match.status.displayName)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(statusColor)
-                    .clipShape(Capsule())
+        HStack(alignment: .center, spacing: 12) {
+            // Date proéminente (style carnet de bord)
+            dateView
 
-                Spacer()
+            // Détails du match
+            VStack(alignment: .leading, spacing: 4) {
+                // Badges type + statut
+                HStack(spacing: 6) {
+                    // Badge type
+                    Label(match.type.displayName, systemImage: match.type.icon)
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(.secondary)
 
-                Text(match.formattedCreatedAt)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    // Badge statut
+                    Text(match.status.displayName)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(statusColor)
+                        .clipShape(Capsule())
+                }
+
+                // Participants inline
+                HStack(spacing: 6) {
+                    Text(homeName)
+                        .font(.subheadline.weight(isHomeWinner ? .bold : .regular))
+                    if isHomeWinner { crownIcon }
+
+                    Text("vs")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    if isAwayWinner { crownIcon }
+                    Text(awayName)
+                        .font(.subheadline.weight(isAwayWinner ? .bold : .regular))
+                }
             }
 
-            HStack(spacing: 16) {
-                ParticipantView(
-                    participant: match.homeParticipant,
-                    side: .home,
-                    isWinner: match.winner?.id == match.homeParticipant?.id
-                )
-
-                Text("VS")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-
-                ParticipantView(
-                    participant: match.awayParticipant,
-                    side: .away,
-                    isWinner: match.winner?.id == match.awayParticipant?.id
-                )
-            }
+            Spacer()
         }
-        .padding(.vertical, 4)
+        .contentShape(Rectangle())
+    }
+
+    // MARK: - Subviews
+
+    @ViewBuilder
+    private var dateView: some View {
+        VStack(spacing: 2) {
+            Text(displayDate, format: .dateTime.day())
+                .font(.title2.weight(.bold))
+            Text(displayDate, format: .dateTime.month(.abbreviated))
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+        }
+        .frame(width: 50)
+    }
+
+    private var crownIcon: some View {
+        Image(systemName: "crown.fill")
+            .font(.caption2)
+            .foregroundStyle(.yellow)
+    }
+
+    // MARK: - Computed Properties
+
+    private var displayDate: Date {
+        // Priorité : scheduledAt (date prévue) > startedAt (date réelle) > createdAt
+        match.scheduledAt ?? match.startedAt ?? match.createdAt
+    }
+
+    private var homeName: String {
+        match.homeParticipant?.user?.name ?? "N/A"
+    }
+
+    private var awayName: String {
+        match.awayParticipant?.user?.name ?? "N/A"
+    }
+
+    private var isHomeWinner: Bool {
+        guard let homeId = match.homeParticipant?.id else { return false }
+        return match.winner?.id == homeId
+    }
+
+    private var isAwayWinner: Bool {
+        guard let awayId = match.awayParticipant?.id else { return false }
+        return match.winner?.id == awayId
     }
 
     private var statusColor: Color {

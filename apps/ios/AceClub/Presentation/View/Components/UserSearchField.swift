@@ -35,15 +35,7 @@ struct UserSearchField: View {
     private func selectedUserView(user: User) -> some View {
         HStack {
             HStack(spacing: 8) {
-                Circle()
-                    .fill(Color.blue.opacity(0.2))
-                    .frame(width: 32, height: 32)
-                    .overlay {
-                        Text(user.initials)
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.blue)
-                    }
+                userAvatar(user: user, size: 32)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(user.displayName)
@@ -67,6 +59,43 @@ struct UserSearchField: View {
         }
         .padding(8)
         .inputFieldStyle()
+    }
+
+    @ViewBuilder
+    private func userAvatar(user: User, size: CGFloat) -> some View {
+        if let imageURL = user.imageURL {
+            AsyncImage(url: imageURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: size, height: size)
+                        .clipShape(Circle())
+                case .failure:
+                    avatarPlaceholder(user: user, size: size)
+                case .empty:
+                    ProgressView()
+                        .frame(width: size, height: size)
+                @unknown default:
+                    avatarPlaceholder(user: user, size: size)
+                }
+            }
+        } else {
+            avatarPlaceholder(user: user, size: size)
+        }
+    }
+
+    private func avatarPlaceholder(user: User, size: CGFloat) -> some View {
+        Circle()
+            .fill(Color.blue.opacity(0.2))
+            .frame(width: size, height: size)
+            .overlay {
+                Text(user.initials)
+                    .font(size > 32 ? .subheadline : .caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.blue)
+            }
     }
 
     private var searchField: some View {
@@ -108,20 +137,7 @@ struct UserSearchField: View {
                     showResults = false
                 } label: {
                     HStack(spacing: 8) {
-                        Circle()
-                            .fill(Color.blue.opacity(0.2))
-                            .frame(width: 32, height: 32)
-                            .overlay {
-                                AsyncImage(url: user.imageURL) { image in
-                                    image
-                                        .resizable()
-                                        .scaledToFill()
-                                } placeholder: {
-                                    ProgressView()
-                                }
-                                .frame(width: 32, height: 32)
-                                .clipShape(Circle())
-                            }
+                        userAvatar(user: user, size: 32)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(user.displayName)

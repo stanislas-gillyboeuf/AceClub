@@ -43,7 +43,9 @@ class MatchRepository {
     func createMatch(
         createdBy: String,
         status: MatchStatus,
+        type: MatchType = .match,
         createdAt: Date,
+        scheduledAt: Date?,
         startedAt: Date?,
         finishedAt: Date?,
         participants: [(userId: String, side: MatchSide, isWinner: Bool)],
@@ -52,7 +54,9 @@ class MatchRepository {
         let requestDTO = MatchMapper.mapToCreateRequest(
             createdBy: createdBy,
             status: status,
+            type: type,
             createdAt: createdAt,
+            scheduledAt: scheduledAt,
             startedAt: startedAt,
             finishedAt: finishedAt,
             participants: participants,
@@ -69,12 +73,14 @@ class MatchRepository {
         id: String,
         status: MatchStatus? = nil,
         startedAt: Date? = nil,
-        finishedAt: Date? = nil
+        finishedAt: Date? = nil,
+        winnerId: String? = nil
     ) async throws -> Match {
         let requestDTO = MatchMapper.mapToUpdateRequest(
             status: status,
             startedAt: startedAt,
-            finishedAt: finishedAt
+            finishedAt: finishedAt,
+            winnerId: winnerId
         )
 
         let responseDTO = try await matchDataSource.updateMatch(id: id, request: requestDTO)

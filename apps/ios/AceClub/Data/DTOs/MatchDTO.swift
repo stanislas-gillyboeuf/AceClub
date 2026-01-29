@@ -12,7 +12,9 @@ struct MatchDTO: Codable {
     let id: String
     let createdBy: String
     let status: String
+    let type: String?
     let createdAt: String
+    let scheduledAt: String?
     let startedAt: String?
     let finishedAt: String?
 }
@@ -63,7 +65,9 @@ struct MatchWithParticipantsDTO: Codable {
     let id: String
     let createdBy: String
     let status: String
+    let type: String?
     let createdAt: String
+    let scheduledAt: String?
     let startedAt: String?
     let finishedAt: String?
     let participants: [MatchParticipantDTO]
@@ -80,7 +84,9 @@ struct PaginationDTO: Codable {
 struct CreateMatchRequestDTO: Codable {
     let createdBy: String
     let status: String
+    let type: String?
     let createdAt: String
+    let scheduledAt: String?
     let startedAt: String?
     let finishedAt: String?
     let participants: [CreateParticipantDTO]
@@ -120,8 +126,10 @@ struct SetScoreResponseDTO: Codable {
 // MARK: - Update Match Request DTO
 struct UpdateMatchRequestDTO: Codable {
     let status: String?
+    let scheduledAt: String?
     let startedAt: String?
     let finishedAt: String?
+    let winnerId: String?
 }
 
 // MARK: - Update Match Response DTO

@@ -10,7 +10,8 @@ import SwiftUI
 struct MatchesView: View {
     @StateObject private var viewModel = MatchListViewModel()
     @State private var showingCreateMatch = false
-    @State private var showingListRequestMatch = false  
+    @State private var showingListRequestMatch = false
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -31,43 +32,6 @@ struct MatchesView: View {
                     .disabled(viewModel.isLoading)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Button {
-                            Task {
-                                await viewModel.filterByStatus(nil)
-                            }
-                        } label: {
-                            Label("Tous", systemImage: "list.bullet")
-                        }
-
-                        Button {
-                            Task {
-                                await viewModel.filterByStatus(.scheduled)
-                            }
-                        } label: {
-                            Label("Planifiés", systemImage: "calendar")
-                        }
-
-                        Button {
-                            Task {
-                                await viewModel.filterByStatus(.ongoing)
-                            }
-                        } label: {
-                            Label("En cours", systemImage: "play.circle")
-                        }
-
-                        Button {
-                            Task {
-                                await viewModel.filterByStatus(.finished)
-                            }
-                        } label: {
-                            Label("Terminés", systemImage: "checkmark.circle")
-                        }
-                    } label: {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showingListRequestMatch = true
                     } label: {
@@ -83,7 +47,7 @@ struct MatchesView: View {
                 }
             }
             .fullScreenCover(isPresented: $showingListRequestMatch) {
-                ListRequestMatch { 
+                ListRequestMatch {
                     Task {
                         await viewModel.refreshMatches()
                     }
@@ -94,7 +58,6 @@ struct MatchesView: View {
                     await viewModel.loadMatches()
                 }
             }
-            
-        }.background(Theme.primaryBackground)
+        }
     }
 }

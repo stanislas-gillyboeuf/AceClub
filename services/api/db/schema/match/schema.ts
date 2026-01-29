@@ -13,6 +13,7 @@ import { ulid } from "ulid";
 
 export const MatchStatus = pgEnum("match_status", ["scheduled", "ongoing", "finished"]);
 export const MatchSide = pgEnum("match_side", ["home", "away"]);
+export const MatchType = pgEnum("match_type", ["match", "training"]);
 
 export const match = pgTable("match", {
   id: text("id")
@@ -22,7 +23,9 @@ export const match = pgTable("match", {
     .notNull()
     .references(() => user.id),
   status: MatchStatus("status").notNull().default("scheduled"),
+  type: MatchType("type").notNull().default("match"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  scheduledAt: timestamp("scheduled_at"),
   startedAt: timestamp("started_at"),
   finishedAt: timestamp("finished_at"),
 });

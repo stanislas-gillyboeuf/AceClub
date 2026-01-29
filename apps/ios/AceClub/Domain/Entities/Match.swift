@@ -43,12 +43,34 @@ enum MatchSide: String, CaseIterable {
     }
 }
 
+// MARK: - Match Type
+enum MatchType: String, CaseIterable {
+    case match
+    case training
+
+    var displayName: String {
+        switch self {
+        case .match: return "Match"
+        case .training: return "Entraînement"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .match: return "sportscourt"
+        case .training: return "figure.run"
+        }
+    }
+}
+
 // MARK: - Match Entity
 struct Match: Identifiable {
     let id: String
     let createdBy: String
     let status: MatchStatus
+    let type: MatchType
     let createdAt: Date
+    let scheduledAt: Date?
     let startedAt: Date?
     let finishedAt: Date?
 
@@ -76,6 +98,11 @@ struct Match: Identifiable {
     /// Date de création formatée
     var formattedCreatedAt: String {
         createdAt.formatted(date: .abbreviated, time: .shortened)
+    }
+
+    /// Date prévue formatée
+    var formattedScheduledAt: String? {
+        scheduledAt?.formatted(date: .abbreviated, time: .shortened)
     }
 
     /// Date de début formatée
@@ -246,7 +273,9 @@ struct MatchListItem: Identifiable {
     let id: String
     let createdBy: String
     let status: MatchStatus
+    let type: MatchType
     let createdAt: Date
+    let scheduledAt: Date?
     let startedAt: Date?
     let finishedAt: Date?
     let participants: [MatchParticipant]

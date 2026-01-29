@@ -31,7 +31,11 @@ export const createMatchValidator = z
     status: z.enum(["scheduled", "ongoing", "finished"], {
       message: "Status must be 'scheduled', 'ongoing', or 'finished'",
     }),
+    type: z.enum(["match", "training"], {
+      message: "Type must be 'match' or 'training'",
+    }).optional().default("match"),
     createdAt: z.string().datetime("Invalid datetime format for createdAt"),
+    scheduledAt: z.string().datetime("Invalid datetime format for scheduledAt").optional(),
     startedAt: z.string().datetime("Invalid datetime format for startedAt").optional(),
     finishedAt: z.string().datetime("Invalid datetime format for finishedAt").optional(),
     participants: z
@@ -105,8 +109,10 @@ export const createMatchValidator = z
   .refine(
     (data) => {
       // Validate status consistency with timestamps
+      // scheduledAt peut être présent pour tout statut (date prévue)
+      // startedAt = date réelle de début, finishedAt = date réelle de fin
       if (data.status === "scheduled") {
-        // scheduled: pas de startedAt ni finishedAt
+        // scheduled: pas de startedAt ni finishedAt (seulement scheduledAt possible)
         return !data.startedAt && !data.finishedAt;
       }
       if (data.status === "ongoing") {
@@ -121,7 +127,7 @@ export const createMatchValidator = z
     },
     {
       message:
-        "Status must be consistent with startedAt/finishedAt timestamps (scheduled: no dates, ongoing: startedAt only, finished: both dates)",
+        "Status must be consistent with timestamps (scheduled: no startedAt/finishedAt, ongoing: startedAt only, finished: both)",
       path: ["status"],
     },
   )
@@ -149,8 +155,10 @@ export const updateMatchValidator = z
         message: "Status must be 'scheduled', 'ongoing', or 'finished'",
       })
       .optional(),
+    scheduledAt: z.string().datetime("Invalid datetime format for scheduledAt").nullable().optional(),
     startedAt: z.string().datetime("Invalid datetime format for startedAt").nullable().optional(),
     finishedAt: z.string().datetime("Invalid datetime format for finishedAt").nullable().optional(),
+    winnerId: z.string().nullable().optional(),
   })
   .refine(
     (data) => {
@@ -174,7 +182,11 @@ export const updateMatchValidator = z
     (data) => {
       // At least one field must be provided
       return (
-        data.status !== undefined || data.startedAt !== undefined || data.finishedAt !== undefined
+        data.status !== undefined ||
+        data.scheduledAt !== undefined ||
+        data.startedAt !== undefined ||
+        data.finishedAt !== undefined ||
+        data.winnerId !== undefined
       );
     },
     {

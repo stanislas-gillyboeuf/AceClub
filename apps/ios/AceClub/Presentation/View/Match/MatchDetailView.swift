@@ -31,50 +31,7 @@ struct MatchDetailView: View {
             }
         }
         .navigationTitle("Détails du match")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    if viewModel.canStartMatch {
-                        Button {
-                            Task {
-                                await viewModel.startMatch()
-                            }
-                        } label: {
-                            Label("Démarrer le match", systemImage: "play.circle")
-                        }
-                    }
-
-                    if viewModel.canFinishMatch {
-                        Button {
-                            Task {
-                                await viewModel.finishMatch()
-                            }
-                        } label: {
-                            Label("Terminer le match", systemImage: "checkmark.circle")
-                        }
-                    }
-
-                    if viewModel.canEditScores {
-                        Button {
-                            showingEditScores = true
-                        } label: {
-                            Label("Modifier les scores", systemImage: "pencil")
-                        }
-                    }
-
-                    Divider()
-
-                    Button(role: .destructive) {
-                        showingDeleteAlert = true
-                    } label: {
-                        Label("Supprimer le match", systemImage: "trash")
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
-                }
-            }
-        }
+        .navigationBarTitleDisplayMode(.large)
         .refreshable {
             await viewModel.refreshMatch()
         }
@@ -115,226 +72,180 @@ struct MatchDetailView: View {
         }
     }
 
+    // MARK: - Content
+
     private func matchDetailContent(detail: MatchDetail) -> some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                matchStatusCard(match: detail.match)
-
-                participantsCard(detail: detail)
-
-                setsCard(sets: detail.sets)
-
-                matchInfoCard(match: detail.match)
-            }
-            .padding()
-        }
-    }
-
-    private func matchStatusCard(match: Match) -> some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("Statut")
-                    .font(.headline)
-                Spacer()
-                Text(match.status.displayName)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(statusColor(for: match.status))
-                    .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
-            }
-
-
-            if let duration = match.formattedDuration {
+        Form {
+            // Section 1: Résultat principal (score global proéminent)
+            Section {
                 HStack {
-                    Image(systemName: "clock")
-                        .foregroundStyle(.secondary)
-                    Text("Durée: \(duration)")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
                     Spacer()
+                    VStack(spacing: 8) {
+                        // Score global en grand
+                        Text(detail.formattedMatchScore)
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .contentTransition(.numericText())
+
+                        // Badge statut
+                        Text(detail.match.status.displayName)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(statusColor(for: detail.match.status))
+                            .clipShape(Capsule())
+                    }
+                    Spacer()
+                }
+                .listRowBackground(Color.clear)
+            }
+
+            // Section 2: Participants
+            Section("Participants") {
+                if let home = detail.homeParticipant {
+                    participantRow(participant: home, isWinner: detail.winner?.id == home.id)
+                }
+                if let away = detail.awayParticipant {
+                    participantRow(participant: away, isWinner: detail.winner?.id == away.id)
+                }
+            }
+
+            // Section 3: Sets (si présents)
+            if !detail.sets.isEmpty {
+                Section("Sets (\(detail.sets.count))") {
+                    ForEach(detail.sets) { set in
+                        LabeledContent(set.displayName) {
+                            Text(set.formattedScore)
+                                .font(.headline)
+                                .contentTransition(.numericText())
+                        }
+                    }
+                }
+            }
+
+            // Section 4: Informations
+            Section("Informations") {
+                LabeledContent("Type") {
+                    Label(detail.match.type.displayName, systemImage: detail.match.type.icon)
+                }
+
+                if let scheduledAt = detail.match.formattedScheduledAt {
+                    LabeledContent("Date prévue", value: scheduledAt)
+                }
+
+                if let startedAt = detail.match.formattedStartedAt {
+                    LabeledContent("Démarré le", value: startedAt)
+                }
+
+                if let finishedAt = detail.match.formattedFinishedAt {
+                    LabeledContent("Terminé le", value: finishedAt)
+                }
+
+                if let duration = detail.match.formattedDuration {
+                    LabeledContent("Durée", value: duration)
+                }
+
+                LabeledContent("Créé le", value: detail.match.formattedCreatedAt)
+            }
+
+            // Section 5: Actions
+            Section("Actions") {
+                if viewModel.canStartMatch {
+                    Button {
+                        Task { await viewModel.startMatch() }
+                    } label: {
+                        Label("Démarrer le match", systemImage: "play.circle")
+                    }
+                }
+
+                if viewModel.canFinishMatch {
+                    Button {
+                        Task { await viewModel.finishMatch() }
+                    } label: {
+                        Label("Terminer le match", systemImage: "checkmark.circle")
+                    }
+                }
+
+                if viewModel.canEditScores {
+                    Button {
+                        showingEditScores = true
+                    } label: {
+                        Label("Modifier les scores", systemImage: "pencil")
+                    }
+                }
+
+                Button(role: .destructive) {
+                    showingDeleteAlert = true
+                } label: {
+                    Label("Supprimer le match", systemImage: "trash")
                 }
             }
         }
-        .padding()
-        .cardStyle()
-    }
-
-    private func participantsCard(detail: MatchDetail) -> some View {
-        VStack(spacing: 16) {
-            HStack {
-                Text("Participants")
-                    .font(.headline)
-                Spacer()
-                Text(detail.formattedMatchScore)
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-                    .contentTransition(.numericText())
-            }
-
-            if let home = detail.homeParticipant {
-                participantRow(participant: home, isWinner: detail.winner?.id == home.id)
-            }
-
-            Divider()
-
-            if let away = detail.awayParticipant {
-                participantRow(participant: away, isWinner: detail.winner?.id == away.id)
-            }
-        }
-        .padding()
-        .cardStyle()
         .animation(.smooth, value: detail.formattedMatchScore)
     }
 
+    // MARK: - Row Components
+
     private func participantRow(participant: MatchParticipant, isWinner: Bool) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
+        HStack(spacing: 12) {
+            // Avatar avec image de profil ou initiales
+            participantAvatar(user: participant.user)
+
+            VStack(alignment: .leading, spacing: 2) {
                 Text(participant.side.displayName)
                     .font(.caption)
                     .foregroundStyle(.secondary)
-
-                Text(participant.user?.name ?? "NA")
+                Text(participant.user?.name ?? "N/A")
                     .font(.body)
                     .fontWeight(isWinner ? .bold : .regular)
             }
-
             Spacer()
-
             if isWinner {
-                HStack(spacing: 4) {
-                    Image(systemName: "crown.fill")
-                        .foregroundStyle(.yellow)
-                    Text("Vainqueur")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                }
+                Label("Vainqueur", systemImage: "crown.fill")
+                    .font(.caption)
+                    .foregroundStyle(.yellow)
             }
-        }
-        .onAppear {
-            print(participant)
         }
     }
 
-    private func setsCard(sets: [MatchSet]) -> some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("Sets")
-                    .font(.headline)
-                Spacer()
-                Text("\(sets.count) set(s)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            if sets.isEmpty {
-                Text("Aucun set enregistré")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-            } else {
-                ForEach(sets) { set in
-                    setRow(set: set)
-                    if set.id != sets.last?.id {
-                        Divider()
-                    }
+    @ViewBuilder
+    private func participantAvatar(user: User?) -> some View {
+        if let imageURL = user?.imageURL {
+            AsyncImage(url: imageURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 44, height: 44)
+                        .clipShape(Circle())
+                case .failure:
+                    avatarPlaceholder(user: user)
+                case .empty:
+                    ProgressView()
+                        .frame(width: 44, height: 44)
+                @unknown default:
+                    avatarPlaceholder(user: user)
                 }
             }
-        }
-        .padding()
-        .cardStyle()
-        .onTapGesture {
-            showingEditScores = true
+        } else {
+            avatarPlaceholder(user: user)
         }
     }
 
-    private func setRow(set: MatchSet) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(set.displayName)
+    private func avatarPlaceholder(user: User?) -> some View {
+        Circle()
+            .fill(Color.blue.opacity(0.2))
+            .frame(width: 44, height: 44)
+            .overlay {
+                Text(user?.initials ?? "??")
                     .font(.subheadline)
                     .fontWeight(.semibold)
-
-                Spacer()
-
-                Text(set.formattedScore)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.primary)
-                    .contentTransition(.numericText())
+                    .foregroundStyle(.blue)
             }
-
-            if set.scores.count == 2 {
-                HStack(spacing: 20) {
-                    ForEach(set.scores.sorted(by: { $0.side.rawValue < $1.side.rawValue })) { score in
-                        VStack(alignment: .leading, spacing: 2) {
-                            if let participant = viewModel.matchDetail?.participants.first(where: { $0.userId == score.userId }) {
-                                Text(participant.user?.name ?? score.side.displayName)
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                            } else {
-                                Text(score.side.displayName)
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Text("\(score.games)")
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .contentTransition(.numericText())
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-            }
-        }
-        .animation(.smooth, value: set.formattedScore)
     }
 
-    private func matchInfoCard(match: Match) -> some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("Informations")
-                    .font(.headline)
-                Spacer()
-            }
-
-            infoRow(label: "ID", value: match.id)
-            Divider()
-            infoRow(label: "Créé par", value: match.createdBy)
-            Divider()
-            infoRow(label: "Créé le", value: match.formattedCreatedAt)
-
-            if let startedAt = match.formattedStartedAt {
-                Divider()
-                infoRow(label: "Démarré le", value: startedAt)
-            }
-
-            if let finishedAt = match.formattedFinishedAt {
-                Divider()
-                infoRow(label: "Terminé le", value: finishedAt)
-            }
-        }
-        .padding()
-        .cardStyle()
-    }
-
-    private func infoRow(label: String, value: String) -> some View {
-        HStack {
-            Text(label)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            Spacer()
-            Text(value)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .lineLimit(1)
-                .truncationMode(.middle)
-        }
-    }
+    // MARK: - Error View
 
     private var errorView: some View {
         VStack(spacing: 16) {
@@ -360,6 +271,8 @@ struct MatchDetailView: View {
         }
         .padding()
     }
+
+    // MARK: - Helpers
 
     private func statusColor(for status: MatchStatus) -> Color {
         switch status {

@@ -18,6 +18,7 @@ struct CreateMatchView: View {
     var body: some View {
         NavigationStack {
             Form {
+                MatchTypeSection(type: $viewModel.type)
                 MatchStatusSection(status: $viewModel.status)
                 ParticipantsSection(homeUser: $viewModel.homeUser, awayUser: $viewModel.awayUser)
                 if viewModel.status != .scheduled {
@@ -66,6 +67,21 @@ struct CreateMatchView: View {
                     dismiss()
                 }
             }
+        }
+    }
+}
+
+private struct MatchTypeSection: View {
+    @Binding var type: MatchType
+    var body: some View {
+        Section("Type") {
+            Picker("Type", selection: $type) {
+                ForEach(MatchType.allCases, id: \.self) { matchType in
+                    Label(matchType.displayName, systemImage: matchType.icon)
+                        .tag(matchType as MatchType)
+                }
+            }
+            .pickerStyle(.segmented)
         }
     }
 }
@@ -222,6 +238,7 @@ class CreateMatchViewModel: ObservableObject {
 
     @Published var homeUser: User? = nil
     @Published var awayUser: User? = nil
+    @Published var type: MatchType = .match
     @Published var status: MatchStatus = .scheduled
     @Published var sets: [SetInput] = [SetInput()]
     @Published var winnerSide: MatchSide? = nil
@@ -318,7 +335,10 @@ class CreateMatchViewModel: ObservableObject {
                 }
             }
 
-            // Pour les matchs scheduled, pas de startedAt ni finishedAt
+            // scheduledAt = date prévue (pour tous les statuts)
+            // startedAt = date réelle de début (seulement ongoing/finished)
+            // finishedAt = date réelle de fin (seulement finished)
+            let scheduledDate: Date? = status == .scheduled ? startedAt : nil
             let startDate: Date? = (status == .ongoing || status == .finished) ? startedAt : nil
             let endDate: Date? = status == .finished ? finishedAt : nil
 
@@ -337,7 +357,9 @@ class CreateMatchViewModel: ObservableObject {
             let match = try await createMatchUseCase.execute(
                 createdBy: currentUser.id,
                 status: status,
+                type: type,
                 createdAt: creationDate,
+                scheduledAt: scheduledDate,
                 startedAt: startDate,
                 finishedAt: endDate,
                 participants: participants,

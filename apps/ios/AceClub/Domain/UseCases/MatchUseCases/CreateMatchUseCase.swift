@@ -14,7 +14,9 @@ class CreateMatchUseCase {
     func execute(
         createdBy: String,
         status: MatchStatus,
+        type: MatchType = .match,
         createdAt: Date = Date(),
+        scheduledAt: Date? = nil,
         startedAt: Date? = nil,
         finishedAt: Date? = nil,
         participants: [(userId: String, side: MatchSide, isWinner: Bool)],
@@ -23,7 +25,9 @@ class CreateMatchUseCase {
         return try await matchRepository.createMatch(
             createdBy: createdBy,
             status: status,
+            type: type,
             createdAt: createdAt,
+            scheduledAt: scheduledAt,
             startedAt: startedAt,
             finishedAt: finishedAt,
             participants: participants,

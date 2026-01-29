@@ -44,6 +44,8 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
       .values({
         createdBy: intent.userId,
         status: "scheduled",
+        type: intent.type ?? "match",
+        scheduledAt: intent.date ?? undefined,
       })
       .returning();
 
