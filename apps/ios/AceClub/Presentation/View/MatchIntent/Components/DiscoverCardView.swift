@@ -50,7 +50,22 @@ struct DiscoverCardView: View {
             }
 
             Spacer(minLength: 0)
+
+            typeBadge
         }
+    }
+
+    private var typeBadge: some View {
+        Label(item.intent.type.displayName, systemImage: item.intent.type.icon)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(item.intent.type == .match ? .blue : .orange)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                (item.intent.type == .match ? Color.blue : Color.orange)
+                    .opacity(0.12)
+            )
+            .clipShape(Capsule())
     }
 
     private var availabilitySection: some View {
@@ -74,6 +89,22 @@ struct DiscoverCardView: View {
 
                 if item.intent.duration > 0 {
                     infoLine(icon: "timer", title: durationLabel(minutes: item.intent.duration))
+                }
+            }
+
+            if let description = item.intent.description, !description.isEmpty {
+                Divider()
+                    .padding(.vertical, 4)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Note")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(Theme.labelSecondary)
+
+                    Text(description)
+                        .font(.subheadline)
+                        .foregroundStyle(Theme.labelPrimary)
+                        .lineLimit(3)
                 }
             }
         }

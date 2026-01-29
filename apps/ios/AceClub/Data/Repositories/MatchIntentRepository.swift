@@ -9,7 +9,7 @@ protocol MatchIntentRepositoryProtocol {
     func listMatchIntents(cursor: String?, limit: Int) async throws -> MatchIntentListResult
     func discover(cursor: String?, limit: Int) async throws -> DiscoverListResult
     func listRequests() async throws -> [MatchRequestWithDetails]
-    func createMatchIntent(date: Date, time: Date, duration: Int) async throws -> MatchIntent
+    func createMatchIntent(date: Date, time: Date, duration: Int, type: MatchIntentType, description: String?) async throws -> MatchIntent
     func deleteMatchIntent(id: String) async throws
     func swipe(matchIntentId: String, action: String) async throws -> SwipeResult
     func acceptRequest(id: String) async throws -> AcceptMatchRequestResult
@@ -38,8 +38,8 @@ class MatchIntentRepository: MatchIntentRepositoryProtocol {
         return MatchIntentMapper.map(detailsDTOs: dtos)
     }
 
-    func createMatchIntent(date: Date, time: Date, duration: Int) async throws -> MatchIntent {
-        let request = MatchIntentMapper.mapToCreateRequest(date: date, time: time, duration: duration)
+    func createMatchIntent(date: Date, time: Date, duration: Int, type: MatchIntentType, description: String?) async throws -> MatchIntent {
+        let request = MatchIntentMapper.mapToCreateRequest(date: date, time: time, duration: duration, type: type, description: description)
         let dto = try await dataSource.createMatchIntent(request: request)
         return MatchIntentMapper.map(intentDTO: dto)
     }

@@ -3,6 +3,7 @@ import { user } from "../auth/schema";
 import { ulid } from "ulid";
 
 export const matchIntentStatus = pgEnum("match_intent_status", ["pending", "accepted", "rejected"]);
+export const matchIntentType = pgEnum("match_intent_type", ["match", "training"]);
 export const swipeAction = pgEnum("swipe_action", ["like", "pass"]);
 export const matchRequestStatus = pgEnum("match_request_status", [
   "pending",
@@ -20,6 +21,8 @@ export const matchIntent = pgTable("match_intent", {
   date: timestamp("date"),
   time: timestamp("time"),
   duration: integer("duration").default(60),
+  type: matchIntentType("type").default("match"),
+  description: text("description"),
   status: matchIntentStatus("status").default("pending"),
   createdAt: timestamp("created_at").defaultNow(),
 });

@@ -12,6 +12,8 @@ struct CreateMatchIntentSheet: View {
     @State private var matchDate = Date()
     @State private var matchTime = Date()
     @State private var durationMinutes: Int = 90
+    @State private var intentType: MatchIntentType = .match
+    @State private var intentDescription: String = ""
     @State private var isLoading = false
     @State private var errorMessage: String?
 
@@ -37,7 +39,28 @@ struct CreateMatchIntentSheet: View {
                     }
                     .pickerStyle(.menu)
                 } header: {
-                    Text("Durée du match")
+                    Text("Durée")
+                }
+
+                Section {
+                    Picker("Type", selection: $intentType) {
+                        ForEach(MatchIntentType.allCases, id: \.self) { type in
+                            Label(type.displayName, systemImage: type.icon)
+                                .tag(type)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                } header: {
+                    Text("Type d'activité")
+                }
+
+                Section {
+                    TextField("Description (optionnel)", text: $intentDescription, axis: .vertical)
+                        .lineLimit(2...4)
+                } header: {
+                    Text("Description")
+                } footer: {
+                    Text("Ajoute des précisions : niveau recherché, lieu préféré...")
                 }
 
                 if let error = errorMessage {
@@ -48,7 +71,7 @@ struct CreateMatchIntentSheet: View {
                     }
                 }
             }
-            .navigationTitle("Je cherche un match")
+            .navigationTitle(intentType == .match ? "Je cherche un match" : "Je cherche un entraînement")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -99,7 +122,14 @@ struct CreateMatchIntentSheet: View {
         let dateTime = calendar.date(from: components) ?? matchDate
 
         do {
-            _ = try await createUseCase.execute(date: dateTime, time: dateTime, duration: durationMinutes)
+            let desc = intentDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+            _ = try await createUseCase.execute(
+                date: dateTime,
+                time: dateTime,
+                duration: durationMinutes,
+                type: intentType,
+                description: desc.isEmpty ? nil : desc
+            )
             onCreated?()
             isPresented = false
         } catch {

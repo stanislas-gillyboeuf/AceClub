@@ -13,6 +13,27 @@ enum MatchIntentStatus: String, CaseIterable {
     case rejected
 }
 
+// MARK: - Match Intent Type
+
+enum MatchIntentType: String, CaseIterable {
+    case match
+    case training
+
+    var displayName: String {
+        switch self {
+        case .match: return "Match"
+        case .training: return "Entraînement"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .match: return "sportscourt"
+        case .training: return "figure.run"
+        }
+    }
+}
+
 // MARK: - Match Intent
 
 struct MatchIntent: Identifiable {
@@ -21,6 +42,8 @@ struct MatchIntent: Identifiable {
     let date: Date?
     let time: Date?
     let duration: Int
+    let type: MatchIntentType
+    let description: String?
     let status: MatchIntentStatus
     let createdAt: Date?
 }

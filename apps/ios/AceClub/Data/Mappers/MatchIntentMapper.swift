@@ -34,6 +34,11 @@ class MatchIntentMapper {
         MatchRequestStatus(rawValue: s) ?? .pending
     }
 
+    private static func mapIntentType(_ s: String?) -> MatchIntentType {
+        guard let s = s else { return .match }
+        return MatchIntentType(rawValue: s) ?? .match
+    }
+
     // MARK: - MatchIntent
 
     static func map(intentDTO: MatchIntentDTO) -> MatchIntent {
@@ -43,6 +48,8 @@ class MatchIntentMapper {
             date: parseDate(intentDTO.date),
             time: parseDate(intentDTO.time),
             duration: intentDTO.duration ?? 60,
+            type: mapIntentType(intentDTO.type),
+            description: intentDTO.description,
             status: mapIntentStatus(intentDTO.status),
             createdAt: parseDate(intentDTO.createdAt)
         )
@@ -82,6 +89,8 @@ class MatchIntentMapper {
             date: parseDate(discoverItemDTO.date),
             time: parseDate(discoverItemDTO.time),
             duration: discoverItemDTO.duration ?? 60,
+            type: mapIntentType(discoverItemDTO.type),
+            description: discoverItemDTO.description,
             status: mapIntentStatus(discoverItemDTO.status),
             createdAt: parseDate(discoverItemDTO.createdAt)
         )
@@ -100,11 +109,13 @@ class MatchIntentMapper {
 
     // MARK: - Create intent (domain -> DTO)
 
-    static func mapToCreateRequest(date: Date, time: Date, duration: Int) -> CreateMatchIntentRequestDTO {
+    static func mapToCreateRequest(date: Date, time: Date, duration: Int, type: MatchIntentType, description: String?) -> CreateMatchIntentRequestDTO {
         CreateMatchIntentRequestDTO(
             date: formatDate(date),
             time: formatDate(time),
-            duration: duration
+            duration: duration,
+            type: type.rawValue,
+            description: description
         )
     }
 

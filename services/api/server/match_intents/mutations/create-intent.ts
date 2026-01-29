@@ -20,6 +20,8 @@ export const createMatchIntent = async (c: Context<HonoContext>) => {
         date: new Date(validated.date),
         time: new Date(validated.time),
         duration: validated.duration,
+        type: validated.type,
+        description: validated.description,
       })
       .returning();
 

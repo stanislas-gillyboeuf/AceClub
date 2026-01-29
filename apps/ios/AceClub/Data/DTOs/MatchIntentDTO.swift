@@ -13,6 +13,8 @@ struct MatchIntentDTO: Codable {
     let date: String?
     let time: String?
     let duration: Int?
+    let type: String?
+    let description: String?
     let status: String?
     let createdAt: String?
 }
@@ -38,6 +40,8 @@ struct MatchIntentWithUserDTO: Codable {
     let date: String?
     let time: String?
     let duration: Int?
+    let type: String?
+    let description: String?
     let status: String?
     let createdAt: String?
     let user: UserBriefDTO?
@@ -60,6 +64,8 @@ struct CreateMatchIntentRequestDTO: Codable {
     let date: String
     let time: String
     let duration: Int
+    let type: String
+    let description: String?
 }
 
 // Response = MatchIntentDTO (single object, 201)

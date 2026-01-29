@@ -32,18 +32,30 @@ struct MatchIntentRow: View {
 
             // Details
             VStack(alignment: .leading, spacing: 4) {
-                if let time = intent.time {
-                    Text(time, format: .dateTime.hour().minute())
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
-                } else if intent.date != nil {
-                    Text("Heure non définie")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("Date non renseignée")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                HStack(spacing: 6) {
+                    Label(intent.type.displayName, systemImage: intent.type.icon)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(intent.type == .match ? .blue : .orange)
+
+                    if let time = intent.time {
+                        Text("•")
+                            .foregroundStyle(.tertiary)
+                        Text(time, format: .dateTime.hour().minute())
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.primary)
+                    }
+                }
+
+                if intent.time == nil {
+                    if intent.date != nil {
+                        Text("Heure non définie")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Date non renseignée")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 Text(durationLabel(intent.duration))
@@ -84,6 +96,8 @@ struct MatchIntentRow: View {
                 date: Date(),
                 time: Date(),
                 duration: 90,
+                type: .match,
+                description: "Cherche joueur niveau intermédiaire",
                 status: .pending,
                 createdAt: Date()
             ),
@@ -99,6 +113,8 @@ struct MatchIntentRow: View {
                 date: Calendar.current.date(byAdding: .day, value: 2, to: Date()),
                 time: Calendar.current.date(bySettingHour: 18, minute: 30, second: 0, of: Date()),
                 duration: 60,
+                type: .training,
+                description: nil,
                 status: .pending,
                 createdAt: Date()
             ),
