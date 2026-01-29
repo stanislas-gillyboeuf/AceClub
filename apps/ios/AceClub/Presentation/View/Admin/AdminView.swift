@@ -27,10 +27,8 @@ struct AdminView: View {
 
                 Section("Users") {
                     if viewModel.isLoading && viewModel.users.isEmpty {
-                        HStack {
-                            Spacer()
-                            ProgressView()
-                            Spacer()
+                        SkeletonList(count: 5) {
+                            SkeletonRow(showAvatar: false, lineCount: 2, titleWidth: 120)
                         }
                     } else if viewModel.users.isEmpty {
                         Text("No users yet.")

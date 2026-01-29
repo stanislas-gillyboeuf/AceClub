@@ -25,7 +25,15 @@ struct MatchesView: View {
         NavigationStack {
             ZStack {
                 if isLoading && matches.isEmpty {
-                    ProgressView("Chargement des matchs...")
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            SkeletonList(count: 5) {
+                                MatchRowSkeleton()
+                            }
+                        }
+                        .padding(.horizontal, Theme.paddingHorizontal)
+                        .padding(.top, 16)
+                    }
                 } else {
                     MatchListContent(selectedStatus: $selectedStatus)
                 }

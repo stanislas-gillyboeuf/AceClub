@@ -29,7 +29,7 @@ struct HomeView: View {
                         StatsCardView(stats: stats)
                             .padding(.horizontal, Theme.paddingHorizontal)
                     } else if viewModel.isLoading {
-                        statsLoadingPlaceholder
+                        StatsCardSkeleton()
                             .padding(.horizontal, Theme.paddingHorizontal)
                     }
 
@@ -107,60 +107,6 @@ struct HomeView: View {
                 .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
         }
         .padding(.horizontal, Theme.paddingHorizontal)
-    }
-
-    private var statsLoadingPlaceholder: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                ForEach(0..<3, id: \.self) { index in
-                    VStack(spacing: 8) {
-                        Circle()
-                            .fill(Color.secondary.opacity(0.2))
-                            .frame(width: 28, height: 28)
-
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.secondary.opacity(0.2))
-                            .frame(width: 50, height: 28)
-
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.secondary.opacity(0.2))
-                            .frame(width: 60, height: 12)
-                    }
-                    .frame(maxWidth: .infinity)
-
-                    if index < 2 {
-                        Divider()
-                            .frame(height: 60)
-                    }
-                }
-            }
-            .padding(.vertical, 20)
-
-            Divider()
-
-            VStack(alignment: .leading, spacing: 10) {
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.secondary.opacity(0.2))
-                    .frame(width: 100, height: 20)
-
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.secondary.opacity(0.2))
-                    .frame(height: 8)
-
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.secondary.opacity(0.2))
-                    .frame(width: 120, height: 16)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
-        }
-        .background(Theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous)
-                .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
-        }
-        .redacted(reason: .placeholder)
     }
 
     private func initialLoad() async {

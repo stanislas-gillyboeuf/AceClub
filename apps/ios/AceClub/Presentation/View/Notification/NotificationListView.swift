@@ -15,8 +15,13 @@ struct NotificationListView: View {
         NavigationStack {
             Group {
                 if viewModel.isLoading && viewModel.notifications.isEmpty {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    List {
+                        SkeletonList(count: 6) {
+                            NotificationRowSkeleton()
+                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+                        }
+                    }
+                    .listStyle(.plain)
                 } else if viewModel.notifications.isEmpty {
                     emptyStateView
                 } else {

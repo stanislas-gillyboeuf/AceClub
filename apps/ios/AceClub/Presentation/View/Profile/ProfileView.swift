@@ -56,10 +56,8 @@ struct ProfileView: View {
                         .buttonStyle(.plain)
 
                         if profileViewModel.isLoadingIntents {
-                            HStack {
-                                Spacer()
-                                ProgressView()
-                                Spacer()
+                            SkeletonList(count: 2) {
+                                SkeletonRow(showAvatar: false, lineCount: 2, titleWidth: 100)
                             }
                         } else if profileViewModel.myMatchIntents.isEmpty {
                             ContentUnavailableView {
@@ -119,10 +117,8 @@ struct ProfileView: View {
                         }
 
                         if organizationViewModel.isLoading {
-                            HStack {
-                                Spacer()
-                                ProgressView()
-                                Spacer()
+                            SkeletonList(count: 2) {
+                                SkeletonRow(lineCount: 2, titleWidth: 140)
                             }
                         } else if organizationViewModel.organizations.isEmpty {
                             ContentUnavailableView {
@@ -157,11 +153,7 @@ struct ProfileView: View {
 
                     Section {
                         if authViewModel.isLoading {
-                            HStack {
-                                Spacer()
-                                ProgressView()
-                                Spacer()
-                            }
+                            SkeletonRow(showAvatar: false, lineCount: 1, titleWidth: 100)
                         } else {
                             Button(role: .destructive, action: handleSignOut) {
                                 Text("Déconnexion")
@@ -171,10 +163,16 @@ struct ProfileView: View {
                     }
                 } else {
                     Section {
-                        HStack {
-                            Spacer()
-                            ProgressView()
-                            Spacer()
+                        SkeletonRow(lineCount: 2, titleWidth: 120)
+                    }
+                    Section {
+                        SkeletonList(count: 2) {
+                            SkeletonRow(showAvatar: false, lineCount: 2, titleWidth: 100)
+                        }
+                    }
+                    Section {
+                        SkeletonList(count: 2) {
+                            SkeletonRow(lineCount: 2, titleWidth: 140)
                         }
                     }
                 }
