@@ -18,83 +18,133 @@ struct SignInView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 32) {
-                    // Header
-                    VStack(spacing: 16) {
-                        Image("AceClubLogo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 120, height: 120)
-                            .cornerRadius(24)
+        VStack(spacing: 0) {
+            Spacer()
 
-                        Text("Bienvenue")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
+            // Hero section
+            VStack(spacing: 24) {
+                // App icon
+                Image("AceClubLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 100, height: 100)
+                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    .shadow(color: .black.opacity(0.1), radius: 12, x: 0, y: 4)
 
-                        Text("Connectez-vous pour continuer")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(.top, 80)
+                // Welcome text
+                VStack(spacing: 8) {
+                    Text("Bienvenue sur AceClub")
+                        .font(.title)
+                        .fontWeight(.bold)
 
-                    // Error Message
-                    if let errorMessage = authViewModel.errorMessage {
-                        Text(errorMessage)
+                    Text("Trouve des partenaires, organise tes matchs et rejoins ta communaute.")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                }
+            }
+
+            Spacer()
+
+            // Sign in buttons
+            VStack(spacing: 12) {
+                // Error Message
+                if let errorMessage = authViewModel.errorMessage {
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
                             .font(.caption)
-                            .foregroundColor(.red)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.horizontal)
+                        Text(errorMessage)
+                            .font(.footnote)
                     }
+                    .foregroundStyle(.red)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.red.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .padding(.bottom, 8)
+                }
 
-                    // Google Sign-In Button
-                    Button(action: handleGoogleSignIn) {
-                        HStack(spacing: 12) {
-                            GoogleLogoView()
-                                .frame(width: 20, height: 20)
-                            if authViewModel.isLoading {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .primary))
-                            } else {
-                                Text("Continuer avec Google")
-                            }
-                        }
-                    }
-                    .buttonStyle(.appOutlined)
-                    .disabled(authViewModel.isLoading)
-                    .padding(.horizontal, Theme.paddingHorizontal)
-
-                    // Apple Sign-In Button
+                // Apple Sign-In Button (primary on iOS)
+                if isProductionEnvironment {
                     Button(action: handleAppleSignIn) {
                         HStack(spacing: 12) {
                             Image(systemName: "apple.logo")
-                                .font(.system(size: 20, weight: .regular))
+                                .font(.system(size: 18, weight: .medium))
+
                             if authViewModel.isLoading {
                                 ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .primary))
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             } else {
                                 Text("Continuer avec Apple")
+                                    .fontWeight(.medium)
                             }
                         }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: Theme.buttonHeight)
+                        .foregroundStyle(.white)
+                        .background(Color.black)
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
                     }
-                    .buttonStyle(.appOutlined)
-                    .disabled(!isProductionEnvironment || authViewModel.isLoading)
-                    .opacity(isProductionEnvironment ? 1.0 : 0.5)
-                    .padding(.horizontal, Theme.paddingHorizontal)
+                    .disabled(authViewModel.isLoading)
+                }
 
-                    // Debug mode warning
-                    if !isProductionEnvironment {
-                        Text("La connexion Apple est disponible uniquement en production")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
+                // Google Sign-In Button
+                Button(action: handleGoogleSignIn) {
+                    HStack(spacing: 12) {
+                        GoogleLogoView()
+                            .frame(width: 18, height: 18)
+
+                        if authViewModel.isLoading && !isProductionEnvironment {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .primary))
+                        } else {
+                            Text("Continuer avec Google")
+                                .fontWeight(.medium)
+                        }
                     }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: Theme.buttonHeight)
+                }
+                .buttonStyle(.appOutlined)
+                .disabled(authViewModel.isLoading)
+
+                // Debug mode info
+                if !isProductionEnvironment {
+                    Text("Mode developpement - Apple Sign-In desactive")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .padding(.top, 4)
                 }
             }
+            .padding(.horizontal, Theme.paddingHorizontal)
+
+            // Footer
+            VStack(spacing: 8) {
+                Text("En continuant, tu acceptes nos")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                HStack(spacing: 4) {
+                    Button("Conditions d'utilisation") {
+                        // TODO: Open terms
+                    }
+                    .font(.caption)
+
+                    Text("et")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    Button("Politique de confidentialite") {
+                        // TODO: Open privacy policy
+                    }
+                    .font(.caption)
+                }
+            }
+            .padding(.top, 24)
+            .padding(.bottom, 16)
         }
+        .background(Color(.systemBackground))
     }
 
     private func handleGoogleSignIn() {
@@ -230,4 +280,9 @@ struct GoogleLogoView: View {
             context.fill(redPath, with: .color(Color(red: 234/255, green: 67/255, blue: 53/255)))
         }
     }
+}
+
+#Preview {
+    SignInView()
+        .environment(AuthViewModel())
 }

@@ -21,7 +21,7 @@ enum Theme {
     static let paddingCard: CGFloat = 16
     static let paddingButtonVertical: CGFloat = 14
     static let paddingButtonHorizontal: CGFloat = 16
-    static let buttonHeight: CGFloat = 50
+    static let buttonHeight: CGFloat = 52
 
     // MARK: - Border
 

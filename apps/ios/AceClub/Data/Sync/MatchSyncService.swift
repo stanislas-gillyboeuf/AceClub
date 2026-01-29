@@ -1,10 +1,3 @@
-//
-//  MatchSyncService.swift
-//  AceClub
-//
-//  Sync service for Match - orchestrates API calls and SwiftData updates
-//
-
 import SwiftData
 import Foundation
 
@@ -17,8 +10,6 @@ final class MatchSyncService {
         self.modelContext = modelContext
     }
 
-    // MARK: - Date Parsing
-
     private static let isoDateFormatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -28,27 +19,21 @@ final class MatchSyncService {
     private func parseDate(_ dateString: String?) -> Date? {
         guard let dateString else { return nil }
 
-        // Try with fractional seconds first
         if let date = Self.isoDateFormatter.date(from: dateString) {
             return date
         }
 
-        // Try without fractional seconds
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime]
         return formatter.date(from: dateString)
     }
 
-    // MARK: - Sync from API to SwiftData
-
-    /// Sync a single match from API to SwiftData
     func syncMatch(id: String) async throws {
         let dto = try await dataSource.getMatch(id: id)
         upsertMatchDetail(from: dto)
         try modelContext.save()
     }
 
-    /// Sync matches list from API to SwiftData
     func syncMatches(status: String? = nil, userId: String? = nil, page: Int = 1, limit: Int = 20) async throws {
         let dto = try await dataSource.listMatches(
             status: status,
@@ -58,15 +43,49 @@ final class MatchSyncService {
             limit: limit
         )
 
+        let apiMatchIds = Set(dto.matches.map { $0.id })
+
         for matchDTO in dto.matches {
             upsertMatchFromList(from: matchDTO)
         }
+
+        if page == 1 {
+            let localMatches = fetchAllMatches()
+            for localMatch in localMatches {
+                if !apiMatchIds.contains(localMatch.id) {
+                    modelContext.delete(localMatch)
+                }
+            }
+        }
+
         try modelContext.save()
     }
 
-    // MARK: - Mutations (API + SwiftData)
+    func syncAllMatchesWithPurge() async throws {
+        let dto = try await dataSource.listMatches(
+            status: nil,
+            userId: nil,
+            participantOnly: false,
+            page: 1,
+            limit: 500
+        )
 
-    /// Create a new match
+        let apiMatchIds = Set(dto.matches.map { $0.id })
+
+        for matchDTO in dto.matches {
+            upsertMatchFromList(from: matchDTO)
+        }
+
+        let localMatches = fetchAllMatches()
+        for localMatch in localMatches {
+            if !apiMatchIds.contains(localMatch.id) {
+                modelContext.delete(localMatch)
+            }
+        }
+
+        try modelContext.save()
+    }
+
     func createMatch(
         createdBy: String,
         status: MatchStatus,
@@ -97,7 +116,6 @@ final class MatchSyncService {
         return model
     }
 
-    /// Update match status/dates
     func updateMatch(
         id: String,
         status: MatchStatus? = nil,
@@ -129,7 +147,6 @@ final class MatchSyncService {
             }
             existing.lastSyncedAt = Date()
 
-            // Update winner in participants
             if let winnerId {
                 for participant in existing.participants {
                     participant.isWinner = participant.userId == winnerId
@@ -143,7 +160,6 @@ final class MatchSyncService {
         return nil
     }
 
-    /// Update match scores
     func updateScores(
         matchId: String,
         sets: [(setNumber: Int, scores: [(userId: String, score: Int)])]
@@ -152,14 +168,12 @@ final class MatchSyncService {
         let responseDTO = try await dataSource.updateMatchScores(id: matchId, request: requestDTO)
 
         if responseDTO.success {
-            // Refresh the full match to get updated data
             try await syncMatch(id: matchId)
         }
 
         return responseDTO.success
     }
 
-    /// Delete a match
     func deleteMatch(id: String) async throws -> Bool {
         let responseDTO = try await dataSource.deleteMatch(id: id)
 
@@ -171,12 +185,17 @@ final class MatchSyncService {
         return responseDTO.success
     }
 
-    // MARK: - Private Helpers - Fetch
+    // MARK: - Fetch
 
     private func fetchMatch(id: String) -> MatchModel? {
         let predicate = #Predicate<MatchModel> { $0.id == id }
         let descriptor = FetchDescriptor(predicate: predicate)
         return try? modelContext.fetch(descriptor).first
+    }
+
+    private func fetchAllMatches() -> [MatchModel] {
+        let descriptor = FetchDescriptor<MatchModel>()
+        return (try? modelContext.fetch(descriptor)) ?? []
     }
 
     private func fetchParticipant(id: String) -> MatchParticipantModel? {
@@ -197,7 +216,7 @@ final class MatchSyncService {
         return try? modelContext.fetch(descriptor).first
     }
 
-    // MARK: - Private Helpers - Upsert
+    // MARK: - Upsert
 
     @discardableResult
     private func upsertMatchDetail(from dto: MatchDetailResponseDTO) -> MatchModel {
@@ -227,12 +246,10 @@ final class MatchSyncService {
             modelContext.insert(model)
         }
 
-        // Upsert participants
         for participantDTO in dto.participants {
             upsertParticipant(from: participantDTO, match: model)
         }
 
-        // Upsert sets
         for setDTO in dto.sets {
             upsertSet(from: setDTO, match: model)
         }
@@ -267,7 +284,6 @@ final class MatchSyncService {
             modelContext.insert(model)
         }
 
-        // Upsert participants
         for participantDTO in dto.participants {
             upsertParticipant(from: participantDTO, match: model)
         }
@@ -303,19 +319,15 @@ final class MatchSyncService {
             modelContext.insert(model)
         }
 
-        // Upsert participants
         for participantDTO in dto.participants {
             upsertParticipant(from: participantDTO, match: model)
         }
 
-        // Upsert sets with scores
         for setDTO in dto.sets {
             let setModel = upsertSet(from: setDTO, match: model)
 
-            // Add scores from the response
             let scoresForSet = dto.scores.filter { $0.setId == setDTO.id }
             for scoreDTO in scoresForSet {
-                // Find participant to get userId and side
                 if let participant = model.participants.first(where: { $0.id == scoreDTO.participantId }) {
                     upsertScore(
                         id: "\(setDTO.id)_\(scoreDTO.participantId)",
@@ -363,7 +375,6 @@ final class MatchSyncService {
     private func upsertSet(from dto: SetDTO, match: MatchModel) -> MatchSetModel {
         if let existing = fetchSet(id: dto.id) {
             existing.setNumber = dto.setNumber
-            // Upsert scores
             if let scores = dto.scores {
                 for scoreDTO in scores {
                     let scoreId = "\(dto.id)_\(scoreDTO.participantId)"
@@ -388,7 +399,6 @@ final class MatchSyncService {
             matchSet.match = match
             modelContext.insert(matchSet)
 
-            // Upsert scores
             if let scores = dto.scores {
                 for scoreDTO in scores {
                     let scoreId = "\(dto.id)_\(scoreDTO.participantId)"

@@ -5,32 +5,60 @@ struct OnboardingNavigationButtons: View {
     let onFinish: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
+        VStack(spacing: 14) {
+            // Back button
             if viewModel.canGoBack {
-                Button("Retour") {
+                Button {
+                    triggerHaptic()
                     viewModel.goBack()
+                } label: {
+                    Text("Retour")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.plain)
             }
 
-            Spacer()
-
+            // Primary button
             Button {
                 if viewModel.isLastStep {
+                    triggerHaptic()
                     onFinish()
                 } else {
+                    triggerHaptic()
                     viewModel.goNext()
                 }
             } label: {
-                if viewModel.isSubmitting && viewModel.isLastStep {
-                    ProgressView()
-                } else {
-                    Text(viewModel.isLastStep ? "Terminer l’inscription" : "Suivant")
+                Group {
+                    if viewModel.isSubmitting && viewModel.isLastStep {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    } else {
+                        Text(viewModel.isLastStep ? "Terminer" : "Continuer")
+                            .font(.body)
+                            .fontWeight(.semibold)
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: Theme.buttonHeight)
+                .foregroundStyle(.white)
+                .background(
+                    RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
+                        .fill(viewModel.canGoNext ? Color.accentColor : Color.gray.opacity(0.3))
+                )
             }
-            .buttonStyle(.borderedProminent)
             .disabled(!viewModel.canGoNext || (viewModel.isSubmitting && viewModel.isLastStep))
         }
+        .padding(.top, 8)
+    }
+
+    private func triggerHaptic() {
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
     }
 }
 
+#Preview {
+    OnboardingNavigationButtons(viewModel: OnboardingViewModel()) {}
+        .padding()
+}

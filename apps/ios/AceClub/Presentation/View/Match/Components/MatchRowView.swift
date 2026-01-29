@@ -8,39 +8,35 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - MatchRowView for MatchModel (SwiftData)
-
 struct MatchRowView: View {
     let match: MatchModel
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
-            // Date proéminente (style carnet de bord)
             dateView
 
-            // Détails du match
             VStack(alignment: .leading, spacing: 4) {
-                // Badges type + statut
                 HStack(spacing: 6) {
-                    // Badge type
                     Label(match.matchType.displayName, systemImage: match.matchType.icon)
-                        .font(.caption2.weight(.medium))
-                        .foregroundStyle(.secondary)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(typeColor)
 
-                    // Badge statut
+                    Text("•")
+                        .foregroundStyle(.tertiary)
+
                     Text(match.matchStatus.displayName)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 3)
                         .background(statusColor)
                         .clipShape(Capsule())
                 }
 
-                // Participants inline
                 HStack(spacing: 6) {
                     Text(homeName)
                         .font(.subheadline.weight(isHomeWinner ? .bold : .regular))
+                        .lineLimit(1)
                     if isHomeWinner { crownIcon }
 
                     Text("vs")
@@ -50,10 +46,9 @@ struct MatchRowView: View {
                     if isAwayWinner { crownIcon }
                     Text(awayName)
                         .font(.subheadline.weight(isAwayWinner ? .bold : .regular))
+                        .lineLimit(1)
                 }
             }
-
-            Spacer()
         }
         .contentShape(Rectangle())
     }
@@ -82,7 +77,6 @@ struct MatchRowView: View {
     // MARK: - Computed Properties
 
     private var displayDate: Date {
-        // Priorité : scheduledAt (date prévue) > startedAt (date réelle) > createdAt
         match.scheduledAt ?? match.startedAt ?? match.createdAt
     }
 
@@ -100,6 +94,15 @@ struct MatchRowView: View {
 
     private var isAwayWinner: Bool {
         match.awayParticipant?.isWinner ?? false
+    }
+
+    private var typeColor: Color {
+        switch match.matchType {
+        case .match:
+            return .blue
+        case .training:
+            return .orange
+        }
     }
 
     private var statusColor: Color {
@@ -126,19 +129,20 @@ struct MatchRowViewLegacy: View {
 
             // Détails du match
             VStack(alignment: .leading, spacing: 4) {
-                // Badges type + statut
+                // Type coloré + statut badge
                 HStack(spacing: 6) {
-                    // Badge type
                     Label(match.type.displayName, systemImage: match.type.icon)
-                        .font(.caption2.weight(.medium))
-                        .foregroundStyle(.secondary)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(typeColor)
 
-                    // Badge statut
+                    Text("•")
+                        .foregroundStyle(.tertiary)
+
                     Text(match.status.displayName)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 3)
                         .background(statusColor)
                         .clipShape(Capsule())
                 }
@@ -147,6 +151,7 @@ struct MatchRowViewLegacy: View {
                 HStack(spacing: 6) {
                     Text(homeName)
                         .font(.subheadline.weight(isHomeWinner ? .bold : .regular))
+                        .lineLimit(1)
                     if isHomeWinner { crownIcon }
 
                     Text("vs")
@@ -156,10 +161,15 @@ struct MatchRowViewLegacy: View {
                     if isAwayWinner { crownIcon }
                     Text(awayName)
                         .font(.subheadline.weight(isAwayWinner ? .bold : .regular))
+                        .lineLimit(1)
                 }
             }
 
             Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.tertiary)
         }
         .contentShape(Rectangle())
     }
@@ -208,6 +218,15 @@ struct MatchRowViewLegacy: View {
     private var isAwayWinner: Bool {
         guard let awayId = match.awayParticipant?.id else { return false }
         return match.winner?.id == awayId
+    }
+
+    private var typeColor: Color {
+        switch match.type {
+        case .match:
+            return .blue
+        case .training:
+            return .orange
+        }
     }
 
     private var statusColor: Color {

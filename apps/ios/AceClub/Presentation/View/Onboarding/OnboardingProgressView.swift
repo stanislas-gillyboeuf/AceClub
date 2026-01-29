@@ -5,24 +5,24 @@ struct OnboardingProgressView: View {
     let totalSteps: Int
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                ForEach(0..<totalSteps, id: \.self) { index in
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(index <= currentStep ? Color.accentColor : Color.secondary.opacity(0.25))
-                        .frame(height: 8)
-                }
+        HStack(spacing: 6) {
+            ForEach(0..<totalSteps, id: \.self) { index in
+                Capsule()
+                    .fill(index <= currentStep ? Color.accentColor : Color.gray.opacity(0.3))
+                    .frame(height: 4)
+                    .animation(.easeInOut(duration: 0.25), value: currentStep)
             }
-
-            Text("Étape \(currentStep + 1) sur \(totalSteps)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
         }
+        .padding(.vertical, 8)
     }
 }
 
 #Preview {
-    OnboardingProgressView(currentStep: 0, totalSteps: 3)
-        .padding()
+    VStack(spacing: 24) {
+        OnboardingProgressView(currentStep: 0, totalSteps: 4)
+        OnboardingProgressView(currentStep: 1, totalSteps: 4)
+        OnboardingProgressView(currentStep: 2, totalSteps: 4)
+        OnboardingProgressView(currentStep: 3, totalSteps: 4)
+    }
+    .padding()
 }
-

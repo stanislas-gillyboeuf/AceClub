@@ -258,7 +258,11 @@ struct MatchDetailView: View {
             // Section 4: Informations
             Section("Informations") {
                 LabeledContent("Type") {
-                    Label(match.matchType.displayName, systemImage: match.matchType.icon)
+                    HStack(spacing: 6) {
+                        Image(systemName: match.matchType.icon)
+                        Text(match.matchType.displayName)
+                    }
+                    .foregroundStyle(match.matchType == .match ? .blue : .orange)
                 }
 
                 if let scheduledAt = match.formattedScheduledAt {
@@ -427,28 +431,50 @@ struct EditMatchScoresViewSwiftData: View {
     @Binding var isPresented: Bool
 
     @State private var syncService: MatchSyncService?
-    @State private var editedSets: [[String: Int]] = []  // [setIndex: [userId: score]]
+    @State private var editedSets: [EditableSetData] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var showConfirmation = false
+
+    // Données d'un set éditable
+    private struct EditableSetData: Identifiable {
+        let id = UUID()
+        var setNumber: Int
+        var homeScore: Int
+        var awayScore: Int
+    }
 
     var body: some View {
         NavigationStack {
-            Form {
-                ForEach(Array(match.sets.sorted { $0.setNumber < $1.setNumber }.enumerated()), id: \.offset) { index, set in
-                    Section("Set \(set.setNumber)") {
-                        ForEach(set.scores, id: \.id) { score in
-                            HStack {
-                                Text(getParticipantName(for: score.userId))
-                                Spacer()
-                                TextField("Score", value: binding(for: index, userId: score.userId), format: .number)
-                                    .keyboardType(.numberPad)
-                                    .multilineTextAlignment(.trailing)
-                                    .frame(width: 60)
+            ScrollView {
+                VStack(spacing: 16) {
+                    // Header avec les participants
+                    matchHeader
+                        .padding(.bottom, 8)
+
+                    // Sets éditables
+                    ForEach($editedSets) { $setData in
+                        SetScoreEditorRow(
+                            setNumber: setData.setNumber,
+                            homeName: homeName,
+                            awayName: awayName,
+                            homeScore: $setData.homeScore,
+                            awayScore: $setData.awayScore,
+                            canDelete: editedSets.count > 1,
+                            onDelete: {
+                                withAnimation(.snappy) {
+                                    removeSet(setData)
+                                }
                             }
-                        }
+                        )
                     }
+
+                    // Bouton ajouter un set
+                    addSetButton
                 }
+                .padding(Theme.paddingHorizontal)
             }
+            .background(Color(.systemGroupedBackground))
             .navigationTitle("Modifier les scores")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -456,13 +482,28 @@ struct EditMatchScoresViewSwiftData: View {
                     Button("Annuler") {
                         isPresented = false
                     }
+                    .disabled(isLoading)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Enregistrer") {
-                        Task { await saveScores() }
+                        showConfirmation = true
                     }
-                    .disabled(isLoading)
+                    .fontWeight(.semibold)
+                    .disabled(isLoading || editedSets.isEmpty)
                 }
+            }
+            .overlay {
+                if isLoading {
+                    loadingOverlay
+                }
+            }
+            .alert("Confirmer les modifications", isPresented: $showConfirmation) {
+                Button("Annuler", role: .cancel) { }
+                Button("Enregistrer") {
+                    Task { await saveScores() }
+                }
+            } message: {
+                Text("Les scores du match seront mis à jour.")
             }
             .alert("Erreur", isPresented: .constant(errorMessage != nil)) {
                 Button("OK") { errorMessage = nil }
@@ -476,31 +517,171 @@ struct EditMatchScoresViewSwiftData: View {
         }
     }
 
-    private func initializeEditedSets() {
-        editedSets = match.sets.sorted { $0.setNumber < $1.setNumber }.map { set in
-            var scores: [String: Int] = [:]
-            for score in set.scores {
-                scores[score.userId] = score.games
+    // MARK: - Subviews
+
+    private var matchHeader: some View {
+        VStack(spacing: 12) {
+            // Score global actuel
+            HStack(spacing: 24) {
+                VStack(spacing: 4) {
+                    participantAvatar(for: match.homeParticipant)
+                    Text(homeName)
+                        .font(.subheadline.weight(.medium))
+                        .lineLimit(1)
+                }
+
+                VStack(spacing: 2) {
+                    Text(globalScore)
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(.primary)
+                    Text("Sets")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+
+                VStack(spacing: 4) {
+                    participantAvatar(for: match.awayParticipant)
+                    Text(awayName)
+                        .font(.subheadline.weight(.medium))
+                        .lineLimit(1)
+                }
             }
-            return scores
+        }
+        .padding(Theme.paddingCard)
+        .frame(maxWidth: .infinity)
+        .background(Theme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
+    }
+
+    @ViewBuilder
+    private func participantAvatar(for participant: MatchParticipantModel?) -> some View {
+        if let imageURL = participant?.userImageURL {
+            AsyncImage(url: imageURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 48, height: 48)
+                        .clipShape(Circle())
+                default:
+                    avatarPlaceholder(initials: participant?.userInitials ?? "?")
+                }
+            }
+        } else {
+            avatarPlaceholder(initials: participant?.userInitials ?? "?")
         }
     }
 
-    private func binding(for setIndex: Int, userId: String) -> Binding<Int> {
-        Binding(
-            get: {
-                guard setIndex < editedSets.count else { return 0 }
-                return editedSets[setIndex][userId] ?? 0
-            },
-            set: { newValue in
-                guard setIndex < editedSets.count else { return }
-                editedSets[setIndex][userId] = newValue
+    private func avatarPlaceholder(initials: String) -> some View {
+        Circle()
+            .fill(Color.accentColor.opacity(0.15))
+            .frame(width: 48, height: 48)
+            .overlay {
+                Text(initials)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.accentColor)
             }
-        )
     }
 
-    private func getParticipantName(for userId: String) -> String {
-        match.participants.first { $0.userId == userId }?.userName ?? "N/A"
+    private var addSetButton: some View {
+        Button {
+            withAnimation(.snappy) {
+                addSet()
+            }
+        } label: {
+            Label("Ajouter un set", systemImage: "plus.circle.fill")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(Color.accentColor)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Color.accentColor.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var loadingOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.3)
+                .ignoresSafeArea()
+
+            VStack(spacing: 12) {
+                ProgressView()
+                    .scaleEffect(1.2)
+                Text("Enregistrement...")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(24)
+            .background(.regularMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+        }
+    }
+
+    // MARK: - Computed Properties
+
+    private var homeName: String {
+        match.homeParticipant?.userName ?? "Joueur 1"
+    }
+
+    private var awayName: String {
+        match.awayParticipant?.userName ?? "Joueur 2"
+    }
+
+    private var homeUserId: String {
+        match.homeParticipant?.userId ?? ""
+    }
+
+    private var awayUserId: String {
+        match.awayParticipant?.userId ?? ""
+    }
+
+    private var globalScore: String {
+        var homeSets = 0
+        var awaySets = 0
+        for set in editedSets {
+            if set.homeScore > set.awayScore {
+                homeSets += 1
+            } else if set.awayScore > set.homeScore {
+                awaySets += 1
+            }
+        }
+        return "\(homeSets) - \(awaySets)"
+    }
+
+    // MARK: - Methods
+
+    private func initializeEditedSets() {
+        let sortedSets = match.sets.sorted { $0.setNumber < $1.setNumber }
+
+        if sortedSets.isEmpty {
+            // Créer un set par défaut
+            editedSets = [EditableSetData(setNumber: 1, homeScore: 0, awayScore: 0)]
+        } else {
+            editedSets = sortedSets.map { set in
+                let homeScore = set.scores.first { $0.userId == homeUserId }?.games ?? 0
+                let awayScore = set.scores.first { $0.userId == awayUserId }?.games ?? 0
+                return EditableSetData(
+                    setNumber: set.setNumber,
+                    homeScore: homeScore,
+                    awayScore: awayScore
+                )
+            }
+        }
+    }
+
+    private func addSet() {
+        let nextSetNumber = (editedSets.map(\.setNumber).max() ?? 0) + 1
+        editedSets.append(EditableSetData(setNumber: nextSetNumber, homeScore: 0, awayScore: 0))
+    }
+
+    private func removeSet(_ set: EditableSetData) {
+        editedSets.removeAll { $0.id == set.id }
+        // Réindexer les sets
+        for i in editedSets.indices {
+            editedSets[i].setNumber = i + 1
+        }
     }
 
     private func saveScores() async {
@@ -508,10 +689,11 @@ struct EditMatchScoresViewSwiftData: View {
         isLoading = true
         errorMessage = nil
 
-        let sortedSets = match.sets.sorted { $0.setNumber < $1.setNumber }
-
-        let setsData: [(setNumber: Int, scores: [(userId: String, score: Int)])] = sortedSets.enumerated().map { index, set in
-            let scores = editedSets[index].map { (userId: $0.key, score: $0.value) }
+        let setsData: [(setNumber: Int, scores: [(userId: String, score: Int)])] = editedSets.map { set in
+            let scores: [(userId: String, score: Int)] = [
+                (homeUserId, set.homeScore),
+                (awayUserId, set.awayScore)
+            ]
             return (setNumber: set.setNumber, scores: scores)
         }
 
