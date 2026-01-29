@@ -45,7 +45,6 @@ export const matchIntentSwipe = pgTable(
   (table) => [uniqueIndex("match_intent_swipe_unique").on(table.matchIntentId, table.swiperUserId)],
 );
 
-// Demande de match envoyée après un swipe "like"
 export const matchRequest = pgTable("match_request", {
   id: text("id")
     .primaryKey()

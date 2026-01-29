@@ -1,0 +1,435 @@
+//
+//  MatchSyncService.swift
+//  AceClub
+//
+//  Sync service for Match - orchestrates API calls and SwiftData updates
+//
+
+import SwiftData
+import Foundation
+
+@MainActor
+final class MatchSyncService {
+    private let dataSource = MatchAPIDataSource()
+    private let modelContext: ModelContext
+
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
+    }
+
+    // MARK: - Date Parsing
+
+    private static let isoDateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+
+    private func parseDate(_ dateString: String?) -> Date? {
+        guard let dateString else { return nil }
+
+        // Try with fractional seconds first
+        if let date = Self.isoDateFormatter.date(from: dateString) {
+            return date
+        }
+
+        // Try without fractional seconds
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter.date(from: dateString)
+    }
+
+    // MARK: - Sync from API to SwiftData
+
+    /// Sync a single match from API to SwiftData
+    func syncMatch(id: String) async throws {
+        let dto = try await dataSource.getMatch(id: id)
+        upsertMatchDetail(from: dto)
+        try modelContext.save()
+    }
+
+    /// Sync matches list from API to SwiftData
+    func syncMatches(status: String? = nil, userId: String? = nil, page: Int = 1, limit: Int = 20) async throws {
+        let dto = try await dataSource.listMatches(
+            status: status,
+            userId: userId,
+            participantOnly: true,
+            page: page,
+            limit: limit
+        )
+
+        for matchDTO in dto.matches {
+            upsertMatchFromList(from: matchDTO)
+        }
+        try modelContext.save()
+    }
+
+    // MARK: - Mutations (API + SwiftData)
+
+    /// Create a new match
+    func createMatch(
+        createdBy: String,
+        status: MatchStatus,
+        type: MatchType = .match,
+        createdAt: Date,
+        scheduledAt: Date?,
+        startedAt: Date?,
+        finishedAt: Date?,
+        participants: [(userId: String, side: MatchSide, isWinner: Bool)],
+        sets: [(setNumber: Int, scores: [(userId: String, score: Int)])]
+    ) async throws -> MatchModel {
+        let requestDTO = MatchMapper.mapToCreateRequest(
+            createdBy: createdBy,
+            status: status,
+            type: type,
+            createdAt: createdAt,
+            scheduledAt: scheduledAt,
+            startedAt: startedAt,
+            finishedAt: finishedAt,
+            participants: participants,
+            sets: sets
+        )
+
+        let responseDTO = try await dataSource.createMatch(request: requestDTO)
+        let model = upsertMatchFromCreateResponse(from: responseDTO)
+        try modelContext.save()
+
+        return model
+    }
+
+    /// Update match status/dates
+    func updateMatch(
+        id: String,
+        status: MatchStatus? = nil,
+        scheduledAt: Date? = nil,
+        startedAt: Date? = nil,
+        finishedAt: Date? = nil,
+        winnerId: String? = nil
+    ) async throws -> MatchModel? {
+        let requestDTO = MatchMapper.mapToUpdateRequest(
+            status: status,
+            scheduledAt: scheduledAt,
+            startedAt: startedAt,
+            finishedAt: finishedAt,
+            winnerId: winnerId
+        )
+
+        let responseDTO = try await dataSource.updateMatch(id: id, request: requestDTO)
+
+        if let existing = fetchMatch(id: id) {
+            existing.status = responseDTO.match.status
+            if let scheduledAt = parseDate(responseDTO.match.scheduledAt) {
+                existing.scheduledAt = scheduledAt
+            }
+            if let startedAt = parseDate(responseDTO.match.startedAt) {
+                existing.startedAt = startedAt
+            }
+            if let finishedAt = parseDate(responseDTO.match.finishedAt) {
+                existing.finishedAt = finishedAt
+            }
+            existing.lastSyncedAt = Date()
+
+            // Update winner in participants
+            if let winnerId {
+                for participant in existing.participants {
+                    participant.isWinner = participant.userId == winnerId
+                }
+            }
+
+            try modelContext.save()
+            return existing
+        }
+
+        return nil
+    }
+
+    /// Update match scores
+    func updateScores(
+        matchId: String,
+        sets: [(setNumber: Int, scores: [(userId: String, score: Int)])]
+    ) async throws -> Bool {
+        let requestDTO = MatchMapper.mapToUpdateScoresRequest(sets: sets)
+        let responseDTO = try await dataSource.updateMatchScores(id: matchId, request: requestDTO)
+
+        if responseDTO.success {
+            // Refresh the full match to get updated data
+            try await syncMatch(id: matchId)
+        }
+
+        return responseDTO.success
+    }
+
+    /// Delete a match
+    func deleteMatch(id: String) async throws -> Bool {
+        let responseDTO = try await dataSource.deleteMatch(id: id)
+
+        if responseDTO.success, let existing = fetchMatch(id: id) {
+            modelContext.delete(existing)
+            try modelContext.save()
+        }
+
+        return responseDTO.success
+    }
+
+    // MARK: - Private Helpers - Fetch
+
+    private func fetchMatch(id: String) -> MatchModel? {
+        let predicate = #Predicate<MatchModel> { $0.id == id }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        return try? modelContext.fetch(descriptor).first
+    }
+
+    private func fetchParticipant(id: String) -> MatchParticipantModel? {
+        let predicate = #Predicate<MatchParticipantModel> { $0.id == id }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        return try? modelContext.fetch(descriptor).first
+    }
+
+    private func fetchSet(id: String) -> MatchSetModel? {
+        let predicate = #Predicate<MatchSetModel> { $0.id == id }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        return try? modelContext.fetch(descriptor).first
+    }
+
+    private func fetchScore(id: String) -> SetScoreModel? {
+        let predicate = #Predicate<SetScoreModel> { $0.id == id }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        return try? modelContext.fetch(descriptor).first
+    }
+
+    // MARK: - Private Helpers - Upsert
+
+    @discardableResult
+    private func upsertMatchDetail(from dto: MatchDetailResponseDTO) -> MatchModel {
+        let matchDTO = dto.match
+        let model: MatchModel
+
+        if let existing = fetchMatch(id: matchDTO.id) {
+            existing.createdBy = matchDTO.createdBy
+            existing.status = matchDTO.status
+            existing.type = matchDTO.type ?? "match"
+            existing.scheduledAt = parseDate(matchDTO.scheduledAt)
+            existing.startedAt = parseDate(matchDTO.startedAt)
+            existing.finishedAt = parseDate(matchDTO.finishedAt)
+            existing.lastSyncedAt = Date()
+            model = existing
+        } else {
+            model = MatchModel(
+                id: matchDTO.id,
+                createdBy: matchDTO.createdBy,
+                status: matchDTO.status,
+                type: matchDTO.type ?? "match",
+                createdAt: parseDate(matchDTO.createdAt) ?? Date(),
+                scheduledAt: parseDate(matchDTO.scheduledAt),
+                startedAt: parseDate(matchDTO.startedAt),
+                finishedAt: parseDate(matchDTO.finishedAt)
+            )
+            modelContext.insert(model)
+        }
+
+        // Upsert participants
+        for participantDTO in dto.participants {
+            upsertParticipant(from: participantDTO, match: model)
+        }
+
+        // Upsert sets
+        for setDTO in dto.sets {
+            upsertSet(from: setDTO, match: model)
+        }
+
+        return model
+    }
+
+    @discardableResult
+    private func upsertMatchFromList(from dto: MatchWithParticipantsDTO) -> MatchModel {
+        let model: MatchModel
+
+        if let existing = fetchMatch(id: dto.id) {
+            existing.createdBy = dto.createdBy
+            existing.status = dto.status
+            existing.type = dto.type ?? "match"
+            existing.scheduledAt = parseDate(dto.scheduledAt)
+            existing.startedAt = parseDate(dto.startedAt)
+            existing.finishedAt = parseDate(dto.finishedAt)
+            existing.lastSyncedAt = Date()
+            model = existing
+        } else {
+            model = MatchModel(
+                id: dto.id,
+                createdBy: dto.createdBy,
+                status: dto.status,
+                type: dto.type ?? "match",
+                createdAt: parseDate(dto.createdAt) ?? Date(),
+                scheduledAt: parseDate(dto.scheduledAt),
+                startedAt: parseDate(dto.startedAt),
+                finishedAt: parseDate(dto.finishedAt)
+            )
+            modelContext.insert(model)
+        }
+
+        // Upsert participants
+        for participantDTO in dto.participants {
+            upsertParticipant(from: participantDTO, match: model)
+        }
+
+        return model
+    }
+
+    @discardableResult
+    private func upsertMatchFromCreateResponse(from dto: CreateMatchResponseDTO) -> MatchModel {
+        let matchDTO = dto.match
+        let model: MatchModel
+
+        if let existing = fetchMatch(id: matchDTO.id) {
+            existing.createdBy = matchDTO.createdBy
+            existing.status = matchDTO.status
+            existing.type = matchDTO.type ?? "match"
+            existing.scheduledAt = parseDate(matchDTO.scheduledAt)
+            existing.startedAt = parseDate(matchDTO.startedAt)
+            existing.finishedAt = parseDate(matchDTO.finishedAt)
+            existing.lastSyncedAt = Date()
+            model = existing
+        } else {
+            model = MatchModel(
+                id: matchDTO.id,
+                createdBy: matchDTO.createdBy,
+                status: matchDTO.status,
+                type: matchDTO.type ?? "match",
+                createdAt: parseDate(matchDTO.createdAt) ?? Date(),
+                scheduledAt: parseDate(matchDTO.scheduledAt),
+                startedAt: parseDate(matchDTO.startedAt),
+                finishedAt: parseDate(matchDTO.finishedAt)
+            )
+            modelContext.insert(model)
+        }
+
+        // Upsert participants
+        for participantDTO in dto.participants {
+            upsertParticipant(from: participantDTO, match: model)
+        }
+
+        // Upsert sets with scores
+        for setDTO in dto.sets {
+            let setModel = upsertSet(from: setDTO, match: model)
+
+            // Add scores from the response
+            let scoresForSet = dto.scores.filter { $0.setId == setDTO.id }
+            for scoreDTO in scoresForSet {
+                // Find participant to get userId and side
+                if let participant = model.participants.first(where: { $0.id == scoreDTO.participantId }) {
+                    upsertScore(
+                        id: "\(setDTO.id)_\(scoreDTO.participantId)",
+                        participantId: scoreDTO.participantId,
+                        userId: participant.userId,
+                        side: participant.side,
+                        games: scoreDTO.games,
+                        matchSet: setModel
+                    )
+                }
+            }
+        }
+
+        return model
+    }
+
+    @discardableResult
+    private func upsertParticipant(from dto: MatchParticipantDTO, match: MatchModel) -> MatchParticipantModel {
+        if let existing = fetchParticipant(id: dto.id) {
+            existing.side = dto.side
+            existing.isWinner = dto.isWinner
+            existing.userName = dto.user?.name
+            existing.userEmail = dto.user?.email
+            existing.userImage = dto.user?.image
+            return existing
+        } else {
+            let participant = MatchParticipantModel(
+                id: dto.id,
+                matchId: dto.matchId,
+                userId: dto.userId,
+                side: dto.side,
+                isWinner: dto.isWinner,
+                createdAt: parseDate(dto.createdAt) ?? Date(),
+                userName: dto.user?.name,
+                userEmail: dto.user?.email,
+                userImage: dto.user?.image
+            )
+            participant.match = match
+            modelContext.insert(participant)
+            return participant
+        }
+    }
+
+    @discardableResult
+    private func upsertSet(from dto: SetDTO, match: MatchModel) -> MatchSetModel {
+        if let existing = fetchSet(id: dto.id) {
+            existing.setNumber = dto.setNumber
+            // Upsert scores
+            if let scores = dto.scores {
+                for scoreDTO in scores {
+                    let scoreId = "\(dto.id)_\(scoreDTO.participantId)"
+                    upsertScore(
+                        id: scoreId,
+                        participantId: scoreDTO.participantId,
+                        userId: scoreDTO.userId,
+                        side: scoreDTO.side ?? "home",
+                        games: scoreDTO.games,
+                        matchSet: existing
+                    )
+                }
+            }
+            return existing
+        } else {
+            let matchSet = MatchSetModel(
+                id: dto.id,
+                matchId: dto.matchId,
+                setNumber: dto.setNumber,
+                createdAt: parseDate(dto.createdAt) ?? Date()
+            )
+            matchSet.match = match
+            modelContext.insert(matchSet)
+
+            // Upsert scores
+            if let scores = dto.scores {
+                for scoreDTO in scores {
+                    let scoreId = "\(dto.id)_\(scoreDTO.participantId)"
+                    upsertScore(
+                        id: scoreId,
+                        participantId: scoreDTO.participantId,
+                        userId: scoreDTO.userId,
+                        side: scoreDTO.side ?? "home",
+                        games: scoreDTO.games,
+                        matchSet: matchSet
+                    )
+                }
+            }
+
+            return matchSet
+        }
+    }
+
+    @discardableResult
+    private func upsertScore(
+        id: String,
+        participantId: String,
+        userId: String,
+        side: String,
+        games: Int,
+        matchSet: MatchSetModel
+    ) -> SetScoreModel {
+        if let existing = fetchScore(id: id) {
+            existing.games = games
+            return existing
+        } else {
+            let score = SetScoreModel(
+                id: id,
+                participantId: participantId,
+                userId: userId,
+                side: side,
+                games: games
+            )
+            score.matchSet = matchSet
+            modelContext.insert(score)
+            return score
+        }
+    }
+}

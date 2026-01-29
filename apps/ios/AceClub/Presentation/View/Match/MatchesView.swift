@@ -6,19 +6,28 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MatchesView: View {
-    @StateObject private var viewModel = MatchListViewModel()
+    @Environment(\.modelContext) private var modelContext
+
+    // SwiftData query - auto-updates when data changes
+    @Query(sort: \MatchModel.createdAt, order: .reverse)
+    private var matches: [MatchModel]
+
     @State private var showingCreateMatch = false
     @State private var showingListRequestMatch = false
+    @State private var isLoading = false
+    @State private var selectedStatus: MatchStatus?
+    @State private var syncService: MatchSyncService?
 
     var body: some View {
         NavigationStack {
             ZStack {
-                if viewModel.isLoading && viewModel.matches.isEmpty {
+                if isLoading && matches.isEmpty {
                     ProgressView("Chargement des matchs...")
                 } else {
-                    MatchListContent(viewModel: viewModel)
+                    MatchListContent(selectedStatus: $selectedStatus)
                 }
             }
             .navigationTitle("Matchs")
@@ -29,7 +38,7 @@ struct MatchesView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
-                    .disabled(viewModel.isLoading)
+                    .disabled(isLoading)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -41,23 +50,31 @@ struct MatchesView: View {
             }
             .sheet(isPresented: $showingCreateMatch) {
                 CreateMatchView(isPresented: $showingCreateMatch) {
-                    Task {
-                        await viewModel.refreshMatches()
-                    }
+                    // No need to refresh - @Query auto-updates
                 }
             }
             .fullScreenCover(isPresented: $showingListRequestMatch) {
                 ListRequestMatch {
-                    Task {
-                        await viewModel.refreshMatches()
-                    }
+                    // No need to refresh - @Query auto-updates
                 }
             }
             .task {
-                if viewModel.matches.isEmpty {
-                    await viewModel.loadMatches()
+                syncService = MatchSyncService(modelContext: modelContext)
+                if matches.isEmpty {
+                    await loadMatches()
                 }
             }
         }
+    }
+
+    private func loadMatches() async {
+        guard !isLoading else { return }
+        isLoading = true
+        do {
+            try await syncService?.syncMatches()
+        } catch {
+            print("Load matches error: \(error)")
+        }
+        isLoading = false
     }
 }
