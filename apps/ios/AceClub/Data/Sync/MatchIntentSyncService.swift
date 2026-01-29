@@ -198,9 +198,20 @@ final class MatchIntentSyncService {
             )
         }
 
+        var requester: UserContact?
+        if let requesterDTO = responseDTO.requester {
+            requester = UserContact(
+                id: requesterDTO.id,
+                name: requesterDTO.name,
+                image: requesterDTO.image,
+                phoneNumber: requesterDTO.phoneNumber
+            )
+        }
+
         return AcceptMatchRequestResult(
             match: match,
             request: request,
+            requester: requester,
             message: responseDTO.message
         )
     }

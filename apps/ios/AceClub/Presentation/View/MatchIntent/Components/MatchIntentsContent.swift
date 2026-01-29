@@ -119,7 +119,7 @@ struct MatchIntentsContent: View {
             } label: {
                 ZStack {
                     Circle()
-                        .fill(Color(.systemGray5))
+                        .fill(Theme.cardBackground)
                         .frame(width: 64, height: 64)
                     Image(systemName: "xmark")
                         .font(.title2.weight(.semibold))
@@ -157,19 +157,16 @@ struct MatchIntentsContent: View {
 
     private var emptyState: some View {
         VStack(spacing: 16) {
-            Image(systemName: "rectangle.stack.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(.tertiary)
-            Text("Plus de profils pour l’instant")
-                .font(.headline)
-                .foregroundStyle(.secondary)
-            Text("Reviens plus tard pour découvrir de nouveaux joueurs.")
-                .font(.subheadline)
-                .foregroundStyle(.tertiary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
+            ContentUnavailableView {
+                Label("Plus de profils pour l'instant", systemImage: "rectangle.stack.fill")
+            } description: {
+                Text("Reviens plus tard pour découvrir de nouveaux joueurs.")
+            }
         }
         .padding()
+        .frame(maxWidth: .infinity)
+        .background(Theme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
     }
 
     // MARK: - Match banner

@@ -67,7 +67,7 @@ struct OrganizationCard: View {
         }
         .padding(.vertical, style == .card ? 8 : 4)
         .padding(.horizontal, style == .card ? Theme.paddingCard : 0)
-        .background(style == .card ? Color(.systemGray6) : Color.clear)
+        .background(style == .card ? Theme.cardBackground : Color.clear)
         .clipShape(style == .card ? AnyShape(RoundedRectangle(cornerRadius: 12, style: .continuous)) : AnyShape(Rectangle()))
         .padding(.horizontal, style == .card ? 20 : 0)
     }

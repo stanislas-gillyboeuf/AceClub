@@ -5,6 +5,9 @@ struct ListRequestMatch: View {
     @StateObject private var viewModel = MatchRequestsViewModel()
     var onAccepted: (() -> Void)?
 
+    @State private var acceptedPlayer: UserContact?
+    @State private var showContactSheet = false
+
     private var showErrorAlert: Binding<Bool> {
         Binding(
             get: { viewModel.errorMessage != nil },
@@ -48,12 +51,24 @@ struct ListRequestMatch: View {
             } message: {
                 Text(viewModel.errorMessage ?? "")
             }
+            .sheet(isPresented: $showContactSheet, onDismiss: {
+                onAccepted?()
+                dismiss()
+            }) {
+                if let player = acceptedPlayer {
+                    ContactPlayerSheet(player: player)
+                }
+            }
         }
     }
 
     private func handleAccept(item: MatchRequestWithDetails) async {
         let result = await viewModel.accept(request: item)
-        if result != nil {
+        if let result = result, let requester = result.requester {
+            acceptedPlayer = requester
+            showContactSheet = true
+        } else if result != nil {
+            // Fallback si pas d'info requester (ne devrait pas arriver)
             onAccepted?()
             dismiss()
         }
@@ -95,7 +110,7 @@ struct MatchRequestRow: View {
                     .font(.caption)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Color.blue.opacity(0.1))
+                    .background(Theme.tintColor.opacity(0.15))
                     .clipShape(Capsule())
             }
 

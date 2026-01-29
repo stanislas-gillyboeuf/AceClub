@@ -122,7 +122,7 @@ struct MatchIntentRow: View {
             onDelete: {}
         )
     }
-    .background(Color(.systemGray6))
+    .background(Theme.cardBackground)
     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     .padding()
 }

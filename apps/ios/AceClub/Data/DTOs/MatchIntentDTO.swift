@@ -53,6 +53,13 @@ struct UserBriefDTO: Codable {
     let email: String
 }
 
+struct UserContactDTO: Codable {
+    let id: String
+    let name: String
+    let image: String?
+    let phoneNumber: String?
+}
+
 struct DiscoverMatchIntentsResponseDTO: Codable {
     let data: [MatchIntentWithUserDTO]
     let pagination: CursorPaginationDTO
@@ -120,6 +127,7 @@ struct MatchRequestWithDetailsDTO: Codable {
 struct AcceptMatchRequestResponseDTO: Codable {
     let request: MatchRequestDTO?
     let match: MatchDTO?
+    let requester: UserContactDTO?
     let message: String?
 }
 

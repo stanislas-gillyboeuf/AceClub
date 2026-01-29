@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { matchRequest, matchIntent, match, matchParticipant } from "../../../db/schema";
+import { matchRequest, matchIntent, match, matchParticipant, user } from "../../../db/schema";
 import { and, eq, ne } from "drizzle-orm";
 
 export const acceptRequest = async (c: Context<HonoContext>) => {
@@ -88,15 +88,26 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
         ),
       );
 
-    // Marquer l'intent comme accepted
     await db
       .update(matchIntent)
       .set({ status: "accepted" })
       .where(eq(matchIntent.id, request.matchIntentId));
 
+    const [requesterInfo] = await db
+      .select({
+        id: user.id,
+        name: user.name,
+        image: user.image,
+        phoneNumber: user.phoneNumber,
+      })
+      .from(user)
+      .where(eq(user.id, request.requesterId))
+      .limit(1);
+
     return c.json({
       request: updatedRequest,
       match: newMatch,
+      requester: requesterInfo ?? null,
       message: "Match created successfully!",
     });
   } catch (error) {

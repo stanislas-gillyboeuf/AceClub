@@ -118,11 +118,38 @@ struct SwipeResult {
     let message: String?
 }
 
+// MARK: - User Contact (for contact modal after accept)
+
+struct UserContact: Identifiable {
+    let id: String
+    let name: String
+    let image: String?
+    let phoneNumber: String?
+
+    var imageURL: URL? {
+        guard let image, !image.isEmpty else { return nil }
+        return URL(string: image)
+    }
+
+    var initials: String {
+        let components = name.split(separator: " ")
+        if components.count >= 2 {
+            let firstInitial = components[0].prefix(1)
+            let lastInitial = components[1].prefix(1)
+            return "\(firstInitial)\(lastInitial)".uppercased()
+        } else if let first = components.first {
+            return String(first.prefix(2)).uppercased()
+        }
+        return "??"
+    }
+}
+
 // MARK: - Accept request result
 
 struct AcceptMatchRequestResult {
     let match: Match?
     let request: MatchRequest?
+    let requester: UserContact?
     let message: String?
 }
 

@@ -19,6 +19,7 @@ struct MatchFilterChips: View {
                     icon: "list.bullet",
                     isSelected: selectedStatus == nil
                 ) {
+                    selectedStatus = nil
                     Task { await onFilterChange(nil) }
                 }
 
@@ -27,6 +28,7 @@ struct MatchFilterChips: View {
                     icon: "calendar",
                     isSelected: selectedStatus == .scheduled
                 ) {
+                    selectedStatus = .scheduled
                     Task { await onFilterChange(.scheduled) }
                 }
 
@@ -35,6 +37,7 @@ struct MatchFilterChips: View {
                     icon: "play.circle",
                     isSelected: selectedStatus == .ongoing
                 ) {
+                    selectedStatus = .ongoing
                     Task { await onFilterChange(.ongoing) }
                 }
 
@@ -43,6 +46,7 @@ struct MatchFilterChips: View {
                     icon: "checkmark.circle",
                     isSelected: selectedStatus == .finished
                 ) {
+                    selectedStatus = .finished
                     Task { await onFilterChange(.finished) }
                 }
             }
@@ -68,7 +72,7 @@ private struct FilterChip: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(isSelected ? Color.accentColor : Color(.systemGray5))
+            .background(isSelected ? Theme.tintColor : Theme.cardBackground)
             .foregroundStyle(isSelected ? .white : .primary)
             .clipShape(Capsule())
         }

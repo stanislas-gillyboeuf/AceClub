@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct ProfileView: View {
     @ObservedObject var profileViewModel: ProfileViewModel
@@ -8,12 +9,23 @@ struct ProfileView: View {
     @State private var showCreateMatchIntentSheet = false
     @State private var showSettingsSheet = false
 
+    @Query(sort: \MatchModel.createdAt, order: .reverse)
+    private var allMatches: [MatchModel]
+
     var body: some View {
         NavigationStack {
             List {
                 if let user = profileViewModel.user {
                     Section {
-                        ProfileHeaderCard(user: user)
+                        ProfileHeaderCard(
+                            user: user,
+                            organizationName: profileViewModel.userPreferences?.organizationName,
+                            level: profileViewModel.skillLevelDisplayName,
+                            bio: nil,
+                            totalMatches: profileViewModel.userStats.totalMatches,
+                            winRate: Int(profileViewModel.userStats.winRate * 100),
+                            monthlyMatches: profileViewModel.userStats.matchesThisMonth
+                        )
                             .padding(.top, 8)
                             .padding(.bottom, 4)
                             .listRowSeparator(.hidden)
@@ -200,18 +212,24 @@ struct ProfileView: View {
                 if profileViewModel.user == nil {
                     await profileViewModel.getMe()
                 }
+                profileViewModel.calculateStats(from: allMatches)
+                await profileViewModel.loadUserPreferences()
                 await profileViewModel.loadMyMatchIntents()
                 await organizationViewModel.loadOrganizations()
                 await organizationViewModel.loadActiveMember()
                 await invitationViewModel.loadUserInvitations()
             }
+            .onChange(of: allMatches.count) {
+                profileViewModel.calculateStats(from: allMatches)
+            }
             .refreshable {
                 async let userTask: () = profileViewModel.refreshUser()
+                async let prefsTask: () = profileViewModel.refreshUserPreferences()
                 async let intentsTask: () = profileViewModel.refreshMatchIntents()
                 async let orgsTask: () = organizationViewModel.refreshOrganizations()
                 async let memberTask: () = organizationViewModel.refreshActiveMember()
                 async let invitationsTask: () = invitationViewModel.refreshUserInvitations()
-                _ = await (userTask, intentsTask, orgsTask, memberTask, invitationsTask)
+                _ = await (userTask, prefsTask, intentsTask, orgsTask, memberTask, invitationsTask)
             }
             .sheet(isPresented: $showCreateMatchIntentSheet) {
                 CreateMatchIntentSheet(isPresented: $showCreateMatchIntentSheet) {

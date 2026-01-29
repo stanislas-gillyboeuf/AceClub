@@ -88,13 +88,13 @@ struct UserSearchField: View {
 
     private func avatarPlaceholder(user: User, size: CGFloat) -> some View {
         Circle()
-            .fill(Color.blue.opacity(0.2))
+            .fill(Theme.tintColor.opacity(0.2))
             .frame(width: size, height: size)
             .overlay {
                 Text(user.initials)
                     .font(size > 32 ? .subheadline : .caption)
                     .fontWeight(.semibold)
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Theme.tintColor)
             }
     }
 

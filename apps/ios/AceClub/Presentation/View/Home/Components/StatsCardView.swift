@@ -57,7 +57,7 @@ struct StatsCardView: View {
             }
             .padding(16)
         }
-        .background(Theme.secondaryBackground)
+        .background(Theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous)

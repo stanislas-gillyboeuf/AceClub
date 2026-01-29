@@ -75,7 +75,7 @@ struct FeedMatchRowView: View {
             }
         }
         .padding(Theme.paddingCard)
-        .background(Theme.secondaryBackground)
+        .background(Theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)

@@ -371,13 +371,13 @@ struct MatchDetailView: View {
 
     private func avatarPlaceholder(initials: String) -> some View {
         Circle()
-            .fill(Color.blue.opacity(0.2))
+            .fill(Theme.tintColor.opacity(0.2))
             .frame(width: 44, height: 44)
             .overlay {
                 Text(initials)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Theme.tintColor)
             }
     }
 

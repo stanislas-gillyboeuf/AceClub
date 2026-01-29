@@ -44,7 +44,7 @@ struct CreateOrganizationSheet: View {
         HStack(spacing: 8) {
             ForEach(0..<2) { step in
                 Circle()
-                    .fill(step <= currentStep ? Color.blue : Color.gray.opacity(0.3))
+                    .fill(step <= currentStep ? Theme.tintColor : Theme.labelTertiary.opacity(0.3))
                     .frame(width: 10, height: 10)
             }
         }
@@ -76,7 +76,7 @@ struct CreateOrganizationSheet: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
-            .background(Color.gray.opacity(0.1))
+            .background(Theme.cardBackground)
             .cornerRadius(8)
         }
     }
@@ -126,7 +126,7 @@ struct CreateOrganizationSheet: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.gray.opacity(0.2))
+                .background(Theme.tertiaryBackground)
             }
 
             Button(currentStep == 0 ? "Next" : "Create") {
@@ -142,8 +142,8 @@ struct CreateOrganizationSheet: View {
             }
             .frame(maxWidth: .infinity)
             .padding()
-            .background(canProceed ? Color.blue : Color.gray)
-            .foregroundColor(.white)
+            .background(canProceed ? Theme.tintColor : Theme.tertiaryBackground)
+            .foregroundStyle(canProceed ? .white : Theme.labelSecondary)
             .disabled(!canProceed || viewModel.isLoading)
         }
         .padding()

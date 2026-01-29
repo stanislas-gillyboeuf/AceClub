@@ -30,10 +30,33 @@ enum Theme {
 
     // MARK: - Semantic colors (adapt to light/dark)
 
-    static var primaryBackground: Color { Color(.systemGray6) }
-    static var secondaryBackground: Color { Color(.systemBackground)}
-    static var tertiaryBackground: Color { Color(.systemGray5) }
-    static var cardBackground: Color { Color(.systemGray6) }
+    /// Background principal des vues
+    /// Light: gris clair (pour que les cards blanches ressortent)
+    /// Dark: noir (systemBackground)
+    static var primaryBackground: Color {
+        Color(UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark
+                ? .systemBackground
+                : .secondarySystemBackground
+        })
+    }
+
+    /// Background secondaire pour sections groupées
+    static var secondaryBackground: Color { Color(.secondarySystemBackground) }
+
+    /// Background tertiaire pour éléments imbriqués
+    static var tertiaryBackground: Color { Color(.tertiarySystemBackground) }
+
+    /// Background des cards/rows (doit contraster avec primaryBackground)
+    /// Light: blanc pur (ressort sur fond gris)
+    /// Dark: gris foncé (secondarySystemBackground)
+    static var cardBackground: Color {
+        Color(UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark
+                ? .secondarySystemBackground
+                : .systemBackground
+        })
+    }
     static var borderColor: Color { Color(.systemGray5) }
     static var borderColorSubtle: Color { Color.secondary.opacity(0.3) }
     static var labelPrimary: Color { Color.primary }

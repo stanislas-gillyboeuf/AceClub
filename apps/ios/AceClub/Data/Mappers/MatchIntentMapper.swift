@@ -80,6 +80,17 @@ class MatchIntentMapper {
         )
     }
 
+    // MARK: - UserContact
+
+    static func map(userContactDTO: UserContactDTO) -> UserContact {
+        UserContact(
+            id: userContactDTO.id,
+            name: userContactDTO.name,
+            image: userContactDTO.image,
+            phoneNumber: userContactDTO.phoneNumber
+        )
+    }
+
     // MARK: - Discover
 
     static func map(discoverItemDTO: MatchIntentWithUserDTO) -> MatchIntentDiscoverItem {
@@ -164,7 +175,8 @@ class MatchIntentMapper {
     static func map(acceptResponseDTO: AcceptMatchRequestResponseDTO) -> AcceptMatchRequestResult {
         let match = acceptResponseDTO.match.map { MatchMapper.map(matchDTO: $0) }
         let request = acceptResponseDTO.request.map { map(requestDTO: $0) }
-        return AcceptMatchRequestResult(match: match, request: request, message: acceptResponseDTO.message)
+        let requester = acceptResponseDTO.requester.map { map(userContactDTO: $0) }
+        return AcceptMatchRequestResult(match: match, request: request, requester: requester, message: acceptResponseDTO.message)
     }
 
     // MARK: - Reject

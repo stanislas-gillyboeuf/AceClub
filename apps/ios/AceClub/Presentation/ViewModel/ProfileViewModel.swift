@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftData
 
 @MainActor
 class ProfileViewModel: ObservableObject {
@@ -12,12 +13,21 @@ class ProfileViewModel: ObservableObject {
     @Published var errorMessageIntents: String? = nil
     @Published var deletingIntentId: String? = nil
 
+    // User Preferences
+    @Published var userPreferences: UserPreferences? = nil
+    @Published var isLoadingPreferences: Bool = false
+
+    // User Stats
+    @Published var userStats: UserMatchStats = .empty
+
     private let getMeUseCase = GetMeUseCase()
     private let listMatchIntentsUseCase = ListMatchIntentsUseCase()
     private let deleteMatchIntentUseCase = DeleteMatchIntentUseCase()
+    private let getUserPreferencesUseCase = GetUserPreferencesUseCase()
 
     private var refreshUserTask: Task<Void, Never>?
     private var refreshIntentsTask: Task<Void, Never>?
+    private var refreshPreferencesTask: Task<Void, Never>?
 
     func getMe() async {
         isLoading = true
@@ -112,6 +122,93 @@ class ProfileViewModel: ObservableObject {
             errorMessageIntents = error.localizedDescription
         }
         deletingIntentId = nil
+    }
+
+    // MARK: - User Preferences
+
+    func loadUserPreferences() async {
+        isLoadingPreferences = true
+        defer { isLoadingPreferences = false }
+
+        do {
+            let preferences = try await getUserPreferencesUseCase.execute()
+            guard !Task.isCancelled else { return }
+            userPreferences = preferences
+        } catch is CancellationError {
+            // Ignore cancellation
+        } catch {
+            // Silently fail - preferences are optional
+            print("Failed to load preferences: \(error)")
+        }
+    }
+
+    func refreshUserPreferences() async {
+        refreshPreferencesTask?.cancel()
+
+        refreshPreferencesTask = Task { [weak self] in
+            guard let self else { return }
+            await MainActor.run { self.isLoadingPreferences = true }
+            do {
+                let preferences = try await self.getUserPreferencesUseCase.execute()
+                await MainActor.run { self.userPreferences = preferences }
+            } catch is CancellationError {
+                // Ignore
+            } catch {
+                print("Failed to refresh preferences: \(error)")
+            }
+            await MainActor.run { self.isLoadingPreferences = false }
+        }
+
+        await refreshPreferencesTask?.value
+    }
+
+    // MARK: - User Stats
+
+    func calculateStats(from matches: [MatchModel]) {
+        guard let userId = user?.id else {
+            userStats = .empty
+            return
+        }
+
+        let finishedMatches = matches.filter { $0.isFinished }
+
+        let userMatches = finishedMatches.filter { match in
+            match.participants.contains { $0.userId == userId }
+        }
+
+        let wins = userMatches.filter { match in
+            match.participants.first { $0.userId == userId }?.isWinner ?? false
+        }.count
+
+        let totalPlayTime = userMatches.compactMap { $0.duration }.reduce(0, +)
+
+        let calendar = Calendar.current
+        let now = Date()
+        let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) ?? now
+        let matchesThisMonth = userMatches.filter { match in
+            let matchDate = match.finishedAt ?? match.createdAt
+            return matchDate >= startOfMonth
+        }.count
+
+        userStats = UserMatchStats(
+            totalMatches: userMatches.count,
+            totalWins: wins,
+            totalPlayTime: totalPlayTime,
+            matchesThisMonth: matchesThisMonth,
+            monthlyGoal: 10
+        )
+    }
+
+    // MARK: - Computed Properties
+
+    /// Display name for skill level
+    var skillLevelDisplayName: String? {
+        guard let prefs = userPreferences else { return nil }
+        if let sport = Sport(rawValue: prefs.sport),
+           let level = SkillLevel.levels(for: sport).first(where: { $0.value == prefs.skillLevel }) {
+            return level.displayName
+        }
+        return prefs.skillLevel
     }
 }
 

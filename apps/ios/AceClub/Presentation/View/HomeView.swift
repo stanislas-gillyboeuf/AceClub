@@ -95,7 +95,7 @@ struct HomeView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
-        .background(Theme.secondaryBackground)
+        .background(Theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous)
@@ -149,7 +149,7 @@ struct HomeView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(16)
         }
-        .background(Theme.secondaryBackground)
+        .background(Theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous)

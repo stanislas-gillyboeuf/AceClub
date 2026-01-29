@@ -9,114 +9,32 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                if viewModel.isLoadingPreferences {
-                    Section {
-                        HStack {
-                            Spacer()
-                            ProgressView("Chargement...")
-                            Spacer()
+            ScrollView {
+                VStack(spacing: 24) {
+                    if viewModel.isLoadingPreferences {
+                        loadingView
+                    } else {
+                        personalInfoSection
+                        clubSection
+                        sportSection
+
+                        if viewModel.selectedSport != nil {
+                            skillLevelSection
                         }
-                    }
-                } else {
-                    // Personal Info Section
-                    Section {
-                        TextField("Nom complet", text: $viewModel.name)
-                            .textContentType(.name)
-                            .autocorrectionDisabled()
 
-                        TextField("Numéro de téléphone", text: $viewModel.phoneNumber)
-                            .textContentType(.telephoneNumber)
-                            .keyboardType(.phonePad)
-                            .onChange(of: viewModel.phoneNumber) { _, newValue in
-                                let allowed = CharacterSet(charactersIn: "+0123456789 ()-")
-                                let filtered = newValue.filter { character in
-                                    character.unicodeScalars.allSatisfy { allowed.contains($0) }
-                                }
-                                if filtered != newValue {
-                                    viewModel.phoneNumber = filtered
-                                }
-                            }
-                    } header: {
-                        Label("Informations personnelles", systemImage: "person.fill")
-                    }
-
-                    // Club Section
-                    Section {
-                        Button {
-                            showClubSelection = true
-                        } label: {
-                            HStack {
-                                Text("Club")
-                                    .foregroundStyle(.primary)
-                                Spacer()
-                                Text(viewModel.selectedOrganization?.name ?? "Non sélectionné")
-                                    .foregroundStyle(.secondary)
-                                Image(systemName: "chevron.right")
-                                    .font(.caption)
-                                    .foregroundStyle(.tertiary)
-                            }
+                        if let error = viewModel.errorMessage {
+                            errorBanner(error)
                         }
-                    } header: {
-                        Label("Club", systemImage: "building.2.fill")
-                    }
 
-                    // Sport Section
-                    Section {
-                        ForEach(Sport.allCases) { sport in
-                            Button {
-                                viewModel.selectSport(sport)
-                            } label: {
-                                HStack {
-                                    Image(systemName: sport.icon)
-                                        .frame(width: 24)
-                                    Text(sport.displayName)
-                                    Spacer()
-                                    if viewModel.selectedSport == sport {
-                                        Image(systemName: "checkmark")
-                                            .foregroundStyle(.accent)
-                                    }
-                                }
-                            }
-                            .foregroundStyle(.primary)
-                        }
-                    } header: {
-                        Label("Sport", systemImage: "figure.tennis")
-                    }
-
-                    // Skill Level Section
-                    if let sport = viewModel.selectedSport {
-                        Section {
-                            Picker("Niveau", selection: Binding(
-                                get: { viewModel.selectedSkillLevel ?? SkillLevel.levels(for: sport).first! },
-                                set: { viewModel.selectedSkillLevel = $0 }
-                            )) {
-                                ForEach(SkillLevel.levels(for: sport)) { level in
-                                    Text(level.displayName).tag(level)
-                                }
-                            }
-                            .pickerStyle(.wheel)
-                        } header: {
-                            Label("Niveau", systemImage: "chart.bar.fill")
-                        }
-                    }
-
-                    // Error/Success Messages
-                    if let error = viewModel.errorMessage {
-                        Section {
-                            Text(error)
-                                .foregroundStyle(.red)
-                        }
-                    }
-
-                    if let success = viewModel.successMessage {
-                        Section {
-                            Text(success)
-                                .foregroundStyle(.green)
+                        if let success = viewModel.successMessage {
+                            successBanner(success)
                         }
                     }
                 }
+                .padding(.horizontal, Theme.paddingHorizontal)
+                .padding(.vertical, 16)
             }
+            .background(Theme.primaryBackground)
             .navigationTitle("Paramètres")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -148,6 +66,219 @@ struct SettingsView: View {
             }
         }
     }
+
+    // MARK: - Loading View
+
+    private var loadingView: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+            Text("Chargement...")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 40)
+        .background(Theme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+    }
+
+    // MARK: - Personal Info Section
+
+    private var personalInfoSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: "Informations personnelles", icon: "person.fill")
+
+            VStack(spacing: 0) {
+                inputRow(title: "Nom complet") {
+                    TextField("Entrer votre nom", text: $viewModel.name)
+                        .textContentType(.name)
+                        .autocorrectionDisabled()
+                }
+
+                Divider()
+                    .padding(.leading, 16)
+
+                inputRow(title: "Téléphone") {
+                    TextField("Entrer votre numéro", text: $viewModel.phoneNumber)
+                        .textContentType(.telephoneNumber)
+                        .keyboardType(.phonePad)
+                        .onChange(of: viewModel.phoneNumber) { _, newValue in
+                            let allowed = CharacterSet(charactersIn: "+0123456789 ()-")
+                            let filtered = newValue.filter { character in
+                                character.unicodeScalars.allSatisfy { allowed.contains($0) }
+                            }
+                            if filtered != newValue {
+                                viewModel.phoneNumber = filtered
+                            }
+                        }
+                }
+            }
+            .background(Theme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+        }
+    }
+
+    // MARK: - Club Section
+
+    private var clubSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: "Club", icon: "building.2.fill")
+
+            Button {
+                showClubSelection = true
+            } label: {
+                HStack {
+                    Text(viewModel.selectedOrganization?.name ?? "Sélectionner un club")
+                        .foregroundStyle(viewModel.selectedOrganization != nil ? .primary : .secondary)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+                .padding(16)
+                .background(Theme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    // MARK: - Sport Section
+
+    private var sportSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: "Sport", icon: "figure.tennis")
+
+            VStack(spacing: 0) {
+                ForEach(Array(Sport.allCases.enumerated()), id: \.element.id) { index, sport in
+                    Button {
+                        viewModel.selectSport(sport)
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: sport.icon)
+                                .font(.body)
+                                .foregroundStyle(viewModel.selectedSport == sport ? Theme.tintColor : .secondary)
+                                .frame(width: 24)
+
+                            Text(sport.displayName)
+                                .foregroundStyle(.primary)
+
+                            Spacer()
+
+                            if viewModel.selectedSport == sport {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(Theme.tintColor)
+                            }
+                        }
+                        .padding(16)
+                    }
+                    .buttonStyle(.plain)
+
+                    if index < Sport.allCases.count - 1 {
+                        Divider()
+                            .padding(.leading, 52)
+                    }
+                }
+            }
+            .background(Theme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+        }
+    }
+
+    // MARK: - Skill Level Section
+
+    private var skillLevelSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: "Niveau", icon: "chart.bar.fill")
+
+            if let sport = viewModel.selectedSport {
+                VStack(spacing: 0) {
+                    ForEach(Array(SkillLevel.levels(for: sport).enumerated()), id: \.element.id) { index, level in
+                        let levels = SkillLevel.levels(for: sport)
+
+                        Button {
+                            viewModel.selectedSkillLevel = level
+                        } label: {
+                            HStack {
+                                Text(level.displayName)
+                                    .foregroundStyle(.primary)
+
+                                Spacer()
+
+                                if viewModel.selectedSkillLevel == level {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(Theme.tintColor)
+                                }
+                            }
+                            .padding(16)
+                        }
+                        .buttonStyle(.plain)
+
+                        if index < levels.count - 1 {
+                            Divider()
+                                .padding(.leading, 16)
+                        }
+                    }
+                }
+                .background(Theme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+            }
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func sectionHeader(title: String, icon: String) -> some View {
+        Label(title, systemImage: icon)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .textCase(.uppercase)
+    }
+
+    private func inputRow<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            content()
+        }
+        .padding(16)
+    }
+
+    private func errorBanner(_ message: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "exclamationmark.circle.fill")
+                .foregroundStyle(.red)
+
+            Text(message)
+                .font(.subheadline)
+                .foregroundStyle(.primary)
+
+            Spacer()
+        }
+        .padding(16)
+        .background(Color.red.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+    }
+
+    private func successBanner(_ message: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundStyle(.green)
+
+            Text(message)
+                .font(.subheadline)
+                .foregroundStyle(.primary)
+
+            Spacer()
+        }
+        .padding(16)
+        .background(Color.green.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+    }
 }
 
 // MARK: - Club Selection View
@@ -158,49 +289,87 @@ struct ClubSelectionView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 16) {
-                TextField("Rechercher un club...", text: $viewModel.searchQuery)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .autocorrectionDisabled()
-                    .padding(.horizontal)
-                    .padding(.top)
-                    .onChange(of: viewModel.searchQuery) { _, _ in
-                        viewModel.onSearchQueryChanged()
-                    }
+            VStack(spacing: 0) {
+                // Search bar
+                HStack(spacing: 12) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(.secondary)
 
+                    TextField("Rechercher un club...", text: $viewModel.searchQuery)
+                        .autocorrectionDisabled()
+                        .onChange(of: viewModel.searchQuery) { _, _ in
+                            viewModel.onSearchQueryChanged()
+                        }
+
+                    if !viewModel.searchQuery.isEmpty {
+                        Button {
+                            viewModel.searchQuery = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .padding(12)
+                .background(Theme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
+                .padding(.horizontal, Theme.paddingHorizontal)
+                .padding(.vertical, 12)
+
+                // Content
                 if viewModel.isLoadingOrganizations {
-                    VStack {
+                    VStack(spacing: 16) {
                         Spacer()
                         ProgressView()
                         Spacer()
                     }
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if viewModel.organizations.isEmpty {
-                    ContentUnavailableView(
-                        "Aucun club trouvé",
-                        systemImage: "building.2",
-                        description: Text("Essaie avec un autre nom")
-                    )
+                    VStack(spacing: 16) {
+                        ContentUnavailableView {
+                            Label("Aucun club trouvé", systemImage: "building.2")
+                        } description: {
+                            Text("Essaie avec un autre nom")
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    List(viewModel.organizations) { org in
-                        Button {
-                            viewModel.selectedOrganization = org
-                            dismiss()
-                        } label: {
-                            HStack {
-                                Text(org.name)
-                                    .foregroundStyle(viewModel.selectedOrganization?.id == org.id ? .accent : .primary)
-                                Spacer()
-                                if viewModel.selectedOrganization?.id == org.id {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(.accent)
+                    ScrollView {
+                        LazyVStack(spacing: 0) {
+                            ForEach(Array(viewModel.organizations.enumerated()), id: \.element.id) { index, org in
+                                Button {
+                                    viewModel.selectedOrganization = org
+                                    dismiss()
+                                } label: {
+                                    HStack {
+                                        Text(org.name)
+                                            .foregroundStyle(.primary)
+
+                                        Spacer()
+
+                                        if viewModel.selectedOrganization?.id == org.id {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundStyle(Theme.tintColor)
+                                        }
+                                    }
+                                    .padding(16)
+                                }
+                                .buttonStyle(.plain)
+
+                                if index < viewModel.organizations.count - 1 {
+                                    Divider()
+                                        .padding(.leading, 16)
                                 }
                             }
                         }
+                        .background(Theme.cardBackground)
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+                        .padding(.horizontal, Theme.paddingHorizontal)
+                        .padding(.top, 4)
                     }
-                    .listStyle(.plain)
                 }
             }
+            .background(Theme.primaryBackground)
             .navigationTitle("Choisir un club")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
