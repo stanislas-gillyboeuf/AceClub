@@ -3,7 +3,8 @@ import { SignJWT, importPKCS8 } from "jose";
 // Configuration APNs (utiliser des variables d'environnement)
 const APNS_TEAM_ID = process.env.APNS_TEAM_ID!;
 const APNS_KEY_ID = process.env.APNS_KEY_ID!;
-const APNS_SIGNING_KEY = process.env.APNS_SIGNING_KEY!;
+// Convert escaped newlines to actual newlines (env vars often escape them)
+const APNS_SIGNING_KEY = process.env.APNS_SIGNING_KEY!.replace(/\\n/g, "\n");
 const APNS_BUNDLE_ID = process.env.APNS_BUNDLE_ID!;
 // TestFlight uses production APNs, only Xcode debug builds use sandbox
 const APNS_HOST =
