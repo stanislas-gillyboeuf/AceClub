@@ -35,144 +35,98 @@ struct ContactPlayerSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
-                // Header avec checkmark
-                VStack(spacing: 16) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.green.opacity(0.15))
-                            .frame(width: 80, height: 80)
-
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 44))
-                            .foregroundStyle(.green)
-                    }
-
-                    Text("Match accepte !")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                }
-                .padding(.top, 8)
-
-                // Player info card
-                VStack(spacing: 16) {
-                    // Avatar
-                    Group {
-                        if let imageURL = player.imageURL {
-                            AsyncImage(url: imageURL) { phase in
-                                switch phase {
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .scaledToFill()
-                                default:
-                                    initialsView
-                                }
-                            }
-                        } else {
-                            initialsView
-                        }
-                    }
-                    .frame(width: 80, height: 80)
-                    .clipShape(Circle())
-
-                    // Name
-                    Text(player.name)
-                        .font(.title3)
-                        .fontWeight(.semibold)
-
-                    // Phone number
-                    if let phone = formattedPhoneNumber {
-                        Text(phone)
-                            .font(.body)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .padding(.vertical, 20)
-                .padding(.horizontal, 24)
-                .frame(maxWidth: .infinity)
-                .background(Theme.cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
-
-                // Contact buttons
-                if formattedPhoneNumber != nil {
+            ScrollView {
+                VStack(spacing: 0) {
                     VStack(spacing: 12) {
-                        Text("Contacte-le pour organiser le match")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 56))
+                            .foregroundStyle(Theme.tintColor)
 
-                        HStack(spacing: 16) {
-                            // WhatsApp button
-                            if let url = whatsappURL {
-                                Link(destination: url) {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "message.fill")
-                                        Text("WhatsApp")
-                                    }
-                                    .font(.body)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, Theme.paddingButtonVertical)
-                                    .background(Color.green)
-                                    .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
-                                }
-                            }
+                        Text("Match confirme")
+                            .font(.title2.weight(.bold))
+                            .foregroundStyle(Theme.labelPrimary)
+                    }
+                    .padding(.top, 32)
+                    .padding(.bottom, 24)
 
-                            // SMS button
-                            if let url = smsURL {
-                                Link(destination: url) {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "bubble.left.fill")
-                                        Text("SMS")
-                                    }
-                                    .font(.body)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, Theme.paddingButtonVertical)
-                                    .background(Theme.tintColor)
-                                    .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
+                    VStack(spacing: 0) {
+                        VStack(spacing: 12) {
+                            avatarView
+                                .frame(width: 72, height: 72)
+
+                            VStack(spacing: 4) {
+                                Text(player.name)
+                                    .font(.title3.weight(.semibold))
+                                    .foregroundStyle(Theme.labelPrimary)
+
+                                if let phone = formattedPhoneNumber {
+                                    Text(phone)
+                                        .font(.subheadline)
+                                        .foregroundStyle(Theme.labelSecondary)
                                 }
                             }
                         }
+                        .padding(.vertical, 20)
+                        .frame(maxWidth: .infinity)
 
-                        // Call button (secondary)
-                        if let url = phoneURL {
-                            Link(destination: url) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "phone.fill")
-                                    Text("Appeler")
+                        if formattedPhoneNumber != nil {
+                            Divider()
+
+                            VStack(spacing: 16) {
+                                Text("Contacte-le pour organiser le match")
+                                    .font(.subheadline)
+                                    .foregroundStyle(Theme.labelSecondary)
+
+                                HStack(spacing: 12) {
+                                    if let url = whatsappURL {
+                                        contactButton(
+                                            url: url,
+                                            icon: "message.fill",
+                                            label: "WhatsApp",
+                                            style: .primary
+                                        )
+                                    }
+
+                                    if let url = smsURL {
+                                        contactButton(
+                                            url: url,
+                                            icon: "bubble.left.fill",
+                                            label: "SMS",
+                                            style: .primary
+                                        )
+                                    }
+
+                                    if let url = phoneURL {
+                                        contactButton(
+                                            url: url,
+                                            icon: "phone.fill",
+                                            label: "Appeler",
+                                            style: .secondary
+                                        )
+                                    }
                                 }
-                                .font(.body)
-                                .fontWeight(.medium)
-                                .foregroundStyle(Theme.tintColor)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, Theme.paddingButtonVertical)
-                                .background(Theme.tintColor.opacity(0.12))
-                                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
                             }
+                            .padding(.vertical, 20)
+                            .padding(.horizontal, Theme.paddingCard)
                         }
                     }
-                } else {
-                    // No phone number
-                    VStack(spacing: 8) {
-                        Image(systemName: "phone.slash")
-                            .font(.title)
-                            .foregroundStyle(.secondary)
+                    .cardStyle(cornerRadius: Theme.cornerRadiusLarge, withBorder: true)
+                    .padding(.horizontal, Theme.paddingHorizontal)
 
-                        Text("Numero de telephone non disponible")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
+                    if formattedPhoneNumber == nil {
+                        VStack(spacing: 8) {
+                            Image(systemName: "phone.slash")
+                                .font(.title2)
+                                .foregroundStyle(Theme.labelTertiary)
+
+                            Text("Numero de telephone non disponible")
+                                .font(.subheadline)
+                                .foregroundStyle(Theme.labelSecondary)
+                        }
+                        .padding(.top, 24)
                     }
-                    .padding(.vertical, 20)
                 }
-
-                Spacer()
             }
-            .padding(.horizontal, Theme.paddingHorizontal)
             .background(Theme.primaryBackground)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -186,15 +140,62 @@ struct ContactPlayerSheet: View {
         }
     }
 
-    private var initialsView: some View {
+    // MARK: - Avatar
+
+    private var avatarView: some View {
         ZStack {
             Circle()
-                .fill(Theme.tintColor.opacity(0.15))
+                .fill(Color(.tertiarySystemFill))
 
-            Text(player.initials)
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundStyle(Theme.tintColor)
+            if let imageURL = player.imageURL {
+                AsyncImage(url: imageURL) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    default:
+                        initialsText
+                    }
+                }
+            } else {
+                initialsText
+            }
+        }
+        .clipShape(Circle())
+        .overlay {
+            Circle()
+                .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
+        }
+    }
+
+    private var initialsText: some View {
+        Text(player.initials)
+            .font(.system(size: 24, weight: .semibold, design: .rounded))
+            .foregroundStyle(Theme.labelSecondary)
+    }
+
+    // MARK: - Contact Button
+
+    private enum ButtonStyle {
+        case primary
+        case secondary
+    }
+
+    @ViewBuilder
+    private func contactButton(url: URL, icon: String, label: String, style: ButtonStyle) -> some View {
+        Link(destination: url) {
+            VStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.title3)
+                Text(label)
+                    .font(.caption.weight(.medium))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .foregroundStyle(style == .primary ? .white : Theme.tintColor)
+            .background(style == .primary ? Theme.tintColor : Theme.tintColor.opacity(0.12))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
         }
     }
 }
