@@ -78,6 +78,11 @@ class AuthViewModel {
             let user = try await signInWithGoogleUseCase.execute(presentingViewController: rootViewController)
             currentUser = user
             isAuthenticated = true
+
+            // Request notification permission after successful login
+            Task {
+                _ = await NotificationManager.shared.requestPermission()
+            }
         } catch let error as GoogleSignInError {
             if case .cancelled = error {
                 // User cancelled, don't show error
@@ -111,6 +116,11 @@ class AuthViewModel {
             let user = try await signInWithAppleUseCase.execute(presentingWindow: window)
             currentUser = user
             isAuthenticated = true
+
+            // Request notification permission after successful login
+            Task {
+                _ = await NotificationManager.shared.requestPermission()
+            }
         } catch let error as AppleSignInError {
             if case .cancelled = error {
                 // User cancelled, don't show error

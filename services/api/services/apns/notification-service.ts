@@ -29,6 +29,9 @@ export async function sendNotificationToUser(
   const { userId, type, title, body, referenceId, referenceType, data } =
     params;
 
+  console.log(`[Notification] Sending notification to user ${userId}`);
+  console.log(`[Notification] Type: ${type}, Title: ${title}`);
+
   // 1. Enregistrer la notification dans l'historique
   const [newNotification] = await db
     .insert(notification)
@@ -50,8 +53,10 @@ export async function sendNotificationToUser(
     .from(deviceToken)
     .where(and(eq(deviceToken.userId, userId), eq(deviceToken.isActive, true)));
 
+  console.log(`[Notification] Found ${tokens.length} device token(s) for user ${userId}`);
+
   if (tokens.length === 0) {
-    console.log(`No active device tokens for user ${userId}`);
+    console.log(`[Notification] No active device tokens for user ${userId} - skipping push`);
     return;
   }
 

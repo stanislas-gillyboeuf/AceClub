@@ -5,10 +5,11 @@ const APNS_TEAM_ID = process.env.APNS_TEAM_ID!;
 const APNS_KEY_ID = process.env.APNS_KEY_ID!;
 const APNS_SIGNING_KEY = process.env.APNS_SIGNING_KEY!;
 const APNS_BUNDLE_ID = process.env.APNS_BUNDLE_ID!;
+// TestFlight uses production APNs, only Xcode debug builds use sandbox
 const APNS_HOST =
-  process.env.NODE_ENV === "production"
-    ? "https://api.push.apple.com"
-    : "https://api.sandbox.push.apple.com";
+  process.env.APNS_USE_SANDBOX === "true"
+    ? "https://api.sandbox.push.apple.com"
+    : "https://api.push.apple.com";
 
 // Cache pour le JWT (valide 1 heure, on le renouvelle toutes les 50 minutes)
 let cachedToken: { token: string; expiresAt: number } | null = null;
@@ -58,6 +59,9 @@ export interface APNsResponse {
 export async function sendPushNotification(
   payload: PushNotificationPayload,
 ): Promise<APNsResponse> {
+  console.log(`[APNs] Sending notification to device: ${payload.deviceToken.substring(0, 20)}...`);
+  console.log(`[APNs] Using host: ${APNS_HOST}`);
+
   try {
     const token = await getAPNsToken();
 
@@ -72,6 +76,8 @@ export async function sendPushNotification(
       },
       ...payload.data,
     };
+
+    console.log(`[APNs] Payload:`, JSON.stringify(apnsPayload));
 
     const response = await fetch(
       `${APNS_HOST}/3/device/${payload.deviceToken}`,
@@ -89,6 +95,7 @@ export async function sendPushNotification(
     );
 
     if (response.ok) {
+      console.log(`[APNs] Success! Status: ${response.status}`);
       return {
         success: true,
         statusCode: response.status,
@@ -97,14 +104,16 @@ export async function sendPushNotification(
     }
 
     const errorBody = await response.json().catch(() => ({}));
+    const reason = (errorBody as { reason?: string }).reason || "Unknown error";
+    console.error(`[APNs] Failed! Status: ${response.status}, Reason: ${reason}`);
     return {
       success: false,
       statusCode: response.status,
-      reason: (errorBody as { reason?: string }).reason || "Unknown error",
+      reason,
       deviceToken: payload.deviceToken,
     };
   } catch (error) {
-    console.error("APNs error:", error);
+    console.error("[APNs] Exception:", error);
     return {
       success: false,
       reason: error instanceof Error ? error.message : "Unknown error",

@@ -1,10 +1,12 @@
 import SwiftUI
+import UIKit
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthViewModel.self) private var authViewModel
     @StateObject private var viewModel = SettingsViewModel()
     @State private var showClubSelection = false
+    @State private var notificationsEnabled = false
     var onProfileUpdated: ((User) -> Void)?
 
     var body: some View {
@@ -21,6 +23,8 @@ struct SettingsView: View {
                         if viewModel.selectedSport != nil {
                             skillLevelSection
                         }
+
+                        notificationsSection
 
                         if let error = viewModel.errorMessage {
                             errorBanner(error)
@@ -60,6 +64,8 @@ struct SettingsView: View {
                 if let user = authViewModel.currentUser {
                     await viewModel.loadData(user: user)
                 }
+                await NotificationManager.shared.checkPermissionStatus()
+                notificationsEnabled = NotificationManager.shared.isPermissionGranted
             }
             .sheet(isPresented: $showClubSelection) {
                 ClubSelectionView(viewModel: viewModel)
@@ -181,6 +187,49 @@ struct SettingsView: View {
                             .padding(.leading, 52)
                     }
                 }
+            }
+            .background(Theme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+        }
+    }
+
+    // MARK: - Notifications Section
+
+    private var notificationsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: "Notifications", icon: "bell.fill")
+
+            VStack(spacing: 0) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Notifications push")
+                            .foregroundStyle(.primary)
+
+                        Text("Recevez des alertes pour les matchs et invitations")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    Toggle("", isOn: $notificationsEnabled)
+                        .labelsHidden()
+                        .onChange(of: notificationsEnabled) { _, newValue in
+                            if newValue {
+                                Task {
+                                    let granted = await NotificationManager.shared.requestPermission()
+                                    if !granted {
+                                        notificationsEnabled = false
+                                        // Open settings if permission was denied
+                                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                                            await UIApplication.shared.open(url)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                }
+                .padding(16)
             }
             .background(Theme.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
