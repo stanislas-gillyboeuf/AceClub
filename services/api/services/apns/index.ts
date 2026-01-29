@@ -2,7 +2,8 @@ import { SignJWT, importPKCS8 } from "jose";
 
 const APNS_TEAM_ID = process.env.APNS_TEAM_ID!;
 const APNS_KEY_ID = process.env.APNS_KEY_ID!;
-const APNS_SIGNING_KEY = process.env.APNS_SIGNING_KEY!;
+// Convert escaped newlines to actual newlines (env vars often escape them)
+const APNS_SIGNING_KEY = process.env.APNS_SIGNING_KEY!.replace(/\\n/g, "\n");
 const APNS_BUNDLE_ID = process.env.APNS_BUNDLE_ID!;
 const APNS_HOST =
   process.env.APNS_USE_SANDBOX === "true"

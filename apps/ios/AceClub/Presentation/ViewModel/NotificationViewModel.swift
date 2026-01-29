@@ -2,8 +2,7 @@
 //  NotificationViewModel.swift
 //  AceClub
 //
-//  Created by Claude on 29/01/2026.
-//
+
 
 import Foundation
 import Combine
