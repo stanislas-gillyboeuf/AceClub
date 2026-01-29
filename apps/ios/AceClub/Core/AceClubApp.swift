@@ -11,6 +11,7 @@ import GoogleSignIn
 
 @main
 struct AceClubApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var authViewModel = AuthViewModel()
 
     let modelContainer: ModelContainer

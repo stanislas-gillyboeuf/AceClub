@@ -3,6 +3,7 @@ import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { matchRequest, matchIntent, match, matchParticipant, user } from "../../../db/schema";
 import { and, eq, ne } from "drizzle-orm";
+import { sendNotificationToUser } from "../../../services/apns/notification-service";
 
 export const acceptRequest = async (c: Context<HonoContext>) => {
   try {
@@ -103,6 +104,26 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
       .from(user)
       .where(eq(user.id, request.requesterId))
       .limit(1);
+
+    // Recuperer le nom de l'utilisateur qui accepte pour la notification
+    const [receiverInfo] = await db
+      .select({ name: user.name })
+      .from(user)
+      .where(eq(user.id, userId))
+      .limit(1);
+
+    // Envoyer notification au demandeur (celui qui a fait la requete)
+    sendNotificationToUser({
+      userId: request.requesterId,
+      type: "match_request_accepted",
+      title: "Match confirme !",
+      body: `${receiverInfo?.name ?? "Un joueur"} a accepte votre demande de match`,
+      referenceId: newMatch.id,
+      referenceType: "match",
+      data: {
+        matchId: newMatch.id,
+      },
+    }).catch((err) => console.error("Failed to send notification:", err));
 
     return c.json({
       request: updatedRequest,

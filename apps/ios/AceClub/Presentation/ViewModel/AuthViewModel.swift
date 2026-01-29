@@ -130,6 +130,9 @@ class AuthViewModel {
         isLoading = true
         errorMessage = nil
 
+        // Unregister device token before signing out
+        await NotificationManager.shared.unregisterDeviceToken()
+
         do {
             try await signOutUseCase.execute()
             currentUser = nil

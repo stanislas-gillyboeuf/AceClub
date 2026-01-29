@@ -201,10 +201,14 @@ struct ProfileView: View {
             .navigationTitle("Mon Profil")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showSettingsSheet = true
-                    } label: {
-                        Image(systemName: "gearshape")
+                    HStack(spacing: 16) {
+                        NotificationBellButton()
+
+                        Button {
+                            showSettingsSheet = true
+                        } label: {
+                            Image(systemName: "gearshape")
+                        }
                     }
                 }
             }

@@ -40,6 +40,11 @@ struct HomeView: View {
             }
             .background(Theme.primaryBackground)
             .navigationTitle("Activité")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NotificationBellButton()
+                }
+            }
             .refreshable {
                 await refresh()
             }
