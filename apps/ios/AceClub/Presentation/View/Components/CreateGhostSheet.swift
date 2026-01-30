@@ -85,7 +85,7 @@ struct CreateGhostSheet: View {
                     .autocorrectionDisabled()
                     .padding(.horizontal, 14)
                     .padding(.vertical, 14)
-                    .background(Color(uiColor: .secondarySystemBackground))
+                    .background(Theme.cardBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
 
@@ -95,15 +95,15 @@ struct CreateGhostSheet: View {
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
 
-                TextField("", text: $email)
+                TextField("email@exemple.com", text: $email)
                     .font(.body)
-                    .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
+                    .textContentType(.emailAddress)
                     .autocorrectionDisabled()
                     .padding(.horizontal, 14)
                     .padding(.vertical, 14)
-                    .background(Color(uiColor: .secondarySystemBackground))
+                    .background(Theme.cardBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
 
@@ -175,11 +175,5 @@ struct CreateGhostSheet: View {
                 }
             }
         }
-    }
-}
-
-#Preview {
-    CreateGhostSheet(initialName: "Jean") { ghost in
-        print("Ghost created: \(ghost.name)")
     }
 }

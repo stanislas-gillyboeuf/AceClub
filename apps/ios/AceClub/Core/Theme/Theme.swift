@@ -30,9 +30,6 @@ enum Theme {
 
     // MARK: - Semantic colors (adapt to light/dark)
 
-    /// Background principal des vues
-    /// Light: gris clair (pour que les cards blanches ressortent)
-    /// Dark: noir (systemBackground)
     static var primaryBackground: Color {
         Color(UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark
@@ -41,15 +38,9 @@ enum Theme {
         })
     }
 
-    /// Background secondaire pour sections groupées
     static var secondaryBackground: Color { Color(.secondarySystemBackground) }
 
-    /// Background tertiaire pour éléments imbriqués
     static var tertiaryBackground: Color { Color(.tertiarySystemBackground) }
-
-    /// Background des cards/rows (doit contraster avec primaryBackground)
-    /// Light: blanc pur (ressort sur fond gris)
-    /// Dark: gris foncé (secondarySystemBackground)
     static var cardBackground: Color {
         Color(UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark
@@ -104,5 +95,24 @@ struct InputFieldStyle: ViewModifier {
 extension View {
     func inputFieldStyle() -> some View {
         modifier(InputFieldStyle())
+    }
+}
+
+// MARK: - TextField style (style unifié pour tous les TextFields)
+
+struct AceTextFieldStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.body)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 14)
+            .background(Color(uiColor: .secondarySystemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+}
+
+extension View {
+    func aceTextFieldStyle() -> some View {
+        modifier(AceTextFieldStyle())
     }
 }

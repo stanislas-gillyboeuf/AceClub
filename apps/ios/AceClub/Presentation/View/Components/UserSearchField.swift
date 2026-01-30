@@ -168,14 +168,13 @@ struct UserSearchField: View {
                 VStack(spacing: 12) {
                     HStack {
                         Spacer()
-                        VStack(spacing: 6) {
-                            Image(systemName: "person.slash")
-                                .font(.title3)
-                                .foregroundStyle(.tertiary)
-                            Text("Aucun joueur trouvé")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
+                        ContentUnavailableView(
+                            "Aucun joueur trouvé",
+                            systemImage: "person.slash",
+                            description: Text("Essaie avec un autre nom")
+                        )
+                        .symbolVariant(.none)
+                        .foregroundStyle(.secondary)
                         Spacer()
                     }
                     .padding(.top, 16)
