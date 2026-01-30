@@ -1,7 +1,9 @@
-import { eq, and, lte, or, isNull } from "drizzle-orm";
+import { eq, and, lte, gte, or, isNull } from "drizzle-orm";
 import { db } from "../../../db";
 import { challengeTemplate, userChallenge, ChallengeType } from "../../../db/schema/challenge/schema";
 import type { ChallengeTemplate } from "../../../db/schema/challenge/type";
+import { user } from "../../../db/schema/auth/schema";
+import { userLevel } from "../../../db/schema/level/schema";
 
 function getISOWeekInfo(date: Date): { week: number; year: number } {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -44,9 +46,13 @@ function weightedRandomSelect(
   return templates[templates.length - 1];
 }
 
-export async function assignWeeklyChallenges(
+/**
+ * Assigne les défis hebdomadaires à un seul utilisateur.
+ * Utilisé pour l'assignation individuelle (ex: nouvel utilisateur).
+ */
+export async function assignWeeklyChallengesForUser(
   userId: string,
-  userLevel: number
+  level: number
 ): Promise<void> {
   const now = new Date();
   const weekInfo = getISOWeekInfo(now);
@@ -74,10 +80,10 @@ export async function assignWeeklyChallenges(
     .where(
       and(
         eq(challengeTemplate.isActive, true),
-        lte(challengeTemplate.minLevel, userLevel),
+        lte(challengeTemplate.minLevel, level),
         or(
           isNull(challengeTemplate.maxLevel),
-          lte(userLevel, challengeTemplate.maxLevel!)
+          gte(challengeTemplate.maxLevel, level)
         )
       )
     );
@@ -101,15 +107,15 @@ export async function assignWeeklyChallenges(
   const selected: ChallengeTemplate[] = [];
 
   if (byType.quantitative.length > 0) {
-    selected.push(weightedRandomSelect(byType.quantitative, userLevel));
+    selected.push(weightedRandomSelect(byType.quantitative, level));
   }
 
   if (byType.social.length > 0) {
-    selected.push(weightedRandomSelect(byType.social, userLevel));
+    selected.push(weightedRandomSelect(byType.social, level));
   }
 
-  if (byType.performance.length > 0 && userLevel >= 5) {
-    selected.push(weightedRandomSelect(byType.performance, userLevel));
+  if (byType.performance.length > 0 && level >= 5) {
+    selected.push(weightedRandomSelect(byType.performance, level));
   }
 
   const remaining = eligibleTemplates.filter((t) => !selected.includes(t));
@@ -128,4 +134,37 @@ export async function assignWeeklyChallenges(
       expiresAt,
     });
   }
+}
+
+/**
+ * Assigne les défis hebdomadaires à TOUS les utilisateurs.
+ * Appelée par le cron job chaque lundi.
+ */
+export async function assignWeeklyChallenges(): Promise<void> {
+  // Récupère tous les users avec leur niveau (ou niveau 1 par défaut)
+  const allUsers = await db
+    .select({
+      userId: user.id,
+      currentLevel: userLevel.currentLevel,
+    })
+    .from(user)
+    .leftJoin(userLevel, eq(user.id, userLevel.userId));
+
+  console.log(`[CRON] Found ${allUsers.length} users to assign challenges to`);
+
+  let assigned = 0;
+  let skipped = 0;
+
+  for (const u of allUsers) {
+    const level = u.currentLevel ?? 1;
+    try {
+      await assignWeeklyChallengesForUser(u.userId, level);
+      assigned++;
+    } catch (error) {
+      console.error(`[CRON] Failed to assign challenges for user ${u.userId}:`, error);
+      skipped++;
+    }
+  }
+
+  console.log(`[CRON] Assigned challenges to ${assigned} users, skipped ${skipped}`);
 }
