@@ -23,7 +23,7 @@ struct LeaderboardRow: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 2) {
-                Text(entry.formattedXp)
+                Text(entry.formattedAces)
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(.primary)
 
@@ -133,7 +133,7 @@ struct LeaderboardRow: View {
                 userId: "1",
                 name: "Jean Dupont",
                 image: nil,
-                xp: 5420,
+                aces: 5420,
                 level: 25,
                 streak: 5
             )
@@ -145,7 +145,7 @@ struct LeaderboardRow: View {
                 userId: "2",
                 name: "Marie Martin",
                 image: nil,
-                xp: 4890,
+                aces: 4890,
                 level: 23,
                 streak: 3
             )
@@ -157,7 +157,7 @@ struct LeaderboardRow: View {
                 userId: "3",
                 name: "Pierre Bernard",
                 image: nil,
-                xp: 4200,
+                aces: 4200,
                 level: 21,
                 streak: 0
             )
@@ -169,7 +169,7 @@ struct LeaderboardRow: View {
                 userId: "4",
                 name: "Sophie Petit",
                 image: nil,
-                xp: 3800,
+                aces: 3800,
                 level: 19,
                 streak: 2
             )

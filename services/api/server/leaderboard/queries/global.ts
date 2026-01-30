@@ -16,14 +16,14 @@ export const getGlobalLeaderboard = async (c: Context<HonoContext>) => {
       userId: user.id,
       userName: user.name,
       userImage: user.image,
-      totalXp: sql<number>`coalesce(${userLevel.totalXp}, 0)`.as("total_xp"),
+      totalAces: sql<number>`coalesce(${userLevel.totalAces}, 0)`.as("total_aces"),
       currentLevel: sql<number>`coalesce(${userLevel.currentLevel}, 1)`.as("current_level"),
       currentStreak: sql<number>`coalesce(${userStreak.currentStreak}, 0)`.as("current_streak"),
     })
     .from(user)
     .leftJoin(userLevel, sql`${user.id} = ${userLevel.userId}`)
     .leftJoin(userStreak, sql`${user.id} = ${userStreak.userId}`)
-    .orderBy(desc(sql`coalesce(${userLevel.totalXp}, 0)`))
+    .orderBy(desc(sql`coalesce(${userLevel.totalAces}, 0)`))
     .limit(limit)
     .offset(offset);
 
@@ -37,7 +37,7 @@ export const getGlobalLeaderboard = async (c: Context<HonoContext>) => {
       userId: r.userId,
       name: r.userName,
       image: r.userImage,
-      xp: Number(r.totalXp),
+      aces: Number(r.totalAces),
       level: Number(r.currentLevel),
       streak: Number(r.currentStreak),
     })),

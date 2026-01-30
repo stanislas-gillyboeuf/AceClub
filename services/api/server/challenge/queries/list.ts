@@ -15,7 +15,7 @@ export const getMyChallenges = async (c: Context<HonoContext>) => {
       status: userChallenge.status,
       expiresAt: userChallenge.expiresAt,
       completedAt: userChallenge.completedAt,
-      xpAwarded: userChallenge.xpAwarded,
+      acesAwarded: userChallenge.acesAwarded,
       template: {
         code: challengeTemplate.code,
         type: challengeTemplate.type,
@@ -24,7 +24,7 @@ export const getMyChallenges = async (c: Context<HonoContext>) => {
         titleEn: challengeTemplate.titleEn,
         descriptionFr: challengeTemplate.descriptionFr,
         descriptionEn: challengeTemplate.descriptionEn,
-        xpReward: challengeTemplate.xpReward,
+        acesReward: challengeTemplate.acesReward,
       },
     })
     .from(userChallenge)
@@ -46,7 +46,7 @@ export const getMyChallenges = async (c: Context<HonoContext>) => {
       description: ch.template.descriptionFr,
       currentProgress: ch.currentProgress,
       targetValue: ch.targetValue,
-      xpReward: ch.template.xpReward,
+      acesReward: ch.template.acesReward,
       status: ch.status,
       expiresAt: ch.expiresAt,
     })),

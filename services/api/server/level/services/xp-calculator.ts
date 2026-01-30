@@ -1,57 +1,57 @@
 export const LEVEL_CONFIG = {
-  BASE_XP: 100,
+  BASE_ACES: 100,
   GROWTH_RATE: 1.15,
   MAX_LEVEL: 100,
 } as const;
 
-export const XP_REWARDS = {
+export const ACES_REWARDS = {
   MATCH_PARTICIPATION: 100,
   MATCH_VICTORY: 300,
   CHALLENGE_BASE: 150,
 } as const;
 
-export function getXpRequiredForLevel(level: number): number {
+export function getAcesRequiredForLevel(level: number): number {
   if (level <= 1) return 0;
-  return Math.floor(LEVEL_CONFIG.BASE_XP * Math.pow(LEVEL_CONFIG.GROWTH_RATE, level - 2));
+  return Math.floor(LEVEL_CONFIG.BASE_ACES * Math.pow(LEVEL_CONFIG.GROWTH_RATE, level - 2));
 }
 
-export function getTotalXpForLevel(level: number): number {
+export function getTotalAcesForLevel(level: number): number {
   let total = 0;
   for (let i = 2; i <= level; i++) {
-    total += getXpRequiredForLevel(i);
+    total += getAcesRequiredForLevel(i);
   }
   return total;
 }
 
 export interface LevelInfo {
   level: number;
-  currentLevelXp: number;
-  xpToNextLevel: number;
+  currentLevelAces: number;
+  acesToNextLevel: number;
   progressPercent: number;
 }
 
-export function calculateLevelFromXp(totalXp: number): LevelInfo {
+export function calculateLevelFromAces(totalAces: number): LevelInfo {
   let level = 1;
-  let remainingXp = totalXp;
+  let remainingAces = totalAces;
 
   while (level < LEVEL_CONFIG.MAX_LEVEL) {
-    const xpNeeded = getXpRequiredForLevel(level + 1);
-    if (remainingXp < xpNeeded) {
+    const acesNeeded = getAcesRequiredForLevel(level + 1);
+    if (remainingAces < acesNeeded) {
       return {
         level,
-        currentLevelXp: remainingXp,
-        xpToNextLevel: xpNeeded - remainingXp,
-        progressPercent: xpNeeded > 0 ? (remainingXp / xpNeeded) * 100 : 0,
+        currentLevelAces: remainingAces,
+        acesToNextLevel: acesNeeded - remainingAces,
+        progressPercent: acesNeeded > 0 ? (remainingAces / acesNeeded) * 100 : 0,
       };
     }
-    remainingXp -= xpNeeded;
+    remainingAces -= acesNeeded;
     level++;
   }
 
   return {
     level: LEVEL_CONFIG.MAX_LEVEL,
-    currentLevelXp: 0,
-    xpToNextLevel: 0,
+    currentLevelAces: 0,
+    acesToNextLevel: 0,
     progressPercent: 100,
   };
 }

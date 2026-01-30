@@ -19,7 +19,7 @@ struct ChallengeRow: View {
 
                 Spacer()
 
-                xpBadge
+                acesBadge
             }
 
             HStack(spacing: 12) {
@@ -70,8 +70,8 @@ struct ChallengeRow: View {
         .opacity(challenge.status == .completed ? 0.7 : 1.0)
     }
 
-    private var xpBadge: some View {
-        Text(challenge.formattedXpReward)
+    private var acesBadge: some View {
+        Text(challenge.formattedAcesReward)
             .font(.caption.weight(.bold))
             .foregroundStyle(Theme.tintColor)
             .padding(.horizontal, 8)
@@ -97,10 +97,10 @@ struct ChallengeRow: View {
             type: .quantitative,
             difficulty: .medium,
             title: "Jouer 5 matchs",
-            description: "Participe à 5 matchs cette semaine pour gagner des XP bonus.",
+            description: "Participe à 5 matchs cette semaine pour gagner des Aces bonus.",
             currentProgress: 3,
             targetValue: 5,
-            xpReward: 150,
+            acesReward: 150,
             status: .active,
             expiresAt: Date().addingTimeInterval(3 * 24 * 3600)
         ))
@@ -114,7 +114,7 @@ struct ChallengeRow: View {
             description: "Remporte un set sans perdre un seul jeu.",
             currentProgress: 1,
             targetValue: 1,
-            xpReward: 250,
+            acesReward: 250,
             status: .completed,
             expiresAt: Date()
         ))

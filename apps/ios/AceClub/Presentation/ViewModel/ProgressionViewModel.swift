@@ -24,8 +24,8 @@ class ProgressionViewModel: ObservableObject {
     @Published var titles: [Title] = []
     @Published var isLoadingTitles: Bool = false
 
-    // XP History
-    @Published var xpHistory: [XpTransaction] = []
+    // Aces History
+    @Published var acesHistory: [AcesTransaction] = []
     @Published var isLoadingHistory: Bool = false
 
     // Error
@@ -39,7 +39,7 @@ class ProgressionViewModel: ObservableObject {
     private let getAllBadgesUseCase = GetAllBadgesUseCase()
     private let getMyTitlesUseCase = GetMyTitlesUseCase()
     private let equipTitleUseCase = EquipTitleUseCase()
-    private let getXpHistoryUseCase = GetXpHistoryUseCase()
+    private let getAcesHistoryUseCase = GetAcesHistoryUseCase()
 
     // MARK: - Load All
 
@@ -155,19 +155,19 @@ class ProgressionViewModel: ObservableObject {
         }
     }
 
-    // MARK: - XP History
+    // MARK: - Aces History
 
-    func loadXpHistory(page: Int = 1) async {
+    func loadAcesHistory(page: Int = 1) async {
         isLoadingHistory = true
         defer { isLoadingHistory = false }
 
         do {
-            let result = try await getXpHistoryUseCase.execute(page: page)
+            let result = try await getAcesHistoryUseCase.execute(page: page)
             guard !Task.isCancelled else { return }
             if page == 1 {
-                xpHistory = result
+                acesHistory = result
             } else {
-                xpHistory.append(contentsOf: result)
+                acesHistory.append(contentsOf: result)
             }
         } catch is CancellationError {
             // Ignore

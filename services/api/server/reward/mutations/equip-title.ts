@@ -4,7 +4,7 @@ import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { title, userTitle } from "../../../db/schema/reward/schema";
 import { userLevel } from "../../../db/schema/level/schema";
-import { calculateLevelFromXp } from "../../level/services/xp-calculator";
+import { calculateLevelFromAces } from "../../level/services/xp-calculator";
 
 export const equipTitle = async (c: Context<HonoContext>) => {
   const authUser = c.get("user");
@@ -16,7 +16,7 @@ export const equipTitle = async (c: Context<HonoContext>) => {
     .where(eq(userLevel.userId, authUser!.id))
     .limit(1);
 
-  const currentLevel = levelData ? calculateLevelFromXp(levelData.totalXp).level : 1;
+  const currentLevel = levelData ? calculateLevelFromAces(levelData.totalAces).level : 1;
 
   const [titleRecord] = await db
     .select()

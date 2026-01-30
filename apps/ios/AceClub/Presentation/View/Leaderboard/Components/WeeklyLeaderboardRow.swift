@@ -23,7 +23,7 @@ struct WeeklyLeaderboardRow: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 2) {
-                Text(entry.formattedWeeklyXp)
+                Text(entry.formattedWeeklyAces)
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(Theme.tintColor)
             }
@@ -117,7 +117,7 @@ struct WeeklyLeaderboardRow: View {
                 userId: "1",
                 name: "Jean Dupont",
                 image: nil,
-                weeklyXp: 850
+                weeklyAces: 850
             )
         )
 
@@ -127,7 +127,7 @@ struct WeeklyLeaderboardRow: View {
                 userId: "2",
                 name: "Marie Martin",
                 image: nil,
-                weeklyXp: 720
+                weeklyAces: 720
             )
         )
     }

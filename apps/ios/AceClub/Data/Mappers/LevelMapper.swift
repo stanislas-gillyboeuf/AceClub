@@ -3,27 +3,27 @@ import Foundation
 class LevelMapper {
     static func map(userLevelDTO: UserLevelResponseDTO) -> UserLevel {
         return UserLevel(
-            totalXp: userLevelDTO.totalXp,
+            totalAces: userLevelDTO.totalAces,
             level: userLevelDTO.level,
-            currentLevelXp: userLevelDTO.currentLevelXp,
-            xpToNextLevel: userLevelDTO.xpToNextLevel,
+            currentLevelAces: userLevelDTO.currentLevelAces,
+            acesToNextLevel: userLevelDTO.acesToNextLevel,
             progressPercent: userLevelDTO.progressPercent / 100.0
         )
     }
 
-    static func map(xpTransactionDTO: XpTransactionDTO) -> XpTransaction {
+    static func map(acesTransactionDTO: AcesTransactionDTO) -> AcesTransaction {
         let dateFormatter = ISO8601DateFormatter()
-        return XpTransaction(
-            id: xpTransactionDTO.id,
-            type: XpTransactionType(rawValue: xpTransactionDTO.type) ?? .matchParticipation,
-            amount: xpTransactionDTO.amount,
-            description: xpTransactionDTO.description,
-            multiplier: xpTransactionDTO.multiplier ?? 1.0,
-            createdAt: dateFormatter.date(from: xpTransactionDTO.createdAt) ?? Date()
+        return AcesTransaction(
+            id: acesTransactionDTO.id,
+            type: AcesTransactionType(rawValue: acesTransactionDTO.type) ?? .matchParticipation,
+            amount: acesTransactionDTO.amount,
+            description: acesTransactionDTO.description,
+            multiplier: acesTransactionDTO.multiplier ?? 1.0,
+            createdAt: dateFormatter.date(from: acesTransactionDTO.createdAt) ?? Date()
         )
     }
 
-    static func map(xpHistoryDTO: XpHistoryResponseDTO) -> [XpTransaction] {
-        return xpHistoryDTO.transactions.map { map(xpTransactionDTO: $0) }
+    static func map(acesHistoryDTO: AcesHistoryResponseDTO) -> [AcesTransaction] {
+        return acesHistoryDTO.transactions.map { map(acesTransactionDTO: $0) }
     }
 }

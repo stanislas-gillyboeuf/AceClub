@@ -11,7 +11,7 @@ import {
 import { user } from "../auth/schema";
 import { ulid } from "ulid";
 
-export const XpTransactionType = pgEnum("xp_transaction_type", [
+export const AcesTransactionType = pgEnum("aces_transaction_type", [
   "match_participation",
   "match_victory",
   "challenge_completed",
@@ -30,7 +30,7 @@ export const userLevel = pgTable(
       .notNull()
       .unique()
       .references(() => user.id, { onDelete: "cascade" }),
-    totalXp: integer("total_xp").notNull().default(0),
+    totalAces: integer("total_aces").notNull().default(0),
     currentLevel: integer("current_level").notNull().default(1),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -40,12 +40,12 @@ export const userLevel = pgTable(
   },
   (table) => [
     index("user_level_userId_idx").on(table.userId),
-    index("user_level_totalXp_idx").on(table.totalXp),
+    index("user_level_totalAces_idx").on(table.totalAces),
   ],
 );
 
-export const xpTransaction = pgTable(
-  "xp_transaction",
+export const acesTransaction = pgTable(
+  "aces_transaction",
   {
     id: text("id")
       .primaryKey()
@@ -53,7 +53,7 @@ export const xpTransaction = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    type: XpTransactionType("type").notNull(),
+    type: AcesTransactionType("type").notNull(),
     amount: integer("amount").notNull(),
     referenceId: text("reference_id"),
     referenceType: text("reference_type"),
@@ -62,7 +62,7 @@ export const xpTransaction = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
-    index("xp_transaction_userId_idx").on(table.userId),
-    index("xp_transaction_createdAt_idx").on(table.createdAt),
+    index("aces_transaction_userId_idx").on(table.userId),
+    index("aces_transaction_createdAt_idx").on(table.createdAt),
   ],
 );

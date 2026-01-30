@@ -5,7 +5,7 @@ struct LeaderboardEntry: Identifiable {
     let userId: String
     let name: String
     let image: String?
-    let xp: Int
+    let aces: Int
     let level: Int
     let streak: Int
 
@@ -15,12 +15,12 @@ struct LeaderboardEntry: Identifiable {
         "#\(rank)"
     }
 
-    var formattedXp: String {
-        if xp >= 1000 {
-            let k = Double(xp) / 1000.0
-            return String(format: "%.1fk XP", k)
+    var formattedAces: String {
+        if aces >= 1000 {
+            let k = Double(aces) / 1000.0
+            return String(format: "%.1fk Aces", k)
         }
-        return "\(xp) XP"
+        return "\(aces) Aces"
     }
 
     var rankIcon: String? {
@@ -58,7 +58,7 @@ struct WeeklyLeaderboardEntry: Identifiable {
     let userId: String
     let name: String
     let image: String?
-    let weeklyXp: Int
+    let weeklyAces: Int
 
     var id: String { "\(rank)-\(userId)" }
 
@@ -66,8 +66,8 @@ struct WeeklyLeaderboardEntry: Identifiable {
         "#\(rank)"
     }
 
-    var formattedWeeklyXp: String {
-        "+\(weeklyXp) XP"
+    var formattedWeeklyAces: String {
+        "+\(weeklyAces) Aces"
     }
 }
 

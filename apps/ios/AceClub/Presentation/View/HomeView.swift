@@ -12,6 +12,10 @@ struct HomeView: View {
     private var allMatches: [MatchModel]
 
     @State private var viewModel = HomeFeedViewModel()
+    @State private var showProgression = false
+    @State private var showLeaderboard = false
+    @StateObject private var progressionViewModel = ProgressionViewModel()
+    @StateObject private var leaderboardViewModel = LeaderboardViewModel()
 
     private var currentUserId: String {
         authViewModel.currentUser?.id ?? ""
@@ -40,6 +44,45 @@ struct HomeView: View {
             }
             .background(Theme.primaryBackground)
             .navigationTitle("Activité")
+            .toolbar {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        showProgression = true
+                    } label: {
+                        Image(systemName: "chart.line.uptrend.xyaxis")
+                    }
+
+                    Button {
+                        showLeaderboard = true
+                    } label: {
+                        Image(systemName: "trophy")
+                    }
+                }
+            }
+            .fullScreenCover(isPresented: $showProgression) {
+                NavigationStack {
+                    ProgressionView(viewModel: progressionViewModel)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarLeading) {
+                                Button("Fermer") {
+                                    showProgression = false
+                                }
+                            }
+                        }
+                }
+            }
+            .fullScreenCover(isPresented: $showLeaderboard) {
+                NavigationStack {
+                    LeaderboardView(viewModel: leaderboardViewModel)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarLeading) {
+                                Button("Fermer") {
+                                    showLeaderboard = false
+                                }
+                            }
+                        }
+                }
+            }
             .refreshable {
                 await refresh()
             }

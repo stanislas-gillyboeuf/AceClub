@@ -5,7 +5,7 @@ import { updateMatchValidator } from "../validators";
 import { db } from "../../../db";
 import { match, matchParticipant } from "../../../db/schema/match/schema";
 import { eq, and, ne } from "drizzle-orm";
-import { attributeMatchXp } from "../../level/services/xp-attribution";
+import { attributeMatchAces } from "../../level/services/xp-attribution";
 import { updateUserStreak } from "../../streak/services/streak-manager";
 import { updateChallengeProgress } from "../../challenge/services/progress-tracker";
 import { checkBadges } from "../../reward/services/badge-checker";
@@ -154,12 +154,12 @@ export const updateMatch = async (c: Context<HonoContext>) => {
 
         for (const participant of participants) {
           const { multiplier } = await updateUserStreak(participant.userId, new Date());
-          await attributeMatchXp(matchId, [participant], multiplier);
+          await attributeMatchAces(matchId, [participant], multiplier);
           await updateChallengeProgress(participant.userId, matchId, participant.isWinner);
           await checkBadges(participant.userId);
         }
-      } catch (xpError) {
-        console.error("Error attributing XP:", xpError);
+      } catch (acesError) {
+        console.error("Error attributing Aces:", acesError);
       }
     }
 

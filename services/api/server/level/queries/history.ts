@@ -2,9 +2,9 @@ import { Context } from "hono";
 import { eq, desc } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { xpTransaction } from "../../../db/schema/level/schema";
+import { acesTransaction } from "../../../db/schema/level/schema";
 
-export const getXpHistory = async (c: Context<HonoContext>) => {
+export const getAcesHistory = async (c: Context<HonoContext>) => {
   const authUser = c.get("user");
   const page = Number(c.req.query("page") ?? "1");
   const limit = Math.min(Number(c.req.query("limit") ?? "20"), 50);
@@ -12,9 +12,9 @@ export const getXpHistory = async (c: Context<HonoContext>) => {
 
   const transactions = await db
     .select()
-    .from(xpTransaction)
-    .where(eq(xpTransaction.userId, authUser!.id))
-    .orderBy(desc(xpTransaction.createdAt))
+    .from(acesTransaction)
+    .where(eq(acesTransaction.userId, authUser!.id))
+    .orderBy(desc(acesTransaction.createdAt))
     .limit(limit)
     .offset(offset);
 

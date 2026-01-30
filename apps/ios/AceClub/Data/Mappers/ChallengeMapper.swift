@@ -12,7 +12,7 @@ class ChallengeMapper {
             description: challengeDTO.description,
             currentProgress: challengeDTO.currentProgress,
             targetValue: challengeDTO.targetValue,
-            xpReward: challengeDTO.xpReward,
+            acesReward: challengeDTO.acesReward,
             status: ChallengeStatus(rawValue: challengeDTO.status) ?? .active,
             expiresAt: dateFormatter.date(from: challengeDTO.expiresAt) ?? Date()
         )

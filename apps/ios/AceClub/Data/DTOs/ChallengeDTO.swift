@@ -10,7 +10,7 @@ struct ChallengeDTO: Codable {
     let description: String
     let currentProgress: Int
     let targetValue: Int
-    let xpReward: Int
+    let acesReward: Int
     let status: String
     let expiresAt: String
 }
@@ -31,7 +31,7 @@ struct ChallengeTemplateDTO: Codable {
     let descriptionFr: String
     let descriptionEn: String
     let targetValue: Int
-    let xpReward: Int
+    let acesReward: Int
     let minLevel: Int
     let maxLevel: Int?
 }

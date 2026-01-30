@@ -7,7 +7,7 @@ class LeaderboardMapper {
             userId: entryDTO.userId,
             name: entryDTO.name,
             image: entryDTO.image,
-            xp: entryDTO.xp,
+            aces: entryDTO.aces,
             level: entryDTO.level,
             streak: entryDTO.streak
         )
@@ -29,7 +29,7 @@ class LeaderboardMapper {
             userId: weeklyEntryDTO.userId,
             name: weeklyEntryDTO.name,
             image: weeklyEntryDTO.image,
-            weeklyXp: weeklyEntryDTO.weeklyXp
+            weeklyAces: weeklyEntryDTO.weeklyAces
         )
     }
 

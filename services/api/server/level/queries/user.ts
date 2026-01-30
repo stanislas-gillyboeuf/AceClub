@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { userLevel } from "../../../db/schema/level/schema";
-import { calculateLevelFromXp } from "../services/xp-calculator";
+import { calculateLevelFromAces } from "../services/xp-calculator";
 
 export const getUserLevel = async (c: Context<HonoContext>) => {
   const userId = c.req.param("userId");
@@ -16,21 +16,21 @@ export const getUserLevel = async (c: Context<HonoContext>) => {
 
   if (!levelData) {
     return c.json({
-      totalXp: 0,
+      totalAces: 0,
       level: 1,
-      currentLevelXp: 0,
-      xpToNextLevel: 100,
+      currentLevelAces: 0,
+      acesToNextLevel: 100,
       progressPercent: 0,
     });
   }
 
-  const levelInfo = calculateLevelFromXp(levelData.totalXp);
+  const levelInfo = calculateLevelFromAces(levelData.totalAces);
 
   return c.json({
-    totalXp: levelData.totalXp,
+    totalAces: levelData.totalAces,
     level: levelInfo.level,
-    currentLevelXp: levelInfo.currentLevelXp,
-    xpToNextLevel: levelInfo.xpToNextLevel,
+    currentLevelAces: levelInfo.currentLevelAces,
+    acesToNextLevel: levelInfo.acesToNextLevel,
     progressPercent: levelInfo.progressPercent,
   });
 };

@@ -89,8 +89,19 @@ export const updateProfile = async (c: Context<HonoContext>) => {
           .set(prefUpdateData)
           .where(eq(userPreference.userId, authUser!.id));
 
-        // If organizationId changed, ensure user is a member of the new organization
+        // If organizationId changed, REPLACE user's organization membership (only one allowed)
         if (validated.organizationId) {
+          // Remove user from ALL other organizations first
+          await tx
+            .delete(member)
+            .where(
+              and(
+                eq(member.userId, authUser!.id),
+                ne(member.organizationId, validated.organizationId),
+              ),
+            );
+
+          // Check if user is already a member of the new organization
           const [existingMember] = await tx
             .select({ id: member.id })
             .from(member)
@@ -102,6 +113,7 @@ export const updateProfile = async (c: Context<HonoContext>) => {
             )
             .limit(1);
 
+          // Add to new organization if not already a member
           if (!existingMember) {
             await tx.insert(member).values({
               id: ulid(),

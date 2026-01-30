@@ -53,7 +53,7 @@ class LevelAPIDataSource {
         }
     }
 
-    func getXpHistory(page: Int = 1, limit: Int = 20) async throws -> XpHistoryResponseDTO {
+    func getAcesHistory(page: Int = 1, limit: Int = 20) async throws -> AcesHistoryResponseDTO {
         var components = URLComponents(string: "\(Config.apiBaseURL)/level/history")
         components?.queryItems = [
             URLQueryItem(name: "page", value: String(page)),
@@ -75,7 +75,7 @@ class LevelAPIDataSource {
         }
 
         do {
-            return try JSONDecoder().decode(XpHistoryResponseDTO.self, from: data)
+            return try JSONDecoder().decode(AcesHistoryResponseDTO.self, from: data)
         } catch {
             throw LevelAPIDataSourceError.decodingFailed
         }

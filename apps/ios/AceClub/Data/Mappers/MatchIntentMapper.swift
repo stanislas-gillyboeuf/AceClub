@@ -76,7 +76,8 @@ class MatchIntentMapper {
         UserBrief(
             id: userBriefDTO.id,
             name: userBriefDTO.name,
-            email: userBriefDTO.email
+            email: userBriefDTO.email,
+            level: userBriefDTO.level ?? 1
         )
     }
 

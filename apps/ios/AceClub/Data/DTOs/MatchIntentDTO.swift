@@ -51,6 +51,7 @@ struct UserBriefDTO: Codable {
     let id: String
     let name: String
     let email: String
+    let level: Int?
 }
 
 struct UserContactDTO: Codable {

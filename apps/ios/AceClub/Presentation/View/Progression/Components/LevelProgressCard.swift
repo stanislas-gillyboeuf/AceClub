@@ -11,7 +11,7 @@ struct LevelProgressCard: View {
                         .font(.title.weight(.bold))
                         .foregroundStyle(.primary)
 
-                    Text(userLevel.formattedTotalXp + " total")
+                    Text(userLevel.formattedTotalAces + " total")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -84,10 +84,10 @@ struct LevelProgressCard: View {
 
 #Preview {
     LevelProgressCard(userLevel: UserLevel(
-        totalXp: 1250,
+        totalAces: 1250,
         level: 8,
-        currentLevelXp: 150,
-        xpToNextLevel: 150,
+        currentLevelAces: 150,
+        acesToNextLevel: 150,
         progressPercent: 0.5
     ))
     .padding()

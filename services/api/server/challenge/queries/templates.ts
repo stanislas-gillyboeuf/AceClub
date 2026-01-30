@@ -21,7 +21,7 @@ export const getChallengeTemplates = async (c: Context<HonoContext>) => {
       descriptionFr: t.descriptionFr,
       descriptionEn: t.descriptionEn,
       targetValue: t.targetValue,
-      xpReward: t.xpReward,
+      acesReward: t.acesReward,
       minLevel: t.minLevel,
       maxLevel: t.maxLevel,
     })),

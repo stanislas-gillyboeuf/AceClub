@@ -3,7 +3,7 @@ import { eq, desc, sql, and, gte } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { user } from "../../../db/schema/auth/schema";
-import { xpTransaction } from "../../../db/schema/level/schema";
+import { acesTransaction } from "../../../db/schema/level/schema";
 
 export const getWeeklyLeaderboard = async (c: Context<HonoContext>) => {
   const page = Number(c.req.query("page") ?? "1");
@@ -22,18 +22,18 @@ export const getWeeklyLeaderboard = async (c: Context<HonoContext>) => {
       userId: user.id,
       userName: user.name,
       userImage: user.image,
-      weeklyXp: sql<number>`coalesce(sum(${xpTransaction.amount}), 0)`.as("weekly_xp"),
+      weeklyAces: sql<number>`coalesce(sum(${acesTransaction.amount}), 0)`.as("weekly_aces"),
     })
     .from(user)
     .leftJoin(
-      xpTransaction,
+      acesTransaction,
       and(
-        eq(user.id, xpTransaction.userId),
-        gte(xpTransaction.createdAt, startOfWeek)
+        eq(user.id, acesTransaction.userId),
+        gte(acesTransaction.createdAt, startOfWeek)
       )
     )
     .groupBy(user.id, user.name, user.image)
-    .orderBy(desc(sql`coalesce(sum(${xpTransaction.amount}), 0)`))
+    .orderBy(desc(sql`coalesce(sum(${acesTransaction.amount}), 0)`))
     .limit(limit)
     .offset(offset);
 
@@ -41,10 +41,10 @@ export const getWeeklyLeaderboard = async (c: Context<HonoContext>) => {
     .select({ count: sql<number>`count(distinct ${user.id})` })
     .from(user)
     .leftJoin(
-      xpTransaction,
+      acesTransaction,
       and(
-        eq(user.id, xpTransaction.userId),
-        gte(xpTransaction.createdAt, startOfWeek)
+        eq(user.id, acesTransaction.userId),
+        gte(acesTransaction.createdAt, startOfWeek)
       )
     );
 
@@ -54,7 +54,7 @@ export const getWeeklyLeaderboard = async (c: Context<HonoContext>) => {
       userId: r.userId,
       name: r.userName,
       image: r.userImage,
-      weeklyXp: Number(r.weeklyXp),
+      weeklyAces: Number(r.weeklyAces),
     })),
     pagination: {
       page,

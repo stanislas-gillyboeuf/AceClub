@@ -1,10 +1,10 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "../../../db";
-import { userLevel, xpTransaction } from "../../../db/schema/level/schema";
-import { XP_REWARDS, calculateLevelFromXp } from "./xp-calculator";
+import { userLevel, acesTransaction } from "../../../db/schema/level/schema";
+import { ACES_REWARDS, calculateLevelFromAces } from "./xp-calculator";
 import type { MatchParticipant } from "../../../db/schema/match/type";
 
-export async function attributeMatchXp(
+export async function attributeMatchAces(
   matchId: string,
   participants: MatchParticipant[],
   multiplier: number = 1.0
@@ -12,10 +12,10 @@ export async function attributeMatchXp(
   for (const participant of participants) {
     const userId = participant.userId;
 
-    const participationXp = Math.floor(XP_REWARDS.MATCH_PARTICIPATION * multiplier);
-    await addXpTransaction(userId, {
+    const participationAces = Math.floor(ACES_REWARDS.MATCH_PARTICIPATION * multiplier);
+    await addAcesTransaction(userId, {
       type: "match_participation",
-      amount: participationXp,
+      amount: participationAces,
       referenceId: matchId,
       referenceType: "match",
       multiplier,
@@ -23,10 +23,10 @@ export async function attributeMatchXp(
     });
 
     if (participant.isWinner) {
-      const victoryXp = Math.floor(XP_REWARDS.MATCH_VICTORY * multiplier);
-      await addXpTransaction(userId, {
+      const victoryAces = Math.floor(ACES_REWARDS.MATCH_VICTORY * multiplier);
+      await addAcesTransaction(userId, {
         type: "match_victory",
-        amount: victoryXp,
+        amount: victoryAces,
         referenceId: matchId,
         referenceType: "match",
         multiplier,
@@ -38,7 +38,7 @@ export async function attributeMatchXp(
   }
 }
 
-async function addXpTransaction(
+async function addAcesTransaction(
   userId: string,
   data: {
     type: "match_participation" | "match_victory" | "challenge_completed" | "streak_bonus" | "level_up_bonus" | "badge_bonus";
@@ -49,7 +49,7 @@ async function addXpTransaction(
     description?: string;
   }
 ): Promise<void> {
-  await db.insert(xpTransaction).values({
+  await db.insert(acesTransaction).values({
     userId,
     type: data.type,
     amount: data.amount,
@@ -69,13 +69,13 @@ async function addXpTransaction(
     await db
       .update(userLevel)
       .set({
-        totalXp: sql`${userLevel.totalXp} + ${data.amount}`,
+        totalAces: sql`${userLevel.totalAces} + ${data.amount}`,
       })
       .where(eq(userLevel.userId, userId));
   } else {
     await db.insert(userLevel).values({
       userId,
-      totalXp: data.amount,
+      totalAces: data.amount,
       currentLevel: 1,
     });
   }
@@ -90,7 +90,7 @@ async function recalculateUserLevel(userId: string): Promise<void> {
 
   if (!levelData) return;
 
-  const levelInfo = calculateLevelFromXp(levelData.totalXp);
+  const levelInfo = calculateLevelFromAces(levelData.totalAces);
 
   if (levelInfo.level !== levelData.currentLevel) {
     await db

@@ -162,7 +162,7 @@ struct LeaderboardView: View {
         ContentUnavailableView {
             Label("Aucun classement", systemImage: "chart.bar.xaxis")
         } description: {
-            Text("Le classement sera disponible quand des joueurs auront gagné de l'XP.")
+            Text("Le classement sera disponible quand des joueurs auront gagné des Aces.")
         }
     }
 

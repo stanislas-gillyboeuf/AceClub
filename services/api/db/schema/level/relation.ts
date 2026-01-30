@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { userLevel, xpTransaction } from "./schema";
+import { userLevel, acesTransaction } from "./schema";
 import { user } from "../auth/schema";
 
 export const userLevelRelations = relations(userLevel, ({ one }) => ({
@@ -9,9 +9,9 @@ export const userLevelRelations = relations(userLevel, ({ one }) => ({
   }),
 }));
 
-export const xpTransactionRelations = relations(xpTransaction, ({ one }) => ({
+export const acesTransactionRelations = relations(acesTransaction, ({ one }) => ({
   user: one(user, {
-    fields: [xpTransaction.userId],
+    fields: [acesTransaction.userId],
     references: [user.id],
   }),
 }));

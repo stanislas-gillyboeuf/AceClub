@@ -33,7 +33,7 @@ struct DiscoverCardView: View {
 
     private var header: some View {
         HStack(alignment: .center, spacing: 12) {
-            avatar
+            avatarWithLevelBadge
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(displayName)
@@ -41,17 +41,26 @@ struct DiscoverCardView: View {
                     .foregroundStyle(Theme.labelPrimary)
                     .lineLimit(1)
 
-                if let email = item.user?.email, !email.isEmpty {
-                    Text(email)
-                        .font(.subheadline)
-                        .foregroundStyle(Theme.labelSecondary)
-                        .lineLimit(1)
+                if let user = item.user {
+                    levelLabel(for: user.level)
                 }
             }
 
             Spacer(minLength: 0)
 
             typeBadge
+        }
+    }
+
+    private func levelLabel(for level: Int) -> some View {
+        let tier = LevelTier.tier(for: level)
+        return HStack(spacing: 4) {
+            Image(systemName: tier.icon)
+                .font(.caption2)
+                .foregroundStyle(tier.color)
+            Text("Niveau \(level)")
+                .font(.subheadline)
+                .foregroundStyle(Theme.labelSecondary)
         }
     }
 
@@ -137,6 +146,28 @@ struct DiscoverCardView: View {
                 .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
         }
         .accessibilityLabel("Avatar")
+    }
+
+    private var avatarWithLevelBadge: some View {
+        let tier = LevelTier.tier(for: item.user?.level ?? 1)
+        return ZStack(alignment: .bottomTrailing) {
+            avatar
+
+            ZStack {
+                Circle()
+                    .fill(tier.color)
+                    .frame(width: 18, height: 18)
+
+                Image(systemName: tier.icon)
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+            .overlay {
+                Circle()
+                    .strokeBorder(Theme.cardBackground, lineWidth: 2)
+            }
+            .offset(x: 2, y: 2)
+        }
     }
 
     private func durationLabel(minutes: Int) -> String {

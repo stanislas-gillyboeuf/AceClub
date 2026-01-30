@@ -1,11 +1,11 @@
 import { eq, and, sql } from "drizzle-orm";
 import { db } from "../../../db";
 import { badge, userBadge } from "../../../db/schema/reward/schema";
-import { userLevel, xpTransaction } from "../../../db/schema/level/schema";
+import { userLevel, acesTransaction } from "../../../db/schema/level/schema";
 import { userStreak } from "../../../db/schema/streak/schema";
 import { match, matchParticipant } from "../../../db/schema/match/schema";
 import { userChallenge } from "../../../db/schema/challenge/schema";
-import { calculateLevelFromXp } from "../../level/services/xp-calculator";
+import { calculateLevelFromAces } from "../../level/services/xp-calculator";
 
 async function hasUserBadge(userId: string, badgeCode: string): Promise<boolean> {
   const [existing] = await db
@@ -43,7 +43,7 @@ export async function checkBadges(userId: string): Promise<void> {
     .limit(1);
 
   if (levelData) {
-    const levelInfo = calculateLevelFromXp(levelData.totalXp);
+    const levelInfo = calculateLevelFromAces(levelData.totalAces);
 
     if (levelInfo.level >= 5) await awardBadge(userId, "LEVEL_5");
     if (levelInfo.level >= 10) await awardBadge(userId, "LEVEL_10");

@@ -9,7 +9,7 @@ struct Challenge: Identifiable {
     let description: String
     let currentProgress: Int
     let targetValue: Int
-    let xpReward: Int
+    let acesReward: Int
     let status: ChallengeStatus
     let expiresAt: Date
 
@@ -42,8 +42,8 @@ struct Challenge: Identifiable {
         return nil
     }
 
-    var formattedXpReward: String {
-        "+\(xpReward) XP"
+    var formattedAcesReward: String {
+        "+\(acesReward) Aces"
     }
 }
 

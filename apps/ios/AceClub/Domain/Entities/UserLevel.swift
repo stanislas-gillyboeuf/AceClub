@@ -1,14 +1,14 @@
 import Foundation
 
 struct UserLevel {
-    let totalXp: Int
+    let totalAces: Int
     let level: Int
-    let currentLevelXp: Int
-    let xpToNextLevel: Int
+    let currentLevelAces: Int
+    let acesToNextLevel: Int
     let progressPercent: Double
 
     var formattedProgress: String {
-        "\(currentLevelXp)/\(currentLevelXp + xpToNextLevel) XP"
+        "\(currentLevelAces)/\(currentLevelAces + acesToNextLevel) Aces"
     }
 
     var isMaxLevel: Bool {
@@ -19,33 +19,33 @@ struct UserLevel {
         "Niveau \(level)"
     }
 
-    var formattedTotalXp: String {
-        if totalXp >= 1000 {
-            let k = Double(totalXp) / 1000.0
-            return String(format: "%.1fk XP", k)
+    var formattedTotalAces: String {
+        if totalAces >= 1000 {
+            let k = Double(totalAces) / 1000.0
+            return String(format: "%.1fk Aces", k)
         }
-        return "\(totalXp) XP"
+        return "\(totalAces) Aces"
     }
 
     static let empty = UserLevel(
-        totalXp: 0,
+        totalAces: 0,
         level: 1,
-        currentLevelXp: 0,
-        xpToNextLevel: 100,
+        currentLevelAces: 0,
+        acesToNextLevel: 100,
         progressPercent: 0
     )
 }
 
-struct XpTransaction: Identifiable {
+struct AcesTransaction: Identifiable {
     let id: String
-    let type: XpTransactionType
+    let type: AcesTransactionType
     let amount: Int
     let description: String?
     let multiplier: Double
     let createdAt: Date
 
     var formattedAmount: String {
-        amount >= 0 ? "+\(amount) XP" : "\(amount) XP"
+        amount >= 0 ? "+\(amount) Aces" : "\(amount) Aces"
     }
 
     var formattedMultiplier: String? {
@@ -53,7 +53,7 @@ struct XpTransaction: Identifiable {
     }
 }
 
-enum XpTransactionType: String, CaseIterable {
+enum AcesTransactionType: String, CaseIterable {
     case matchParticipation = "match_participation"
     case matchVictory = "match_victory"
     case challengeCompleted = "challenge_completed"

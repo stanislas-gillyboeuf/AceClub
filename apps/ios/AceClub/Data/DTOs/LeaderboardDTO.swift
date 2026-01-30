@@ -6,7 +6,7 @@ struct LeaderboardEntryDTO: Codable {
     let userId: String
     let name: String
     let image: String?
-    let xp: Int
+    let aces: Int
     let level: Int
     let streak: Int
 }
@@ -30,7 +30,7 @@ struct WeeklyLeaderboardEntryDTO: Codable {
     let userId: String
     let name: String
     let image: String?
-    let weeklyXp: Int
+    let weeklyAces: Int
 }
 
 // MARK: - Weekly Leaderboard Response DTO

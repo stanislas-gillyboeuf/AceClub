@@ -8,8 +8,6 @@ struct ProfileView: View {
     @Environment(AuthViewModel.self) private var authViewModel
     @State private var showCreateMatchIntentSheet = false
     @State private var showSettingsSheet = false
-    @StateObject private var progressionViewModel = ProgressionViewModel()
-    @StateObject private var leaderboardViewModel = LeaderboardViewModel()
 
     @Query(sort: \MatchModel.createdAt, order: .reverse)
     private var allMatches: [MatchModel]
@@ -119,82 +117,34 @@ struct ProfileView: View {
                         }
 
                         if organizationViewModel.isLoading {
-                            SkeletonList(count: 2) {
-                                SkeletonRow(lineCount: 2, titleWidth: 140)
-                            }
-                        } else if organizationViewModel.organizations.isEmpty {
-                            ContentUnavailableView {
-                                Label("No Club", systemImage: "tray.fill")
-                            } description: {
-                                Text("Check later for invitation")
+                            SkeletonRow(lineCount: 2, titleWidth: 140)
+                        } else if let organization = organizationViewModel.organizations.first {
+                            let memberRole = getMemberRole(for: organization.id)
+
+                            NavigationLink {
+                                OrganizationDetailView(
+                                    organizationViewModel: organizationViewModel,
+                                    invitationViewModel: invitationViewModel,
+                                    organization: organization
+                                )
+                            } label: {
+                                OrganizationCard(
+                                    organization: organization,
+                                    memberRole: memberRole,
+                                    style: .listRow,
+                                    showsChevron: false,
+                                    onTap: nil
+                                )
                             }
                         } else {
-                            ForEach(organizationViewModel.organizations) { organization in
-                                let memberRole = getMemberRole(for: organization.id)
-
-                                NavigationLink {
-                                    OrganizationDetailView(
-                                        organizationViewModel: organizationViewModel,
-                                        invitationViewModel: invitationViewModel,
-                                        organization: organization
-                                    )
-                                } label: {
-                                    OrganizationCard(
-                                        organization: organization,
-                                        memberRole: memberRole,
-                                        style: .listRow,
-                                        showsChevron: false,
-                                        onTap: nil
-                                    )
-                                }
+                            ContentUnavailableView {
+                                Label("Aucun club", systemImage: "building.2")
+                            } description: {
+                                Text("Rejoins un club dans les paramètres")
                             }
                         }
                     } header: {
-                        Label("Mes Clubs", systemImage: "building.2.fill")
-                    }
-
-                    Section {
-                        NavigationLink {
-                            ProgressionView(viewModel: progressionViewModel)
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "chart.line.uptrend.xyaxis")
-                                    .font(.title3)
-                                    .foregroundStyle(Theme.tintColor)
-                                    .frame(width: 28)
-
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Ma progression")
-                                        .font(.subheadline.weight(.medium))
-                                        .foregroundStyle(.primary)
-                                    Text("Niveau, XP, défis et badges")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                        }
-
-                        NavigationLink {
-                            LeaderboardView(viewModel: leaderboardViewModel)
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "trophy")
-                                    .font(.title3)
-                                    .foregroundStyle(.orange)
-                                    .frame(width: 28)
-
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Classement")
-                                        .font(.subheadline.weight(.medium))
-                                        .foregroundStyle(.primary)
-                                    Text("Global, club et hebdomadaire")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                        }
-                    } header: {
-                        Label("Progression & Classement", systemImage: "star.fill")
+                        Label("Mon Club", systemImage: "building.2.fill")
                     }
 
                     Section {
@@ -263,9 +213,6 @@ struct ProfileView: View {
                 await organizationViewModel.loadActiveMember()
                 await invitationViewModel.loadUserInvitations()
 
-                if let firstOrg = organizationViewModel.organizations.first {
-                    leaderboardViewModel.currentOrganizationId = firstOrg.id
-                }
             }
             .onChange(of: allMatches.count) {
                 profileViewModel.calculateStats(from: allMatches)

@@ -1,8 +1,8 @@
 import { eq, and, sql } from "drizzle-orm";
 import { db } from "../../../db";
 import { userChallenge, challengeTemplate } from "../../../db/schema/challenge/schema";
-import { userLevel, xpTransaction } from "../../../db/schema/level/schema";
-import { calculateLevelFromXp } from "../../level/services/xp-calculator";
+import { userLevel, acesTransaction } from "../../../db/schema/level/schema";
+import { calculateLevelFromAces } from "../../level/services/xp-calculator";
 
 export async function updateChallengeProgress(
   userId: string,
@@ -51,15 +51,15 @@ export async function updateChallengeProgress(
           currentProgress: newProgress,
           status: isCompleted ? "completed" : "active",
           completedAt: isCompleted ? new Date() : null,
-          xpAwarded: isCompleted ? template.xpReward : null,
+          acesAwarded: isCompleted ? template.acesReward : null,
         })
         .where(eq(userChallenge.id, challenge.id));
 
       if (isCompleted) {
-        await db.insert(xpTransaction).values({
+        await db.insert(acesTransaction).values({
           userId,
           type: "challenge_completed",
-          amount: template.xpReward,
+          amount: template.acesReward,
           referenceId: challenge.id,
           referenceType: "challenge",
           description: template.titleFr,
@@ -68,7 +68,7 @@ export async function updateChallengeProgress(
         await db
           .update(userLevel)
           .set({
-            totalXp: sql`${userLevel.totalXp} + ${template.xpReward}`,
+            totalAces: sql`${userLevel.totalAces} + ${template.acesReward}`,
           })
           .where(eq(userLevel.userId, userId));
       }

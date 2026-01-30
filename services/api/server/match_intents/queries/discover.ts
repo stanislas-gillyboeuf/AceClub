@@ -2,7 +2,8 @@ import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { matchIntent, matchIntentSwipe, user as userTable } from "../../../db/schema";
-import { and, desc, eq, gte, lt, ne, notExists, or, isNull } from "drizzle-orm";
+import { userLevel } from "../../../db/schema/level/schema";
+import { and, desc, eq, gte, lt, ne, notExists, or, isNull, sql } from "drizzle-orm";
 
 export const discover = async (c: Context<HonoContext>) => {
   try {
@@ -57,9 +58,11 @@ export const discover = async (c: Context<HonoContext>) => {
         user_id: userTable.id,
         user_name: userTable.name,
         user_email: userTable.email,
+        user_level: sql<number>`coalesce(${userLevel.currentLevel}, 1)`.as("user_level"),
       })
       .from(matchIntent)
       .leftJoin(userTable, eq(matchIntent.userId, userTable.id))
+      .leftJoin(userLevel, eq(matchIntent.userId, userLevel.userId))
       .where(and(...conditions))
       .orderBy(desc(matchIntent.createdAt))
       .limit(limit + 1);
@@ -78,7 +81,7 @@ export const discover = async (c: Context<HonoContext>) => {
       createdAt: row.createdAt,
       user:
         row.user_id != null && row.user_name != null && row.user_email != null
-          ? { id: row.user_id, name: row.user_name, email: row.user_email }
+          ? { id: row.user_id, name: row.user_name, email: row.user_email, level: Number(row.user_level) || 1 }
           : null,
     }));
 

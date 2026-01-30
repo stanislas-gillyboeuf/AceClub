@@ -13,8 +13,8 @@ class LevelRepository {
         return LevelMapper.map(userLevelDTO: dto)
     }
 
-    func getXpHistory(page: Int = 1, limit: Int = 20) async throws -> [XpTransaction] {
-        let dto = try await dataSource.getXpHistory(page: page, limit: limit)
-        return LevelMapper.map(xpHistoryDTO: dto)
+    func getAcesHistory(page: Int = 1, limit: Int = 20) async throws -> [AcesTransaction] {
+        let dto = try await dataSource.getAcesHistory(page: page, limit: limit)
+        return LevelMapper.map(acesHistoryDTO: dto)
     }
 }
