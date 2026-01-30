@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { assignWeeklyChallenges } from "../challenge/services/challenge-selector";
+import { cleanupExpiredMatchIntents } from "../match_intents/services/cleanup";
 import { db } from "../../db";
 import { userChallenge } from "../../db/schema/challenge/schema";
 import { eq, lt, and } from "drizzle-orm";
@@ -74,5 +75,21 @@ cronRouter.post("/streak-warning", async (c) => {
   } catch (error) {
     console.error("[CRON] streak-warning failed:", error);
     return c.json({ error: "Failed to send warnings" }, 500);
+  }
+});
+
+// POST /cron/cleanup-expired-intents
+// Schedule: "0 1 * * *" (Quotidien 01:00 UTC)
+cronRouter.post("/cleanup-expired-intents", async (c) => {
+  try {
+    const result = await cleanupExpiredMatchIntents();
+    return c.json({
+      success: true,
+      message: "Expired match intents cleaned up",
+      ...result,
+    });
+  } catch (error) {
+    console.error("[CRON] cleanup-expired-intents failed:", error);
+    return c.json({ error: "Failed to cleanup expired intents" }, 500);
   }
 });

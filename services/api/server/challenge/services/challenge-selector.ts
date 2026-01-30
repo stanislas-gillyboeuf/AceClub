@@ -1,9 +1,13 @@
 import { eq, and, lte, gte, or, isNull } from "drizzle-orm";
 import { db } from "../../../db";
-import { challengeTemplate, userChallenge, ChallengeType } from "../../../db/schema/challenge/schema";
+import { challengeTemplate, userChallenge } from "../../../db/schema/challenge/schema";
 import type { ChallengeTemplate } from "../../../db/schema/challenge/type";
 import { user } from "../../../db/schema/auth/schema";
 import { userLevel } from "../../../db/schema/level/schema";
+import { sendNotificationToUser } from "../../../services/apns/notification-service";
+
+// Nombre de semaines à considérer pour éviter les répétitions
+const RECENT_WEEKS_TO_AVOID = 3;
 
 function getISOWeekInfo(date: Date): { week: number; year: number } {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -23,15 +27,41 @@ function getWeekEndDate(date: Date): Date {
   return d;
 }
 
+interface RecentChallengeInfo {
+  templateId: string;
+  status: string;
+  weeksAgo: number;
+}
+
 function weightedRandomSelect(
   templates: ChallengeTemplate[],
-  userLevel: number
+  level: number,
+  recentChallenges: RecentChallengeInfo[] = []
 ): ChallengeTemplate {
+  const recentTemplateIds = new Set(recentChallenges.map((c) => c.templateId));
+  const completedRecently = new Set(
+    recentChallenges.filter((c) => c.status === "completed").map((c) => c.templateId)
+  );
+
   const weights = templates.map((t) => {
     let weight = 1;
-    if (t.difficulty === "easy") weight *= userLevel < 10 ? 2 : 1;
-    if (t.difficulty === "medium") weight *= userLevel >= 10 && userLevel < 30 ? 2 : 1;
-    if (t.difficulty === "hard") weight *= userLevel >= 30 ? 2 : 1;
+
+    if (t.difficulty === "easy") weight *= level < 10 ? 2 : 1;
+    if (t.difficulty === "medium") weight *= level >= 10 && level < 30 ? 2 : 1;
+    if (t.difficulty === "hard") weight *= level >= 30 ? 2 : 1;
+
+    if (recentTemplateIds.has(t.id)) {
+      const recent = recentChallenges.find((c) => c.templateId === t.id);
+      if (recent) {
+        const reductionFactor = 0.1 + recent.weeksAgo * 0.2;
+        weight *= Math.min(reductionFactor, 0.5);
+
+        if (completedRecently.has(t.id)) {
+          weight *= 0.5;
+        }
+      }
+    }
+
     return weight;
   });
 
@@ -45,11 +75,54 @@ function weightedRandomSelect(
 
   return templates[templates.length - 1];
 }
+async function getRecentChallengesForUser(
+  userId: string,
+  currentWeek: number,
+  currentYear: number
+): Promise<RecentChallengeInfo[]> {
+  const weeksToCheck: { week: number; year: number; weeksAgo: number }[] = [];
 
-/**
- * Assigne les défis hebdomadaires à un seul utilisateur.
- * Utilisé pour l'assignation individuelle (ex: nouvel utilisateur).
- */
+  for (let i = 1; i <= RECENT_WEEKS_TO_AVOID; i++) {
+    let week = currentWeek - i;
+    let year = currentYear;
+
+    if (week <= 0) {
+      week = 52 + week;
+      year = currentYear - 1;
+    }
+
+    weeksToCheck.push({ week, year, weeksAgo: i });
+  }
+
+  const recentChallenges: RecentChallengeInfo[] = [];
+
+  for (const { week, year, weeksAgo } of weeksToCheck) {
+    const challenges = await db
+      .select({
+        templateId: userChallenge.templateId,
+        status: userChallenge.status,
+      })
+      .from(userChallenge)
+      .where(
+        and(
+          eq(userChallenge.userId, userId),
+          eq(userChallenge.weekNumber, week),
+          eq(userChallenge.year, year)
+        )
+      );
+
+    for (const c of challenges) {
+      recentChallenges.push({
+        templateId: c.templateId,
+        status: c.status,
+        weeksAgo,
+      });
+    }
+  }
+
+  return recentChallenges;
+}
+
 export async function assignWeeklyChallengesForUser(
   userId: string,
   level: number
@@ -73,6 +146,12 @@ export async function assignWeeklyChallengesForUser(
   if (existing.length > 0) {
     return;
   }
+
+  const recentChallenges = await getRecentChallengesForUser(
+    userId,
+    weekInfo.week,
+    weekInfo.year
+  );
 
   const eligibleTemplates = await db
     .select()
@@ -107,21 +186,25 @@ export async function assignWeeklyChallengesForUser(
   const selected: ChallengeTemplate[] = [];
 
   if (byType.quantitative.length > 0) {
-    selected.push(weightedRandomSelect(byType.quantitative, level));
+    selected.push(weightedRandomSelect(byType.quantitative, level, recentChallenges));
   }
 
   if (byType.social.length > 0) {
-    selected.push(weightedRandomSelect(byType.social, level));
+    selected.push(weightedRandomSelect(byType.social, level, recentChallenges));
   }
 
   if (byType.performance.length > 0 && level >= 5) {
-    selected.push(weightedRandomSelect(byType.performance, level));
+    selected.push(weightedRandomSelect(byType.performance, level, recentChallenges));
   }
 
   const remaining = eligibleTemplates.filter((t) => !selected.includes(t));
   while (selected.length < 3 && remaining.length > 0) {
-    const index = Math.floor(Math.random() * remaining.length);
-    selected.push(remaining.splice(index, 1)[0]);
+    const template = weightedRandomSelect(remaining, level, recentChallenges);
+    const index = remaining.indexOf(template);
+    if (index > -1) {
+      remaining.splice(index, 1);
+    }
+    selected.push(template);
   }
 
   for (const template of selected) {
@@ -141,7 +224,6 @@ export async function assignWeeklyChallengesForUser(
  * Appelée par le cron job chaque lundi.
  */
 export async function assignWeeklyChallenges(): Promise<void> {
-  // Récupère tous les users avec leur niveau (ou niveau 1 par défaut)
   const allUsers = await db
     .select({
       userId: user.id,
@@ -160,6 +242,7 @@ export async function assignWeeklyChallenges(): Promise<void> {
     try {
       await assignWeeklyChallengesForUser(u.userId, level);
       assigned++;
+      await sendNotificationToUser({ userId: u.userId, type: "challenge_assigned", title: "Challenge Assigned", body: `A new challenge has been assigned to you.`, referenceId: u.userId, referenceType: "user" });
     } catch (error) {
       console.error(`[CRON] Failed to assign challenges for user ${u.userId}:`, error);
       skipped++;

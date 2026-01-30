@@ -2,7 +2,7 @@ import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { matchIntent } from "../../../db/schema/match_intents/schema";
-import { and, desc, eq, lt } from "drizzle-orm";
+import { and, desc, eq, gte, lt, or, isNull } from "drizzle-orm";
 
 export const listMatchIntents = async (c: Context<HonoContext>) => {
   try {
@@ -13,7 +13,15 @@ export const listMatchIntents = async (c: Context<HonoContext>) => {
 
     const cursor = c.req.query("cursor");
     const limit = Math.min(parseInt(c.req.query("limit") || "20"), 100);
+    const includeExpired = c.req.query("includeExpired") === "true";
+    const now = new Date();
+
     const conditions = [eq(matchIntent.userId, userId)];
+
+    // Par défaut, ne pas afficher les intents expirés
+    if (!includeExpired) {
+      conditions.push(or(isNull(matchIntent.date), gte(matchIntent.date, now))!);
+    }
 
     if (cursor) {
       const [cursorIntent] = await db

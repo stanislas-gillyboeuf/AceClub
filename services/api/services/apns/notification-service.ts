@@ -11,7 +11,10 @@ export type NotificationType =
   | "match_request_accepted"
   | "invitation_accepted"
   | "match_reminder"
-  | "new_match_request";
+  | "new_match_request"
+  | "streak_warning"
+  | "challenge_assigned";
+
 
 interface SendNotificationParams {
   userId: string;

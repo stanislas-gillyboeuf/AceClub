@@ -2,7 +2,7 @@ import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { matchIntent, matchIntentSwipe, user as userTable } from "../../../db/schema";
-import { and, desc, eq, lt, ne, notExists } from "drizzle-orm";
+import { and, desc, eq, gte, lt, ne, notExists, or, isNull } from "drizzle-orm";
 
 export const discover = async (c: Context<HonoContext>) => {
   try {
@@ -14,9 +14,12 @@ export const discover = async (c: Context<HonoContext>) => {
     const cursor = c.req.query("cursor");
     const limit = Math.min(parseInt(c.req.query("limit") || "20"), 100);
 
+    const now = new Date();
+
     const conditions = [
       eq(matchIntent.status, "pending"),
       ne(matchIntent.userId, userId),
+      or(isNull(matchIntent.date), gte(matchIntent.date, now)),
       notExists(
         db
           .select()
@@ -42,7 +45,6 @@ export const discover = async (c: Context<HonoContext>) => {
       }
     }
 
-    // select/from/where pour que le NOT EXISTS soit corrélé avec le bon alias
     const rows = await db
       .select({
         id: matchIntent.id,

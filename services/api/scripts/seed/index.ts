@@ -1,12 +1,13 @@
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import * as schema from "../../db/schema/index.js";
-import type { Database } from "./context.js";
-import { seedUsers } from "./users.js";
-import { seedOrganizations } from "./organizations.js";
-import { seedMatchIntents, seedSwipes, seedMatchRequests } from "./match-intents.js";
-import { seedMatches, seedSetsAndScores } from "./matches.js";
+import * as schema from "../../db/schema/index";
+import type { Database } from "./context";
+import { seedUsers } from "./users";
+import { seedOrganizations } from "./organizations";
+import { seedMatchIntents, seedSwipes, seedMatchRequests } from "./match-intents";
+import { seedMatches, seedSetsAndScores } from "./matches";
+import { seedChallenges } from "./challenges";
 
 if (!("DATABASE_URL" in process.env)) {
   throw new Error("DATABASE_URL not found. Set it in .env or .env.development.");
@@ -37,6 +38,7 @@ export async function runSeed(): Promise<void> {
   });
   const { matchIds, participantIds } = await seedMatches(db, { userIds });
   await seedSetsAndScores(db, { matchIds, participantIds });
+  await seedChallenges(db);
 
   await pool.end();
   console.log("Seed done");

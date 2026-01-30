@@ -26,22 +26,19 @@ export async function updateChallengeProgress(
   for (const { challenge, template } of activeChallenges) {
     let shouldIncrement = false;
 
-    switch (template.code) {
-      case "PLAY_3_MATCHES":
-      case "PLAY_5_MATCHES":
-      case "PLAY_10_MATCHES":
-        shouldIncrement = true;
-        break;
-      case "WIN_3_MATCHES":
-      case "WIN_5_MATCHES":
-        shouldIncrement = isWinner;
-        break;
-      default:
-        if (template.type === "quantitative" && template.code.startsWith("PLAY_")) {
-          shouldIncrement = true;
-        } else if (template.type === "quantitative" && template.code.startsWith("WIN_")) {
-          shouldIncrement = isWinner;
-        }
+    // Quantitative challenges: play_X_matches
+    if (template.type === "quantitative" && template.code.startsWith("play_")) {
+      shouldIncrement = true;
+    }
+    // Performance challenges: win_X_matches, win_X_consecutive
+    else if (template.type === "performance" && template.code.startsWith("win_")) {
+      shouldIncrement = isWinner;
+    }
+    // Social challenges: play_with_new_player, play_with_X_new_players
+    // Note: Social challenges need more complex logic (tracking unique opponents)
+    // For now, we increment on any match for social challenges
+    else if (template.type === "social") {
+      shouldIncrement = true;
     }
 
     if (shouldIncrement) {

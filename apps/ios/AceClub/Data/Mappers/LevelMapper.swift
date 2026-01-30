@@ -7,7 +7,7 @@ class LevelMapper {
             level: userLevelDTO.level,
             currentLevelXp: userLevelDTO.currentLevelXp,
             xpToNextLevel: userLevelDTO.xpToNextLevel,
-            progressPercent: userLevelDTO.progressPercent
+            progressPercent: userLevelDTO.progressPercent / 100.0
         )
     }
 
