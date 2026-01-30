@@ -48,6 +48,15 @@ enum Theme {
                 : .systemBackground
         })
     }
+
+    static var inputBackground: Color {
+        Color(UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark
+                ? UIColor.tertiarySystemBackground 
+                : UIColor.systemBackground
+        })
+    }
+
     static var borderColor: Color { Color(.systemGray5) }
     static var borderColorSubtle: Color { Color.secondary.opacity(0.3) }
     static var labelPrimary: Color { Color.primary }

@@ -85,7 +85,7 @@ struct CreateGhostSheet: View {
                     .autocorrectionDisabled()
                     .padding(.horizontal, 14)
                     .padding(.vertical, 14)
-                    .background(Theme.cardBackground)
+                    .background(Theme.inputBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
 
@@ -103,7 +103,7 @@ struct CreateGhostSheet: View {
                     .autocorrectionDisabled()
                     .padding(.horizontal, 14)
                     .padding(.vertical, 14)
-                    .background(Theme.cardBackground)
+                    .background(Theme.inputBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
 
