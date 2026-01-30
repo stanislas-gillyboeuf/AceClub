@@ -82,10 +82,7 @@ struct CreateGhostSheet: View {
                 TextField("Prénom Nom", text: $name)
                     .textContentType(.name)
                     .autocorrectionDisabled()
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 12)
-                    .background(Theme.cardBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+                    .textFieldStyle(.roundedBorder)
             }
 
             // Email field
@@ -99,10 +96,7 @@ struct CreateGhostSheet: View {
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 12)
-                    .background(Theme.cardBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+                    .textFieldStyle(.roundedBorder)
             }
 
             if let errorMessage {

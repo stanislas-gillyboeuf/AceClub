@@ -244,9 +244,21 @@ struct UserSearchField: View {
                 UserAvatarView(user: user, size: 40)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(user.displayName)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.primary)
+                    HStack(spacing: 6) {
+                        Text(user.displayName)
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.primary)
+
+                        if user.isGhostUser {
+                            Text("Invité")
+                                .font(.caption2.weight(.medium))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 1)
+                                .background(Theme.tintColor.opacity(0.8))
+                                .clipShape(Capsule())
+                        }
+                    }
                     Text(user.email)
                         .font(.caption)
                         .foregroundStyle(.secondary)

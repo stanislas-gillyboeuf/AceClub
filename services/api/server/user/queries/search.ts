@@ -29,7 +29,7 @@ export const searchUsers = async (c: Context<HonoContext>) => {
             ilike(user.phoneNumber, `%${phoneQuery || validated.query}%`),
           ),
           eq(user.banned, false),
-          eq(user.isGhost, false), // Exclude ghost users from search
+          // Include ghost users in search results so they can be found and reused
         ),
       )
       .limit(validated.limit);
