@@ -3,3 +3,7 @@ export * from "./match";
 export * from "./match_intents";
 export * from "./user-preference";
 export * from "./notification";
+export * from "./level";
+export * from "./challenge";
+export * from "./streak";
+export * from "./reward";

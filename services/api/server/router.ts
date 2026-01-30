@@ -5,6 +5,12 @@ import { organizationRouter } from "./organization/router";
 import { matchRouter } from "./match/router";
 import { matchIntentRouter } from "./match_intents/router";
 import { notificationRouter } from "./notification/router";
+import { levelRouter } from "./level/router";
+import { challengeRouter } from "./challenge/router";
+import { streakRouter } from "./streak/router";
+import { rewardRouter } from "./reward/router";
+import { leaderboardRouter } from "./leaderboard/router";
+import { cronRouter } from "./cron/router";
 
 export const serverRouter = new Hono();
 
@@ -14,3 +20,9 @@ serverRouter.route("/organization", organizationRouter);
 serverRouter.route("/match", matchRouter);
 serverRouter.route("/match-intents", matchIntentRouter);
 serverRouter.route("/notification", notificationRouter);
+serverRouter.route("/level", levelRouter);
+serverRouter.route("/challenge", challengeRouter);
+serverRouter.route("/streak", streakRouter);
+serverRouter.route("/reward", rewardRouter);
+serverRouter.route("/leaderboard", leaderboardRouter);
+serverRouter.route("/cron", cronRouter);

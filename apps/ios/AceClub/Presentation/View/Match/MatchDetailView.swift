@@ -53,6 +53,45 @@ struct MatchDetailView: View {
         }
         .navigationTitle("Détails du match")
         .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                if canEditScores {
+                    Button {
+                        showingEditScores = true
+                    } label: {
+                        Image(systemName: "pencil")
+                    }
+                }
+
+                Menu {
+                    if canStartMatch {
+                        Button {
+                            Task { await startMatch() }
+                        } label: {
+                            Label("Démarrer le match", systemImage: "play.circle")
+                        }
+                    }
+
+                    if canFinishMatch {
+                        Button {
+                            Task { await finishMatch() }
+                        } label: {
+                            Label("Terminer le match", systemImage: "checkmark.circle")
+                        }
+                    }
+
+                    Divider()
+
+                    Button(role: .destructive) {
+                        showingDeleteAlert = true
+                    } label: {
+                        Label("Supprimer le match", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
+        }
         .refreshable {
             await refresh()
         }
@@ -65,17 +104,6 @@ struct MatchDetailView: View {
             }
         } message: {
             Text("Cette action est irréversible. Toutes les données du match seront supprimées.")
-        }
-        .alert(
-            errorMessage != nil ? "Erreur" : "Succès",
-            isPresented: .constant(errorMessage != nil || successMessage != nil)
-        ) {
-            Button("OK") {
-                errorMessage = nil
-                successMessage = nil
-            }
-        } message: {
-            Text(errorMessage ?? successMessage ?? "")
         }
         .sheet(isPresented: $showingEditScores) {
             if let match {
@@ -284,38 +312,6 @@ struct MatchDetailView: View {
                 LabeledContent("Créé le", value: match.formattedCreatedAt)
             }
 
-            // Section 5: Actions
-            Section("Actions") {
-                if canStartMatch {
-                    Button {
-                        Task { await startMatch() }
-                    } label: {
-                        Label("Démarrer le match", systemImage: "play.circle")
-                    }
-                }
-
-                if canFinishMatch {
-                    Button {
-                        Task { await finishMatch() }
-                    } label: {
-                        Label("Terminer le match", systemImage: "checkmark.circle")
-                    }
-                }
-
-                if canEditScores {
-                    Button {
-                        showingEditScores = true
-                    } label: {
-                        Label("Modifier les scores", systemImage: "pencil")
-                    }
-                }
-
-                Button(role: .destructive) {
-                    showingDeleteAlert = true
-                } label: {
-                    Label("Supprimer le match", systemImage: "trash")
-                }
-            }
         }
         .animation(.smooth, value: match.formattedMatchScore)
     }

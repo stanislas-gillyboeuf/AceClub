@@ -49,14 +49,10 @@ struct MatchesView: View {
                     .disabled(isLoading)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 16) {
-                        Button {
-                            showingListRequestMatch = true
-                        } label: {
-                            Image(systemName: "envelope.badge")
-                        }
-
-                        NotificationBellButton()
+                    Button {
+                        showingListRequestMatch = true
+                    } label: {
+                        Image(systemName: "envelope.badge")
                     }
                 }
             }

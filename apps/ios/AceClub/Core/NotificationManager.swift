@@ -22,7 +22,8 @@ final class NotificationManager {
     var isPermissionGranted = false
     var pendingDeepLink: NotificationDeepLink?
 
-    private let notificationRepository = NotificationRepository()
+    private let registerTokenUseCase = RegisterDeviceTokenUseCase()
+    private let unregisterTokenUseCase = UnregisterDeviceTokenUseCase()
     private let keychainManager = KeychainManager.shared
 
     private init() {}
@@ -54,7 +55,7 @@ final class NotificationManager {
 
     func registerDeviceToken(_ token: String) async {
         do {
-            try await notificationRepository.registerDeviceToken(token, platform: "ios")
+            try await registerTokenUseCase.execute(token: token)
             try keychainManager.save(key: "device_token", value: token)
             print("[NotificationManager] Device token registered successfully")
         } catch {
@@ -69,7 +70,7 @@ final class NotificationManager {
         }
 
         do {
-            try await notificationRepository.unregisterDeviceToken(token)
+            try await unregisterTokenUseCase.execute(token: token)
             try keychainManager.delete(key: "device_token")
             print("[NotificationManager] Device token unregistered successfully")
         } catch {

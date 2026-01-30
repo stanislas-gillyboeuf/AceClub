@@ -5,6 +5,10 @@ import { updateMatchValidator } from "../validators";
 import { db } from "../../../db";
 import { match, matchParticipant } from "../../../db/schema/match/schema";
 import { eq, and, ne } from "drizzle-orm";
+import { attributeMatchXp } from "../../level/services/xp-attribution";
+import { updateUserStreak } from "../../streak/services/streak-manager";
+import { updateChallengeProgress } from "../../challenge/services/progress-tracker";
+import { checkBadges } from "../../reward/services/badge-checker";
 
 export const updateMatch = async (c: Context<HonoContext>) => {
   try {
@@ -139,6 +143,25 @@ export const updateMatch = async (c: Context<HonoContext>) => {
 
       return updatedMatch;
     });
+
+    // Attribution XP when match is finished
+    if (result.status === "finished") {
+      try {
+        const participants = await db
+          .select()
+          .from(matchParticipant)
+          .where(eq(matchParticipant.matchId, matchId));
+
+        for (const participant of participants) {
+          const { multiplier } = await updateUserStreak(participant.userId, new Date());
+          await attributeMatchXp(matchId, [participant], multiplier);
+          await updateChallengeProgress(participant.userId, matchId, participant.isWinner);
+          await checkBadges(participant.userId);
+        }
+      } catch (xpError) {
+        console.error("Error attributing XP:", xpError);
+      }
+    }
 
     return c.json({
       success: true,

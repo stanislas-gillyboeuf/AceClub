@@ -8,6 +8,8 @@ struct ProfileView: View {
     @Environment(AuthViewModel.self) private var authViewModel
     @State private var showCreateMatchIntentSheet = false
     @State private var showSettingsSheet = false
+    @StateObject private var progressionViewModel = ProgressionViewModel()
+    @StateObject private var leaderboardViewModel = LeaderboardViewModel()
 
     @Query(sort: \MatchModel.createdAt, order: .reverse)
     private var allMatches: [MatchModel]
@@ -152,6 +154,50 @@ struct ProfileView: View {
                     }
 
                     Section {
+                        NavigationLink {
+                            ProgressionView(viewModel: progressionViewModel)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "chart.line.uptrend.xyaxis")
+                                    .font(.title3)
+                                    .foregroundStyle(Theme.tintColor)
+                                    .frame(width: 28)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Ma progression")
+                                        .font(.subheadline.weight(.medium))
+                                        .foregroundStyle(.primary)
+                                    Text("Niveau, XP, défis et badges")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+
+                        NavigationLink {
+                            LeaderboardView(viewModel: leaderboardViewModel)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "trophy")
+                                    .font(.title3)
+                                    .foregroundStyle(.orange)
+                                    .frame(width: 28)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Classement")
+                                        .font(.subheadline.weight(.medium))
+                                        .foregroundStyle(.primary)
+                                    Text("Global, club et hebdomadaire")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                    } header: {
+                        Label("Progression & Classement", systemImage: "star.fill")
+                    }
+
+                    Section {
                         if authViewModel.isLoading {
                             SkeletonRow(showAvatar: false, lineCount: 1, titleWidth: 100)
                         } else {
@@ -199,14 +245,10 @@ struct ProfileView: View {
             .navigationTitle("Mon Profil")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 16) {
-                        NotificationBellButton()
-
-                        Button {
-                            showSettingsSheet = true
-                        } label: {
-                            Image(systemName: "gearshape")
-                        }
+                    Button {
+                        showSettingsSheet = true
+                    } label: {
+                        Image(systemName: "gearshape")
                     }
                 }
             }
@@ -220,6 +262,10 @@ struct ProfileView: View {
                 await organizationViewModel.loadOrganizations()
                 await organizationViewModel.loadActiveMember()
                 await invitationViewModel.loadUserInvitations()
+
+                if let firstOrg = organizationViewModel.organizations.first {
+                    leaderboardViewModel.currentOrganizationId = firstOrg.id
+                }
             }
             .onChange(of: allMatches.count) {
                 profileViewModel.calculateStats(from: allMatches)
