@@ -12,14 +12,13 @@
     "typecheck": "tsc --noEmit",
     "prepush": "bun run lint && bun run format:check && bun run typecheck",
     "drizzle:seed": "tsx ./scripts/seed.ts",
-    "cron:assign-challenges": "tsx ./server/cron/index.ts assign-weekly-challenges",
-    "cron:expire-challenges": "tsx ./server/cron/index.ts expire-challenges",
-    "cron:streak-warning": "tsx ./server/cron/index.ts streak-warning",
-    "cron:cleanup-expired-intents": "tsx ./server/cron/index.ts cleanup-expired-intents"
+    "trigger:dev": "npx trigger.dev@latest dev",
+    "trigger:deploy": "npx trigger.dev@latest deploy"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.8",
     "@hono/zod-validator": "^0.7.6",
+    "@trigger.dev/sdk": "^4.3.3",
     "better-auth": "^1.4.11",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",

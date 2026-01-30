@@ -22,7 +22,8 @@ class UserMapper {
             banReason: userDTO.banReason,
             banExpires: userDTO.banExpires,
             onboardingCompleted: userDTO.onboardingCompleted,
-            phoneNumber: userDTO.phoneNumber
+            phoneNumber: userDTO.phoneNumber,
+            isGhost: nil
         )
     }
 
@@ -49,7 +50,27 @@ class UserMapper {
             banReason: nil,
             banExpires: nil,
             onboardingCompleted: nil,
-            phoneNumber: nil
+            phoneNumber: nil,
+            isGhost: userSearchItemDTO.isGhost
+        )
+    }
+
+    static func map(ghostUserDTO: GhostUserDTO) -> User {
+        return User(
+            id: ghostUserDTO.id,
+            name: ghostUserDTO.name,
+            email: ghostUserDTO.email,
+            emailVerified: nil,
+            image: ghostUserDTO.image,
+            createdAt: ghostUserDTO.createdAt,
+            updatedAt: nil,
+            role: nil,
+            banned: nil,
+            banReason: nil,
+            banExpires: nil,
+            onboardingCompleted: nil,
+            phoneNumber: nil,
+            isGhost: ghostUserDTO.isGhost
         )
     }
 

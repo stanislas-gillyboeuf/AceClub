@@ -15,6 +15,7 @@ struct UserSearchField: View {
     @State private var isSearching: Bool = false
     @State private var showResults: Bool = false
     @State private var searchTask: Task<Void, Never>?
+    @State private var showCreateGhostSheet: Bool = false
     @FocusState private var isSearchFocused: Bool
 
     private let searchUseCase = SearchUsersUseCase()
@@ -31,6 +32,17 @@ struct UserSearchField: View {
                 searchFieldCard
             }
         }
+        .sheet(isPresented: $showCreateGhostSheet) {
+            CreateGhostSheet(initialName: searchQuery) { ghost in
+                withAnimation(.snappy(duration: 0.25)) {
+                    selectedUser = ghost
+                    searchQuery = ""
+                    searchResults = []
+                    showResults = false
+                    isSearchFocused = false
+                }
+            }
+        }
     }
 
     // MARK: - Selected User Card
@@ -40,8 +52,20 @@ struct UserSearchField: View {
             UserAvatarView(user: user, size: 44)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(user.displayName)
-                    .font(.body.weight(.medium))
+                HStack(spacing: 6) {
+                    Text(user.displayName)
+                        .font(.body.weight(.medium))
+
+                    if user.isGhostUser {
+                        Text("Invité")
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Theme.tintColor.opacity(0.8))
+                            .clipShape(Capsule())
+                    }
+                }
                 Text(user.email)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -140,20 +164,55 @@ struct UserSearchField: View {
     private var searchResultsDropdown: some View {
         VStack(spacing: 0) {
             if searchResults.isEmpty && !isSearching && searchQuery.count >= 2 {
-                // Empty state
-                HStack {
-                    Spacer()
-                    VStack(spacing: 6) {
-                        Image(systemName: "person.slash")
-                            .font(.title3)
-                            .foregroundStyle(.tertiary)
-                        Text("Aucun joueur trouvé")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                // Empty state with option to create ghost
+                VStack(spacing: 12) {
+                    HStack {
+                        Spacer()
+                        VStack(spacing: 6) {
+                            Image(systemName: "person.slash")
+                                .font(.title3)
+                                .foregroundStyle(.tertiary)
+                            Text("Aucun joueur trouvé")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
                     }
-                    .padding(.vertical, 20)
-                    Spacer()
+                    .padding(.top, 16)
+
+                    Divider()
+
+                    // Create ghost button
+                    Button {
+                        showCreateGhostSheet = true
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "person.badge.plus")
+                                .font(.body)
+                                .foregroundStyle(Theme.tintColor)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Ajouter \"\(searchQuery)\" comme invité")
+                                    .font(.subheadline.weight(.medium))
+                                    .foregroundStyle(.primary)
+                                Text("Créer un joueur sans compte")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.tertiary)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                 }
+                .padding(.bottom, 4)
             } else {
                 ForEach(searchResults) { user in
                     searchResultRow(user: user)

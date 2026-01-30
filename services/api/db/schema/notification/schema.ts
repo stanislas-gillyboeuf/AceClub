@@ -15,6 +15,8 @@ export const NotificationType = pgEnum("notification_type", [
   "invitation_accepted",
   "new_match_request",
   "match_reminder",
+  "challenge_assigned",
+  "streak_warning",
 ]);
 
 export const DevicePlatform = pgEnum("device_platform", ["ios", "android"]);

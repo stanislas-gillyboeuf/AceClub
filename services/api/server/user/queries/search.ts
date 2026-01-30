@@ -18,6 +18,7 @@ export const searchUsers = async (c: Context<HonoContext>) => {
         name: user.name,
         email: user.email,
         image: user.image,
+        isGhost: user.isGhost,
       })
       .from(user)
       .where(
@@ -28,6 +29,7 @@ export const searchUsers = async (c: Context<HonoContext>) => {
             ilike(user.phoneNumber, `%${phoneQuery || validated.query}%`),
           ),
           eq(user.banned, false),
+          eq(user.isGhost, false), // Exclude ghost users from search
         ),
       )
       .limit(validated.limit);

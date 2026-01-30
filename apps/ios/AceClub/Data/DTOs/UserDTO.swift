@@ -34,6 +34,22 @@ struct UserSearchItemDTO: Codable {
     let name: String
     let email: String
     let image: String?
+    let isGhost: Bool?
+}
+
+// MARK: - Ghost User DTOs
+struct CreateGhostRequestDTO: Codable {
+    let name: String
+    let email: String
+}
+
+struct GhostUserDTO: Codable {
+    let id: String
+    let name: String
+    let email: String
+    let image: String?
+    let isGhost: Bool
+    let createdAt: String
 }
 
 // MARK: - Onboarding DTOs

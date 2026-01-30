@@ -147,4 +147,28 @@ class UserAPIDataSource {
             throw UserAPIDateSourceError.decodingFailed
         }
     }
+
+    func createGhost(name: String, email: String) async throws -> GhostUserDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/user/ghost") else {
+            throw UserAPIDateSourceError.invalidURL
+        }
+
+        let requestBody = CreateGhostRequestDTO(name: name, email: email)
+        let body = try JSONEncoder().encode(requestBody)
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: body)
+
+        if response.statusCode == 401 {
+            throw UserAPIDateSourceError.unauthorized
+        }
+
+        guard response.statusCode == 200 || response.statusCode == 201 else {
+            throw UserAPIDateSourceError.requestFailed
+        }
+
+        do {
+            return try JSONDecoder().decode(GhostUserDTO.self, from: data)
+        } catch {
+            throw UserAPIDateSourceError.decodingFailed
+        }
+    }
 }

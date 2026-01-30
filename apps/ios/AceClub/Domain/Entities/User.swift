@@ -14,6 +14,7 @@ struct User: Identifiable {
     let banExpires: String?
     let onboardingCompleted: Bool?
     let phoneNumber: String?
+    let isGhost: Bool?
 
     // MARK: - Derived safe accessors
     /// URL construite à partir de `image` si valide, sinon `nil`.
@@ -35,6 +36,9 @@ struct User: Identifiable {
 
     /// Indique si l'onboarding est complété.
     var isOnboardingCompleted: Bool { onboardingCompleted ?? false }
+
+    /// Indique si l'utilisateur est un ghost (invité sans compte).
+    var isGhostUser: Bool { isGhost ?? false }
 
     /// Nom d'affichage de l'utilisateur
     var displayName: String { name }

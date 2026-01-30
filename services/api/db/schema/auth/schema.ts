@@ -19,6 +19,7 @@ export const user = pgTable("user", {
   phoneNumber: text("phone_number").unique(),
   phoneNumberVerified: boolean("phone_number_verified"),
   onboarding_completed: boolean("onboarding_completed").default(false),
+  isGhost: boolean("is_ghost").default(false).notNull(),
 });
 
 export const session = pgTable(

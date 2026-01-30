@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+export const createGhostValidator = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Valid email is required"),
+});
+
 export const searchUsersValidator = z.object({
   query: z.string().min(1, "Search query must not be empty"),
   limit: z.coerce.number().min(1).max(50).optional().default(10),

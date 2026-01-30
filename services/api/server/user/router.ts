@@ -3,9 +3,10 @@ import { requireAuth } from "../../middleware/auth";
 import type { HonoContext } from "../../types/hono";
 import { zValidator } from "@hono/zod-validator";
 import { me, searchUsers, getPreferences } from "./queries";
-import { completeOnboarding, updateProfile } from "./mutations";
+import { completeOnboarding, updateProfile, createGhost } from "./mutations";
 import {
   completeOnboardingValidator,
+  createGhostValidator,
   searchUsersValidator,
   updateProfileValidator,
 } from "./validators";
@@ -24,3 +25,4 @@ userRouter.post(
   completeOnboarding,
 );
 userRouter.put("/profile", zValidator("json", updateProfileValidator), updateProfile);
+userRouter.post("/ghost", zValidator("json", createGhostValidator), createGhost);

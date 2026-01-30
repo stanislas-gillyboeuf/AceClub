@@ -9,6 +9,6 @@
     "skipLibCheck": true,
     "moduleResolution": "bundler"
   },
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", "trigger.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

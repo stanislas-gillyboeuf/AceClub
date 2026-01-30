@@ -50,4 +50,9 @@ class UserRepository {
         )
         return UserMapper.map(userDTO: userDTO)
     }
+
+    func createGhost(name: String, email: String) async throws -> User {
+        let ghostDTO = try await userDataSource.createGhost(name: name, email: email)
+        return UserMapper.map(ghostUserDTO: ghostDTO)
+    }
 }
