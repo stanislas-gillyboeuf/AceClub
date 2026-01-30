@@ -74,29 +74,37 @@ struct CreateGhostSheet: View {
     private var formSection: some View {
         VStack(spacing: 16) {
             // Name field
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("Nom")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
 
                 TextField("Prénom Nom", text: $name)
+                    .font(.body)
                     .textContentType(.name)
                     .autocorrectionDisabled()
-                    .textFieldStyle(.roundedBorder)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 14)
+                    .background(Color(uiColor: .secondarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
 
             // Email field
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("Email")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
 
-                TextField("email@exemple.com", text: $email)
+                TextField("", text: $email)
+                    .font(.body)
                     .textContentType(.emailAddress)
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
-                    .textFieldStyle(.roundedBorder)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 14)
+                    .background(Color(uiColor: .secondarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
 
             if let errorMessage {
