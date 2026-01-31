@@ -26,6 +26,9 @@ final class MatchModel {
     @Relationship(deleteRule: .cascade, inverse: \MatchSetModel.match)
     var sets: [MatchSetModel] = []
 
+    @Relationship(deleteRule: .cascade, inverse: \MatchCommentModel.match)
+    var comments: [MatchCommentModel] = []
+
     // Cache metadata
     var lastSyncedAt: Date?
 

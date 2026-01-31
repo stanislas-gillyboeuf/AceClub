@@ -312,4 +312,31 @@ class MatchMapper {
     static func map(updateResponseDTO: UpdateMatchResponseDTO) -> Match {
         return map(matchDTO: updateResponseDTO.match)
     }
+
+    // MARK: - Comment Mapping
+
+    static func map(commentDTO: MatchCommentDTO) -> MatchComment {
+        return MatchComment(
+            id: commentDTO.id,
+            matchId: commentDTO.matchId,
+            userId: commentDTO.userId,
+            content: commentDTO.content,
+            userName: commentDTO.userName,
+            userImage: commentDTO.userImage,
+            createdAt: parseDate(commentDTO.createdAt) ?? Date(),
+            updatedAt: parseDate(commentDTO.updatedAt) ?? Date()
+        )
+    }
+
+    // MARK: - Create Comment Request Mapping (Entity -> DTO)
+
+    static func mapToCreateCommentRequest(content: String) -> CreateCommentRequestDTO {
+        return CreateCommentRequestDTO(content: content)
+    }
+
+    // MARK: - Update Comment Request Mapping (Entity -> DTO)
+
+    static func mapToUpdateCommentRequest(content: String) -> UpdateCommentRequestDTO {
+        return UpdateCommentRequestDTO(content: content)
+    }
 }
