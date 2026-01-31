@@ -7,8 +7,7 @@ struct BadgeDTO: Codable {
     let category: String
     let name: String
     let description: String
-    let iconName: String
-    let imageUrl: String?
+    let imageUrl: String
     let requiredLevel: Int?
     let isUnlocked: Bool?
     let unlockedAt: String?

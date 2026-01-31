@@ -9,7 +9,6 @@ class RewardMapper {
             category: BadgeCategory(rawValue: badgeDTO.category) ?? .achievement,
             name: badgeDTO.name,
             description: badgeDTO.description,
-            iconName: badgeDTO.iconName,
             imageUrl: badgeDTO.imageUrl,
             requiredLevel: badgeDTO.requiredLevel,
             isUnlocked: badgeDTO.isUnlocked ?? (badgeDTO.unlockedAt != nil),

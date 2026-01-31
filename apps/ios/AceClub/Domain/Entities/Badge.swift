@@ -6,8 +6,7 @@ struct Badge: Identifiable {
     let category: BadgeCategory
     let name: String
     let description: String
-    let iconName: String
-    let imageUrl: String?
+    let imageUrl: String
     let requiredLevel: Int?
     let isUnlocked: Bool
     let unlockedAt: Date?
@@ -17,7 +16,7 @@ struct Badge: Identifiable {
     }
 
     var imageURL: URL? {
-        guard let imageUrl, !imageUrl.isEmpty else { return nil }
+        guard !imageUrl.isEmpty else { return nil }
         return URL(string: imageUrl)
     }
 }
