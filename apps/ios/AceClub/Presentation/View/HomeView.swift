@@ -36,7 +36,12 @@ struct HomeView: View {
     }
 
     private var finishedMatches: [MatchModel] {
-        allMatches.filter { $0.isFinished }
+        allMatches.filter { match in
+            guard match.isFinished else { return false }
+            return match.participants.contains { participant in
+                organizationMemberUserIds.contains(participant.userId)
+            }
+        }
     }
 
     var body: some View {
