@@ -4,6 +4,7 @@ import SwiftData
 struct FeedMatchRowView: View {
     let match: MatchModel
     let currentUserId: String
+    var onShowAllComments: (() -> Void)?
 
     private var homePlayer: MatchParticipantModel? {
         match.homeParticipant
@@ -19,6 +20,14 @@ struct FeedMatchRowView: View {
 
     private var currentUserWon: Bool {
         match.participants.first { $0.userId == currentUserId }?.isWinner ?? false
+    }
+
+    private var previewComments: [MatchCommentModel] {
+        Array(match.comments.sorted { $0.createdAt > $1.createdAt }.prefix(2))
+    }
+
+    private var hasMoreComments: Bool {
+        match.comments.count > 2
     }
 
     var body: some View {
@@ -73,6 +82,11 @@ struct FeedMatchRowView: View {
                     }
                 }
             }
+
+            // Comments preview section
+            if !previewComments.isEmpty {
+                commentsPreviewSection
+            }
         }
         .padding(Theme.paddingCard)
         .background(Theme.cardBackground)
@@ -81,6 +95,65 @@ struct FeedMatchRowView: View {
             RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
                 .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
         }
+    }
+
+    // MARK: - Comments Preview
+
+    @ViewBuilder
+    private var commentsPreviewSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Divider()
+
+            ForEach(previewComments) { comment in
+                commentPreviewRow(comment: comment)
+            }
+
+            if hasMoreComments {
+                Button {
+                    onShowAllComments?()
+                } label: {
+                    Text("Voir les \(match.comments.count) commentaires")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func commentPreviewRow(comment: MatchCommentModel) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            commentAvatar(comment: comment)
+
+            (Text(comment.userName).fontWeight(.semibold) + Text(" ") + Text(comment.content))
+                .font(.caption)
+                .lineLimit(2)
+        }
+    }
+
+    @ViewBuilder
+    private func commentAvatar(comment: MatchCommentModel) -> some View {
+        Group {
+            if let imageURL = comment.userImageURL {
+                AsyncImage(url: imageURL) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    case .failure, .empty:
+                        initialsPlaceholder(initials: comment.userInitials, size: 24)
+                    @unknown default:
+                        initialsPlaceholder(initials: comment.userInitials, size: 24)
+                    }
+                }
+            } else {
+                initialsPlaceholder(initials: comment.userInitials, size: 24)
+            }
+        }
+        .frame(width: 24, height: 24)
+        .clipShape(Circle())
     }
 
     @ViewBuilder
@@ -106,18 +179,8 @@ struct FeedMatchRowView: View {
 
     @ViewBuilder
     private func playerAvatar(participant: MatchParticipantModel?) -> some View {
-        ZStack {
-            Circle()
-                .fill(Color(.tertiarySystemFill))
-
-            if let initials = participant?.userInitials {
-                Text(initials)
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.secondary)
-            }
-
-            if let imageURLString = participant?.userImage,
-               let imageURL = URL(string: imageURLString) {
+        Group {
+            if let imageURL = participant?.userImageURL {
                 AsyncImage(url: imageURL) { phase in
                     switch phase {
                     case .success(let image):
@@ -128,15 +191,27 @@ struct FeedMatchRowView: View {
                         ProgressView()
                             .tint(Theme.tintColor)
                     case .failure:
-                        EmptyView()
+                        initialsPlaceholder(initials: participant?.userInitials ?? "?", size: 40)
                     @unknown default:
-                        EmptyView()
+                        initialsPlaceholder(initials: participant?.userInitials ?? "?", size: 40)
                     }
                 }
+            } else {
+                initialsPlaceholder(initials: participant?.userInitials ?? "?", size: 40)
             }
         }
         .frame(width: 40, height: 40)
         .clipShape(Circle())
+    }
+
+    private func initialsPlaceholder(initials: String, size: CGFloat) -> some View {
+        Circle()
+            .fill(Theme.tintColor.opacity(0.15))
+            .overlay {
+                Text(initials)
+                    .font(.system(size: size * 0.35, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Theme.tintColor)
+            }
     }
 
     private var formattedDate: String {

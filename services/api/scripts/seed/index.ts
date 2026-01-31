@@ -20,6 +20,7 @@ import {
   invitation,
   match,
   matchParticipant,
+  matchComment,
   set,
   setScore,
   matchIntent,
@@ -38,6 +39,7 @@ async function clearDatabase(db: Database): Promise<void> {
   await db.delete(setScore);
   await db.delete(set);
 
+  await db.delete(matchComment);
   await db.delete(matchParticipant);
   await db.delete(match);
 
@@ -87,8 +89,8 @@ export async function runSeed(): Promise<void> {
     intentIdToUserId,
     likeSwipes,
   });
-  const { matchIds, participantIds } = await seedMatches(db, { userIds });
-  await seedSetsAndScores(db, { matchIds, participantIds });
+  const { matchIds, matchData } = await seedMatches(db, { userIds });
+  await seedSetsAndScores(db, { matchData });
   await seedChallenges(db);
 
   await pool.end();
