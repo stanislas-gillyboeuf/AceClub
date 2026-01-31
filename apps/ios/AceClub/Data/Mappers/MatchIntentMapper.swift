@@ -70,6 +70,16 @@ class MatchIntentMapper {
         )
     }
 
+    // MARK: - OrganizationBrief
+
+    static func map(organizationBriefDTO: OrganizationBriefDTO) -> OrganizationBrief {
+        OrganizationBrief(
+            id: organizationBriefDTO.id,
+            name: organizationBriefDTO.name,
+            logoURL: organizationBriefDTO.logo.flatMap { URL(string: $0) }
+        )
+    }
+
     // MARK: - UserBrief
 
     static func map(userBriefDTO: UserBriefDTO) -> UserBrief {
@@ -77,7 +87,9 @@ class MatchIntentMapper {
             id: userBriefDTO.id,
             name: userBriefDTO.name,
             email: userBriefDTO.email,
-            level: userBriefDTO.level ?? 1
+            imageURL: userBriefDTO.image.flatMap { URL(string: $0) },
+            level: userBriefDTO.level ?? 1,
+            organization: userBriefDTO.organization.map { map(organizationBriefDTO: $0) }
         )
     }
 

@@ -100,11 +100,12 @@ class MatchIntentsViewModel: ObservableObject {
             let result = try await swipeUseCase.execute(matchIntentId: matchIntentId, action: action)
             lastSwipeMessage = result.message
             didMatch = result.matchRequest != nil
-            removeTopCard()
-            Task { await loadMoreIfNeeded() }
         } catch {
-            errorMessage = error.localizedDescription
+            // Swipe failed (e.g. already swiped) - still remove the card to avoid duplicates
+            errorMessage = nil
         }
+        removeTopCard()
+        Task { await loadMoreIfNeeded() }
         isSwiping = false
     }
 }

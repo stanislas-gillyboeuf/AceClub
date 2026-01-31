@@ -42,8 +42,9 @@ import {
   listUserInvitations,
   getInvitation,
   searchOrganizations,
+  getOrganizationStats,
 } from "./queries";
-import { searchOrganizationsValidator } from "./validators";
+import { searchOrganizationsValidator, getOrganizationStatsValidator } from "./validators";
 
 export const organizationRouter = new Hono<HonoContext>();
 
@@ -61,6 +62,11 @@ organizationRouter.get(
   "/get-full-organization",
   zValidator("query", getFullOrganizationValidator),
   getFullOrganization,
+);
+organizationRouter.get(
+  "/get-organization-stats",
+  zValidator("query", getOrganizationStatsValidator),
+  getOrganizationStats,
 );
 
 // Organization mutations (accessible to organization members with permissions)

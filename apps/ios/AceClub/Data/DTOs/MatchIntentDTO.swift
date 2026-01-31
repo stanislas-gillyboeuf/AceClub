@@ -47,11 +47,19 @@ struct MatchIntentWithUserDTO: Codable {
     let user: UserBriefDTO?
 }
 
+struct OrganizationBriefDTO: Codable {
+    let id: String
+    let name: String
+    let logo: String?
+}
+
 struct UserBriefDTO: Codable {
     let id: String
     let name: String
     let email: String
+    let image: String?
     let level: Int?
+    let organization: OrganizationBriefDTO?
 }
 
 struct UserContactDTO: Codable {

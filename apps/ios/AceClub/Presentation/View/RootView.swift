@@ -14,6 +14,7 @@ struct RootView: View {
     @StateObject private var profileViewModel = ProfileViewModel()
     @StateObject private var organizationViewModel = OrganizationViewModel()
     @StateObject private var invitationViewModel = InvitationViewModel()
+    @StateObject private var progressionViewModel = ProgressionViewModel()
 
     private enum Tab {
         case feed
@@ -49,7 +50,8 @@ struct RootView: View {
             ProfileView(
                 profileViewModel: profileViewModel,
                 organizationViewModel: organizationViewModel,
-                invitationViewModel: invitationViewModel
+                invitationViewModel: invitationViewModel,
+                progressionViewModel: progressionViewModel
             )
                 .tabItem {
                     Label("Profile", systemImage: "person")
@@ -66,6 +68,7 @@ struct RootView: View {
             }
         }
         .tabViewStyle(.sidebarAdaptable)
+        .environmentObject(organizationViewModel)
         .onChange(of: isAdmin) { _, newValue in
             if !newValue {
                 selection = .feed

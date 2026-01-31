@@ -100,6 +100,30 @@ class OrganizationAPIDataSource {
         }
     }
 
+    func getOrganizationStats(organizationId: String) async throws -> OrganizationStatsDTO {
+        guard var urlComponents = URLComponents(string: "\(Config.apiBaseURL)/organization/get-organization-stats") else {
+            throw OrganizationError.invalidURL
+        }
+
+        urlComponents.queryItems = [URLQueryItem(name: "organizationId", value: organizationId)]
+
+        guard let url = urlComponents.url else {
+            throw OrganizationError.invalidURL
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url)
+
+        guard response.statusCode == 200 else {
+            throw OrganizationError.serverError("Get organization stats failed: \(response.statusCode)")
+        }
+
+        do {
+            return try JSONDecoder().decode(OrganizationStatsDTO.self, from: data)
+        } catch {
+            throw OrganizationError.decodingError
+        }
+    }
+
     // MARK: - Organization Mutations
 
     func setActiveOrganization(slug: String) async throws {
@@ -293,14 +317,14 @@ class OrganizationAPIDataSource {
         }
     }
 
-    func updateOrganization(organizationId: String, name: String? = nil, logo: String? = nil) async throws -> OrganizationDTO {
+    func updateOrganization(organizationId: String, name: String? = nil, slug: String? = nil, logo: String? = nil) async throws -> OrganizationDTO {
         guard let url = URL(string: "\(Config.apiBaseURL)/organization/update") else {
             throw OrganizationError.invalidURL
         }
 
         let requestBody = UpdateOrganizationRequestDTO(
             organizationId: organizationId,
-            data: UpdateOrganizationDataDTO(name: name, slug: nil, logo: logo)
+            data: UpdateOrganizationDataDTO(name: name, slug: slug, logo: logo)
         )
         let bodyData = try JSONEncoder().encode(requestBody)
         let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)

@@ -21,58 +21,15 @@ struct MemberRow: View {
 
             Spacer()
 
-            // Role badge with Menu to change role if permissions allow
-            if canManageRole {
-                Menu {
-                    ForEach([MemberRole.member, .admin, .owner], id: \.self) { role in
-                        Button {
-                            onRoleChange?(role)
-                        } label: {
-                            HStack {
-                                Text(role.displayName)
-                                if member.role == role {
-                                    Image(systemName: "checkmark")
-                                }
-                            }
-                        }
-                        .disabled(!canChangeToRole(role))
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Text(member.role.displayName)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                        Image(systemName: "chevron.down")
-                            .font(.caption2)
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(roleColor.opacity(0.15))
-                    .foregroundColor(roleColor)
-                    .clipShape(Capsule())
-                }
-            } else {
-                // Just display role badge without menu
-                Text(member.role.displayName)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(roleColor.opacity(0.15))
-                    .foregroundColor(roleColor)
-                    .clipShape(Capsule())
-            }
-
-            // Delete button if permissions allow
-            if canDelete {
-                Button(role: .destructive) {
-                    onRemove?()
-                } label: {
-                    Image(systemName: "trash")
-                        .font(.caption)
-                }
-                .buttonStyle(.borderless)
-            }
+            // Role badge (simple, sans menu)
+            Text(member.role.displayName)
+                .font(.caption)
+                .fontWeight(.medium)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(roleColor.opacity(0.15))
+                .foregroundColor(roleColor)
+                .clipShape(Capsule())
         }
         .padding(.vertical, 4)
     }
@@ -84,7 +41,7 @@ struct MemberRow: View {
         return member.userId == currentUserId
     }
 
-    private var canManageRole: Bool {
+    var canManageRole: Bool {
         // Can't change own role
         guard !isCurrentUser else { return false }
         // Need to be admin or owner to manage roles
@@ -92,17 +49,17 @@ struct MemberRow: View {
         return true
     }
 
-    private var canDelete: Bool {
+    var canDelete: Bool {
         // Can't delete yourself
         guard !isCurrentUser else { return false }
         // Can't delete owners
         guard !member.isOwner else { return false }
         // Need to be admin or owner to delete
         guard let currentUserRole, (currentUserRole == .admin || currentUserRole == .owner) else { return false }
-        return onRemove != nil
+        return true
     }
 
-    private func canChangeToRole(_ role: MemberRole) -> Bool {
+    func canChangeToRole(_ role: MemberRole) -> Bool {
         // Already has this role
         if member.role == role { return false }
 
@@ -113,6 +70,10 @@ struct MemberRow: View {
 
         // Admins can change between member and admin
         return true
+    }
+
+    var availableRoles: [MemberRole] {
+        [MemberRole.member, .admin, .owner].filter { canChangeToRole($0) }
     }
 
     private var roleColor: Color {

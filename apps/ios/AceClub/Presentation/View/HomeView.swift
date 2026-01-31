@@ -4,6 +4,7 @@ import SwiftData
 struct HomeView: View {
     @Environment(AuthViewModel.self) private var authViewModel
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var organizationViewModel: OrganizationViewModel
 
     @Query(
         sort: \MatchModel.createdAt,
@@ -21,6 +22,19 @@ struct HomeView: View {
         authViewModel.currentUser?.id ?? ""
     }
 
+    private var organizationMemberUserIds: Set<String> {
+        Set(organizationViewModel.members.map { $0.userId })
+    }
+
+    private var ongoingOrganizationMatches: [MatchModel] {
+        allMatches.filter { match in
+            guard match.isOngoing else { return false }
+            return match.participants.contains { participant in
+                organizationMemberUserIds.contains(participant.userId)
+            }
+        }
+    }
+
     private var finishedMatches: [MatchModel] {
         allMatches.filter { $0.isFinished }
     }
@@ -35,6 +49,10 @@ struct HomeView: View {
                     } else if viewModel.isLoading {
                         StatsCardSkeleton()
                             .padding(.horizontal, Theme.paddingHorizontal)
+                    }
+
+                    if !ongoingOrganizationMatches.isEmpty {
+                        ongoingMatchesSection
                     }
 
                     matchHistorySection
@@ -96,6 +114,32 @@ struct HomeView: View {
     }
 
     @ViewBuilder
+    private var ongoingMatchesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("En cours")
+                .font(.title2.weight(.bold))
+                .padding(.horizontal, Theme.paddingHorizontal)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(ongoingOrganizationMatches) { match in
+                        NavigationLink {
+                            MatchDetailView(matchId: match.id)
+                        } label: {
+                            OngoingMatchCardView(
+                                match: match,
+                                currentUserId: currentUserId
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, Theme.paddingHorizontal)
+            }
+        }
+    }
+
+    @ViewBuilder
     private var matchHistorySection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Historique des matchs")
@@ -151,6 +195,9 @@ struct HomeView: View {
         viewModel.initialize(modelContext: modelContext)
         await viewModel.syncMatches()
         recalculateStats()
+        if let orgId = organizationViewModel.activeOrganization?.id {
+            await organizationViewModel.loadMembers(organizationId: orgId)
+        }
     }
 
     private func refresh() async {

@@ -57,13 +57,35 @@ struct MatchIntentListResult {
     let limit: Int
 }
 
+// MARK: - Organization Brief (for discover)
+
+struct OrganizationBrief: Identifiable {
+    let id: String
+    let name: String
+    let logoURL: URL?
+}
+
 // MARK: - User Brief (for discover & requester)
 
 struct UserBrief: Identifiable {
     let id: String
     let name: String
     let email: String
+    let imageURL: URL?
     let level: Int
+    let organization: OrganizationBrief?
+
+    var initials: String {
+        let components = name.split(separator: " ")
+        if components.count >= 2 {
+            let firstInitial = components[0].prefix(1)
+            let lastInitial = components[1].prefix(1)
+            return "\(firstInitial)\(lastInitial)".uppercased()
+        } else if let first = components.first {
+            return String(first.prefix(2)).uppercased()
+        }
+        return "??"
+    }
 }
 
 // MARK: - Discover item (intent + user)

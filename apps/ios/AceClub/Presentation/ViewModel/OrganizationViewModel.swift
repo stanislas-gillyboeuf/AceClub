@@ -11,6 +11,7 @@ class OrganizationViewModel: ObservableObject {
     @Published var allMembers: [Member] = [] // All members of all user's organizations
     @Published var activeMember: Member?
     @Published var activeMemberRole: MemberRole?
+    @Published var organizationStats: OrganizationStats?
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var selectedLogo: UIImage?
@@ -29,6 +30,9 @@ class OrganizationViewModel: ObservableObject {
     private let leaveOrganizationUseCase = LeaveOrganizationUseCase()
     private let uploadOrgLogoUseCase = UploadOrgLogoUseCase()
     private let updateOrganizationUseCase = UpdateOrganizationUseCase()
+
+    // MARK: - Repository
+    private let organizationRepository = OrganizationRepository()
 
     // MARK: - Refresh Tasks
     private var refreshOrganizationsTask: Task<Void, Never>?
@@ -271,6 +275,40 @@ class OrganizationViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    // MARK: - Organization Stats Methods
+
+    func loadOrganizationStats(organizationId: String) async {
+        do {
+            organizationStats = try await organizationRepository.getOrganizationStats(organizationId: organizationId)
+        } catch {
+            // Silently fail - stats are optional
+            organizationStats = nil
+        }
+    }
+
+    // MARK: - Organization Update Methods
+
+    func updateOrganization(organizationId: String, name: String? = nil, slug: String? = nil) async throws -> Organization {
+        let updatedOrg = try await organizationRepository.updateOrganization(
+            organizationId: organizationId,
+            name: name,
+            slug: slug
+        )
+
+        // Update local state
+        activeOrganization = updatedOrg
+        if let index = organizations.firstIndex(where: { $0.id == organizationId }) {
+            organizations[index] = updatedOrg
+        }
+
+        // Refresh to get updated data
+        if let newSlug = slug ?? activeOrganization?.slug {
+            await loadFullOrganization(slug: newSlug)
+        }
+
+        return updatedOrg
     }
 
     // MARK: - Computed Properties

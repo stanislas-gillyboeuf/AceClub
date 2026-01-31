@@ -5,6 +5,7 @@ struct ProfileView: View {
     @ObservedObject var profileViewModel: ProfileViewModel
     @ObservedObject var organizationViewModel: OrganizationViewModel
     @ObservedObject var invitationViewModel: InvitationViewModel
+    @ObservedObject var progressionViewModel: ProgressionViewModel
     @Environment(AuthViewModel.self) private var authViewModel
     @State private var showCreateMatchIntentSheet = false
     @State private var showSettingsSheet = false
@@ -22,15 +23,15 @@ struct ProfileView: View {
                             organizationName: profileViewModel.userPreferences?.organizationName,
                             level: profileViewModel.skillLevelDisplayName,
                             bio: nil,
+                            playerLevel: progressionViewModel.userLevel.level,
+                            levelProgress: progressionViewModel.userLevel.progressPercent,
                             totalMatches: profileViewModel.userStats.totalMatches,
                             winRate: Int(profileViewModel.userStats.winRate * 100),
-                            monthlyMatches: profileViewModel.userStats.matchesThisMonth
+                            totalPlayTime: profileViewModel.userStats.formattedPlayTime
                         )
-                            .padding(.top, 8)
-                            .padding(.bottom, 4)
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 0, leading: Theme.paddingHorizontal, bottom: 0, trailing: Theme.paddingHorizontal))
-                            .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
                     }
 
                     Section {
@@ -212,7 +213,7 @@ struct ProfileView: View {
                 await organizationViewModel.loadOrganizations()
                 await organizationViewModel.loadActiveMember()
                 await invitationViewModel.loadUserInvitations()
-
+                await progressionViewModel.loadLevel()
             }
             .onChange(of: allMatches.count) {
                 profileViewModel.calculateStats(from: allMatches)
@@ -224,7 +225,8 @@ struct ProfileView: View {
                 async let orgsTask: () = organizationViewModel.refreshOrganizations()
                 async let memberTask: () = organizationViewModel.refreshActiveMember()
                 async let invitationsTask: () = invitationViewModel.refreshUserInvitations()
-                _ = await (userTask, prefsTask, intentsTask, orgsTask, memberTask, invitationsTask)
+                async let levelTask: () = progressionViewModel.loadLevel()
+                _ = await (userTask, prefsTask, intentsTask, orgsTask, memberTask, invitationsTask, levelTask)
             }
             .sheet(isPresented: $showCreateMatchIntentSheet) {
                 CreateMatchIntentSheet(isPresented: $showCreateMatchIntentSheet) {

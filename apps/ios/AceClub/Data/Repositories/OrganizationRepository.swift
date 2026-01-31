@@ -92,8 +92,18 @@ class OrganizationRepository: OrganizationRepositoryProtocol {
         return OrganizationMapper.map(organizationDTO: organizationDTO)
     }
 
-    func updateOrganization(organizationId: String, name: String? = nil, logo: String? = nil) async throws -> Organization {
-        let organizationDTO = try await dataSource.updateOrganization(organizationId: organizationId, name: name, logo: logo)
+    func updateOrganization(organizationId: String, name: String? = nil, slug: String? = nil, logo: String? = nil) async throws -> Organization {
+        let organizationDTO = try await dataSource.updateOrganization(organizationId: organizationId, name: name, slug: slug, logo: logo)
         return OrganizationMapper.map(organizationDTO: organizationDTO)
+    }
+
+    func getOrganizationStats(organizationId: String) async throws -> OrganizationStats {
+        let statsDTO = try await dataSource.getOrganizationStats(organizationId: organizationId)
+        return OrganizationStats(
+            totalMembers: statsDTO.totalMembers,
+            matchesThisMonth: statsDTO.matchesThisMonth,
+            activeMembers: statsDTO.activeMembers,
+            activityRate: statsDTO.activityRate
+        )
     }
 }

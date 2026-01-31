@@ -5,57 +5,104 @@ struct ProfileHeaderCard: View {
     let organizationName: String?
     let level: String?
     let bio: String?
+    let playerLevel: Int
+    let levelProgress: Double // 0.0 to 1.0
     let totalMatches: Int
     let winRate: Int
-    let monthlyMatches: Int
+    let totalPlayTime: String
 
     var body: some View {
-        VStack(spacing: 16) {
-            avatar
+        VStack(spacing: 0) {
+            // Avatar + Info
+            HStack(spacing: 16) {
+                avatar
 
-            Text(user.name.isEmpty ? "—" : user.name)
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(.primary)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(user.name.isEmpty ? "—" : user.name)
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.primary)
 
-            if let level {
-                Text(level)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(Theme.tintColor)
-            }
-
-            if let orgName = organizationName {
-                HStack(spacing: 6) {
-                    Image(systemName: "mappin.circle.fill")
-                        .foregroundStyle(Theme.tintColor)
-                    Text(orgName)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(Theme.tintColor)
+                    if let level, let orgName = organizationName {
+                        Text("\(level) · \(orgName)")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    } else if let level {
+                        Text(level)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    } else if let orgName = organizationName {
+                        Text(orgName)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(Theme.tintColor.opacity(0.1))
-                .clipShape(Capsule())
+
+                Spacer()
             }
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 16)
+
+            // Level progress
+            levelProgressSection
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+
+            Divider()
+                .padding(.horizontal, 20)
 
             // Stats
-            statsRow
-                .padding(.top, 8)
+            statsSection
+                .padding(.vertical, 20)
         }
-        .padding(.vertical, 24)
-        .padding(.horizontal, Theme.paddingCard)
         .frame(maxWidth: .infinity)
+        .background(Theme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous)
+                .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
+        }
     }
 
-    // MARK: - Avatar avec badge
+    // MARK: - Stats Section
+
+    private var statsSection: some View {
+        HStack(spacing: 0) {
+            StatItem(
+                icon: "trophy.fill",
+                value: "\(totalMatches)",
+                label: "Matchs\ntotaux"
+            )
+
+            Divider()
+                .frame(height: 50)
+
+            StatItem(
+                icon: "chart.line.uptrend.xyaxis",
+                value: "\(winRate)%",
+                label: "Taux de\nvictoire"
+            )
+
+            Divider()
+                .frame(height: 50)
+
+            StatItem(
+                icon: "clock.fill",
+                value: totalPlayTime,
+                label: "Temps de jeu"
+            )
+        }
+    }
+
+    // MARK: - Avatar
 
     private var avatar: some View {
-        ZStack(alignment: .bottomTrailing) {
-
+        ZStack {
             Circle()
                 .fill(Color(.tertiarySystemFill))
 
             Text(initials(from: user.name))
-                .font(.system(size: 36, weight: .semibold, design: .rounded))
+                .font(.system(size: 28, weight: .medium, design: .rounded))
                 .foregroundStyle(.secondary)
 
             if let imageURL = user.imageURL {
@@ -63,7 +110,7 @@ struct ProfileHeaderCard: View {
                     switch phase {
                     case .empty:
                         ProgressView()
-                            .tint(Theme.tintColor)
+                            .tint(.secondary)
                     case .success(let image):
                         image
                             .resizable()
@@ -75,36 +122,39 @@ struct ProfileHeaderCard: View {
                     }
                 }
             }
-        }.frame(width: 100, height: 100)
-            .clipShape(Circle())
-            .overlay {
-                Circle()
-                    .strokeBorder(Theme.tintColor.opacity(0.3), lineWidth: 2)
-            }
+        }
+        .frame(width: 72, height: 72)
+        .clipShape(Circle())
     }
 
-    // MARK: - Stats Row
+    // MARK: - Level Progress
 
-    private var statsRow: some View {
-        HStack(spacing: 0) {
-            StatItem(icon: "trophy.fill", value: "\(totalMatches)", label: "Matchs")
+    private var levelProgressSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Niveau \(playerLevel)")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
 
-            Divider()
-                .frame(height: 40)
+                Spacer()
 
-            StatItem(icon: "chart.line.uptrend.xyaxis", value: "\(winRate)%", label: "Victoires")
+                Text("\(Int(levelProgress * 100))%")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
 
-            Divider()
-                .frame(height: 40)
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .fill(Color(.tertiarySystemFill))
+                        .frame(height: 8)
 
-            StatItem(icon: "rosette", value: "\(monthlyMatches)", label: "Ce mois")
-        }
-        .padding(.vertical, 12)
-        .background(Theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
-                .strokeBorder(Theme.borderColor, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .fill(Theme.tintColor)
+                        .frame(width: geometry.size.width * levelProgress, height: 8)
+                }
+            }
+            .frame(height: 8)
         }
     }
 
@@ -129,19 +179,23 @@ private struct StatItem: View {
     let label: String
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.title3)
                 .foregroundStyle(Theme.tintColor)
 
             Text(value)
-                .font(.title2.weight(.bold))
+                .font(.system(.title2, design: .rounded, weight: .bold))
                 .foregroundStyle(.primary)
 
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity)
     }
 }
+

@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { user as userTable } from "../../../db/schema/auth/schema";
@@ -13,13 +13,13 @@ export const createGhost = async (c: Context<HonoContext>) => {
 
   // Check if a user with this email already exists
   const [existingUser] = await db
-    .select({ id: userTable.id, isGhost: userTable.isGhost })
+    .select({ id: userTable.id, is_ghost: userTable.is_ghost })
     .from(userTable)
     .where(eq(userTable.email, validated.email.toLowerCase()))
     .limit(1);
 
   if (existingUser) {
-    if (existingUser.isGhost) {
+    if (existingUser.is_ghost) {
       // Return the existing ghost user
       const [ghost] = await db
         .select()
@@ -32,7 +32,7 @@ export const createGhost = async (c: Context<HonoContext>) => {
         name: ghost.name,
         email: ghost.email,
         image: ghost.image,
-        isGhost: ghost.isGhost,
+        isGhost: ghost.is_ghost,
         createdAt: ghost.createdAt,
       });
     }
@@ -55,7 +55,7 @@ export const createGhost = async (c: Context<HonoContext>) => {
       name: validated.name,
       email: validated.email.toLowerCase(),
       emailVerified: false,
-      isGhost: true,
+      is_ghost: true,
     })
     .returning();
 
@@ -65,7 +65,7 @@ export const createGhost = async (c: Context<HonoContext>) => {
       name: ghostUser.name,
       email: ghostUser.email,
       image: ghostUser.image,
-      isGhost: ghostUser.isGhost,
+      isGhost: ghostUser.is_ghost,
       createdAt: ghostUser.createdAt,
     },
     201,
