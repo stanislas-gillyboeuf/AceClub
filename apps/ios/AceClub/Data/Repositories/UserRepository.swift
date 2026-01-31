@@ -36,6 +36,7 @@ class UserRepository {
 
     func updateProfile(
         name: String?,
+        image: String?,
         phoneNumber: String?,
         organizationId: String?,
         sport: String?,
@@ -43,6 +44,7 @@ class UserRepository {
     ) async throws -> User {
         let userDTO = try await userDataSource.updateProfile(
             name: name,
+            image: image,
             phoneNumber: phoneNumber,
             organizationId: organizationId,
             sport: sport,

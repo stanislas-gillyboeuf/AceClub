@@ -292,4 +292,27 @@ class OrganizationAPIDataSource {
             throw OrganizationError.decodingError
         }
     }
+
+    func updateOrganization(organizationId: String, name: String? = nil, logo: String? = nil) async throws -> OrganizationDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/organization/update") else {
+            throw OrganizationError.invalidURL
+        }
+
+        let requestBody = UpdateOrganizationRequestDTO(
+            organizationId: organizationId,
+            data: UpdateOrganizationDataDTO(name: name, slug: nil, logo: logo)
+        )
+        let bodyData = try JSONEncoder().encode(requestBody)
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)
+
+        guard response.statusCode == 200 else {
+            throw OrganizationError.serverError("Update organization failed: \(response.statusCode)")
+        }
+
+        do {
+            return try JSONDecoder().decode(OrganizationDTO.self, from: data)
+        } catch {
+            throw OrganizationError.decodingError
+        }
+    }
 }

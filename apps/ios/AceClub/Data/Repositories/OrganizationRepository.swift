@@ -91,4 +91,9 @@ class OrganizationRepository: OrganizationRepositoryProtocol {
         let organizationDTO = try await dataSource.createOrganization(name: name, slug: slug, logo: logo, metadata: metadata)
         return OrganizationMapper.map(organizationDTO: organizationDTO)
     }
+
+    func updateOrganization(organizationId: String, name: String? = nil, logo: String? = nil) async throws -> Organization {
+        let organizationDTO = try await dataSource.updateOrganization(organizationId: organizationId, name: name, logo: logo)
+        return OrganizationMapper.map(organizationDTO: organizationDTO)
+    }
 }

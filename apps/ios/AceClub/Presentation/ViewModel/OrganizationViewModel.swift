@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import UIKit
 
 @MainActor
 class OrganizationViewModel: ObservableObject {
@@ -12,6 +13,8 @@ class OrganizationViewModel: ObservableObject {
     @Published var activeMemberRole: MemberRole?
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var selectedLogo: UIImage?
+    @Published var isUploadingLogo = false
 
     // MARK: - UseCases
     private let listOrganizationsUseCase = ListOrganizationsUseCase()
@@ -24,6 +27,8 @@ class OrganizationViewModel: ObservableObject {
     private let removeMemberUseCase = RemoveMemberUseCase()
     private let updateMemberRoleUseCase = UpdateMemberRoleUseCase()
     private let leaveOrganizationUseCase = LeaveOrganizationUseCase()
+    private let uploadOrgLogoUseCase = UploadOrgLogoUseCase()
+    private let updateOrganizationUseCase = UpdateOrganizationUseCase()
 
     // MARK: - Refresh Tasks
     private var refreshOrganizationsTask: Task<Void, Never>?
@@ -238,6 +243,34 @@ class OrganizationViewModel: ObservableObject {
         }
 
         await refreshActiveMemberTask?.value
+    }
+
+    // MARK: - Logo Update Methods
+
+    func updateOrganizationLogo(organizationId: String) async {
+        guard let image = selectedLogo else { return }
+
+        isUploadingLogo = true
+        errorMessage = nil
+        defer { isUploadingLogo = false }
+
+        do {
+            // 1. Upload image to get URL
+            let logoURL = try await uploadOrgLogoUseCase.execute(organizationId: organizationId, image: image)
+
+            // 2. Update organization with the new logo URL
+            let _ = try await updateOrganizationUseCase.execute(organizationId: organizationId, logo: logoURL)
+
+            // 3. Clear selected logo
+            selectedLogo = nil
+
+            // 4. Refresh organization data
+            if let slug = activeOrganization?.slug {
+                await loadFullOrganization(slug: slug)
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     // MARK: - Computed Properties

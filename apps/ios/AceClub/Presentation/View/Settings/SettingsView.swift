@@ -16,6 +16,7 @@ struct SettingsView: View {
                     if viewModel.isLoadingPreferences {
                         loadingView
                     } else {
+                        profilePhotoSection
                         personalInfoSection
                         clubSection
                         sportSection
@@ -84,6 +85,31 @@ struct SettingsView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
+        .background(Theme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+    }
+
+    // MARK: - Profile Photo Section
+
+    private var profilePhotoSection: some View {
+        VStack(alignment: .center, spacing: 12) {
+            sectionHeader(title: "Photo de profil", icon: "camera.fill")
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            EditableAvatarView(
+                currentImageURL: authViewModel.currentUser?.imageURL,
+                fallbackInitials: authViewModel.currentUser?.initials ?? "?",
+                selectedImage: $viewModel.selectedImage,
+                isUploading: viewModel.isUploadingImage,
+                size: 100
+            )
+            .frame(maxWidth: .infinity)
+
+            Text("Appuyez pour modifier")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(16)
         .background(Theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
     }

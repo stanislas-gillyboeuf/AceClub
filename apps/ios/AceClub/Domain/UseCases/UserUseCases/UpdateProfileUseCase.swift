@@ -5,6 +5,7 @@ class UpdateProfileUseCase {
 
     func execute(
         name: String? = nil,
+        image: String? = nil,
         phoneNumber: String? = nil,
         organizationId: String? = nil,
         sport: String? = nil,
@@ -12,6 +13,7 @@ class UpdateProfileUseCase {
     ) async throws -> User {
         return try await userRepository.updateProfile(
             name: name,
+            image: image,
             phoneNumber: phoneNumber,
             organizationId: organizationId,
             sport: sport,

@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct OrganizationDetailView: View {
     @ObservedObject var organizationViewModel: OrganizationViewModel
@@ -11,6 +12,7 @@ struct OrganizationDetailView: View {
     @State private var showDeleteConfirmation = false
     @State private var showLeaveConfirmation = false
     @State private var showInviteMemberSheet = false
+    @State private var selectedLogoItem: PhotosPickerItem?
 
     var body: some View {
         Form {
@@ -19,18 +21,68 @@ struct OrganizationDetailView: View {
                 LabeledContent("Nom", value: organization.name)
                 LabeledContent("Slug", value: organization.slug)
 
-                if let logoURL = organization.logoURL {
-                    LabeledContent("Logo") {
-                        AsyncImage(url: logoURL) { image in
-                            image
+                // Logo section - editable for admins
+                LabeledContent("Logo") {
+                    HStack(spacing: 12) {
+                        // Logo preview
+                        if let selectedLogo = organizationViewModel.selectedLogo {
+                            Image(uiImage: selectedLogo)
                                 .resizable()
-                                .scaledToFit()
+                                .scaledToFill()
                                 .frame(width: 50, height: 50)
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
-                        } placeholder: {
-                            ProgressView()
+                        } else if let logoURL = organization.logoURL {
+                            AsyncImage(url: logoURL) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 50, height: 50)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            } placeholder: {
+                                ProgressView()
+                                    .frame(width: 50, height: 50)
+                            }
+                        } else {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.secondary.opacity(0.2))
+                                    .frame(width: 50, height: 50)
+                                Image(systemName: "building.2")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
+                        // Edit button for admins
+                        if isAdmin {
+                            PhotosPicker(selection: $selectedLogoItem, matching: .images) {
+                                Image(systemName: "pencil.circle.fill")
+                                    .font(.title2)
+                                    .foregroundStyle(Theme.tintColor)
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
+                }
+
+                // Save button when logo is selected
+                if organizationViewModel.selectedLogo != nil {
+                    Button {
+                        Task {
+                            await organizationViewModel.updateOrganizationLogo(organizationId: organization.id)
+                        }
+                    } label: {
+                        HStack {
+                            if organizationViewModel.isUploadingLogo {
+                                ProgressView()
+                                    .frame(width: 20, height: 20)
+                            } else {
+                                Image(systemName: "checkmark.circle.fill")
+                            }
+                            Text("Enregistrer le logo")
+                        }
+                        .foregroundStyle(Theme.tintColor)
+                    }
+                    .disabled(organizationViewModel.isUploadingLogo)
                 }
             }
 
@@ -160,6 +212,16 @@ struct OrganizationDetailView: View {
         .refreshable {
             await organizationViewModel.loadFullOrganization(slug: organization.slug)
             await invitationViewModel.loadOrganizationInvitations(organizationId: organization.id)
+        }
+        .onChange(of: selectedLogoItem) { _, newItem in
+            Task {
+                if let data = try? await newItem?.loadTransferable(type: Data.self),
+                   let image = UIImage(data: data) {
+                    await MainActor.run {
+                        organizationViewModel.selectedLogo = image
+                    }
+                }
+            }
         }
         .alert("Erreur", isPresented: .constant(organizationViewModel.errorMessage != nil || invitationViewModel.errorMessage != nil)) {
             Button("OK") {
