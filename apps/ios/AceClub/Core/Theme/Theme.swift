@@ -40,7 +40,7 @@ enum Theme {
 
     static var secondaryBackground: Color { Color(.secondarySystemBackground) }
 
-    static var tertiaryBackground: Color { Color(.tertiarySystemBackground) }
+    static var tertiaryBackground: Color { Color(.tertiarySystemBackground) }      
     static var cardBackground: Color {
         Color(UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark

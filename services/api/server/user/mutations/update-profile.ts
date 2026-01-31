@@ -42,10 +42,13 @@ export const updateProfile = async (c: Context<HonoContext>) => {
   let updatedUserRow: typeof userTable.$inferSelect;
   try {
     updatedUserRow = await db.transaction(async (tx) => {
-      // Update user table (name, phoneNumber)
+      // Update user table (name, image, phoneNumber)
       const userUpdateData: Record<string, unknown> = {};
       if (validated.name !== undefined) {
         userUpdateData.name = validated.name;
+      }
+      if (validated.image !== undefined) {
+        userUpdateData.image = validated.image;
       }
       if (validated.phoneNumber !== undefined) {
         userUpdateData.phoneNumber = normalizePhoneNumber(validated.phoneNumber);

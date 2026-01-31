@@ -63,6 +63,7 @@ export const completeOnboardingValidator = z
 export const updateProfileValidator = z
   .object({
     name: z.string().min(1, "Name must not be empty").optional(),
+    image: z.string().url("Image must be a valid URL").optional(),
     phoneNumber: z
       .string()
       .trim()
@@ -79,6 +80,7 @@ export const updateProfileValidator = z
       // At least one field must be provided
       return (
         data.name !== undefined ||
+        data.image !== undefined ||
         data.phoneNumber !== undefined ||
         data.organizationId !== undefined ||
         data.sport !== undefined ||
