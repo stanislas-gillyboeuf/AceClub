@@ -348,6 +348,13 @@ final class MatchSyncService {
             upsertParticipant(from: participantDTO, match: model)
         }
 
+        // Sync sets and scores if available
+        if let sets = dto.sets {
+            for setDTO in sets {
+                upsertSet(from: setDTO, match: model)
+            }
+        }
+
         return model
     }
 

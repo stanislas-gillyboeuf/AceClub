@@ -29,6 +29,7 @@ export const badge = pgTable("badge", {
   descriptionFr: text("description_fr").notNull(),
   descriptionEn: text("description_en").notNull(),
   iconName: text("icon_name").notNull(),
+  imageUrl: text("image_url"),
   requiredLevel: integer("required_level"),
   isActive: boolean("is_active").default(true).notNull(),
   displayOrder: integer("display_order").notNull().default(0),

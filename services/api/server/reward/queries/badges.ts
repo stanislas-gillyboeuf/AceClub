@@ -17,6 +17,7 @@ export const getMyBadges = async (c: Context<HonoContext>) => {
       descriptionFr: badge.descriptionFr,
       descriptionEn: badge.descriptionEn,
       iconName: badge.iconName,
+      imageUrl: badge.imageUrl,
       unlockedAt: userBadge.unlockedAt,
     })
     .from(userBadge)
@@ -31,6 +32,7 @@ export const getMyBadges = async (c: Context<HonoContext>) => {
       name: b.nameFr,
       description: b.descriptionFr,
       iconName: b.iconName,
+      imageUrl: b.imageUrl,
       unlockedAt: b.unlockedAt,
     })),
   });
@@ -59,6 +61,7 @@ export const getAllBadges = async (c: Context<HonoContext>) => {
       name: b.nameFr,
       description: b.descriptionFr,
       iconName: b.iconName,
+      imageUrl: b.imageUrl,
       requiredLevel: b.requiredLevel,
       isUnlocked: unlockedMap.has(b.id),
       unlockedAt: unlockedMap.get(b.id) ?? null,

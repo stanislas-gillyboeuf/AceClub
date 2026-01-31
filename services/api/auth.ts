@@ -6,6 +6,7 @@ import { admin } from "better-auth/plugins/admin";
 import { phoneNumber } from "better-auth/plugins";
 import { user as userTable, member as memberTable } from "./db/schema/auth/schema";
 import { eq } from "drizzle-orm";
+import { awardPremiersPasBadge } from "./server/reward/services/badge-service";
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -13,6 +14,17 @@ export const auth = betterAuth({
     provider: "pg",
   }),
   databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          try {
+            await awardPremiersPasBadge(user.id);
+          } catch (error) {
+            console.error(`[AUTH] Failed to award premiers_pas badge to user ${user.id}:`, error);
+          }
+        },
+      },
+    },
     session: {
       create: {
         before: async (session) => {

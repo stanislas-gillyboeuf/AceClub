@@ -143,6 +143,7 @@ class MatchMapper {
 
     static func map(matchWithParticipantsDTO: MatchWithParticipantsDTO) -> MatchListItem {
         let participants = matchWithParticipantsDTO.participants.map { map(participantDTO: $0) }
+        let sets = matchWithParticipantsDTO.sets?.map { map(setDTO: $0) } ?? []
 
         return MatchListItem(
             id: matchWithParticipantsDTO.id,
@@ -153,7 +154,8 @@ class MatchMapper {
             scheduledAt: matchWithParticipantsDTO.scheduledAt.flatMap { parseDate($0) },
             startedAt: matchWithParticipantsDTO.startedAt.flatMap { parseDate($0) },
             finishedAt: matchWithParticipantsDTO.finishedAt.flatMap { parseDate($0) },
-            participants: participants
+            participants: participants,
+            sets: sets
         )
     }
 

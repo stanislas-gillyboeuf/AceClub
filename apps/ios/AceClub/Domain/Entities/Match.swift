@@ -318,6 +318,7 @@ struct MatchListItem: Identifiable {
     let startedAt: Date?
     let finishedAt: Date?
     let participants: [MatchParticipant]
+    let sets: [MatchSet]
 
     // MARK: - Computed Properties
 
@@ -339,6 +340,30 @@ struct MatchListItem: Identifiable {
     /// Date de création formatée
     var formattedCreatedAt: String {
         createdAt.formatted(date: .abbreviated, time: .shortened)
+    }
+
+    /// Score total (nombre de sets gagnés par chaque joueur)
+    var setScores: (home: Int, away: Int) {
+        var homeWins = 0
+        var awayWins = 0
+
+        for set in sets {
+            if let winnerId = set.winner {
+                if homeParticipant?.userId == winnerId {
+                    homeWins += 1
+                } else if awayParticipant?.userId == winnerId {
+                    awayWins += 1
+                }
+            }
+        }
+
+        return (homeWins, awayWins)
+    }
+
+    /// Score formaté du match (ex: "3-1")
+    var formattedMatchScore: String {
+        let scores = setScores
+        return "\(scores.home)-\(scores.away)"
     }
 }
 

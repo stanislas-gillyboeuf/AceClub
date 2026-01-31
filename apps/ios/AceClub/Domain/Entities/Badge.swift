@@ -7,12 +7,18 @@ struct Badge: Identifiable {
     let name: String
     let description: String
     let iconName: String
+    let imageUrl: String?
     let requiredLevel: Int?
     let isUnlocked: Bool
     let unlockedAt: Date?
 
     var formattedUnlockedAt: String? {
         unlockedAt?.formatted(date: .abbreviated, time: .omitted)
+    }
+
+    var imageURL: URL? {
+        guard let imageUrl, !imageUrl.isEmpty else { return nil }
+        return URL(string: imageUrl)
     }
 }
 

@@ -10,6 +10,7 @@ class RewardMapper {
             name: badgeDTO.name,
             description: badgeDTO.description,
             iconName: badgeDTO.iconName,
+            imageUrl: badgeDTO.imageUrl,
             requiredLevel: badgeDTO.requiredLevel,
             isUnlocked: badgeDTO.isUnlocked ?? (badgeDTO.unlockedAt != nil),
             unlockedAt: badgeDTO.unlockedAt.flatMap { dateFormatter.date(from: $0) }

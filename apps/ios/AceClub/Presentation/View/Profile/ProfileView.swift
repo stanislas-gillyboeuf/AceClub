@@ -34,6 +34,14 @@ struct ProfileView: View {
                         .listRowBackground(Color.clear)
                     }
 
+                    if !progressionViewModel.allBadges.isEmpty {
+                        Section {
+                            ProfileBadgeSection(badges: progressionViewModel.allBadges)
+                        } header: {
+                            Label("Badges", systemImage: "medal.fill")
+                        }
+                    }
+
                     Section {
                         Button {
                             showCreateMatchIntentSheet = true
@@ -214,6 +222,7 @@ struct ProfileView: View {
                 await organizationViewModel.loadActiveMember()
                 await invitationViewModel.loadUserInvitations()
                 await progressionViewModel.loadLevel()
+                await progressionViewModel.loadBadges()
             }
             .onChange(of: allMatches.count) {
                 profileViewModel.calculateStats(from: allMatches)
@@ -226,7 +235,8 @@ struct ProfileView: View {
                 async let memberTask: () = organizationViewModel.refreshActiveMember()
                 async let invitationsTask: () = invitationViewModel.refreshUserInvitations()
                 async let levelTask: () = progressionViewModel.loadLevel()
-                _ = await (userTask, prefsTask, intentsTask, orgsTask, memberTask, invitationsTask, levelTask)
+                async let badgesTask: () = progressionViewModel.loadBadges()
+                _ = await (userTask, prefsTask, intentsTask, orgsTask, memberTask, invitationsTask, levelTask, badgesTask)
             }
             .sheet(isPresented: $showCreateMatchIntentSheet) {
                 CreateMatchIntentSheet(isPresented: $showCreateMatchIntentSheet) {

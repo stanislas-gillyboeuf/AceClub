@@ -2,7 +2,7 @@ import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { db } from "../../../db";
-import { match, matchParticipant } from "../../../db/schema/match/schema";
+import { match, matchParticipant, set, setScore } from "../../../db/schema/match/schema";
 import { user } from "../../../db/schema/auth/schema";
 import { and, eq, desc, sql, inArray } from "drizzle-orm";
 
@@ -131,11 +131,84 @@ export const listMatches = async (c: Context<HonoContext>) => {
       participantsByMatch.get(participant.matchId)!.push(participant);
     }
 
+    // Get all sets and scores for these matches in one query
+    const setsData = await db
+      .select({
+        setId: set.id,
+        matchId: set.matchId,
+        setNumber: set.setNumber,
+        setCreatedAt: set.createdAt,
+        scoreId: setScore.id,
+        scoreGames: setScore.games,
+        participantId: matchParticipant.id,
+        participantUserId: matchParticipant.userId,
+        participantSide: matchParticipant.side,
+      })
+      .from(set)
+      .leftJoin(setScore, eq(setScore.setId, set.id))
+      .leftJoin(matchParticipant, eq(setScore.participantId, matchParticipant.id))
+      .where(inArray(set.matchId, matchIds))
+      .orderBy(set.setNumber);
+
+    // Group sets by match, then scores by set
+    const setsByMatch = new Map<
+      string,
+      Map<
+        string,
+        {
+          id: string;
+          matchId: string;
+          setNumber: number;
+          createdAt: Date;
+          scores: Array<{
+            participantId: string;
+            userId: string;
+            side: "home" | "away";
+            games: number;
+          }>;
+        }
+      >
+    >();
+
+    for (const row of setsData) {
+      if (!setsByMatch.has(row.matchId)) {
+        setsByMatch.set(row.matchId, new Map());
+      }
+
+      const matchSets = setsByMatch.get(row.matchId)!;
+
+      if (!matchSets.has(row.setId)) {
+        matchSets.set(row.setId, {
+          id: row.setId,
+          matchId: row.matchId,
+          setNumber: row.setNumber,
+          createdAt: row.setCreatedAt,
+          scores: [],
+        });
+      }
+
+      // Only add score if it exists (leftJoin might return null)
+      if (row.scoreId && row.participantId && row.participantUserId && row.participantSide) {
+        matchSets.get(row.setId)!.scores.push({
+          participantId: row.participantId,
+          userId: row.participantUserId,
+          side: row.participantSide,
+          games: row.scoreGames || 0,
+        });
+      }
+    }
+
     // Build response
-    const matchesWithParticipants = matches.map((matchData) => ({
-      ...matchData,
-      participants: participantsByMatch.get(matchData.id) || [],
-    }));
+    const matchesWithParticipants = matches.map((matchData) => {
+      const matchSetsMap = setsByMatch.get(matchData.id);
+      const sets = matchSetsMap ? Array.from(matchSetsMap.values()) : [];
+
+      return {
+        ...matchData,
+        participants: participantsByMatch.get(matchData.id) || [],
+        sets,
+      };
+    });
 
     return c.json({
       matches: matchesWithParticipants,
