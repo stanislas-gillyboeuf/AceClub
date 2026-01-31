@@ -185,6 +185,46 @@ final class MatchSyncService {
         return responseDTO.success
     }
 
+    // MARK: - Comment Operations
+
+    func createComment(matchId: String, content: String) async throws -> MatchCommentModel {
+        let requestDTO = MatchMapper.mapToCreateCommentRequest(content: content)
+        let responseDTO = try await dataSource.createComment(matchId: matchId, request: requestDTO)
+
+        guard let match = fetchMatch(id: matchId) else {
+            throw MatchAPIDataSourceError.notFound
+        }
+
+        let model = upsertComment(from: responseDTO, match: match)
+        try modelContext.save()
+
+        return model
+    }
+
+    func updateComment(matchId: String, content: String) async throws -> MatchCommentModel {
+        let requestDTO = MatchMapper.mapToUpdateCommentRequest(content: content)
+        let responseDTO = try await dataSource.updateComment(matchId: matchId, request: requestDTO)
+
+        guard let match = fetchMatch(id: matchId) else {
+            throw MatchAPIDataSourceError.notFound
+        }
+
+        let model = upsertComment(from: responseDTO, match: match)
+        try modelContext.save()
+
+        return model
+    }
+
+    func deleteComment(matchId: String) async throws -> Bool {
+        let responseDTO = try await dataSource.deleteComment(matchId: matchId)
+
+        if responseDTO.success {
+            try await syncMatch(id: matchId)
+        }
+
+        return responseDTO.success
+    }
+
     // MARK: - Fetch
 
     private func fetchMatch(id: String) -> MatchModel? {
@@ -212,6 +252,12 @@ final class MatchSyncService {
 
     private func fetchScore(id: String) -> SetScoreModel? {
         let predicate = #Predicate<SetScoreModel> { $0.id == id }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        return try? modelContext.fetch(descriptor).first
+    }
+
+    private func fetchComment(id: String) -> MatchCommentModel? {
+        let predicate = #Predicate<MatchCommentModel> { $0.id == id }
         let descriptor = FetchDescriptor(predicate: predicate)
         return try? modelContext.fetch(descriptor).first
     }
@@ -252,6 +298,20 @@ final class MatchSyncService {
 
         for setDTO in dto.sets {
             upsertSet(from: setDTO, match: model)
+        }
+
+        if let comments = dto.comments {
+            let apiCommentIds = Set(comments.map { $0.id })
+
+            for commentDTO in comments {
+                upsertComment(from: commentDTO, match: model)
+            }
+
+            for existingComment in model.comments {
+                if !apiCommentIds.contains(existingComment.id) {
+                    modelContext.delete(existingComment)
+                }
+            }
         }
 
         return model
@@ -440,6 +500,31 @@ final class MatchSyncService {
             score.matchSet = matchSet
             modelContext.insert(score)
             return score
+        }
+    }
+
+    @discardableResult
+    private func upsertComment(from dto: MatchCommentDTO, match: MatchModel) -> MatchCommentModel {
+        if let existing = fetchComment(id: dto.id) {
+            existing.content = dto.content
+            existing.userName = dto.userName
+            existing.userImage = dto.userImage
+            existing.updatedAt = parseDate(dto.updatedAt) ?? Date()
+            return existing
+        } else {
+            let comment = MatchCommentModel(
+                id: dto.id,
+                matchId: dto.matchId,
+                userId: dto.userId,
+                content: dto.content,
+                userName: dto.userName,
+                userImage: dto.userImage,
+                createdAt: parseDate(dto.createdAt) ?? Date(),
+                updatedAt: parseDate(dto.updatedAt) ?? Date()
+            )
+            comment.match = match
+            modelContext.insert(comment)
+            return comment
         }
     }
 }

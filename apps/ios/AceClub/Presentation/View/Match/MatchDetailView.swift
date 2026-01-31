@@ -11,6 +11,7 @@ import SwiftData
 struct MatchDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(AuthViewModel.self) private var authViewModel
 
     let matchId: String
 
@@ -27,6 +28,11 @@ struct MatchDetailView: View {
     @State private var successMessage: String?
     @State private var showingDeleteAlert = false
     @State private var showingEditScores = false
+    @State private var showingCommentSheet = false
+
+    private var currentUserId: String {
+        authViewModel.currentUser?.id ?? ""
+    }
 
     init(matchId: String) {
         self.matchId = matchId
@@ -110,6 +116,15 @@ struct MatchDetailView: View {
                 EditMatchScoresViewSwiftData(
                     match: match,
                     isPresented: $showingEditScores
+                )
+            }
+        }
+        .sheet(isPresented: $showingCommentSheet) {
+            if let match {
+                MatchCommentSheet(
+                    match: match,
+                    existingComment: userComment,
+                    isPresented: $showingCommentSheet
                 )
             }
         }
@@ -312,8 +327,111 @@ struct MatchDetailView: View {
                 LabeledContent("Créé le", value: match.formattedCreatedAt)
             }
 
+            // Section 5: Commentaires (seulement pour les matchs terminés)
+            if match.isFinished {
+                Section("Commentaires") {
+                    ForEach(match.comments.sorted { $0.createdAt < $1.createdAt }) { comment in
+                        commentRow(comment: comment)
+                    }
+
+                    if !hasUserCommented && isParticipant {
+                        Button {
+                            showingCommentSheet = true
+                        } label: {
+                            Label("Ajouter un commentaire", systemImage: "plus.bubble")
+                        }
+                    }
+                }
+            }
+
         }
         .animation(.smooth, value: match.formattedMatchScore)
+    }
+
+    // MARK: - Comment Helpers
+
+    private var hasUserCommented: Bool {
+        guard let match else { return false }
+        return match.comments.contains { $0.userId == currentUserId }
+    }
+
+    private var isParticipant: Bool {
+        guard let match else { return false }
+        return match.participants.contains { $0.userId == currentUserId }
+    }
+
+    private var userComment: MatchCommentModel? {
+        guard let match else { return nil }
+        return match.comments.first { $0.userId == currentUserId }
+    }
+
+    private func commentRow(comment: MatchCommentModel) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            commentAvatar(comment: comment)
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(comment.userName)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+
+                    if comment.wasEdited {
+                        Text("(modifié)")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    Text(comment.formattedDate)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Text(comment.content)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if comment.userId == currentUserId {
+                showingCommentSheet = true
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func commentAvatar(comment: MatchCommentModel) -> some View {
+        if let imageURL = comment.userImageURL {
+            AsyncImage(url: imageURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 36, height: 36)
+                        .clipShape(Circle())
+                case .failure:
+                    avatarPlaceholder(initials: comment.userInitials)
+                case .empty:
+                    ProgressView()
+                        .frame(width: 36, height: 36)
+                @unknown default:
+                    avatarPlaceholder(initials: comment.userInitials)
+                }
+            }
+        } else {
+            Circle()
+                .fill(Theme.tintColor.opacity(0.2))
+                .frame(width: 36, height: 36)
+                .overlay {
+                    Text(comment.userInitials)
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Theme.tintColor)
+                }
+        }
     }
 
     // MARK: - Row Components
@@ -695,6 +813,156 @@ struct EditMatchScoresViewSwiftData: View {
 
         do {
             let success = try await syncService?.updateScores(matchId: match.id, sets: setsData) ?? false
+            if success {
+                isPresented = false
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+
+        isLoading = false
+    }
+}
+
+// MARK: - MatchCommentSheet
+
+struct MatchCommentSheet: View {
+    @Environment(\.modelContext) private var modelContext
+
+    let match: MatchModel
+    let existingComment: MatchCommentModel?
+    @Binding var isPresented: Bool
+
+    @State private var syncService: MatchSyncService?
+    @State private var content: String = ""
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    @State private var showingDeleteConfirmation = false
+
+    private var isEditing: Bool {
+        existingComment != nil
+    }
+
+    private var canSave: Bool {
+        !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && content.count <= 500
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Votre commentaire...", text: $content, axis: .vertical)
+                        .lineLimit(5...10)
+                } footer: {
+                    HStack {
+                        Text("\(content.count)/500")
+                            .foregroundStyle(content.count > 500 ? .red : .secondary)
+                        Spacer()
+                    }
+                }
+
+                if isEditing {
+                    Section {
+                        Button(role: .destructive) {
+                            showingDeleteConfirmation = true
+                        } label: {
+                            HStack {
+                                Spacer()
+                                Label("Supprimer le commentaire", systemImage: "trash")
+                                Spacer()
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle(isEditing ? "Modifier" : "Ajouter un commentaire")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Annuler") {
+                        isPresented = false
+                    }
+                    .disabled(isLoading)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Enregistrer") {
+                        Task { await saveComment() }
+                    }
+                    .fontWeight(.semibold)
+                    .disabled(isLoading || !canSave)
+                }
+            }
+            .overlay {
+                if isLoading {
+                    ZStack {
+                        Color.black.opacity(0.3)
+                            .ignoresSafeArea()
+
+                        VStack(spacing: 12) {
+                            ProgressView()
+                                .scaleEffect(1.2)
+                            Text("Enregistrement...")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(24)
+                        .background(.regularMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+                    }
+                }
+            }
+            .alert("Supprimer le commentaire", isPresented: $showingDeleteConfirmation) {
+                Button("Annuler", role: .cancel) { }
+                Button("Supprimer", role: .destructive) {
+                    Task { await deleteComment() }
+                }
+            } message: {
+                Text("Cette action est irréversible.")
+            }
+            .alert("Erreur", isPresented: .constant(errorMessage != nil)) {
+                Button("OK") { errorMessage = nil }
+            } message: {
+                Text(errorMessage ?? "")
+            }
+        }
+        .task {
+            syncService = MatchSyncService(modelContext: modelContext)
+            if let existingComment {
+                content = existingComment.content
+            }
+        }
+    }
+
+    // MARK: - Methods
+
+    private func saveComment() async {
+        guard !isLoading, canSave else { return }
+        isLoading = true
+        errorMessage = nil
+
+        let trimmedContent = content.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        do {
+            if isEditing {
+                _ = try await syncService?.updateComment(matchId: match.id, content: trimmedContent)
+            } else {
+                _ = try await syncService?.createComment(matchId: match.id, content: trimmedContent)
+            }
+            isPresented = false
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+
+        isLoading = false
+    }
+
+    private func deleteComment() async {
+        guard !isLoading else { return }
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            let success = try await syncService?.deleteComment(matchId: match.id) ?? false
             if success {
                 isPresented = false
             }

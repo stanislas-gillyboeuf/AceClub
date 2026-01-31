@@ -48,11 +48,24 @@ struct SetScoreDTO: Codable {
     let games: Int
 }
 
+// MARK: - Match Comment DTO
+struct MatchCommentDTO: Codable {
+    let id: String
+    let matchId: String
+    let userId: String
+    let content: String
+    let userName: String
+    let userImage: String?
+    let createdAt: String
+    let updatedAt: String
+}
+
 // MARK: - Complete Match Response DTO
 struct MatchDetailResponseDTO: Codable {
     let match: MatchDTO
     let participants: [MatchParticipantDTO]
     let sets: [SetDTO]
+    let comments: [MatchCommentDTO]?
 }
 
 // MARK: - List Matches Response DTO
@@ -172,4 +185,20 @@ struct DeletedCountsDTO: Codable {
     let participants: Int
     let sets: Int
     let scores: Int
+}
+
+// MARK: - Create Comment Request DTO
+struct CreateCommentRequestDTO: Codable {
+    let content: String
+}
+
+// MARK: - Update Comment Request DTO
+struct UpdateCommentRequestDTO: Codable {
+    let content: String
+}
+
+// MARK: - Delete Comment Response DTO
+struct DeleteCommentResponseDTO: Codable {
+    let success: Bool
+    let message: String
 }

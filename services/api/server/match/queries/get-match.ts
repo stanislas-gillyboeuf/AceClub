@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { match, matchParticipant, set, setScore } from "../../../db/schema/match/schema";
+import { match, matchParticipant, set, setScore, matchComment } from "../../../db/schema/match/schema";
 import { user } from "../../../db/schema/auth/schema";
 import { eq } from "drizzle-orm";
 
@@ -21,7 +21,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
 
     const foundMatch = matchData[0];
 
-    const [participants, setsData] = await Promise.all([
+    const [participants, setsData, comments] = await Promise.all([
       db
         .select({
           id: matchParticipant.id,
@@ -61,6 +61,12 @@ export const getMatch = async (c: Context<HonoContext>) => {
         .leftJoin(matchParticipant, eq(setScore.participantId, matchParticipant.id))
         .where(eq(set.matchId, matchId))
         .orderBy(set.setNumber),
+
+      db
+        .select()
+        .from(matchComment)
+        .where(eq(matchComment.matchId, matchId))
+        .orderBy(matchComment.createdAt),
     ]);
 
     // Group scores by set efficiently
@@ -108,6 +114,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
       match: foundMatch,
       participants,
       sets: setsWithScores,
+      comments,
     });
   } catch (error) {
     return c.json({ error: (error as Error).message }, 500);

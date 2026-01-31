@@ -87,3 +87,27 @@ export const setScore = pgTable(
     index("set_score_participantId_idx").on(table.participantId),
   ],
 );
+
+export const matchComment = pgTable(
+  "match_comment",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    matchId: text("match_id")
+      .notNull()
+      .references(() => match.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id),
+    content: text("content").notNull(),
+    userName: text("user_name").notNull(),
+    userImage: text("user_image"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("match_comment_matchId_idx").on(table.matchId),
+    uniqueIndex("match_comment_matchId_userId_unique").on(table.matchId, table.userId),
+  ],
+);

@@ -6,8 +6,18 @@ import {
   createMatchValidator,
   updateMatchValidator,
   updateMatchScoresValidator,
+  createCommentValidator,
+  updateCommentValidator,
 } from "./validators";
-import { createMatch, updateMatch, updateMatchScores, deleteMatch } from "./mutations";
+import {
+  createMatch,
+  updateMatch,
+  updateMatchScores,
+  deleteMatch,
+  createComment,
+  updateComment,
+  deleteComment,
+} from "./mutations";
 import { getMatch, listMatches } from "./queries";
 
 export const matchRouter = new Hono<HonoContext>();
@@ -33,3 +43,8 @@ matchRouter.put("/:id/scores", zValidator("json", updateMatchScoresValidator), u
 
 // Delete match and all related data
 matchRouter.delete("/:id", deleteMatch);
+
+// Comment endpoints
+matchRouter.post("/:id/comment", zValidator("json", createCommentValidator), createComment);
+matchRouter.put("/:id/comment", zValidator("json", updateCommentValidator), updateComment);
+matchRouter.delete("/:id/comment", deleteComment);

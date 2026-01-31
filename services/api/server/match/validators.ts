@@ -240,3 +240,17 @@ export const listMatchesQueryValidator = z.object({
 export const matchIdValidator = z.object({
   id: z.string().min(1, "Match ID is required"),
 });
+
+export const createCommentValidator = z.object({
+  content: z
+    .string()
+    .min(1, "Comment content is required")
+    .max(500, "Comment cannot exceed 500 characters"),
+});
+
+export const updateCommentValidator = z.object({
+  content: z
+    .string()
+    .min(1, "Comment content is required")
+    .max(500, "Comment cannot exceed 500 characters"),
+});

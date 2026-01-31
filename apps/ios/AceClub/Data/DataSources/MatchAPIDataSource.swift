@@ -258,4 +258,110 @@ class MatchAPIDataSource {
             throw MatchAPIDataSourceError.requestFailed(statusCode: response.statusCode)
         }
     }
+
+    // MARK: - Create Comment
+
+    func createComment(matchId: String, request: CreateCommentRequestDTO) async throws -> MatchCommentDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/match/\(matchId)/comment") else {
+            throw MatchAPIDataSourceError.invalidURL
+        }
+
+        let jsonData: Data
+        do {
+            let encoder = JSONEncoder()
+            jsonData = try encoder.encode(request)
+        } catch {
+            throw MatchAPIDataSourceError.encodingFailed(error)
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: jsonData)
+
+        switch response.statusCode {
+        case 201:
+            do {
+                let commentResponse = try JSONDecoder().decode(MatchCommentDTO.self, from: data)
+                return commentResponse
+            } catch {
+                throw MatchAPIDataSourceError.decodingFailed(error)
+            }
+        case 400, 403, 409:
+            if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
+               let message = errorResponse["message"] ?? errorResponse["error"] {
+                throw MatchAPIDataSourceError.badRequest(message)
+            }
+            throw MatchAPIDataSourceError.badRequest("Impossible d'ajouter le commentaire")
+        case 401:
+            throw MatchAPIDataSourceError.unauthorized
+        case 404:
+            throw MatchAPIDataSourceError.notFound
+        default:
+            throw MatchAPIDataSourceError.requestFailed(statusCode: response.statusCode)
+        }
+    }
+
+    // MARK: - Update Comment
+
+    func updateComment(matchId: String, request: UpdateCommentRequestDTO) async throws -> MatchCommentDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/match/\(matchId)/comment") else {
+            throw MatchAPIDataSourceError.invalidURL
+        }
+
+        let jsonData: Data
+        do {
+            let encoder = JSONEncoder()
+            jsonData = try encoder.encode(request)
+        } catch {
+            throw MatchAPIDataSourceError.encodingFailed(error)
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "PUT", body: jsonData)
+
+        switch response.statusCode {
+        case 200:
+            do {
+                let commentResponse = try JSONDecoder().decode(MatchCommentDTO.self, from: data)
+                return commentResponse
+            } catch {
+                throw MatchAPIDataSourceError.decodingFailed(error)
+            }
+        case 400:
+            if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
+               let message = errorResponse["message"] ?? errorResponse["error"] {
+                throw MatchAPIDataSourceError.badRequest(message)
+            }
+            throw MatchAPIDataSourceError.badRequest("Impossible de modifier le commentaire")
+        case 401:
+            throw MatchAPIDataSourceError.unauthorized
+        case 404:
+            throw MatchAPIDataSourceError.notFound
+        default:
+            throw MatchAPIDataSourceError.requestFailed(statusCode: response.statusCode)
+        }
+    }
+
+    // MARK: - Delete Comment
+
+    func deleteComment(matchId: String) async throws -> DeleteCommentResponseDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/match/\(matchId)/comment") else {
+            throw MatchAPIDataSourceError.invalidURL
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "DELETE")
+
+        switch response.statusCode {
+        case 200:
+            do {
+                let deleteResponse = try JSONDecoder().decode(DeleteCommentResponseDTO.self, from: data)
+                return deleteResponse
+            } catch {
+                throw MatchAPIDataSourceError.decodingFailed(error)
+            }
+        case 401:
+            throw MatchAPIDataSourceError.unauthorized
+        case 404:
+            throw MatchAPIDataSourceError.notFound
+        default:
+            throw MatchAPIDataSourceError.requestFailed(statusCode: response.statusCode)
+        }
+    }
 }

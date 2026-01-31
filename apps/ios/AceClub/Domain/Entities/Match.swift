@@ -208,6 +208,45 @@ struct SetScore: Identifiable {
     }
 }
 
+// MARK: - Match Comment Entity
+struct MatchComment: Identifiable {
+    let id: String
+    let matchId: String
+    let userId: String
+    let content: String
+    let userName: String
+    let userImage: String?
+    let createdAt: Date
+    let updatedAt: Date
+
+    // MARK: - Computed Properties
+
+    var userImageURL: URL? {
+        guard let userImage, !userImage.isEmpty else { return nil }
+        return URL(string: userImage)
+    }
+
+    var userInitials: String {
+        let components = userName.split(separator: " ")
+        if components.count >= 2 {
+            let firstInitial = components[0].prefix(1)
+            let lastInitial = components[1].prefix(1)
+            return "\(firstInitial)\(lastInitial)".uppercased()
+        } else if let first = components.first {
+            return String(first.prefix(2)).uppercased()
+        }
+        return "??"
+    }
+
+    var formattedDate: String {
+        createdAt.formatted(date: .abbreviated, time: .shortened)
+    }
+
+    var wasEdited: Bool {
+        updatedAt > createdAt
+    }
+}
+
 // MARK: - Complete Match Entity
 struct MatchDetail: Identifiable {
     let match: Match
