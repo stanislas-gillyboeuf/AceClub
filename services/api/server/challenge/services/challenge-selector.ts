@@ -33,17 +33,28 @@ interface RecentChallengeInfo {
   weeksAgo: number;
 }
 
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 function weightedRandomSelect(
   templates: ChallengeTemplate[],
   level: number,
   recentChallenges: RecentChallengeInfo[] = []
 ): ChallengeTemplate {
+  const shuffledTemplates = shuffleArray(templates);
+
   const recentTemplateIds = new Set(recentChallenges.map((c) => c.templateId));
   const completedRecently = new Set(
     recentChallenges.filter((c) => c.status === "completed").map((c) => c.templateId)
   );
 
-  const weights = templates.map((t) => {
+  const weights = shuffledTemplates.map((t) => {
     let weight = 1;
 
     if (t.difficulty === "easy") weight *= level < 10 ? 2 : 1;
@@ -68,12 +79,12 @@ function weightedRandomSelect(
   const totalWeight = weights.reduce((a, b) => a + b, 0);
   let random = Math.random() * totalWeight;
 
-  for (let i = 0; i < templates.length; i++) {
+  for (let i = 0; i < shuffledTemplates.length; i++) {
     random -= weights[i];
-    if (random <= 0) return templates[i];
+    if (random <= 0) return shuffledTemplates[i];
   }
 
-  return templates[templates.length - 1];
+  return shuffledTemplates[shuffledTemplates.length - 1];
 }
 async function getRecentChallengesForUser(
   userId: string,
@@ -242,7 +253,14 @@ export async function assignWeeklyChallenges(): Promise<void> {
     try {
       await assignWeeklyChallengesForUser(u.userId, level);
       assigned++;
-      await sendNotificationToUser({ userId: u.userId, type: "challenge_assigned", title: "Challenge Assigned", body: `A new challenge has been assigned to you.`, referenceId: u.userId, referenceType: "user" });
+      await sendNotificationToUser({
+        userId: u.userId,
+        type: "challenge_assigned",
+        title: "Nouveaux défis de la semaine 🎯",
+        body: "Tes défis hebdomadaires sont disponibles. Relève-les pour gagner des Aces !",
+        referenceId: u.userId,
+        referenceType: "user",
+      });
     } catch (error) {
       console.error(`[CRON] Failed to assign challenges for user ${u.userId}:`, error);
       skipped++;

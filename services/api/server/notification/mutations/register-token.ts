@@ -16,6 +16,12 @@ export const registerToken = async (c: Context<HonoContext>) => {
       platform: "ios" | "android";
     };
 
+    // Desactiver ce token pour tous les autres utilisateurs (un device = un user)
+    await db
+      .update(deviceToken)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(and(eq(deviceToken.token, token), eq(deviceToken.isActive, true)));
+
     // Verifier si le token existe deja pour cet utilisateur
     const [existingToken] = await db
       .select()
@@ -24,14 +30,12 @@ export const registerToken = async (c: Context<HonoContext>) => {
       .limit(1);
 
     if (existingToken) {
-      // Reactiver si desactive
-      if (!existingToken.isActive) {
-        await db
-          .update(deviceToken)
-          .set({ isActive: true, updatedAt: new Date() })
-          .where(eq(deviceToken.id, existingToken.id));
-      }
-      return c.json({ success: true, message: "Token already registered" });
+      // Reactiver le token pour cet utilisateur
+      await db
+        .update(deviceToken)
+        .set({ isActive: true, updatedAt: new Date() })
+        .where(eq(deviceToken.id, existingToken.id));
+      return c.json({ success: true, message: "Token registered" });
     }
 
     // Creer le nouveau token

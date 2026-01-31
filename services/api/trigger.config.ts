@@ -14,4 +14,7 @@ export default defineConfig({
       randomize: true,
     },
   },
+  build: {
+    external: ["pg"],
+  },
 });

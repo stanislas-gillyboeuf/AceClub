@@ -3,7 +3,6 @@ import * as http2 from "http2";
 
 const APNS_TEAM_ID = process.env.APNS_TEAM_ID!;
 const APNS_KEY_ID = process.env.APNS_KEY_ID!;
-// Convert escaped newlines to actual newlines (env vars often escape them)
 const APNS_SIGNING_KEY = process.env.APNS_SIGNING_KEY!.replace(/\\n/g, "\n");
 const APNS_BUNDLE_ID = process.env.APNS_BUNDLE_ID!;
 const APNS_HOST =
@@ -16,12 +15,10 @@ let cachedToken: { token: string; expiresAt: number } | null = null;
 async function getAPNsToken(): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
 
-  // Retourner le token cache s'il est encore valide (avec 10 min de marge)
   if (cachedToken && cachedToken.expiresAt > now + 600) {
     return cachedToken.token;
   }
 
-  // Generer un nouveau token JWT
   const privateKey = await importPKCS8(APNS_SIGNING_KEY, "ES256");
 
   const token = await new SignJWT({})
