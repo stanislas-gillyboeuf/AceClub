@@ -4,7 +4,7 @@ import { db } from "./db";
 import { bearer, organization } from "better-auth/plugins";
 import { admin } from "better-auth/plugins/admin";
 import { phoneNumber } from "better-auth/plugins";
-import { user as userTable } from "./db/schema/auth/schema";
+import { user as userTable, member as memberTable } from "./db/schema/auth/schema";
 import { eq } from "drizzle-orm";
 
 export const auth = betterAuth({
@@ -13,7 +13,27 @@ export const auth = betterAuth({
     provider: "pg",
   }),
   databaseHooks: {
+    session: {
+      create: {
+        before: async (session) => {
+          const [firstMembership] = await db
+            .select()
+            .from(memberTable)
+            .where(eq(memberTable.userId, session.userId))
+            .limit(1);
 
+          if (firstMembership) {
+            return {
+              data: {
+                ...session,
+                activeOrganizationId: firstMembership.organizationId,
+              },
+            };
+          }
+          return { data: session };
+        },
+      },
+    },
     account: {
       create: {
         after: async (account) => {
@@ -23,11 +43,11 @@ export const auth = betterAuth({
             .where(eq(userTable.id, account.userId))
             .limit(1);
 
-          if (linkedUser && linkedUser.isGhost) {
+          if (linkedUser && linkedUser.is_ghost) {
             await db
               .update(userTable)
               .set({
-                isGhost: false,
+                is_ghost: false,
                 updatedAt: new Date(),
               })
               .where(eq(userTable.id, account.userId));
@@ -77,5 +97,10 @@ export const auth = betterAuth({
     "https://appleid.apple.com",
   ],
 
-  plugins: [bearer(), admin(), organization(), phoneNumber()],
+  plugins: [
+    bearer(),
+    admin(),
+    organization(),
+    phoneNumber(),
+  ],
 });

@@ -37,6 +37,7 @@ class OrganizationViewModel: ObservableObject {
     // MARK: - Refresh Tasks
     private var refreshOrganizationsTask: Task<Void, Never>?
     private var refreshActiveMemberTask: Task<Void, Never>?
+    private var refreshFullOrganizationTask: Task<Void, Never>?
 
     // MARK: - Organization Methods
 
@@ -85,9 +86,13 @@ class OrganizationViewModel: ObservableObject {
 
         do {
             let (organization, orgMembers) = try await getFullOrganizationUseCase.execute(slug: slug)
+            guard !Task.isCancelled else { return }
             activeOrganization = organization
             members = orgMembers
+        } catch is CancellationError {
+            // Ignore cancellation - this happens during pull-to-refresh or view transitions
         } catch {
+            guard !Task.isCancelled else { return }
             errorMessage = error.localizedDescription
         }
     }
@@ -247,6 +252,30 @@ class OrganizationViewModel: ObservableObject {
         }
 
         await refreshActiveMemberTask?.value
+    }
+
+    /// Refresh full organization - survives SwiftUI task cancellation
+    func refreshFullOrganization(slug: String) async {
+        refreshFullOrganizationTask?.cancel()
+
+        refreshFullOrganizationTask = Task { [weak self] in
+            guard let self else { return }
+            await MainActor.run { self.isLoading = true; self.errorMessage = nil }
+            do {
+                let (organization, orgMembers) = try await self.getFullOrganizationUseCase.execute(slug: slug)
+                await MainActor.run {
+                    self.activeOrganization = organization
+                    self.members = orgMembers
+                }
+            } catch is CancellationError {
+                // Only ignore if we intentionally cancelled
+            } catch {
+                await MainActor.run { self.errorMessage = error.localizedDescription }
+            }
+            await MainActor.run { self.isLoading = false }
+        }
+
+        await refreshFullOrganizationTask?.value
     }
 
     // MARK: - Logo Update Methods

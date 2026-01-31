@@ -37,23 +37,7 @@ export const swipe = async (c: Context<HonoContext>) => {
       return c.json({ error: "Cannot swipe on your own intent" }, 400);
     }
 
-    // Vérifier qu'on n'a pas déjà swipé
-    const [existingSwipe] = await db
-      .select()
-      .from(matchIntentSwipe)
-      .where(
-        and(
-          eq(matchIntentSwipe.matchIntentId, matchIntentId),
-          eq(matchIntentSwipe.swiperUserId, userId),
-        ),
-      )
-      .limit(1);
-
-    if (existingSwipe) {
-      return c.json({ error: "Already swiped on this intent" }, 400);
-    }
-
-    // Enregistrer le swipe
+    // Enregistrer le swipe avec ON CONFLICT DO NOTHING pour gérer les race conditions
     const [swipeRecord] = await db
       .insert(matchIntentSwipe)
       .values({
@@ -61,7 +45,19 @@ export const swipe = async (c: Context<HonoContext>) => {
         swiperUserId: userId,
         action,
       })
+      .onConflictDoNothing({
+        target: [matchIntentSwipe.matchIntentId, matchIntentSwipe.swiperUserId],
+      })
       .returning();
+
+    // Si le swipe existait déjà, returning() retourne un tableau vide
+    if (!swipeRecord) {
+      return c.json({
+        swipe: null,
+        request: null,
+        message: "Already swiped on this intent",
+      });
+    }
 
     // Si c'est un "like", créer une match request
     let request = null;

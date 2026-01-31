@@ -65,7 +65,8 @@ export const discover = async (c: Context<HonoContext>) => {
     // +20 pts if created in last 24 hours
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    const scoreExpression = sql<number>`
+    // Raw score SQL without alias - use this in WHERE clauses
+    const scoreExpressionRaw = sql<number>`
       (
         CASE WHEN ${currentUserOrgId ? sql`${intentOwnerMember.organizationId} = ${currentUserOrgId}` : sql`FALSE`} THEN 100 ELSE 0 END
       ) + (
@@ -77,7 +78,10 @@ export const discover = async (c: Context<HonoContext>) => {
       ) + (
         CASE WHEN ${matchIntent.createdAt} > ${oneDayAgo} THEN 20 ELSE 0 END
       )
-    `.as("score");
+    `;
+
+    // Aliased version for SELECT
+    const scoreExpression = scoreExpressionRaw.as("score");
 
     // For cursor-based pagination with score, we need to handle it differently
     // We'll use score + createdAt as the ordering key
@@ -116,12 +120,13 @@ export const discover = async (c: Context<HonoContext>) => {
     }
 
     // Add cursor condition if we have cursor data
+    // Use scoreExpressionRaw (without alias) in WHERE clause - SQL doesn't allow aliases in WHERE
     if (cursorScore !== null && cursorCreatedAt !== null) {
       conditions.push(
         or(
-          sql`${scoreExpression} < ${cursorScore}`,
+          sql`(${scoreExpressionRaw}) < ${cursorScore}`,
           and(
-            sql`${scoreExpression} = ${cursorScore}`,
+            sql`(${scoreExpressionRaw}) = ${cursorScore}`,
             lt(matchIntent.createdAt, cursorCreatedAt),
           ),
         )!,
@@ -155,7 +160,7 @@ export const discover = async (c: Context<HonoContext>) => {
       .leftJoin(intentOwnerMember, eq(matchIntent.userId, intentOwnerMember.userId))
       .leftJoin(organization, eq(intentOwnerMember.organizationId, organization.id))
       .where(and(...conditions))
-      .orderBy(desc(scoreExpression), desc(matchIntent.createdAt))
+      .orderBy(desc(scoreExpressionRaw), desc(matchIntent.createdAt))
       .limit(limit + 1);
 
     const hasMore = rows.length > limit;

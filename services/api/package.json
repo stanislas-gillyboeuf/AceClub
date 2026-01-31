@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "prepush": "bun run lint && bun run format:check && bun run typecheck",
     "drizzle:seed": "tsx ./scripts/seed.ts",
+    "drizzle:seed-demo": "tsx ./scripts/seed-demo-user.ts",
     "drizzle:studio": "drizzle-kit studio --config=drizzle.config.ts",
     "drizzle:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
     "drizzle:generate": "drizzle-kit generate --config=drizzle.config.ts",

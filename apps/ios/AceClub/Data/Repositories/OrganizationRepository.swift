@@ -4,7 +4,7 @@ protocol OrganizationRepositoryProtocol {
     func listOrganizations() async throws -> [Organization]
     func searchOrganizations(query: String?, limit: Int, offset: Int) async throws -> (organizations: [Organization], total: Int, hasMore: Bool)
     func getFullOrganization(slug: String) async throws -> (Organization, [Member])
-    func setActiveOrganization(slug: String) async throws
+    func setActiveOrganization(slug: String?, organizationId: String?) async throws
     func listMembers(organizationId: String?) async throws -> ListMembersResult
     func getActiveMember() async throws -> Member?
     func getActiveMemberRole() async throws -> MemberRole?
@@ -46,8 +46,8 @@ class OrganizationRepository: OrganizationRepositoryProtocol {
         return (organization, members)
     }
 
-    func setActiveOrganization(slug: String) async throws {
-        try await dataSource.setActiveOrganization(slug: slug)
+    func setActiveOrganization(slug: String? = nil, organizationId: String? = nil) async throws {
+        try await dataSource.setActiveOrganization(slug: slug, organizationId: organizationId)
     }
 
     func listMembers(organizationId: String? = nil) async throws -> ListMembersResult {

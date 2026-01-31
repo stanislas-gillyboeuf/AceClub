@@ -14,5 +14,6 @@ export const getFullOrganization = async (c: Context<HonoContext>) => {
     },
     headers: c.req.raw.headers,
   });
+  console.log("getFullOrganization members:", JSON.stringify(data?.members, null, 2));
   return c.json(data);
 };

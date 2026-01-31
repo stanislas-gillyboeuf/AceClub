@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import ImageIO
 
 enum UploadError: Error, LocalizedError {
     case invalidURL
@@ -95,25 +96,77 @@ class UploadAPIDataSource {
 
     // MARK: - Helper: Compress Image
 
-    func compressImage(_ image: UIImage, maxSize: CGFloat = 800, quality: CGFloat = 0.8) throws -> (data: Data, contentType: String) {
-        // Resize if needed
+    func compressImage(_ image: UIImage, maxSize: CGFloat = 1200, targetFileSizeKB: Int = 500) throws -> (data: Data, contentType: String) {
+        // Resize if needed while maintaining aspect ratio
         let resizedImage: UIImage
         if max(image.size.width, image.size.height) > maxSize {
             let scale = maxSize / max(image.size.width, image.size.height)
             let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
-            UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
-            image.draw(in: CGRect(origin: .zero, size: newSize))
-            resizedImage = UIGraphicsGetImageFromCurrentImageContext() ?? image
-            UIGraphicsEndImageContext()
+
+            let renderer = UIGraphicsImageRenderer(size: newSize)
+            resizedImage = renderer.image { _ in
+                image.draw(in: CGRect(origin: .zero, size: newSize))
+            }
         } else {
             resizedImage = image
         }
 
-        // Compress to JPEG
-        guard let data = resizedImage.jpegData(compressionQuality: quality) else {
+        // Try HEIC first (better compression, same quality) - available iOS 11+
+        if let heicData = compressToHEIC(resizedImage, targetFileSizeKB: targetFileSizeKB) {
+            return (data: heicData, contentType: "image/heic")
+        }
+
+        // Fallback to JPEG with adaptive quality
+        guard let jpegData = compressToJPEG(resizedImage, targetFileSizeKB: targetFileSizeKB) else {
             throw UploadError.imageCompressionFailed
         }
 
-        return (data: data, contentType: "image/jpeg")
+        return (data: jpegData, contentType: "image/jpeg")
+    }
+
+    private func compressToHEIC(_ image: UIImage, targetFileSizeKB: Int) -> Data? {
+        guard let cgImage = image.cgImage else { return nil }
+
+        let targetBytes = targetFileSizeKB * 1024
+
+        // Try different quality levels to hit target size while maintaining quality
+        for quality in stride(from: 1.0, through: 0.5, by: -0.1) {
+            let data = NSMutableData()
+            guard let destination = CGImageDestinationCreateWithData(
+                data as CFMutableData,
+                "public.heic" as CFString,
+                1,
+                nil
+            ) else { continue }
+
+            let options: [CFString: Any] = [
+                kCGImageDestinationLossyCompressionQuality: quality
+            ]
+
+            CGImageDestinationAddImage(destination, cgImage, options as CFDictionary)
+
+            if CGImageDestinationFinalize(destination) {
+                if data.length <= targetBytes || quality <= 0.5 {
+                    return data as Data
+                }
+            }
+        }
+
+        return nil
+    }
+
+    private func compressToJPEG(_ image: UIImage, targetFileSizeKB: Int) -> Data? {
+        let targetBytes = targetFileSizeKB * 1024
+
+        // Start with high quality and reduce until we hit target size
+        for quality in stride(from: 0.95, through: 0.5, by: -0.05) {
+            if let data = image.jpegData(compressionQuality: quality) {
+                if data.count <= targetBytes || quality <= 0.5 {
+                    return data
+                }
+            }
+        }
+
+        return image.jpegData(compressionQuality: 0.5)
     }
 }

@@ -126,12 +126,18 @@ class OrganizationAPIDataSource {
 
     // MARK: - Organization Mutations
 
-    func setActiveOrganization(slug: String) async throws {
+    func setActiveOrganization(slug: String? = nil, organizationId: String? = nil) async throws {
         guard let url = URL(string: "\(Config.apiBaseURL)/organization/set-active") else {
             throw OrganizationError.invalidURL
         }
 
-        let requestBody = ["organizationSlug": slug]
+        var requestBody: [String: String] = [:]
+        if let slug = slug {
+            requestBody["organizationSlug"] = slug
+        }
+        if let organizationId = organizationId {
+            requestBody["organizationId"] = organizationId
+        }
         let bodyData = try JSONEncoder().encode(requestBody)
 
         let (_, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)

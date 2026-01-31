@@ -16,9 +16,11 @@ class InvitationViewModel: ObservableObject {
     private let acceptInvitationUseCase = AcceptInvitationUseCase()
     private let rejectInvitationUseCase = RejectInvitationUseCase()
     private let cancelInvitationUseCase = CancelInvitationUseCase()
+    private let setActiveOrganizationUseCase = SetActiveOrganizationUseCase()
 
     // MARK: - Refresh Tasks
     private var refreshUserInvitationsTask: Task<Void, Never>?
+    private var refreshOrganizationInvitationsTask: Task<Void, Never>?
 
     // MARK: - Organization Invitations (for owners/admins)
 
@@ -32,6 +34,27 @@ class InvitationViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    /// Refresh organization invitations - survives SwiftUI task cancellation
+    func refreshOrganizationInvitations(organizationId: String? = nil) async {
+        refreshOrganizationInvitationsTask?.cancel()
+
+        refreshOrganizationInvitationsTask = Task { [weak self] in
+            guard let self else { return }
+            await MainActor.run { self.isLoading = true; self.errorMessage = nil }
+            do {
+                let invitations = try await self.listInvitationsUseCase.execute(organizationId: organizationId)
+                await MainActor.run { self.organizationInvitations = invitations }
+            } catch is CancellationError {
+                // Only ignore if we intentionally cancelled
+            } catch {
+                await MainActor.run { self.errorMessage = error.localizedDescription }
+            }
+            await MainActor.run { self.isLoading = false }
+        }
+
+        await refreshOrganizationInvitationsTask?.value
     }
 
     func createInvitation(email: String, role: String = "member", organizationId: String? = nil) async -> Invitation? {
@@ -135,6 +158,10 @@ class InvitationViewModel: ObservableObject {
         do {
             let member = try await acceptInvitationUseCase.execute(invitationId: invitationId)
             userInvitations.removeAll { $0.id == invitationId }
+
+            // Set the joined organization as active
+            try await setActiveOrganizationUseCase.execute(organizationId: member.organizationId)
+
             return member
         } catch {
             errorMessage = error.localizedDescription

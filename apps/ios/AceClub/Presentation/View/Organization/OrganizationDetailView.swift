@@ -162,8 +162,9 @@ struct OrganizationDetailView: View {
     // MARK: - Data Loading
 
     private func loadData() async {
-        await organizationViewModel.loadFullOrganization(slug: organization.slug)
-        await invitationViewModel.loadOrganizationInvitations(organizationId: organization.id)
+        // Use refresh method that survives SwiftUI task cancellation
+        await organizationViewModel.refreshFullOrganization(slug: organization.slug)
+        await invitationViewModel.refreshOrganizationInvitations(organizationId: organization.id)
 
         // Load stats for admins
         if isAdmin {
