@@ -114,6 +114,7 @@ class UserAPIDataSource {
 
     func updateProfile(
         name: String?,
+        image: String?,
         phoneNumber: String?,
         organizationId: String?,
         sport: String?,
@@ -125,6 +126,7 @@ class UserAPIDataSource {
 
         let requestBody = UpdateProfileRequestDTO(
             name: name,
+            image: image,
             phoneNumber: phoneNumber,
             organizationId: organizationId,
             sport: sport,

@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import UIKit
 
 @MainActor
 final class SettingsViewModel: ObservableObject {
@@ -9,6 +10,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var selectedOrganization: Organization?
     @Published var selectedSport: Sport?
     @Published var selectedSkillLevel: SkillLevel?
+    @Published var selectedImage: UIImage?
+    @Published var isUploadingImage: Bool = false
 
     @Published var organizations: [Organization] = []
     @Published var searchQuery: String = ""
@@ -25,11 +28,13 @@ final class SettingsViewModel: ObservableObject {
     private var originalOrganizationId: String?
     private var originalSport: String?
     private var originalSkillLevel: String?
+    private var uploadedImageURL: String?
 
     // MARK: - UseCases
     private let getUserPreferencesUseCase = GetUserPreferencesUseCase()
     private let updateProfileUseCase = UpdateProfileUseCase()
     private let searchOrganizationsUseCase = SearchOrganizationsUseCase()
+    private let uploadUserImageUseCase = UploadUserImageUseCase()
 
     // MARK: - Tasks
     private var searchTask: Task<Void, Never>?
@@ -40,7 +45,8 @@ final class SettingsViewModel: ObservableObject {
         phoneNumber != originalPhoneNumber ||
         selectedOrganization?.id != originalOrganizationId ||
         selectedSport?.rawValue != originalSport ||
-        selectedSkillLevel?.value != originalSkillLevel
+        selectedSkillLevel?.value != originalSkillLevel ||
+        selectedImage != nil
     }
 
     var canSave: Bool {
@@ -137,8 +143,23 @@ final class SettingsViewModel: ObservableObject {
         defer { isSaving = false }
 
         do {
+            // 1. Upload image if selected
+            if let image = selectedImage {
+                isUploadingImage = true
+                do {
+                    uploadedImageURL = try await uploadUserImageUseCase.execute(image: image)
+                } catch {
+                    isUploadingImage = false
+                    errorMessage = "Erreur lors de l'upload de l'image"
+                    return nil
+                }
+                isUploadingImage = false
+            }
+
+            // 2. Update profile with all changes
             let updatedUser = try await updateProfileUseCase.execute(
                 name: name != originalName ? name : nil,
+                image: uploadedImageURL,
                 phoneNumber: phoneNumber != originalPhoneNumber ? phoneNumber : nil,
                 organizationId: selectedOrganization?.id != originalOrganizationId ? selectedOrganization?.id : nil,
                 sport: selectedSport?.rawValue != originalSport ? selectedSport?.rawValue : nil,
@@ -151,6 +172,8 @@ final class SettingsViewModel: ObservableObject {
             originalOrganizationId = selectedOrganization?.id
             originalSport = selectedSport?.rawValue
             originalSkillLevel = selectedSkillLevel?.value
+            selectedImage = nil
+            uploadedImageURL = nil
 
             return updatedUser
         } catch {

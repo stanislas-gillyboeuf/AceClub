@@ -86,6 +86,7 @@ struct UserPreferencesResponseDTO: Codable {
 
 struct UpdateProfileRequestDTO: Codable {
     let name: String?
+    let image: String?
     let phoneNumber: String?
     let organizationId: String?
     let sport: String?
