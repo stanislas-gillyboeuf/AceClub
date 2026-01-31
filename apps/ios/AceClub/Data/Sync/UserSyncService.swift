@@ -82,10 +82,12 @@ final class UserSyncService {
         phoneNumber: String?,
         organizationId: String?,
         sport: String?,
-        skillLevel: String?
+        skillLevel: String?,
+        image: String?
     ) async throws -> UserModel {
         let dto = try await dataSource.updateProfile(
             name: name,
+            image: image,
             phoneNumber: phoneNumber,
             organizationId: organizationId,
             sport: sport,
