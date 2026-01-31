@@ -13,9 +13,33 @@ import { checkBadges } from "../../reward/services/badge-checker";
 export const updateMatch = async (c: Context<HonoContext>) => {
   try {
     const matchId = c.req.param("id");
+    const currentUser = c.get("user");
 
     if (!matchId) {
       return c.json({ error: "Match ID is required" }, 400);
+    }
+
+    if (!currentUser) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    // Check if user is a participant of this match
+    const [participant] = await db
+      .select({ id: matchParticipant.id })
+      .from(matchParticipant)
+      .where(
+        and(
+          eq(matchParticipant.matchId, matchId),
+          eq(matchParticipant.userId, currentUser.id)
+        )
+      )
+      .limit(1);
+
+    if (!participant) {
+      return c.json(
+        { error: "Only match participants can update the match" },
+        403
+      );
     }
 
     // @ts-ignore

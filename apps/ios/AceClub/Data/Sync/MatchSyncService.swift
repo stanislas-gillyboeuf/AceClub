@@ -61,29 +61,63 @@ final class MatchSyncService {
         try modelContext.save()
     }
 
-    func syncAllMatchesWithPurge() async throws {
-        let dto = try await dataSource.listMatches(
-            status: nil,
-            userId: nil,
-            participantOnly: false,
-            page: 1,
-            limit: 500
-        )
+    struct SyncResult {
+        let hasMore: Bool
+        let totalPages: Int
+        let currentPage: Int
+    }
 
-        let apiMatchIds = Set(dto.matches.map { $0.id })
+    func syncMatchesPage(page: Int = 1, limit: Int = 20, purgeOnFirstPage: Bool = true) async throws -> SyncResult {
+        let dto = try await dataSource.listMatches(
+            participantOnly: false,
+            page: page,
+            limit: limit
+        )
 
         for matchDTO in dto.matches {
             upsertMatchFromList(from: matchDTO)
         }
 
-        let localMatches = fetchAllMatches()
-        for localMatch in localMatches {
-            if !apiMatchIds.contains(localMatch.id) {
-                modelContext.delete(localMatch)
+        // Only purge local matches not in API on first page
+        if page == 1 && purgeOnFirstPage {
+            // Fetch all pages to get complete list of IDs for purge
+            var allApiMatchIds = Set(dto.matches.map { $0.id })
+
+            if dto.pagination.totalPages > 1 {
+                for nextPage in 2...dto.pagination.totalPages {
+                    let nextDto = try await dataSource.listMatches(
+                        participantOnly: false,
+                        page: nextPage,
+                        limit: limit
+                    )
+                    allApiMatchIds.formUnion(nextDto.matches.map { $0.id })
+
+                    for matchDTO in nextDto.matches {
+                        upsertMatchFromList(from: matchDTO)
+                    }
+                }
+            }
+
+            let localMatches = fetchAllMatches()
+            for localMatch in localMatches {
+                if !allApiMatchIds.contains(localMatch.id) {
+                    modelContext.delete(localMatch)
+                }
             }
         }
 
         try modelContext.save()
+
+        return SyncResult(
+            hasMore: page < dto.pagination.totalPages,
+            totalPages: dto.pagination.totalPages,
+            currentPage: page
+        )
+    }
+
+    @available(*, deprecated, message: "Use syncMatchesPage instead for pagination")
+    func syncAllMatchesWithPurge() async throws {
+        _ = try await syncMatchesPage(page: 1, limit: 100, purgeOnFirstPage: true)
     }
 
     func createMatch(
@@ -348,15 +382,10 @@ final class MatchSyncService {
             upsertParticipant(from: participantDTO, match: model)
         }
 
-        // Sync sets and scores if available
         if let sets = dto.sets {
-            print("🎾 [MatchSync] Match \(dto.id) has \(sets.count) sets from API")
             for setDTO in sets {
-                print("🎾 [MatchSync] Set \(setDTO.setNumber) has \(setDTO.scores?.count ?? 0) scores")
                 upsertSet(from: setDTO, match: model)
             }
-        } else {
-            print("🎾 [MatchSync] Match \(dto.id) has NO sets from API (nil)")
         }
 
         return model

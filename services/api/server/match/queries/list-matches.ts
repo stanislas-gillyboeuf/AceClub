@@ -5,23 +5,13 @@ import { db } from "../../../db";
 import { match, matchParticipant, set, setScore } from "../../../db/schema/match/schema";
 import { user } from "../../../db/schema/auth/schema";
 import { and, eq, desc, sql, inArray } from "drizzle-orm";
-
-const listMatchesQuerySchema = z.object({
-  status: z.enum(["scheduled", "ongoing", "finished"]).optional(),
-  userId: z.string().optional(),
-  participantOnly: z
-    .enum(["true", "false"])
-    .default("true")
-    .transform((val) => val === "true"),
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(10),
-});
+import { listMatchesQueryValidator } from "../validators";
 
 export const listMatches = async (c: Context<HonoContext>) => {
   try {
     const currentUser = c.get("user");
     const query = c.req.query();
-    const validatedQuery = listMatchesQuerySchema.parse(query);
+    const validatedQuery = listMatchesQueryValidator.parse(query);
 
     const { status, userId, participantOnly, page, limit } = validatedQuery;
     const offset = (page - 1) * limit;
@@ -34,12 +24,8 @@ export const listMatches = async (c: Context<HonoContext>) => {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    // Determine which user to filter by
-    // If participantOnly is true, filter by the current user
-    // If userId is explicitly provided, use that instead
     const filterUserId = userId || (participantOnly && currentUser ? currentUser.id : null);
 
-    // If filtering by userId, get matching match IDs first (more efficient)
     let matchIdsFilter: string[] | undefined;
     if (filterUserId) {
       const userMatches = await db
@@ -49,7 +35,6 @@ export const listMatches = async (c: Context<HonoContext>) => {
 
       matchIdsFilter = userMatches.map((m) => m.matchId);
 
-      // If user has no matches, return early
       if (matchIdsFilter.length === 0) {
         return c.json({
           matches: [],
@@ -63,12 +48,10 @@ export const listMatches = async (c: Context<HonoContext>) => {
       }
     }
 
-    // Combine filters
     const finalWhereClause = matchIdsFilter
       ? and(whereClause, inArray(match.id, matchIdsFilter))
       : whereClause;
 
-    // Get total count
     const totalCountResult = await db
       .select({ count: sql<number>`cast(count(*) as integer)` })
       .from(match)
@@ -76,7 +59,6 @@ export const listMatches = async (c: Context<HonoContext>) => {
 
     const total = Number(totalCountResult[0]?.count || 0);
 
-    // Get matches with pagination
     const matches = await db
       .select()
       .from(match)
@@ -85,7 +67,6 @@ export const listMatches = async (c: Context<HonoContext>) => {
       .limit(limit)
       .offset(offset);
 
-    // Return early if no matches
     if (matches.length === 0) {
       return c.json({
         matches: [],
@@ -98,7 +79,6 @@ export const listMatches = async (c: Context<HonoContext>) => {
       });
     }
 
-    // Get all participants for these matches in one query with user details
     const matchIds = matches.map((m) => m.id);
     const participants = await db
       .select({
@@ -131,7 +111,6 @@ export const listMatches = async (c: Context<HonoContext>) => {
       participantsByMatch.get(participant.matchId)!.push(participant);
     }
 
-    // Get all sets and scores for these matches in one query
     const setsData = await db
       .select({
         setId: set.id,
@@ -150,7 +129,6 @@ export const listMatches = async (c: Context<HonoContext>) => {
       .where(inArray(set.matchId, matchIds))
       .orderBy(set.setNumber);
 
-    // Group sets by match, then scores by set
     const setsByMatch = new Map<
       string,
       Map<
@@ -187,7 +165,6 @@ export const listMatches = async (c: Context<HonoContext>) => {
         });
       }
 
-      // Only add score if it exists (leftJoin might return null)
       if (row.scoreId && row.participantId && row.participantUserId && row.participantSide) {
         matchSets.get(row.setId)!.scores.push({
           participantId: row.participantId,
@@ -198,7 +175,6 @@ export const listMatches = async (c: Context<HonoContext>) => {
       }
     }
 
-    // Build response
     const matchesWithParticipants = matches.map((matchData) => {
       const matchSetsMap = setsByMatch.get(matchData.id);
       const sets = matchSetsMap ? Array.from(matchSetsMap.values()) : [];

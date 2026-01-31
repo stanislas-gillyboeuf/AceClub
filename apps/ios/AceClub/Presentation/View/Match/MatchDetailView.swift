@@ -60,41 +60,44 @@ struct MatchDetailView: View {
         .navigationTitle("Détails du match")
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
-                if canEditScores {
-                    Button {
-                        showingEditScores = true
-                    } label: {
-                        Image(systemName: "pencil")
-                    }
-                }
-
-                Menu {
-                    if canStartMatch {
+            // Only participants can manage the match
+            if isParticipant {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    if canEditScores {
                         Button {
-                            Task { await startMatch() }
+                            showingEditScores = true
                         } label: {
-                            Label("Démarrer le match", systemImage: "play.circle")
+                            Image(systemName: "pencil")
                         }
                     }
 
-                    if canFinishMatch {
-                        Button {
-                            Task { await finishMatch() }
-                        } label: {
-                            Label("Terminer le match", systemImage: "checkmark.circle")
+                    Menu {
+                        if canStartMatch {
+                            Button {
+                                Task { await startMatch() }
+                            } label: {
+                                Label("Démarrer le match", systemImage: "play.circle")
+                            }
                         }
-                    }
 
-                    Divider()
+                        if canFinishMatch {
+                            Button {
+                                Task { await finishMatch() }
+                            } label: {
+                                Label("Terminer le match", systemImage: "checkmark.circle")
+                            }
+                        }
 
-                    Button(role: .destructive) {
-                        showingDeleteAlert = true
+                        Divider()
+
+                        Button(role: .destructive) {
+                            showingDeleteAlert = true
+                        } label: {
+                            Label("Supprimer le match", systemImage: "trash")
+                        }
                     } label: {
-                        Label("Supprimer le match", systemImage: "trash")
+                        Image(systemName: "ellipsis.circle")
                     }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
                 }
             }
         }

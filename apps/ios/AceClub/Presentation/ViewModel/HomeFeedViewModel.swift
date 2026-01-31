@@ -7,8 +7,12 @@ import Observation
 final class HomeFeedViewModel {
     var stats: UserMatchStats?
     var isLoading = false
+    var isLoadingMore = false
     var errorMessage: String?
+    var hasMorePages = true
+    var currentPage = 1
 
+    private let pageSize = 20
     private var syncService: MatchSyncService?
 
     func initialize(modelContext: ModelContext) {
@@ -19,14 +23,36 @@ final class HomeFeedViewModel {
         guard !isLoading else { return }
         isLoading = true
         errorMessage = nil
+        currentPage = 1
+        hasMorePages = true
 
         do {
-            try await syncService?.syncAllMatchesWithPurge()
+            let result = try await syncService?.syncMatchesPage(page: 1, limit: pageSize, purgeOnFirstPage: true)
+            hasMorePages = result?.hasMore ?? false
+            currentPage = 1
         } catch {
             errorMessage = error.localizedDescription
         }
 
         isLoading = false
+    }
+
+    func loadMoreMatches() async {
+        guard !isLoadingMore, !isLoading, hasMorePages else { return }
+        isLoadingMore = true
+
+        do {
+            let nextPage = currentPage + 1
+            let result = try await syncService?.syncMatchesPage(page: nextPage, limit: pageSize, purgeOnFirstPage: false)
+            if let result {
+                hasMorePages = result.hasMore
+                currentPage = result.currentPage
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+
+        isLoadingMore = false
     }
 
     func calculateStats(from matches: [MatchModel], userId: String) {

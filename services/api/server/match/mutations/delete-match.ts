@@ -2,14 +2,38 @@ import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { match, matchParticipant, set, setScore } from "../../../db/schema/match/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export const deleteMatch = async (c: Context<HonoContext>) => {
   try {
     const matchId = c.req.param("id");
+    const currentUser = c.get("user");
 
     if (!matchId) {
       return c.json({ error: "Match ID is required" }, 400);
+    }
+
+    if (!currentUser) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    // Check if user is a participant of this match
+    const [participant] = await db
+      .select({ id: matchParticipant.id })
+      .from(matchParticipant)
+      .where(
+        and(
+          eq(matchParticipant.matchId, matchId),
+          eq(matchParticipant.userId, currentUser.id)
+        )
+      )
+      .limit(1);
+
+    if (!participant) {
+      return c.json(
+        { error: "Only match participants can delete the match" },
+        403
+      );
     }
 
     // Delete match and all related data in an optimized transaction

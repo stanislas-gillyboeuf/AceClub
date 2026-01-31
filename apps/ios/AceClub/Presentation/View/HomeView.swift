@@ -22,26 +22,12 @@ struct HomeView: View {
         authViewModel.currentUser?.id ?? ""
     }
 
-    private var organizationMemberUserIds: Set<String> {
-        Set(organizationViewModel.members.map { $0.userId })
-    }
-
-    private var ongoingOrganizationMatches: [MatchModel] {
-        allMatches.filter { match in
-            guard match.isOngoing else { return false }
-            return match.participants.contains { participant in
-                organizationMemberUserIds.contains(participant.userId)
-            }
-        }
+    private var ongoingMatches: [MatchModel] {
+        allMatches.filter { $0.isOngoing }
     }
 
     private var finishedMatches: [MatchModel] {
-        allMatches.filter { match in
-            guard match.isFinished else { return false }
-            return match.participants.contains { participant in
-                organizationMemberUserIds.contains(participant.userId)
-            }
-        }
+        allMatches.filter { $0.isFinished }
     }
 
     var body: some View {
@@ -56,7 +42,7 @@ struct HomeView: View {
                             .padding(.horizontal, Theme.paddingHorizontal)
                     }
 
-                    if !ongoingOrganizationMatches.isEmpty {
+                    if !ongoingMatches.isEmpty {
                         ongoingMatchesSection
                     }
 
@@ -127,7 +113,7 @@ struct HomeView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    ForEach(ongoingOrganizationMatches) { match in
+                    ForEach(ongoingMatches) { match in
                         NavigationLink {
                             MatchDetailView(matchId: match.id)
                         } label: {
@@ -151,7 +137,7 @@ struct HomeView: View {
                 .font(.title2.weight(.bold))
                 .padding(.horizontal, Theme.paddingHorizontal)
 
-            if finishedMatches.isEmpty {
+            if finishedMatches.isEmpty && !viewModel.isLoading {
                 emptyFeedView
             } else {
                 LazyVStack(spacing: 12) {
@@ -165,6 +151,19 @@ struct HomeView: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .onAppear {
+                            if match.id == finishedMatches.suffix(3).first?.id {
+                                Task {
+                                    await viewModel.loadMoreMatches()
+                                }
+                            }
+                        }
+                    }
+
+                    if viewModel.isLoadingMore {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding()
                     }
                 }
                 .padding(.horizontal, Theme.paddingHorizontal)
@@ -200,9 +199,6 @@ struct HomeView: View {
         viewModel.initialize(modelContext: modelContext)
         await viewModel.syncMatches()
         recalculateStats()
-        if let orgId = organizationViewModel.activeOrganization?.id {
-            await organizationViewModel.loadMembers(organizationId: orgId)
-        }
     }
 
     private func refresh() async {

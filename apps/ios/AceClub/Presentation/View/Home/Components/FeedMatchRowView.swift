@@ -14,10 +14,6 @@ struct FeedMatchRowView: View {
         match.awayParticipant
     }
 
-    private var isCurrentUserMatch: Bool {
-        match.participants.contains { $0.userId == currentUserId }
-    }
-
     private var currentUserWon: Bool {
         match.participants.first { $0.userId == currentUserId }?.isWinner ?? false
     }
@@ -44,7 +40,7 @@ struct FeedMatchRowView: View {
 
                 Spacer()
 
-                if isCurrentUserMatch {
+
                     Text(currentUserWon ? "Victoire" : "Défaite")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.white)
@@ -52,7 +48,7 @@ struct FeedMatchRowView: View {
                         .padding(.vertical, 6)
                         .background(currentUserWon ? Color.green : Color.red)
                         .clipShape(Capsule())
-                }
+
             }
 
             HStack(alignment: .center, spacing: 12) {
