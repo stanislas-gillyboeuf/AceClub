@@ -22,7 +22,7 @@ import {
   userTitle,
 } from "../db/schema/index";
 
-const DEMO_USER_ID = "AtdCzdItXFiA3zIqzsroE2HlaClT5fex";
+const DEMO_USER_ID = "Cujnf47jMCkWGCwwWagAi0544Z1vec5z";
 
 const GHOST_PLAYERS = [
   { name: "Pierre Dubois", image: null },

@@ -63,8 +63,18 @@ export const getMatch = async (c: Context<HonoContext>) => {
         .orderBy(set.setNumber),
 
       db
-        .select()
+        .select({
+          id: matchComment.id,
+          matchId: matchComment.matchId,
+          userId: matchComment.userId,
+          content: matchComment.content,
+          userName: user.name,
+          userImage: user.image,
+          createdAt: matchComment.createdAt,
+          updatedAt: matchComment.updatedAt,
+        })
         .from(matchComment)
+        .leftJoin(user, eq(matchComment.userId, user.id))
         .where(eq(matchComment.matchId, matchId))
         .orderBy(matchComment.createdAt),
     ]);

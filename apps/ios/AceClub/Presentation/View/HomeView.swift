@@ -142,7 +142,7 @@ struct HomeView: View {
     @ViewBuilder
     private var matchHistorySection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Historique des matchs")
+            Text("Matchs récents au club")
                 .font(.title2.weight(.bold))
                 .padding(.horizontal, Theme.paddingHorizontal)
 
@@ -173,10 +173,10 @@ struct HomeView: View {
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
 
-            Text("Aucun match terminé")
+            Text("Aucun match récent au club")
                 .font(.headline)
 
-            Text("Vos matchs terminés apparaîtront ici")
+            Text("Vos matchs récents au club apparaîtront ici")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }

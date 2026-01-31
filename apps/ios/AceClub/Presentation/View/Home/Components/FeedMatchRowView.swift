@@ -123,7 +123,7 @@ struct FeedMatchRowView: View {
 
     @ViewBuilder
     private func commentPreviewRow(comment: MatchCommentModel) -> some View {
-        HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .center, spacing: 8) {
             commentAvatar(comment: comment)
 
             (Text(comment.userName).fontWeight(.semibold) + Text(" ") + Text(comment.content))

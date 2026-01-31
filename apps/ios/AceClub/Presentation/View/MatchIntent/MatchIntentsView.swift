@@ -20,7 +20,7 @@ struct MatchIntentsView: View {
                     )
                 }
             }
-            .navigationTitle("Découvrir")
+            .navigationTitle("Trouver un partenaire")
             .task {
                 await viewModel.loadDiscover()
             }

@@ -135,6 +135,10 @@ final class MatchModel {
 
     var formattedMatchScore: String {
         let scores = setScores
+        // If no sets with scores, show em dash to indicate no score data
+        if scores.home == 0 && scores.away == 0 && sets.isEmpty {
+            return "—"
+        }
         return "\(scores.home)-\(scores.away)"
     }
 

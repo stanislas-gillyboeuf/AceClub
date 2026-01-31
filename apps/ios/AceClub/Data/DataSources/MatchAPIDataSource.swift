@@ -164,11 +164,19 @@ class MatchAPIDataSource {
         do {
             let encoder = JSONEncoder()
             jsonData = try encoder.encode(request)
+            // DEBUG: Print JSON being sent
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                print("🔵 [DEBUG] PUT /match/\(id) body: \(jsonString)")
+            }
         } catch {
             throw MatchAPIDataSourceError.encodingFailed(error)
         }
 
         let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "PUT", body: jsonData)
+        // DEBUG: Print response
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("🔴 [DEBUG] Response (\(response.statusCode)): \(responseString)")
+        }
 
         switch response.statusCode {
         case 200:

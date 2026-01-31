@@ -350,9 +350,13 @@ final class MatchSyncService {
 
         // Sync sets and scores if available
         if let sets = dto.sets {
+            print("🎾 [MatchSync] Match \(dto.id) has \(sets.count) sets from API")
             for setDTO in sets {
+                print("🎾 [MatchSync] Set \(setDTO.setNumber) has \(setDTO.scores?.count ?? 0) scores")
                 upsertSet(from: setDTO, match: model)
             }
+        } else {
+            print("🎾 [MatchSync] Match \(dto.id) has NO sets from API (nil)")
         }
 
         return model
