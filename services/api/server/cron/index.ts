@@ -99,7 +99,14 @@ async function sendStreakWarnings() {
     console.log(
       `[CRON] User ${userStreak.userId} has ${userStreak.currentStreak} week streak at risk`
     );
-    await sendNotificationToUser({ userId: userStreak.userId, type: "streak_warning", title: "Streak Warning", body: `Your streak is at risk. You have ${userStreak.currentStreak} weeks of consecutive matches.`, referenceId: userStreak.userId, referenceType: "user" });
+    await sendNotificationToUser({
+      userId: userStreak.userId,
+      type: "streak_warning",
+      title: "Ton streak est en danger 🔥",
+      body: `Psss, t'as pas encore joué cette semaine ! Tu risques de perdre ta série de ${userStreak.currentStreak} semaines`,
+      referenceId: userStreak.userId,
+      referenceType: "user",
+    });
   }
 
   console.log(`[CRON] Streak warnings processed at ${new Date().toISOString()}`);

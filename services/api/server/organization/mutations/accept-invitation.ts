@@ -62,8 +62,8 @@ export const acceptInvitation = async (c: Context<HonoContext>) => {
     sendNotificationToUser({
       userId: inv.inviterId,
       type: "invitation_accepted",
-      title: "Invitation acceptee",
-      body: `${authUser?.name ?? "Un membre"} a rejoint ${org?.name ?? "votre club"}`,
+      title: "Nouveau membre ! 🙌",
+      body: `${authUser?.name ?? "Quelqu'un"} a rejoint ${org?.name ?? "ton club"}`,
       referenceId: newOrganizationId,
       referenceType: "organization",
     }).catch((err) => console.error("Failed to send notification:", err));
