@@ -95,7 +95,7 @@ class ConversationListViewModel: ObservableObject {
                     type: updatedConversation.type,
                     lastMessageAt: Date(),
                     lastMessagePreview: messageDTO.content,
-                    lastMessageSenderId: messageDTO.senderId,
+                    lastMessageSenderId: messageDTO.sender.id,
                     createdAt: updatedConversation.createdAt,
                     unreadCount: (messageDTO.isFromMe ?? false) ? updatedConversation.unreadCount : updatedConversation.unreadCount + 1,
                     isMuted: updatedConversation.isMuted,

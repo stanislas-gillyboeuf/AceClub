@@ -7,6 +7,7 @@ import { userPreference } from "../../../db/schema/user-preference/schema";
 import { z } from "zod";
 import { updateProfileValidator } from "../validators";
 import { ulid } from "ulid";
+import { auth } from "../../../auth";
 
 const normalizePhoneNumber = (raw: string) => {
   const trimmed = raw.trim();
@@ -131,9 +132,15 @@ export const updateProfile = async (c: Context<HonoContext>) => {
 
       return updated;
     });
+
+    if (validated.organizationId) {
+      await auth.api.setActiveOrganization({
+        body: { organizationId: validated.organizationId },
+        headers: c.req.raw.headers,
+      });
+    }
   } catch (error) {
     const err = error as { code?: string };
-    // Postgres unique_violation
     if (err?.code === "23505") {
       return c.json(
         {

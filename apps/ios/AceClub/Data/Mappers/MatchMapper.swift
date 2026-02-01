@@ -88,16 +88,17 @@ class MatchMapper {
     // MARK: - Participant Mapping
 
     static func map(participantDTO: MatchParticipantDTO) -> MatchParticipant {
+        let user = participantDTO.user.map {
+            UserSummary(id: $0.id, name: $0.name, image: $0.image)
+        } ?? UserSummary(id: participantDTO.userId, name: "Unknown", image: nil)
+
         return MatchParticipant(
             id: participantDTO.id,
             matchId: participantDTO.matchId,
-            userId: participantDTO.userId,
+            user: user,
             side: mapSide(participantDTO.side),
             isWinner: participantDTO.isWinner,
-            createdAt: parseDate(participantDTO.createdAt) ?? Date(),
-            userName: participantDTO.user?.name,
-            userEmail: participantDTO.user?.email,
-            userImage: participantDTO.user?.image
+            createdAt: parseDate(participantDTO.createdAt) ?? Date()
         )
     }
 
@@ -320,13 +321,15 @@ class MatchMapper {
     // MARK: - Comment Mapping
 
     static func map(commentDTO: MatchCommentDTO) -> MatchComment {
+        let user = commentDTO.user.map {
+            UserSummary(id: $0.id, name: $0.name, image: $0.image)
+        } ?? UserSummary(id: commentDTO.userId, name: "Unknown", image: nil)
+
         return MatchComment(
             id: commentDTO.id,
             matchId: commentDTO.matchId,
-            userId: commentDTO.userId,
+            user: user,
             content: commentDTO.content,
-            userName: commentDTO.user?.name ?? "",
-            userImage: commentDTO.user?.image,
             createdAt: parseDate(commentDTO.createdAt) ?? Date(),
             updatedAt: parseDate(commentDTO.updatedAt) ?? Date()
         )

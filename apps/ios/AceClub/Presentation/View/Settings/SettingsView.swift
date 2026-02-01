@@ -39,7 +39,6 @@ struct SettingsView: View {
                 .padding(.horizontal, Theme.paddingHorizontal)
                 .padding(.vertical, 16)
             }
-            .background(Theme.primaryBackground)
             .navigationTitle("Paramètres")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -72,6 +71,7 @@ struct SettingsView: View {
                 ClubSelectionView(viewModel: viewModel)
             }
         }
+        .presentationBackground(.regularMaterial)
     }
 
     // MARK: - Loading View
@@ -428,6 +428,7 @@ struct ClubSelectionView: View {
                                         }
                                     }
                                     .padding(16)
+                                    .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
 
@@ -444,7 +445,6 @@ struct ClubSelectionView: View {
                     }
                 }
             }
-            .background(Theme.primaryBackground)
             .navigationTitle("Choisir un club")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -460,5 +460,6 @@ struct ClubSelectionView: View {
                 }
             }
         }
+        .presentationBackground(.regularMaterial)
     }
 }

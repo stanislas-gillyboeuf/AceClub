@@ -127,7 +127,6 @@ struct ContactPlayerSheet: View {
                     }
                 }
             }
-            .background(Theme.primaryBackground)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -138,6 +137,7 @@ struct ContactPlayerSheet: View {
                 }
             }
         }
+        .presentationBackground(.regularMaterial)
     }
 
     // MARK: - Avatar

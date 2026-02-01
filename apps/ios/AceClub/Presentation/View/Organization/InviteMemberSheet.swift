@@ -83,6 +83,7 @@ struct InviteMemberSheet: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
             .navigationTitle("Inviter un membre")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -125,6 +126,7 @@ struct InviteMemberSheet: View {
                 }
             }
         }
+        .presentationBackground(.regularMaterial)
     }
 
     // MARK: - Computed Properties

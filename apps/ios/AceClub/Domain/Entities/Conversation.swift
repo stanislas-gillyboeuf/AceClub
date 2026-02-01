@@ -58,50 +58,47 @@ struct ParticipantBadge: Identifiable, Equatable, Hashable {
 // MARK: - Conversation Participant
 struct ConversationParticipant: Identifiable, Equatable, Hashable {
     let id: String
-    let userId: String
-    let userName: String
-    let userImage: String?
-    let level: Int
-    let totalAces: Int
-    let title: ParticipantTitle?
-    let badges: [ParticipantBadge]
-    let currentStreak: Int
-    let longestStreak: Int
-    let globalRank: Int?
+    let user: UserProfile
 
-    var userImageURL: URL? {
-        guard let userImage else { return nil }
-        return URL(string: userImage)
-    }
+    // MARK: - Convenience accessors (for backwards compatibility)
 
-    var localizedTitle: String? {
-        title?.localizedName
-    }
+    var userId: String { user.id }
+    var userName: String { user.name }
+    var userImage: String? { user.image }
+    var level: Int { user.level }
+    var totalAces: Int { user.totalAces }
+    var title: ParticipantTitle? { user.title }
+    var badges: [ParticipantBadge] { user.badges }
+    var currentStreak: Int { user.currentStreak }
+    var longestStreak: Int { user.longestStreak }
+    var globalRank: Int? { user.globalRank }
 
-    var hasActiveStreak: Bool {
-        currentStreak > 0
-    }
+    var userImageURL: URL? { user.imageURL }
+    var localizedTitle: String? { user.localizedTitle }
+    var hasActiveStreak: Bool { user.hasActiveStreak }
 }
 
 // MARK: - Message Entity
 struct Message: Identifiable, Equatable {
     let id: String
     let conversationId: String
-    let senderId: String
-    let senderName: String
-    let senderImage: String?
+    let sender: MessageSender
     let content: String
     let createdAt: Date
     let clientMessageId: String?
     let isFromMe: Bool
     var sendStatus: MessageSendStatus
 
+    // MARK: - Convenience accessors (for backwards compatibility)
+
+    var senderId: String { sender.id }
+    var senderName: String { sender.name }
+    var senderImage: String? { sender.image }
+
     init(
         id: String,
         conversationId: String,
-        senderId: String,
-        senderName: String,
-        senderImage: String? = nil,
+        sender: MessageSender,
         content: String,
         createdAt: Date,
         clientMessageId: String? = nil,
@@ -110,9 +107,7 @@ struct Message: Identifiable, Equatable {
     ) {
         self.id = id
         self.conversationId = conversationId
-        self.senderId = senderId
-        self.senderName = senderName
-        self.senderImage = senderImage
+        self.sender = sender
         self.content = content
         self.createdAt = createdAt
         self.clientMessageId = clientMessageId
@@ -205,23 +200,17 @@ struct ConversationListResult {
 // MARK: - UserProfileData Conformance
 
 extension ConversationParticipant: UserProfileData {
-    var profileName: String { userName }
-    var profileImageURL: URL? { userImageURL }
-    var profileLevel: Int { level }
-    var profileInitials: String {
-        let components = userName.split(separator: " ")
-        if components.count >= 2 {
-            return String(components[0].prefix(1) + components[1].prefix(1)).uppercased()
-        }
-        return String(userName.prefix(1)).uppercased()
-    }
+    var profileName: String { user.name }
+    var profileImageURL: URL? { user.imageURL }
+    var profileLevel: Int { user.level }
+    var profileInitials: String { user.initials }
     var profileOrganizationName: String? { nil }
-    var profileTotalAces: Int { totalAces }
-    var profileTitle: String? { localizedTitle }
+    var profileTotalAces: Int { user.totalAces }
+    var profileTitle: String? { user.localizedTitle }
     var profileBadges: [UserProfileBadge] {
-        badges.map { UserProfileBadge(code: $0.code, imageUrl: $0.imageUrl, localizedName: $0.localizedName) }
+        user.badges.map { UserProfileBadge(code: $0.code, imageUrl: $0.imageUrl, localizedName: $0.localizedName) }
     }
-    var profileCurrentStreak: Int { currentStreak }
-    var profileLongestStreak: Int { longestStreak }
-    var profileGlobalRank: Int? { globalRank }
+    var profileCurrentStreak: Int { user.currentStreak }
+    var profileLongestStreak: Int { user.longestStreak }
+    var profileGlobalRank: Int? { user.globalRank }
 }

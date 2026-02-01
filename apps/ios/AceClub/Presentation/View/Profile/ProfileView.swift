@@ -256,8 +256,9 @@ struct ProfileView: View {
     }
 
     private func getMemberRole(for organizationId: String) -> MemberRole? {
-        organizationViewModel.allMembers
-            .first { $0.organizationId == organizationId }?
+        guard let currentUserId = authViewModel.currentUser?.id else { return nil }
+        return organizationViewModel.allMembers
+            .first { $0.organizationId == organizationId && $0.userId == currentUserId }?
             .role
     }
 

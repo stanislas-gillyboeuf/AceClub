@@ -124,6 +124,11 @@ struct RootView: View {
                 handleNotificationDeepLink(deepLink)
             }
         }
+        .task {
+            // Load organization data at startup so it's available everywhere
+            await organizationViewModel.loadOrganizations()
+            await organizationViewModel.loadActiveMember()
+        }
         .background(Theme.primaryBackground)
     }
 }

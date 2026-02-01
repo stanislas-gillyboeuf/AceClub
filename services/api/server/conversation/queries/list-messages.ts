@@ -69,9 +69,11 @@ export const listMessages = async (c: Context<HonoContext>) => {
     messages.map((msg) => ({
       id: msg.id,
       conversationId: msg.conversationId,
-      senderId: msg.senderId,
-      senderName: msg.senderName,
-      senderImage: msg.senderImage,
+      sender: {
+        id: msg.senderId,
+        name: msg.senderName,
+        image: msg.senderImage,
+      },
       content: msg.content,
       createdAt: msg.createdAt.toISOString(),
       clientMessageId: msg.clientMessageId,

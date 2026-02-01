@@ -35,6 +35,7 @@ struct ListRequestMatch: View {
                         )
                     }
                     .listStyle(.insetGrouped)
+                    .scrollContentBackground(.hidden)
                 }
             }
             .navigationTitle("Demandes de match")
@@ -52,6 +53,7 @@ struct ListRequestMatch: View {
                 Text(viewModel.errorMessage ?? "")
             }
         }
+        .presentationBackground(.regularMaterial)
     }
 
     private func handleAccept(item: MatchRequestWithDetails) async {

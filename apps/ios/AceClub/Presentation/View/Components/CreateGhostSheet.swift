@@ -37,7 +37,6 @@ struct CreateGhostSheet: View {
                 createButton
             }
             .padding()
-            .background(Theme.secondaryBackground)
             .navigationTitle("Ajouter un invité")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -48,6 +47,7 @@ struct CreateGhostSheet: View {
                 }
             }
         }
+        .presentationBackground(.regularMaterial)
     }
 
     // MARK: - Header Section

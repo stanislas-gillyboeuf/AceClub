@@ -67,9 +67,9 @@ final class MatchSyncService {
         let currentPage: Int
     }
 
-    func syncMatchesPage(page: Int = 1, limit: Int = 20, purgeOnFirstPage: Bool = true) async throws -> SyncResult {
+    func syncMatchesPage(page: Int = 1, limit: Int = 20, purgeOnFirstPage: Bool = true, participantOnly: Bool = true) async throws -> SyncResult {
         let dto = try await dataSource.listMatches(
-            participantOnly: false,
+            participantOnly: participantOnly,
             page: page,
             limit: limit
         )
@@ -86,7 +86,7 @@ final class MatchSyncService {
             if dto.pagination.totalPages > 1 {
                 for nextPage in 2...dto.pagination.totalPages {
                     let nextDto = try await dataSource.listMatches(
-                        participantOnly: false,
+                        participantOnly: participantOnly,
                         page: nextPage,
                         limit: limit
                     )

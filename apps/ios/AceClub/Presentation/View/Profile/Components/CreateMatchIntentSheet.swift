@@ -71,6 +71,7 @@ struct CreateMatchIntentSheet: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
             .navigationTitle(intentType == .match ? "Je cherche un match" : "Je cherche un entraînement")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -96,6 +97,7 @@ struct CreateMatchIntentSheet: View {
                 }
             }
         }
+        .presentationBackground(.regularMaterial)
         .onAppear {
             errorMessage = nil
         }

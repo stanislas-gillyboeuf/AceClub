@@ -74,16 +74,7 @@ class ConversationMapper {
     static func map(participantDTO: ConversationParticipantDTO) -> ConversationParticipant {
         return ConversationParticipant(
             id: participantDTO.id,
-            userId: participantDTO.userId,
-            userName: participantDTO.userName,
-            userImage: participantDTO.userImage,
-            level: participantDTO.level ?? 1,
-            totalAces: participantDTO.totalAces ?? 0,
-            title: map(titleDTO: participantDTO.title),
-            badges: map(badgeDTOs: participantDTO.badges),
-            currentStreak: participantDTO.currentStreak ?? 0,
-            longestStreak: participantDTO.longestStreak ?? 0,
-            globalRank: participantDTO.globalRank
+            user: UserSummaryMapper.map(dto: participantDTO.user)
         )
     }
 
@@ -95,9 +86,7 @@ class ConversationMapper {
         return Message(
             id: messageDTO.id,
             conversationId: messageDTO.conversationId,
-            senderId: messageDTO.senderId,
-            senderName: messageDTO.senderName,
-            senderImage: messageDTO.senderImage,
+            sender: UserSummaryMapper.map(dto: messageDTO.sender),
             content: messageDTO.content,
             createdAt: parseDate(messageDTO.createdAt) ?? Date(),
             clientMessageId: messageDTO.clientMessageId,

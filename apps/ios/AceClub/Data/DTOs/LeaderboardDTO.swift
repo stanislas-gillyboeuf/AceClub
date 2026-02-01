@@ -3,9 +3,7 @@ import Foundation
 // MARK: - Leaderboard Entry DTO
 struct LeaderboardEntryDTO: Codable {
     let rank: Int
-    let userId: String
-    let name: String
-    let image: String?
+    let user: LeaderboardUserDTO
     let aces: Int
     let level: Int
     let streak: Int
@@ -27,9 +25,7 @@ struct LeaderboardPaginationDTO: Codable {
 // MARK: - Weekly Leaderboard Entry DTO
 struct WeeklyLeaderboardEntryDTO: Codable {
     let rank: Int
-    let userId: String
-    let name: String
-    let image: String?
+    let user: LeaderboardUserDTO
     let weeklyAces: Int
 }
 

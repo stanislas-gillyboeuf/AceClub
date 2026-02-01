@@ -12,16 +12,3 @@ struct Member: Identifiable {
     var isAdmin: Bool { role == .admin || role == .owner }
 }
 
-enum MemberRole: String, Codable {
-    case owner
-    case admin
-    case member
-
-    var displayName: String {
-        switch self {
-        case .owner: return "Propriétaire"
-        case .admin: return "Administrateur"
-        case .member: return "Membre"
-        }
-    }
-}

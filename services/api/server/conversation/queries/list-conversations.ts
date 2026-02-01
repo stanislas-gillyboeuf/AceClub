@@ -73,7 +73,6 @@ export const listConversations = async (c: Context<HonoContext>) => {
         (p) => p.conversationId === conv.id
       );
 
-      // Get other participant(s) with basic info
       const otherParticipants = await db
         .select({
           id: conversationParticipant.id,
@@ -184,32 +183,34 @@ export const listConversations = async (c: Context<HonoContext>) => {
 
         return {
           id: p.id,
-          userId: p.odUserId,
-          userName: p.userName,
-          userImage: p.userImage,
-          // Level info
-          level: level?.currentLevel || 1,
-          totalAces: level?.totalAces || 0,
-          // Title info
-          title: equippedTitle
-            ? {
-                code: equippedTitle.titleCode,
-                nameFr: equippedTitle.titleNameFr,
-                nameEn: equippedTitle.titleNameEn,
-              }
-            : null,
-          // Badges (top 3)
-          badges: userBadges.map((b) => ({
-            code: b.badgeCode,
-            imageUrl: b.badgeImageUrl,
-            nameFr: b.badgeNameFr,
-            nameEn: b.badgeNameEn,
-          })),
-          // Streak info
-          currentStreak: streak?.currentStreak || 0,
-          longestStreak: streak?.longestStreak || 0,
-          // Ranking
-          globalRank: ranking?.rank || null,
+          user: {
+            id: p.odUserId,
+            name: p.userName,
+            image: p.userImage,
+            // Level info
+            level: level?.currentLevel || 1,
+            totalAces: level?.totalAces || 0,
+            // Title info
+            title: equippedTitle
+              ? {
+                  code: equippedTitle.titleCode,
+                  nameFr: equippedTitle.titleNameFr,
+                  nameEn: equippedTitle.titleNameEn,
+                }
+              : null,
+            // Badges (top 3)
+            badges: userBadges.map((b) => ({
+              code: b.badgeCode,
+              imageUrl: b.badgeImageUrl,
+              nameFr: b.badgeNameFr,
+              nameEn: b.badgeNameEn,
+            })),
+            // Streak info
+            currentStreak: streak?.currentStreak || 0,
+            longestStreak: streak?.longestStreak || 0,
+            // Ranking
+            globalRank: ranking?.rank || null,
+          },
         };
       });
 

@@ -1,3 +1,21 @@
+// MARK: - User Brief DTOs (for nested objects)
+
+// Note: UserBriefDTO is defined in MatchIntentDTO.swift
+
+/// User info for message senders
+struct MessageSenderDTO: Codable {
+    let id: String
+    let name: String
+    let image: String?
+}
+
+/// User info for leaderboard entries
+struct LeaderboardUserDTO: Codable {
+    let id: String
+    let name: String
+    let image: String?
+}
+
 // MARK: - User DTO
 struct UserDTO: Codable {
     let id: String
