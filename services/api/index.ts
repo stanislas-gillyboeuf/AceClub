@@ -10,6 +10,7 @@ import {
   type WebSocketData,
 } from "./server/ws/bun-chat-handler";
 import type { HonoContext } from "./types/hono";
+import type { Server } from "bun";
 
 const app = new Hono<HonoContext>();
 
@@ -69,12 +70,10 @@ app.get("/health", (c) => c.json({ status: "ok" }));
 // Initialize Redis subscriber for cross-pod messaging
 initializeRedisSubscriber();
 
-// Start Bun server with native WebSocket support
-const port = Number(process.env.PORT) || 3000;
-
-const server = Bun.serve<WebSocketData>({
-  port,
-  async fetch(req, server) {
+// Export server config for Bun to auto-serve
+export default {
+  port: Number(process.env.PORT) || 3000,
+  async fetch(req: Request, server: Server<WebSocketData>) {
     const url = new URL(req.url);
 
     // Handle WebSocket upgrade for /ws/chat
@@ -100,9 +99,4 @@ const server = Bun.serve<WebSocketData>({
     return app.fetch(req);
   },
   websocket: websocketHandlers,
-});
-
-console.log(`🚀 Server running on http://localhost:${server.port}`);
-console.log(`[WS] WebSocket server initialized on /ws/chat`);
-
-export default app;
+} satisfies Partial<Parameters<typeof Bun.serve<WebSocketData>>[0]>;
