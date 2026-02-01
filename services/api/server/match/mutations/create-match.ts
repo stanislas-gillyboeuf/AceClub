@@ -257,7 +257,7 @@ export const createMatch = async (c: Context<HonoContext>) => {
       console.log("🔄 [CREATE MATCH] Fetching participants with user details...");
       // Fetch participants with user details
       const participantIds = participants.map((p) => p.id);
-      const participantsWithUsers = await tx
+      const participantsRaw = await tx
         .select({
           id: matchParticipant.id,
           matchId: matchParticipant.matchId,
@@ -265,13 +265,21 @@ export const createMatch = async (c: Context<HonoContext>) => {
           side: matchParticipant.side,
           isWinner: matchParticipant.isWinner,
           createdAt: matchParticipant.createdAt,
-          userName: user.name,
-          userEmail: user.email,
-          userImage: user.image,
+          user: user,
         })
         .from(matchParticipant)
         .leftJoin(user, eq(matchParticipant.userId, user.id))
         .where(inArray(matchParticipant.id, participantIds));
+
+      const participantsWithUsers = participantsRaw.map((p) => ({
+        id: p.id,
+        matchId: p.matchId,
+        userId: p.userId,
+        side: p.side,
+        isWinner: p.isWinner,
+        createdAt: p.createdAt,
+        user: p.user,
+      }));
 
       console.log("✅ [CREATE MATCH] Transaction completed successfully");
       return {

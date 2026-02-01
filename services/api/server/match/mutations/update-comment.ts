@@ -48,7 +48,20 @@ export const updateComment = async (c: Context<HonoContext>) => {
       .where(eq(matchComment.id, existingComment.id))
       .returning();
 
-    return c.json(updatedComment);
+    // Return with nested user structure
+    return c.json({
+      id: updatedComment.id,
+      matchId: updatedComment.matchId,
+      userId: updatedComment.userId,
+      content: updatedComment.content,
+      createdAt: updatedComment.createdAt,
+      updatedAt: updatedComment.updatedAt,
+      user: {
+        id: updatedComment.userId,
+        name: updatedComment.userName,
+        image: updatedComment.userImage,
+      },
+    });
   } catch (error) {
     const errorMessage = (error as Error).message;
     return c.json({ error: errorMessage }, 500);

@@ -80,7 +80,7 @@ export const listMatches = async (c: Context<HonoContext>) => {
     }
 
     const matchIds = matches.map((m) => m.id);
-    const participants = await db
+    const participantsRaw = await db
       .select({
         id: matchParticipant.id,
         matchId: matchParticipant.matchId,
@@ -88,16 +88,25 @@ export const listMatches = async (c: Context<HonoContext>) => {
         side: matchParticipant.side,
         isWinner: matchParticipant.isWinner,
         createdAt: matchParticipant.createdAt,
-        userName: user.name,
-        userEmail: user.email,
-        userImage: user.image,
+        user: user,
       })
       .from(matchParticipant)
       .leftJoin(user, eq(matchParticipant.userId, user.id))
       .where(inArray(matchParticipant.matchId, matchIds))
       .orderBy(matchParticipant.side);
 
-    const participantsByMatch = new Map<string, typeof participants>();
+    const participants = participantsRaw.map((p) => ({
+      id: p.id,
+      matchId: p.matchId,
+      userId: p.userId,
+      side: p.side,
+      isWinner: p.isWinner,
+      createdAt: p.createdAt,
+      user: p.user,
+    }));
+
+    type ParticipantWithUser = (typeof participants)[number];
+    const participantsByMatch = new Map<string, ParticipantWithUser[]>();
     for (const participant of participants) {
       if (!participantsByMatch.has(participant.matchId)) {
         participantsByMatch.set(participant.matchId, []);

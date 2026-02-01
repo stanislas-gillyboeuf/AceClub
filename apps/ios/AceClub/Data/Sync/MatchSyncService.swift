@@ -449,9 +449,9 @@ final class MatchSyncService {
         if let existing = fetchParticipant(id: dto.id) {
             existing.side = dto.side
             existing.isWinner = dto.isWinner
-            existing.userName = dto.userName
-            existing.userEmail = dto.userEmail
-            existing.userImage = dto.userImage
+            existing.userName = dto.user?.name
+            existing.userEmail = dto.user?.email
+            existing.userImage = dto.user?.image
             return existing
         } else {
             let participant = MatchParticipantModel(
@@ -461,9 +461,9 @@ final class MatchSyncService {
                 side: dto.side,
                 isWinner: dto.isWinner,
                 createdAt: parseDate(dto.createdAt) ?? Date(),
-                userName: dto.userName,
-                userEmail: dto.userEmail,
-                userImage: dto.userImage
+                userName: dto.user?.name,
+                userEmail: dto.user?.email,
+                userImage: dto.user?.image
             )
             participant.match = match
             modelContext.insert(participant)
@@ -547,8 +547,8 @@ final class MatchSyncService {
     private func upsertComment(from dto: MatchCommentDTO, match: MatchModel) -> MatchCommentModel {
         if let existing = fetchComment(id: dto.id) {
             existing.content = dto.content
-            existing.userName = dto.userName
-            existing.userImage = dto.userImage
+            existing.userName = dto.user?.name ?? ""
+            existing.userImage = dto.user?.image
             existing.updatedAt = parseDate(dto.updatedAt) ?? Date()
             return existing
         } else {
@@ -557,8 +557,8 @@ final class MatchSyncService {
                 matchId: dto.matchId,
                 userId: dto.userId,
                 content: dto.content,
-                userName: dto.userName,
-                userImage: dto.userImage,
+                userName: dto.user?.name ?? "",
+                userImage: dto.user?.image,
                 createdAt: parseDate(dto.createdAt) ?? Date(),
                 updatedAt: parseDate(dto.updatedAt) ?? Date()
             )

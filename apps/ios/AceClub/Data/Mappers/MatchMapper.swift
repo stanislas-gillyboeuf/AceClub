@@ -95,9 +95,9 @@ class MatchMapper {
             side: mapSide(participantDTO.side),
             isWinner: participantDTO.isWinner,
             createdAt: parseDate(participantDTO.createdAt) ?? Date(),
-            userName: participantDTO.userName,
-            userEmail: participantDTO.userEmail,
-            userImage: participantDTO.userImage
+            userName: participantDTO.user?.name,
+            userEmail: participantDTO.user?.email,
+            userImage: participantDTO.user?.image
         )
     }
 
@@ -325,8 +325,8 @@ class MatchMapper {
             matchId: commentDTO.matchId,
             userId: commentDTO.userId,
             content: commentDTO.content,
-            userName: commentDTO.userName,
-            userImage: commentDTO.userImage,
+            userName: commentDTO.user?.name ?? "",
+            userImage: commentDTO.user?.image,
             createdAt: parseDate(commentDTO.createdAt) ?? Date(),
             updatedAt: parseDate(commentDTO.updatedAt) ?? Date()
         )

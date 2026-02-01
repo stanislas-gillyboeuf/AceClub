@@ -139,7 +139,6 @@ export const sendMessage = async (c: Context<HonoContext>) => {
     }
   }
 
-  // Send push notifications only to participants who are NOT connected via WebSocket
   for (const participant of otherParticipants) {
     if (!participant.isMuted) {
       if (isUserConnectedWs(participant.userId)) {

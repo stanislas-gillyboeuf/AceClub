@@ -117,6 +117,7 @@ struct HomeView: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .id(match.participantsImageHash)
                     }
                 }
                 .padding(.horizontal, Theme.paddingHorizontal)
@@ -145,6 +146,7 @@ struct HomeView: View {
                             )
                         }
                         .buttonStyle(.plain)
+                        .id(match.participantsImageHash)
                         .onAppear {
                             if match.id == finishedMatches.suffix(3).first?.id {
                                 Task {

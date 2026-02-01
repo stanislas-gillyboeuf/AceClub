@@ -27,9 +27,7 @@ struct MatchParticipantDTO: Codable {
     let side: String
     let isWinner: Bool
     let createdAt: String
-    let userName: String?
-    let userEmail: String?
-    let userImage: String?
+    let user: UserDTO?
 }
 
 
@@ -56,10 +54,9 @@ struct MatchCommentDTO: Codable {
     let matchId: String
     let userId: String
     let content: String
-    let userName: String
-    let userImage: String?
     let createdAt: String
     let updatedAt: String
+    let user: UserDTO?
 }
 
 // MARK: - Complete Match Response DTO

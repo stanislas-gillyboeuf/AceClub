@@ -21,7 +21,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
 
     const foundMatch = matchData[0];
 
-    const [participants, setsData, comments] = await Promise.all([
+    const [participantsRaw, setsData, commentsRaw] = await Promise.all([
       db
         .select({
           id: matchParticipant.id,
@@ -30,9 +30,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
           side: matchParticipant.side,
           isWinner: matchParticipant.isWinner,
           createdAt: matchParticipant.createdAt,
-          userName: user.name,
-          userEmail: user.email,
-          userImage: user.image,
+          user: user,
         })
         .from(matchParticipant)
         .leftJoin(user, eq(matchParticipant.userId, user.id))
@@ -62,16 +60,35 @@ export const getMatch = async (c: Context<HonoContext>) => {
           matchId: matchComment.matchId,
           userId: matchComment.userId,
           content: matchComment.content,
-          userName: user.name,
-          userImage: user.image,
           createdAt: matchComment.createdAt,
           updatedAt: matchComment.updatedAt,
+          user: user,
         })
         .from(matchComment)
         .leftJoin(user, eq(matchComment.userId, user.id))
         .where(eq(matchComment.matchId, matchId))
         .orderBy(matchComment.createdAt),
     ]);
+
+    const participants = participantsRaw.map((p) => ({
+      id: p.id,
+      matchId: p.matchId,
+      userId: p.userId,
+      side: p.side,
+      isWinner: p.isWinner,
+      createdAt: p.createdAt,
+      user: p.user,
+    }));
+
+    const comments = commentsRaw.map((c) => ({
+      id: c.id,
+      matchId: c.matchId,
+      userId: c.userId,
+      content: c.content,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+      user: c.user,
+    }));
 
     // Group scores by set efficiently
     const setsMap = new Map<

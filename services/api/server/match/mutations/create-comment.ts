@@ -98,7 +98,23 @@ export const createComment = async (c: Context<HonoContext>) => {
       })
       .returning();
 
-    return c.json(createdComment, 201);
+    // Return with nested user structure
+    return c.json(
+      {
+        id: createdComment.id,
+        matchId: createdComment.matchId,
+        userId: createdComment.userId,
+        content: createdComment.content,
+        createdAt: createdComment.createdAt,
+        updatedAt: createdComment.updatedAt,
+        user: {
+          id: currentUser.id,
+          name: userInfo?.name || "Unknown",
+          image: userInfo?.image,
+        },
+      },
+      201,
+    );
   } catch (error) {
     const errorMessage = (error as Error).message;
 

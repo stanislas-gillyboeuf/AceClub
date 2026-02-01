@@ -149,4 +149,13 @@ final class MatchModel {
     var hasWinner: Bool {
         winner != nil
     }
+
+    /// Unique hash combining match ID and participant images for SwiftUI view refresh
+    var participantsImageHash: String {
+        let imageHashes = participants
+            .sorted { $0.side < $1.side }
+            .map { $0.userImage ?? "" }
+            .joined(separator: "|")
+        return "\(id)_\(imageHashes)"
+    }
 }
