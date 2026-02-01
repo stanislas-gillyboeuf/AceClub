@@ -4,9 +4,11 @@
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
     "target": "ES2020",
     "esModuleInterop": true,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+    "moduleResolution": "bundler"
+  },
+  "include": ["**/*.ts", "trigger.config.ts"],
+  "exclude": ["node_modules", "dist"]
 }

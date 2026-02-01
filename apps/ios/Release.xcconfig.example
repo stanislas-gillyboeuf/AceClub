@@ -1,0 +1,5 @@
+// Release Configuration Example
+// Copy this file to Release.xcconfig and customize the values
+
+API_BASE_URL = https:/$()/your-production-url.com/api
+APP_ENV = production

@@ -15,7 +15,11 @@ struct ContentView: View {
             if authViewModel.isLoading {
                 ProgressView()
             } else if authViewModel.isAuthenticated {
-                RootView()
+                if let user = authViewModel.currentUser, user.isOnboardingCompleted == false {
+                    OnboardingView()
+                } else {
+                    RootView()
+                }
             } else {
                 SignInView()
             }

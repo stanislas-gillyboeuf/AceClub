@@ -16,7 +16,7 @@ struct FullOrganizationDTO: Codable {
     let name: String
     let slug: String
     let logo: String?
-    let createdAt: Date
+    let createdAt: String
     let metadata: String?
     let members: [MemberDTO]
 }
@@ -39,4 +39,21 @@ struct ListOrganizationsResponseDTO: Codable {
     private enum CodingKeys: String, CodingKey {
         case organizations
     }
+}
+
+
+// MARK: - Create Organization Request
+struct CreateOrganizationRequestDTO: Codable {
+    let name: String
+    let slug: String
+    let logo: String?
+    let metadata: String?
+}
+
+// MARK: - Search Organizations Response
+
+struct SearchOrganizationsResponseDTO: Codable {
+    let organizations: [OrganizationDTO]
+    let total: Int
+    let hasMore: Bool
 }

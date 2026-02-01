@@ -9,11 +9,11 @@ enum OrganizationError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidURL: return "Invalid URL"
-        case .invalidResponse: return "Invalid response from server"
+        case .invalidURL: return "URL invalide"
+        case .invalidResponse: return "Réponse invalide du serveur"
         case .serverError(let message): return message
-        case .decodingError: return "Failed to decode response"
-        case .networkError(let error): return "Network error: \(error.localizedDescription)"
+        case .decodingError: return "Échec du décodage de la réponse"
+        case .networkError(let error): return "Erreur réseau : \(error.localizedDescription)"
         }
     }
 }
@@ -35,6 +35,42 @@ class OrganizationAPIDataSource {
 
         do {
             return try JSONDecoder().decode([OrganizationDTO].self, from: data)
+        } catch let directError {
+            do {
+                let response = try JSONDecoder().decode(ListOrganizationsResponseDTO.self, from: data)
+                return response.organizations ?? []
+            } catch let wrappedError {
+                throw OrganizationError.decodingError
+            }
+        }
+    }
+
+    func searchOrganizations(query: String? = nil, limit: Int = 20, offset: Int = 0) async throws -> SearchOrganizationsResponseDTO {
+        guard var components = URLComponents(string: "\(Config.apiBaseURL)/organization/search") else {
+            throw OrganizationError.invalidURL
+        }
+
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "limit", value: String(limit)),
+            URLQueryItem(name: "offset", value: String(offset))
+        ]
+        if let query, !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            queryItems.append(URLQueryItem(name: "query", value: query))
+        }
+        components.queryItems = queryItems
+
+        guard let url = components.url else {
+            throw OrganizationError.invalidURL
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url)
+
+        guard response.statusCode == 200 else {
+            throw OrganizationError.serverError("Search organizations failed: \(response.statusCode)")
+        }
+
+        do {
+            return try JSONDecoder().decode(SearchOrganizationsResponseDTO.self, from: data)
         } catch {
             throw OrganizationError.decodingError
         }
@@ -64,14 +100,44 @@ class OrganizationAPIDataSource {
         }
     }
 
+    func getOrganizationStats(organizationId: String) async throws -> OrganizationStatsDTO {
+        guard var urlComponents = URLComponents(string: "\(Config.apiBaseURL)/organization/get-organization-stats") else {
+            throw OrganizationError.invalidURL
+        }
+
+        urlComponents.queryItems = [URLQueryItem(name: "organizationId", value: organizationId)]
+
+        guard let url = urlComponents.url else {
+            throw OrganizationError.invalidURL
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url)
+
+        guard response.statusCode == 200 else {
+            throw OrganizationError.serverError("Get organization stats failed: \(response.statusCode)")
+        }
+
+        do {
+            return try JSONDecoder().decode(OrganizationStatsDTO.self, from: data)
+        } catch {
+            throw OrganizationError.decodingError
+        }
+    }
+
     // MARK: - Organization Mutations
 
-    func setActiveOrganization(slug: String) async throws {
+    func setActiveOrganization(slug: String? = nil, organizationId: String? = nil) async throws {
         guard let url = URL(string: "\(Config.apiBaseURL)/organization/set-active") else {
             throw OrganizationError.invalidURL
         }
 
-        let requestBody = ["organizationSlug": slug]
+        var requestBody: [String: String] = [:]
+        if let slug = slug {
+            requestBody["organizationSlug"] = slug
+        }
+        if let organizationId = organizationId {
+            requestBody["organizationId"] = organizationId
+        }
         let bodyData = try JSONEncoder().encode(requestBody)
 
         let (_, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)
@@ -109,7 +175,7 @@ class OrganizationAPIDataSource {
         }
     }
 
-    func getActiveMember() async throws -> ActiveMemberDTO {
+    func getActiveMember() async throws -> ActiveMemberDTO? {
         guard let url = URL(string: "\(Config.apiBaseURL)/organization/get-active-member") else {
             throw OrganizationError.invalidURL
         }
@@ -120,6 +186,10 @@ class OrganizationAPIDataSource {
             throw OrganizationError.serverError("Get active member failed: \(response.statusCode)")
         }
 
+        if let jsonString = String(data: data, encoding: .utf8), jsonString == "null" {
+            return nil
+        }
+
         do {
             return try JSONDecoder().decode(ActiveMemberDTO.self, from: data)
         } catch {
@@ -127,7 +197,7 @@ class OrganizationAPIDataSource {
         }
     }
 
-    func getActiveMemberRole() async throws -> String {
+    func getActiveMemberRole() async throws -> String? {
         guard let url = URL(string: "\(Config.apiBaseURL)/organization/get-active-member-role") else {
             throw OrganizationError.invalidURL
         }
@@ -136,6 +206,10 @@ class OrganizationAPIDataSource {
 
         guard response.statusCode == 200 else {
             throw OrganizationError.serverError("Get active member role failed: \(response.statusCode)")
+        }
+
+        if let jsonString = String(data: data, encoding: .utf8), jsonString == "null" {
+            return nil
         }
 
         do {
@@ -226,6 +300,49 @@ class OrganizationAPIDataSource {
 
         guard response.statusCode == 200 else {
             throw OrganizationError.serverError("Leave organization failed: \(response.statusCode)")
+        }
+    }
+
+    func createOrganization(name: String, slug: String, logo: String? = nil, metadata: String? = nil) async throws -> OrganizationDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/organization/create") else {
+            throw OrganizationError.invalidURL
+        }
+
+        let requestBody = CreateOrganizationRequestDTO(name: name, slug: slug, logo: logo, metadata: metadata)
+        let bodyData = try JSONEncoder().encode(requestBody)
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)
+
+        guard response.statusCode == 200 else {
+            throw OrganizationError.serverError("Create organization failed: \(response.statusCode)")
+        }
+
+        do {
+            return try JSONDecoder().decode(OrganizationDTO.self, from: data)
+        } catch {
+            throw OrganizationError.decodingError
+        }
+    }
+
+    func updateOrganization(organizationId: String, name: String? = nil, slug: String? = nil, logo: String? = nil) async throws -> OrganizationDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/organization/update") else {
+            throw OrganizationError.invalidURL
+        }
+
+        let requestBody = UpdateOrganizationRequestDTO(
+            organizationId: organizationId,
+            data: UpdateOrganizationDataDTO(name: name, slug: slug, logo: logo)
+        )
+        let bodyData = try JSONEncoder().encode(requestBody)
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)
+
+        guard response.statusCode == 200 else {
+            throw OrganizationError.serverError("Update organization failed: \(response.statusCode)")
+        }
+
+        do {
+            return try JSONDecoder().decode(OrganizationDTO.self, from: data)
+        } catch {
+            throw OrganizationError.decodingError
         }
     }
 }

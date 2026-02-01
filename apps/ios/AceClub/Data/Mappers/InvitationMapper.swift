@@ -11,9 +11,24 @@ class InvitationMapper {
             expiresAt: invitationDTO.expiresAt,
             createdAt: invitationDTO.createdAt,
             inviterId: invitationDTO.inviterId,
+            organizationName: invitationDTO.organizationName,
             organization: invitationDTO.organization != nil
                 ? OrganizationMapper.map(organizationDTO: invitationDTO.organization!)
-                : nil
+                : nil,
+        )
+    }
+
+    static func map(acceptedInvitationDTO: AcceptedInvitationDTO) -> Invitation {
+        return Invitation(
+            id: acceptedInvitationDTO.id,
+            organizationId: acceptedInvitationDTO.organizationId,
+            email: acceptedInvitationDTO.email,
+            role: MemberRole(rawValue: acceptedInvitationDTO.role) ?? .member,
+            status: InvitationStatus(rawValue: acceptedInvitationDTO.status) ?? .pending,
+            expiresAt: acceptedInvitationDTO.expiresAt,
+            createdAt: acceptedInvitationDTO.createdAt,
+            inviterId: acceptedInvitationDTO.inviterId,
+            organizationName: nil, organization: nil
         )
     }
 

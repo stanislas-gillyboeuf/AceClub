@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { cors } from "hono/cors";
-import { serve } from "@hono/node-server";
 import { auth } from "./auth";
 import { serverRouter } from "./server/router";
 import type { HonoContext } from "./types/hono";
@@ -68,10 +67,10 @@ app.get("/api/session", async (c) => {
 // routes
 app.route("/api", serverRouter);
 
+// Root route
+app.get("/", (c) => c.json({ message: "AceClub API", status: "ok" }));
+
 // Health check
 app.get("/health", (c) => c.json({ status: "ok" }));
 
-const port = Number(process.env.PORT) || 3000;
-console.log(`Server running on port ${port}`);
-
-export default serve({ fetch: app.fetch, port });
+export default app;

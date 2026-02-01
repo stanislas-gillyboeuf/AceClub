@@ -7,20 +7,6 @@
 
 import Foundation
 
-// MARK: - Sign Up Request
-struct SignUpRequestDTO: Codable {
-    let name: String
-    let email: String
-    let password: String
-}
-
-// MARK: - Sign In Request
-struct SignInRequestDTO: Codable {
-    let email: String
-    let password: String
-    let rememberMe: Bool
-}
-
 // MARK: - Auth Response
 struct AuthResponseDTO: Codable {
     let user: UserDTO

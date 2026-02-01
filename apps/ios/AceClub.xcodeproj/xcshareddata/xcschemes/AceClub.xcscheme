@@ -54,7 +54,7 @@
          <EnvironmentVariable
             key = "API_BASE_URL"
             value = "http://localhost:3000/api"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>

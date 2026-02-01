@@ -20,7 +20,10 @@ class UserMapper {
             role: userDTO.role,
             banned: userDTO.banned,
             banReason: userDTO.banReason,
-            banExpires: userDTO.banExpires
+            banExpires: userDTO.banExpires,
+            onboardingCompleted: userDTO.onboardingCompleted,
+            phoneNumber: userDTO.phoneNumber,
+            isGhost: nil
         )
     }
 
@@ -32,4 +35,60 @@ class UserMapper {
             offset: listUsersResponseDTO.offset
         )
     }
+
+    static func map(userSearchItemDTO: UserSearchItemDTO) -> User {
+        return User(
+            id: userSearchItemDTO.id,
+            name: userSearchItemDTO.name,
+            email: "",
+            emailVerified: nil,
+            image: userSearchItemDTO.image,
+            createdAt: nil,
+            updatedAt: nil,
+            role: nil,
+            banned: nil,
+            banReason: nil,
+            banExpires: nil,
+            onboardingCompleted: nil,
+            phoneNumber: nil,
+            isGhost: userSearchItemDTO.isGhost
+        )
+    }
+
+    static func map(ghostUserDTO: GhostUserDTO) -> User {
+        return User(
+            id: ghostUserDTO.id,
+            name: ghostUserDTO.name,
+            email: ghostUserDTO.email,
+            emailVerified: nil,
+            image: ghostUserDTO.image,
+            createdAt: ghostUserDTO.createdAt,
+            updatedAt: nil,
+            role: nil,
+            banned: nil,
+            banReason: nil,
+            banExpires: nil,
+            onboardingCompleted: nil,
+            phoneNumber: nil,
+            isGhost: ghostUserDTO.isGhost
+        )
+    }
+
+    static func map(userSearchResponseDTO: UserSearchResponseDTO) -> [User] {
+        return userSearchResponseDTO.users.map { map(userSearchItemDTO: $0) }
+    }
+
+    static func map(userPreferencesDTO: UserPreferencesResponseDTO) -> UserPreferences {
+        return UserPreferences(
+            id: userPreferencesDTO.id,
+            userId: userPreferencesDTO.userId,
+            organizationId: userPreferencesDTO.organizationId,
+            organizationName: userPreferencesDTO.organizationName,
+            sport: userPreferencesDTO.sport,
+            skillLevel: userPreferencesDTO.skillLevel,
+            createdAt: userPreferencesDTO.createdAt,
+            updatedAt: userPreferencesDTO.updatedAt
+        )
+    }
 }
+

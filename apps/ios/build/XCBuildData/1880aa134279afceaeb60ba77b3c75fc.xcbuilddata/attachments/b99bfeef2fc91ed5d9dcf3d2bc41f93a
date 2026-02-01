@@ -1,0 +1,4 @@
+module AppAuth {
+umbrella "/Users/nicolasbecharat/Library/Developer/Xcode/DerivedData/AceClub-ebrouewuepdcauhddyngtvtyxzts/SourcePackages/checkouts/AppAuth-iOS/Sources/AppAuth"
+export *
+}

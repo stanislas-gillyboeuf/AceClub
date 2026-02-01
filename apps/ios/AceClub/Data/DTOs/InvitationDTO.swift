@@ -12,13 +12,13 @@ struct InvitationDTO: Codable {
     let inviterId: String
     let teamId: String?
     let organization: OrganizationDTO?
+    let organizationName: String?
 }
 
 // MARK: - List Invitations Response
 struct ListInvitationsResponseDTO: Codable {
     let invitations: [InvitationDTO]?
 
-    // Handle array response directly
     init(from decoder: Decoder) throws {
         if let container = try? decoder.container(keyedBy: CodingKeys.self) {
             invitations = try container.decodeIfPresent([InvitationDTO].self, forKey: .invitations)
@@ -49,6 +49,19 @@ struct InvitationActionRequestDTO: Codable {
 
 // MARK: - Accept Invitation Response
 struct AcceptInvitationResponseDTO: Codable {
-    let invitation: InvitationDTO
+    let invitation: AcceptedInvitationDTO
     let member: MemberDTO
+}
+
+// MARK: - Accepted Invitation DTO
+struct AcceptedInvitationDTO: Codable {
+    let id: String
+    let organizationId: String
+    let email: String
+    let role: String
+    let status: String
+    let inviterId: String
+    let expiresAt: String
+    let createdAt: String
+    let teamId: String?
 }

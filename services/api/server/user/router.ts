@@ -1,7 +1,15 @@
 import { Hono } from "hono";
 import { requireAuth } from "../../middleware/auth";
 import type { HonoContext } from "../../types/hono";
-import { me } from "./queries";
+import { zValidator } from "@hono/zod-validator";
+import { me, searchUsers, getPreferences } from "./queries";
+import { completeOnboarding, updateProfile, createGhost } from "./mutations";
+import {
+  completeOnboardingValidator,
+  createGhostValidator,
+  searchUsersValidator,
+  updateProfileValidator,
+} from "./validators";
 
 export const userRouter = new Hono<HonoContext>();
 
@@ -9,3 +17,12 @@ export const userRouter = new Hono<HonoContext>();
 userRouter.use("/*", requireAuth);
 
 userRouter.get("/me", me);
+userRouter.get("/preferences", getPreferences);
+userRouter.get("/search", zValidator("query", searchUsersValidator), searchUsers);
+userRouter.post(
+  "/complete-onboarding",
+  zValidator("json", completeOnboardingValidator),
+  completeOnboarding,
+);
+userRouter.put("/profile", zValidator("json", updateProfileValidator), updateProfile);
+userRouter.post("/ghost", zValidator("json", createGhostValidator), createGhost);

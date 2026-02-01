@@ -8,8 +8,8 @@
 import Foundation
 
 protocol AuthRepositoryProtocol {
-    func signUp(name: String, email: String, password: String) async throws -> (user: User, session: AuthSession)
-    func signIn(email: String, password: String, rememberMe: Bool) async throws -> (user: User, session: AuthSession)
+    func signInWithGoogle(idToken: String, accessToken: String) async throws -> (user: User, session: AuthSession)
+    func signInWithApple(idToken: String, email: String?, name: String?) async throws -> (user: User, session: AuthSession)
     func signOut(token: String) async throws
 }
 
@@ -20,13 +20,13 @@ class AuthRepository: AuthRepositoryProtocol {
         self.dataSource = dataSource
     }
 
-    func signUp(name: String, email: String, password: String) async throws -> (user: User, session: AuthSession) {
-        let response = try await dataSource.signUp(name: name, email: email, password: password)
+    func signInWithGoogle(idToken: String, accessToken: String) async throws -> (user: User, session: AuthSession) {
+        let response = try await dataSource.signInWithGoogle(idToken: idToken, accessToken: accessToken)
         return AuthMapper.map(authResponseDTO: response)
     }
 
-    func signIn(email: String, password: String, rememberMe: Bool = true) async throws -> (user: User, session: AuthSession) {
-        let response = try await dataSource.signIn(email: email, password: password, rememberMe: rememberMe)
+    func signInWithApple(idToken: String, email: String?, name: String?) async throws -> (user: User, session: AuthSession) {
+        let response = try await dataSource.signInWithApple(idToken: idToken, email: email, name: name)
         return AuthMapper.map(authResponseDTO: response)
     }
 

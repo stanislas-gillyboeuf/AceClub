@@ -1,65 +1,209 @@
-//
-//  HomeView.swift
-//  AceClub
-//
-//  Created by Nicolas Becharat on 12/01/2026.
-//
-
 import SwiftUI
+import SwiftData
 
 struct HomeView: View {
     @Environment(AuthViewModel.self) private var authViewModel
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var organizationViewModel: OrganizationViewModel
+
+    @Query(sort: \MatchModel.createdAt, order: .reverse)
+    private var allMatches: [MatchModel]
+
+    @State private var viewModel = HomeFeedViewModel()
+    @State private var showProgression = false
+    @State private var showLeaderboard = false
+    @StateObject private var progressionViewModel = ProgressionViewModel()
+    @StateObject private var leaderboardViewModel = LeaderboardViewModel()
+
+    private var currentUserId: String {
+        authViewModel.currentUser?.id ?? ""
+    }
+
+    private var ongoingMatches: [MatchModel] {
+        allMatches.filter { $0.isOngoing }
+    }
+
+    private var finishedMatches: [MatchModel] {
+        allMatches.filter { $0.isFinished }
+    }
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                
-                if let user = authViewModel.currentUser {
-                    VStack(spacing: 8) {
-                        Text("Welcome!")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                        
-                        Text(user.name)
-                            .font(.title2)
-                            .foregroundColor(.secondary)
-                        
-                        Text(user.email)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+            ScrollView {
+                VStack(spacing: 24) {
+                    if let stats = viewModel.stats {
+                        StatsCardView(stats: stats)
+                            .padding(.horizontal, Theme.paddingHorizontal)
+                    } else if viewModel.isLoading {
+                        StatsCardSkeleton()
+                            .padding(.horizontal, Theme.paddingHorizontal)
                     }
-                    .padding(.top, 40)
-                }
-                
-                Spacer()
-                
-                Button(action: handleSignOut) {
-                    if authViewModel.isLoading {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                    } else {
-                        Text("Sign Out")
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
+
+                    if !ongoingMatches.isEmpty {
+                        ongoingMatchesSection
                     }
+
+                    matchHistorySection
                 }
-                .buttonStyle(.bordered)
-                .tint(.red)
-                .disabled(authViewModel.isLoading)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 40)
+                .padding(.top, 16)
+                .padding(.bottom, 32)
             }
-            .navigationTitle("AceClub")
+            .background(Theme.primaryBackground)
+            .navigationTitle("Activité")
+            .toolbar {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        showProgression = true
+                    } label: {
+                        Image(systemName: "chart.line.uptrend.xyaxis")
+                    }
+
+                    Button {
+                        showLeaderboard = true
+                    } label: {
+                        Image(systemName: "trophy")
+                    }
+                }
+            }
+            .fullScreenCover(isPresented: $showProgression) {
+                NavigationStack {
+                    ProgressionView(viewModel: progressionViewModel)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarLeading) {
+                                Button("Fermer") {
+                                    showProgression = false
+                                }
+                            }
+                        }
+                }
+            }
+            .fullScreenCover(isPresented: $showLeaderboard) {
+                NavigationStack {
+                    LeaderboardView(viewModel: leaderboardViewModel)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarLeading) {
+                                Button("Fermer") {
+                                    showLeaderboard = false
+                                }
+                            }
+                        }
+                }
+            }
+            .refreshable {
+                await refresh()
+            }
+            .task {
+                await initialLoad()
+            }
         }
     }
 
-    private func handleSignOut() {
-        Task {
-            await authViewModel.signOut()
+    @ViewBuilder
+    private var ongoingMatchesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("En cours")
+                .font(.title2.weight(.bold))
+                .padding(.horizontal, Theme.paddingHorizontal)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(ongoingMatches) { match in
+                        NavigationLink {
+                            MatchDetailView(matchId: match.id)
+                        } label: {
+                            OngoingMatchCardView(
+                                match: match,
+                                currentUserId: currentUserId
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .id(match.participantsImageHash)
+                    }
+                }
+                .padding(.horizontal, Theme.paddingHorizontal)
+            }
         }
+    }
+
+    @ViewBuilder
+    private var matchHistorySection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Matchs récents au club")
+                .font(.title2.weight(.bold))
+                .padding(.horizontal, Theme.paddingHorizontal)
+
+            if finishedMatches.isEmpty && !viewModel.isLoading {
+                emptyFeedView
+            } else {
+                LazyVStack(spacing: 12) {
+                    ForEach(finishedMatches) { match in
+                        NavigationLink {
+                            MatchDetailView(matchId: match.id)
+                        } label: {
+                            FeedMatchRowView(
+                                match: match,
+                                currentUserId: currentUserId
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .id(match.participantsImageHash)
+                        .onAppear {
+                            if match.id == finishedMatches.suffix(3).first?.id {
+                                Task {
+                                    await viewModel.loadMoreMatches()
+                                }
+                            }
+                        }
+                    }
+
+                    if viewModel.isLoadingMore {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                    }
+                }
+                .padding(.horizontal, Theme.paddingHorizontal)
+            }
+        }
+    }
+
+    private var emptyFeedView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "sportscourt")
+                .font(.system(size: 48))
+                .foregroundStyle(.secondary)
+
+            Text("Aucun match récent au club")
+                .font(.headline)
+
+            Text("Vos matchs récents au club apparaîtront ici")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 40)
+        .background(Theme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous)
+                .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
+        }
+        .padding(.horizontal, Theme.paddingHorizontal)
+    }
+
+    private func initialLoad() async {
+        viewModel.initialize(modelContext: modelContext)
+        await viewModel.syncMatches()
+        recalculateStats()
+    }
+
+    private func refresh() async {
+        await viewModel.syncMatches()
+        recalculateStats()
+    }
+
+    private func recalculateStats() {
+        guard !currentUserId.isEmpty else { return }
+        viewModel.calculateStats(from: allMatches, userId: currentUserId)
     }
 }
-

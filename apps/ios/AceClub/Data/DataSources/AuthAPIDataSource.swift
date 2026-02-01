@@ -17,105 +17,21 @@ enum AuthError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "Invalid URL"
+            return "URL invalide"
         case .invalidResponse:
-            return "Invalid response from server"
+            return "Réponse invalide du serveur"
         case .serverError(let message):
             return message
         case .decodingError:
-            return "Failed to decode response"
+            return "Échec du décodage de la réponse"
         case .networkError(let error):
-            return "Network error: \(error.localizedDescription)"
+            return "Erreur réseau : \(error.localizedDescription)"
         }
     }
 }
 
 class AuthAPIDataSource {
     private let session = URLSession.shared
-
-    // MARK: - Sign Up
-    func signUp(name: String, email: String, password: String) async throws -> AuthResponseDTO {
-        guard let url = URL(string: "\(Config.apiBaseURL)/auth/sign-up/email") else {
-            throw AuthError.invalidURL
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("aceclub://", forHTTPHeaderField: "Origin")
-
-        let body = SignUpRequestDTO(name: name, email: email, password: password)
-        request.httpBody = try JSONEncoder().encode(body)
-
-        do {
-            let (data, response) = try await session.data(for: request)
-
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw AuthError.invalidResponse
-            }
-
-            if httpResponse.statusCode != 200 {
-                if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
-                   let message = errorResponse["message"] {
-                    throw AuthError.serverError(message)
-                }
-                throw AuthError.serverError("Sign up failed with status code: \(httpResponse.statusCode)")
-            }
-
-            let authResponse = try JSONDecoder().decode(AuthResponseDTO.self, from: data)
-            return authResponse
-
-        } catch let error as AuthError {
-            throw error
-        } catch {
-            throw AuthError.networkError(error)
-        }
-    }
-
-    // MARK: - Sign In
-    func signIn(email: String, password: String, rememberMe: Bool = true) async throws -> AuthResponseDTO {
-        guard let url = URL(string: "\(Config.apiBaseURL)/auth/sign-in/email") else {
-            throw AuthError.invalidURL
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("aceclub://", forHTTPHeaderField: "Origin")
-
-        let body = SignInRequestDTO(email: email, password: password, rememberMe: rememberMe)
-        request.httpBody = try JSONEncoder().encode(body)
-
-        do {
-            let (data, response) = try await session.data(for: request)
-
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw AuthError.invalidResponse
-            }
-
-            // DEBUG: Print raw response
-            if let jsonString = String(data: data, encoding: .utf8) {
-                print("🔵 Sign In Response: \(jsonString)")
-            }
-
-            if httpResponse.statusCode != 200 {
-                if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
-                   let message = errorResponse["message"] {
-                    throw AuthError.serverError(message)
-                }
-                throw AuthError.serverError("Sign in failed with status code: \(httpResponse.statusCode)")
-            }
-
-            let authResponse = try JSONDecoder().decode(AuthResponseDTO.self, from: data)
-            return authResponse
-
-        } catch let error as AuthError {
-            throw error
-        } catch {
-            print("🔴 Decoding error: \(error)")
-            throw AuthError.networkError(error)
-        }
-    }
 
     // MARK: - Sign Out
     func signOut(token: String) async throws {
@@ -138,8 +54,106 @@ class AuthAPIDataSource {
             }
 
             if httpResponse.statusCode != 200 {
-                throw AuthError.serverError("Sign out failed with status code: \(httpResponse.statusCode)")
+                throw AuthError.serverError("Échec de la déconnexion (code \(httpResponse.statusCode))")
             }
+
+        } catch let error as AuthError {
+            throw error
+        } catch {
+            throw AuthError.networkError(error)
+        }
+    }
+
+    // MARK: - Sign In with Google (Better Auth callback)
+    func signInWithGoogle(idToken: String, accessToken: String) async throws -> AuthResponseDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/auth/sign-in/social") else {
+            throw AuthError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("aceclub://", forHTTPHeaderField: "Origin")
+
+        let body: [String: Any] = [
+            "provider": "google",
+            "idToken": [
+                "token": idToken,
+                "accessToken": accessToken
+            ]
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        do {
+            let (data, response) = try await session.data(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw AuthError.invalidResponse
+            }
+
+            if httpResponse.statusCode != 200 {
+                if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
+                   let message = errorResponse["message"] {
+                    throw AuthError.serverError(message)
+                }
+                throw AuthError.serverError("Échec de la connexion Google (code \(httpResponse.statusCode))")
+            }
+
+            let authResponse = try JSONDecoder().decode(AuthResponseDTO.self, from: data)
+            return authResponse
+
+        } catch let error as AuthError {
+            throw error
+        } catch {
+            throw AuthError.networkError(error)
+        }
+    }
+
+    // MARK: - Sign In with Apple (Better Auth callback)
+    func signInWithApple(idToken: String, email: String?, name: String?) async throws -> AuthResponseDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/auth/sign-in/social") else {
+            throw AuthError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("aceclub://", forHTTPHeaderField: "Origin")
+
+        var body: [String: Any] = [
+            "provider": "apple",
+            "idToken": [
+                "token": idToken
+            ]
+        ]
+
+        if let email = email {
+            body["email"] = email
+        }
+
+        if let name = name {
+            body["name"] = name
+        }
+
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        do {
+            let (data, response) = try await session.data(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw AuthError.invalidResponse
+            }
+
+            if httpResponse.statusCode != 200 {
+                if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
+                   let message = errorResponse["message"] {
+                    throw AuthError.serverError(message)
+                }
+                throw AuthError.serverError("Échec de la connexion Apple (code \(httpResponse.statusCode))")
+            }
+
+            let authResponse = try JSONDecoder().decode(AuthResponseDTO.self, from: data)
+            return authResponse
 
         } catch let error as AuthError {
             throw error
@@ -157,7 +171,7 @@ class AuthAPIDataSource {
         let (data, response) = try await APIClient.shared.authenticatedRequest(url: url)
 
         guard response.statusCode == 200 else {
-            throw AuthError.serverError("Get session failed with status code: \(response.statusCode)")
+            throw AuthError.serverError("Échec de la récupération de session (code \(response.statusCode))")
         }
 
         do {

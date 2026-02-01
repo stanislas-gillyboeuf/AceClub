@@ -6,3 +6,5 @@ export * from "./get-active-member-role";
 export * from "./list-invitations";
 export * from "./list-user-invitations";
 export * from "./get-invitation";
+export * from "./search-organizations";
+export * from "./get-organization-stats";

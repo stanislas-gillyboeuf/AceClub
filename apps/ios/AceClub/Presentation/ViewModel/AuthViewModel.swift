@@ -7,6 +7,7 @@
 
 import Foundation
 import Observation
+import UIKit
 
 @Observable
 class AuthViewModel {
@@ -17,8 +18,8 @@ class AuthViewModel {
     var errorMessage: String?
 
     // MARK: - Use Cases
-    private let signUpUseCase = SignUpUseCase()
-    private let signInUseCase = SignInUseCase()
+    private let signInWithGoogleUseCase = SignInWithGoogleUseCase()
+    private let signInWithAppleUseCase = SignInWithAppleUseCase()
     private let signOutUseCase = SignOutUseCase()
     private let checkSessionUseCase = CheckSessionUseCase()
 
@@ -59,16 +60,35 @@ class AuthViewModel {
         isLoading = false
     }
 
-    // MARK: - Sign Up
+    // MARK: - Sign In with Google
     @MainActor
-    func signUp(name: String, email: String, password: String) async {
+    func signInWithGoogle() async {
         isLoading = true
         errorMessage = nil
 
+        // Get the root view controller to present Google Sign-In
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            errorMessage = "Unable to present Google Sign-In"
+            isLoading = false
+            return
+        }
+
         do {
-            let user = try await signUpUseCase.execute(name: name, email: email, password: password)
+            let user = try await signInWithGoogleUseCase.execute(presentingViewController: rootViewController)
             currentUser = user
             isAuthenticated = true
+
+            // Request notification permission after successful login
+            Task {
+                _ = await NotificationManager.shared.requestPermission()
+            }
+        } catch let error as GoogleSignInError {
+            if case .cancelled = error {
+                // User cancelled, don't show error
+            } else {
+                errorMessage = error.localizedDescription
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -76,16 +96,37 @@ class AuthViewModel {
         isLoading = false
     }
 
-    // MARK: - Sign In
+    // MARK: - Sign In with Apple
     @MainActor
-    func signIn(email: String, password: String, rememberMe: Bool = true) async {
+    func signInWithApple() async {
         isLoading = true
         errorMessage = nil
 
+        // Get the key window for Apple Sign-In presentation
+        guard let windowScene = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first(where: { $0.activationState == .foregroundActive }),
+              let window = windowScene.windows.first(where: { $0.isKeyWindow }) ?? windowScene.windows.first else {
+            errorMessage = "Unable to present Apple Sign-In"
+            isLoading = false
+            return
+        }
+
         do {
-            let user = try await signInUseCase.execute(email: email, password: password, rememberMe: rememberMe)
+            let user = try await signInWithAppleUseCase.execute(presentingWindow: window)
             currentUser = user
             isAuthenticated = true
+
+            // Request notification permission after successful login
+            Task {
+                _ = await NotificationManager.shared.requestPermission()
+            }
+        } catch let error as AppleSignInError {
+            if case .cancelled = error {
+                // User cancelled, don't show error
+            } else {
+                errorMessage = error.localizedDescription
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -98,6 +139,9 @@ class AuthViewModel {
     func signOut() async {
         isLoading = true
         errorMessage = nil
+
+        // Unregister device token before signing out
+        await NotificationManager.shared.unregisterDeviceToken()
 
         do {
             try await signOutUseCase.execute()

@@ -17,15 +17,15 @@ enum AdminError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "Invalid URL"
+            return "URL invalide"
         case .invalidResponse:
-            return "Invalid response from server"
+            return "Réponse invalide du serveur"
         case .serverError(let message):
             return message
         case .decodingError:
-            return "Failed to decode response"
+            return "Échec du décodage de la réponse"
         case .networkError(let error):
-            return "Network error: \(error.localizedDescription)"
+            return "Erreur réseau : \(error.localizedDescription)"
         }
     }
 }
@@ -270,6 +270,5 @@ class AdminAPIDataSource {
             throw AdminError.decodingError
         }
     }
-    
 
 }

@@ -38,7 +38,8 @@ class InvitationRepository: InvitationRepositoryProtocol {
     }
 
     func acceptInvitation(invitationId: String) async throws -> Member {
-        let memberDTO = try await dataSource.acceptInvitation(invitationId: invitationId)
+        let responseDTO = try await dataSource.acceptInvitation(invitationId: invitationId)
+        let memberDTO = responseDTO.member
         return MemberMapper.map(memberDTO: memberDTO)
     }
 
