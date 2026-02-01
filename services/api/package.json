@@ -5,7 +5,7 @@
     "node": "20.x"
   },
   "scripts": {
-    "dev": "bun run --hot dev.ts",
+    "dev": "bun run --hot server.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
