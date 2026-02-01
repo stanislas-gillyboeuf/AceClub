@@ -40,7 +40,7 @@ class UserMapper {
         return User(
             id: userSearchItemDTO.id,
             name: userSearchItemDTO.name,
-            email: userSearchItemDTO.email,
+            email: "",
             emailVerified: nil,
             image: userSearchItemDTO.image,
             createdAt: nil,

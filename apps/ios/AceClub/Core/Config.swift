@@ -39,5 +39,19 @@ enum Config {
         return "production"
 #endif
     }
+
+    // MARK: - WebSocket Configuration
+    static var wsBaseURL: String {
+        // Derive WebSocket URL from API URL
+        let apiURL = apiBaseURL
+
+        // Replace /api suffix and change protocol
+        var wsURL = apiURL
+            .replacingOccurrences(of: "/api", with: "")
+            .replacingOccurrences(of: "https://", with: "wss://")
+            .replacingOccurrences(of: "http://", with: "ws://")
+
+        return wsURL
+    }
 }
 

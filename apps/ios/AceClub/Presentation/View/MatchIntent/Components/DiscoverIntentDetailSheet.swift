@@ -12,180 +12,33 @@ struct DiscoverIntentDetailSheet: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    private var displayName: String {
-        item.user?.name ?? "Joueur"
-    }
-
-    private var tier: LevelTier {
-        LevelTier.tier(for: item.user?.level ?? 1)
-    }
-
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Profile header
-                    profileHeader
-                        .padding(.top, 8)
-
-                    // Stats row
-                    statsRow
-
-                    Divider()
-
-                    // Availability details
-                    availabilitySection
-
-                    // Description if present
-                    if let description = item.intent.description, !description.isEmpty {
-                        descriptionSection(description)
-                    }
+        if let user = item.user {
+            UserProfileSheet(
+                profile: user,
+                showAvailability: true,
+                availabilityContent: {
+                    AnyView(availabilitySection)
+                },
+                actionButtons: {
+                    AnyView(actionButtons)
                 }
-                .padding(.horizontal, Theme.paddingHorizontal)
-                .padding(.bottom, 100)
-            }
-            .navigationTitle("Profil")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Fermer") {
-                        dismiss()
-                    }
-                    .foregroundStyle(Theme.tintColor)
-                }
-            }
-            .safeAreaInset(edge: .bottom) {
-                actionButtons
-            }
+            )
+        } else {
+            // Fallback si pas d'utilisateur
+            ContentUnavailableView(
+                "Utilisateur introuvable",
+                systemImage: "person.slash",
+                description: Text("Les informations de cet utilisateur ne sont pas disponibles.")
+            )
         }
-    }
-
-    // MARK: - Profile Header
-
-    private var profileHeader: some View {
-        VStack(spacing: 16) {
-            // Large avatar
-            largeAvatar
-
-            // Name
-            Text(displayName)
-                .font(.title.weight(.bold))
-                .foregroundStyle(Theme.labelPrimary)
-
-            // Level
-            HStack(spacing: 8) {
-                Image(systemName: tier.icon)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(tier.color)
-
-                Text("Niveau \(item.user?.level ?? 1) • \(tier.displayName)")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(Theme.labelSecondary)
-            }
-
-            // Organization
-            if let org = item.user?.organization {
-                HStack(spacing: 6) {
-                    Image(systemName: "building.2.fill")
-                        .font(.caption)
-                        .foregroundStyle(Theme.tintColor)
-
-                    Text(org.name)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(Theme.tintColor)
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .background(Theme.tintColor.opacity(0.1))
-                .clipShape(Capsule())
-            }
-        }
-    }
-
-    private var largeAvatar: some View {
-        ZStack {
-            Circle()
-                .fill(Color(.tertiarySystemFill))
-
-            if let imageURL = item.user?.imageURL {
-                AsyncImage(url: imageURL) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    case .empty:
-                        ProgressView()
-                            .tint(Theme.tintColor)
-                    case .failure:
-                        Text(item.user?.initials ?? "?")
-                            .font(.system(size: 44, weight: .semibold, design: .rounded))
-                            .foregroundStyle(Theme.labelSecondary)
-                    @unknown default:
-                        EmptyView()
-                    }
-                }
-            } else {
-                Text(item.user?.initials ?? "?")
-                    .font(.system(size: 44, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Theme.labelSecondary)
-            }
-        }
-        .frame(width: 120, height: 120)
-        .clipShape(Circle())
-        .overlay {
-            Circle()
-                .strokeBorder(tier.color.opacity(0.5), lineWidth: 4)
-        }
-    }
-
-    // MARK: - Stats Row
-
-    private var statsRow: some View {
-        HStack(spacing: 0) {
-            statItem(icon: "sportscourt", value: "--", label: "Matchs")
-
-            Divider()
-                .frame(height: 40)
-
-            statItem(icon: "chart.line.uptrend.xyaxis", value: "--%", label: "Victoires")
-
-            Divider()
-                .frame(height: 40)
-
-            statItem(icon: "calendar", value: formatShortDate(item.intent.date), label: "Dispo")
-        }
-        .padding(.vertical, 12)
-        .background(Theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
-                .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
-        }
-    }
-
-    private func statItem(icon: String, value: String, label: String) -> some View {
-        VStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(Theme.tintColor)
-
-            Text(value)
-                .font(.title3.weight(.bold))
-                .foregroundStyle(Theme.labelPrimary)
-
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(Theme.labelSecondary)
-        }
-        .frame(maxWidth: .infinity)
     }
 
     // MARK: - Availability Section
 
     private var availabilitySection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Disponibilité")
+            Text("Disponibilite")
                 .font(.headline)
                 .foregroundStyle(Theme.labelPrimary)
 
@@ -205,7 +58,7 @@ struct DiscoverIntentDetailSheet: View {
 
                 // Duration
                 if item.intent.duration > 0 {
-                    detailRow(icon: "timer", title: "Durée", value: durationLabel(minutes: item.intent.duration))
+                    detailRow(icon: "timer", title: "Duree", value: durationLabel(minutes: item.intent.duration))
                 }
             }
             .padding(Theme.paddingCard)
@@ -214,6 +67,11 @@ struct DiscoverIntentDetailSheet: View {
             .overlay {
                 RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
                     .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
+            }
+
+            // Description if present
+            if let description = item.intent.description, !description.isEmpty {
+                descriptionSection(description)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -315,14 +173,6 @@ struct DiscoverIntentDetailSheet: View {
     }
 
     // MARK: - Helpers
-
-    private func formatShortDate(_ date: Date?) -> String {
-        guard let date = date else { return "--" }
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "fr_FR")
-        formatter.dateFormat = "d MMM"
-        return formatter.string(from: date)
-    }
 
     private func formatFullDate(_ date: Date) -> String {
         let formatter = DateFormatter()

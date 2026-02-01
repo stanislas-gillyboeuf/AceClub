@@ -2,6 +2,7 @@ import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { matchRequest, matchIntent, match, matchParticipant, user } from "../../../db/schema";
+import { conversation, conversationParticipant } from "../../../db/schema/conversation/schema";
 import { and, eq, ne } from "drizzle-orm";
 import { sendNotificationToUser } from "../../../services/apns/notification-service";
 
@@ -61,6 +62,27 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
         matchId: newMatch.id,
         userId: request.requesterId,
         side: "away",
+      },
+    ]);
+
+    // Créer la conversation pour ce match
+    const [newConversation] = await db
+      .insert(conversation)
+      .values({
+        matchId: newMatch.id,
+        type: "match",
+      })
+      .returning();
+
+    // Ajouter les participants à la conversation
+    await db.insert(conversationParticipant).values([
+      {
+        conversationId: newConversation.id,
+        userId: intent.userId,
+      },
+      {
+        conversationId: newConversation.id,
+        userId: request.requesterId,
       },
     ]);
 
@@ -130,6 +152,7 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
       request: updatedRequest,
       match: newMatch,
       requester: requesterInfo ?? null,
+      conversationId: newConversation.id,
       message: "Match created successfully!",
     });
   } catch (error) {

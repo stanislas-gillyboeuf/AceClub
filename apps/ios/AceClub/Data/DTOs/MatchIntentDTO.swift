@@ -137,6 +137,7 @@ struct AcceptMatchRequestResponseDTO: Codable {
     let request: MatchRequestDTO?
     let match: MatchDTO?
     let requester: UserContactDTO?
+    let conversationId: String?
     let message: String?
 }
 

@@ -15,6 +15,20 @@
       "when": 1769945100000,
       "tag": "0001_seed_badges",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769946067077,
+      "tag": "0002_chubby_lightspeed",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1769946388112,
+      "tag": "0003_military_legion",
+      "breakpoints": true
     }
   ]
 }

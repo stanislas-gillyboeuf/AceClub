@@ -12,6 +12,7 @@ import { rewardRouter } from "./reward/router";
 import { leaderboardRouter } from "./leaderboard/router";
 import { cronRouter } from "./cron/router";
 import { uploadRouter } from "./upload/router";
+import { conversationRouter } from "./conversation/router";
 
 export const serverRouter = new Hono();
 
@@ -28,3 +29,4 @@ serverRouter.route("/reward", rewardRouter);
 serverRouter.route("/leaderboard", leaderboardRouter);
 serverRouter.route("/cron", cronRouter);
 serverRouter.route("/upload", uploadRouter);
+serverRouter.route("/conversation", conversationRouter);

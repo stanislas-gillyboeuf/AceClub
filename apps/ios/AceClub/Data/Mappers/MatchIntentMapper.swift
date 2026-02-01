@@ -189,7 +189,13 @@ class MatchIntentMapper {
         let match = acceptResponseDTO.match.map { MatchMapper.map(matchDTO: $0) }
         let request = acceptResponseDTO.request.map { map(requestDTO: $0) }
         let requester = acceptResponseDTO.requester.map { map(userContactDTO: $0) }
-        return AcceptMatchRequestResult(match: match, request: request, requester: requester, message: acceptResponseDTO.message)
+        return AcceptMatchRequestResult(
+            match: match,
+            request: request,
+            requester: requester,
+            conversationId: acceptResponseDTO.conversationId,
+            message: acceptResponseDTO.message
+        )
     }
 
     // MARK: - Reject

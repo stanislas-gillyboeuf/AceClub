@@ -16,6 +16,7 @@ final class DeepLinkManager {
 
     var pendingMatchId: String?
     var shouldOpenScoreEditor: Bool = false
+    var pendingConversationId: String?
 
     // MARK: - Methods
 
@@ -32,11 +33,19 @@ final class DeepLinkManager {
             return true
         }
 
+        // Parse: aceclub://conversation/{conversationId}
+        if url.host == "conversation", let conversationId = pathComponents.first {
+            pendingConversationId = conversationId
+            print("[DeepLink] Opening conversation \(conversationId)")
+            return true
+        }
+
         return false
     }
 
     func clearPendingNavigation() {
         pendingMatchId = nil
         shouldOpenScoreEditor = false
+        pendingConversationId = nil
     }
 }

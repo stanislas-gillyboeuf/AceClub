@@ -32,7 +32,6 @@ struct UserSearchResponseDTO: Codable {
 struct UserSearchItemDTO: Codable {
     let id: String
     let name: String
-    let email: String
     let image: String?
     let isGhost: Bool?
 }

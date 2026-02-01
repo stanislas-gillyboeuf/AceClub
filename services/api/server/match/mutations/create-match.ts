@@ -4,6 +4,10 @@ import { z } from "zod";
 import { createMatchValidator } from "../validators";
 import { db } from "../../../db";
 import { match, matchParticipant, set, setScore } from "../../../db/schema/match/schema";
+import {
+  conversation,
+  conversationParticipant,
+} from "../../../db/schema/conversation/schema";
 import { user } from "../../../db/schema/auth/schema";
 import { NewSetScore } from "../../../db/schema/match/type";
 import { eq, inArray } from "drizzle-orm";
@@ -179,6 +183,26 @@ export const createMatch = async (c: Context<HonoContext>) => {
         )
         .returning();
       console.log("✅ [CREATE MATCH] Participants created:", participants.length);
+
+      // Create conversation for this match
+      console.log("🔄 [CREATE MATCH] Creating conversation...");
+      const [createdConversation] = await tx
+        .insert(conversation)
+        .values({
+          matchId: createdMatch.id,
+          type: "match",
+        })
+        .returning();
+      console.log("✅ [CREATE MATCH] Conversation created with ID:", createdConversation.id);
+
+      // Create conversation participants
+      await tx.insert(conversationParticipant).values(
+        validated.participants.map((participant) => ({
+          conversationId: createdConversation.id,
+          userId: participant.userId,
+        }))
+      );
+      console.log("✅ [CREATE MATCH] Conversation participants created");
 
       // Create lookup map for participants
       const participantMap = new Map(participants.map((p) => [p.userId, p]));

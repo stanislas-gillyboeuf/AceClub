@@ -13,7 +13,8 @@ export type NotificationType =
   | "match_reminder"
   | "new_match_request"
   | "streak_warning"
-  | "challenge_assigned";
+  | "challenge_assigned"
+  | "new_message";
 
 
 interface SendNotificationParams {

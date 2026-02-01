@@ -15,6 +15,7 @@ struct AceClubApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var authViewModel = AuthViewModel()
     @State private var deepLinkManager = DeepLinkManager()
+    @State private var notificationManager = NotificationManager.shared
 
     let modelContainer: ModelContainer
 
@@ -60,6 +61,7 @@ struct AceClubApp: App {
             ContentView()
                 .environment(authViewModel)
                 .environment(deepLinkManager)
+                .environment(notificationManager)
                 .tint(Theme.tintColor)
                 .onOpenURL { url in
                     // Handle AceClub deep links first

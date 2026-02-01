@@ -32,6 +32,7 @@ export const searchUsers = async (c: Context<HonoContext>) => {
         ),
       )
       .limit(validated.limit);
+      
 
     return c.json({
       users,

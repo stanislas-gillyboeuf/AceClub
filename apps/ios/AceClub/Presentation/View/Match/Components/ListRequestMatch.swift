@@ -2,11 +2,11 @@ import SwiftUI
 
 struct ListRequestMatch: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(DeepLinkManager.self) private var deepLinkManager
     @StateObject private var viewModel = MatchRequestsViewModel()
     var onAccepted: (() -> Void)?
 
-    @State private var acceptedPlayer: UserContact?
-    @State private var showContactSheet = false
+    @State private var acceptedConversationId: String?
 
     private var showErrorAlert: Binding<Bool> {
         Binding(
@@ -51,24 +51,20 @@ struct ListRequestMatch: View {
             } message: {
                 Text(viewModel.errorMessage ?? "")
             }
-            .sheet(isPresented: $showContactSheet, onDismiss: {
-                onAccepted?()
-                dismiss()
-            }) {
-                if let player = acceptedPlayer {
-                    ContactPlayerSheet(player: player)
-                }
-            }
         }
     }
 
     private func handleAccept(item: MatchRequestWithDetails) async {
         let result = await viewModel.accept(request: item)
-        if let result = result, let requester = result.requester {
-            acceptedPlayer = requester
-            showContactSheet = true
+        if let result = result, let conversationId = result.conversationId {
+            // Navigate to chat
+            onAccepted?()
+            dismiss()
+            // Use deep link to navigate to chat after dismiss
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                deepLinkManager.pendingConversationId = conversationId
+            }
         } else if result != nil {
-            // Fallback si pas d'info requester (ne devrait pas arriver)
             onAccepted?()
             dismiss()
         }

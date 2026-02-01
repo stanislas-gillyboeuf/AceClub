@@ -83,8 +83,20 @@ final class NotificationManager {
     func handleNotificationResponse(_ response: UNNotificationResponse) {
         let userInfo = response.notification.request.content.userInfo
 
-        if let type = userInfo["type"] as? String,
-           let referenceId = userInfo["referenceId"] as? String {
+        guard let type = userInfo["type"] as? String else { return }
+
+        // For new_message, the conversationId may be in referenceId or directly in data
+        let referenceId: String? = {
+            if let id = userInfo["referenceId"] as? String {
+                return id
+            }
+            if type == "new_message", let conversationId = userInfo["conversationId"] as? String {
+                return conversationId
+            }
+            return nil
+        }()
+
+        if let referenceId {
             pendingDeepLink = NotificationDeepLink(type: type, referenceId: referenceId)
             print("[NotificationManager] Deep link set: type=\(type), referenceId=\(referenceId)")
         }

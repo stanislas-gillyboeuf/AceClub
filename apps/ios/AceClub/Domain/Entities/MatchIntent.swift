@@ -173,6 +173,7 @@ struct AcceptMatchRequestResult {
     let match: Match?
     let request: MatchRequest?
     let requester: UserContact?
+    let conversationId: String?
     let message: String?
 }
 
@@ -181,4 +182,20 @@ struct AcceptMatchRequestResult {
 struct RejectMatchRequestResult {
     let request: MatchRequest?
     let message: String?
+}
+
+// MARK: - UserProfileData Conformance
+
+extension UserBrief: UserProfileData {
+    var profileName: String { name }
+    var profileImageURL: URL? { imageURL }
+    var profileLevel: Int { level }
+    var profileInitials: String { initials }
+    var profileOrganizationName: String? { organization?.name }
+    var profileTotalAces: Int { 0 }
+    var profileTitle: String? { nil }
+    var profileBadges: [UserProfileBadge] { [] }
+    var profileCurrentStreak: Int { 0 }
+    var profileLongestStreak: Int { 0 }
+    var profileGlobalRank: Int? { nil }
 }

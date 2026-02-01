@@ -7,3 +7,4 @@ export * from "./level";
 export * from "./challenge";
 export * from "./streak";
 export * from "./reward";
+export * from "./conversation";

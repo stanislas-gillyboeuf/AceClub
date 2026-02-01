@@ -212,6 +212,7 @@ final class MatchIntentSyncService {
             match: match,
             request: request,
             requester: requester,
+            conversationId: responseDTO.conversationId,
             message: responseDTO.message
         )
     }
@@ -220,7 +221,6 @@ final class MatchIntentSyncService {
     func rejectRequest(id: String) async throws -> RejectMatchRequestResult {
         let responseDTO = try await dataSource.rejectRequest(id: id)
 
-        // Update request in SwiftData
         if let existing = fetchRequest(id: id) {
             existing.status = "rejected"
             existing.respondedAt = Date()
