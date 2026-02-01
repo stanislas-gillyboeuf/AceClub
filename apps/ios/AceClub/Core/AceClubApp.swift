@@ -8,11 +8,13 @@
 import SwiftUI
 import SwiftData
 import GoogleSignIn
+import ActivityKit
 
 @main
 struct AceClubApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var authViewModel = AuthViewModel()
+    @State private var deepLinkManager = DeepLinkManager()
 
     let modelContainer: ModelContainer
 
@@ -43,14 +45,27 @@ struct AceClubApp: App {
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
+
+        // Debug Live Activities status at app launch
+        let authInfo = ActivityAuthorizationInfo()
+        print("========================================")
+        print("[App Launch] Live Activities Debug Info")
+        print("[App Launch] areActivitiesEnabled: \(authInfo.areActivitiesEnabled)")
+        print("[App Launch] frequentPushesEnabled: \(authInfo.frequentPushesEnabled)")
+        print("========================================")
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(authViewModel)
+                .environment(deepLinkManager)
                 .tint(Theme.tintColor)
                 .onOpenURL { url in
+                    // Handle AceClub deep links first
+                    if deepLinkManager.handle(url: url) {
+                        return
+                    }
                     // Handle Google Sign-In callback URL
                     GoogleSignInManager.shared.handle(url)
                 }

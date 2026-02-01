@@ -63,19 +63,34 @@ class MatchViewModel: ObservableObject {
         errorMessage = nil
 
         do {
+            print("[MatchViewModel] Starting match \(matchId)...")
             let updatedMatch = try await updateMatchUseCase.execute(
                 matchId: matchId,
                 status: .ongoing,
                 startedAt: Date()
             )
+            print("[MatchViewModel] Match updated: status=\(updatedMatch.status), startedAt=\(String(describing: updatedMatch.startedAt))")
 
             // Update the match in detail
             if let currentDetail = matchDetail {
-                matchDetail = MatchDetail(
+                let newDetail = MatchDetail(
                     match: updatedMatch,
                     participants: currentDetail.participants,
                     sets: currentDetail.sets
                 )
+                matchDetail = newDetail
+                print("[MatchViewModel] MatchDetail created, isOngoing=\(newDetail.match.isOngoing)")
+
+                // Start Live Activity
+                print("[MatchViewModel] About to start Live Activity...")
+                do {
+                    try await MatchLiveActivityManager.shared.startActivity(for: newDetail)
+                    print("[MatchViewModel] Live Activity started successfully")
+                } catch {
+                    print("[MatchViewModel] Live Activity failed to start: \(error)")
+                }
+            } else {
+                print("[MatchViewModel] ERROR: currentDetail is nil!")
             }
 
             isLoading = false
@@ -106,11 +121,15 @@ class MatchViewModel: ObservableObject {
 
             // Update the match in detail and refresh to get updated participants
             if let currentDetail = matchDetail {
-                matchDetail = MatchDetail(
+                let newDetail = MatchDetail(
                     match: updatedMatch,
                     participants: currentDetail.participants,
                     sets: currentDetail.sets
                 )
+                matchDetail = newDetail
+
+                // End Live Activity with final state
+                await MatchLiveActivityManager.shared.endActivity(withFinalState: newDetail)
             }
 
             // Refresh pour récupérer les participants mis à jour avec isWinner
@@ -169,6 +188,11 @@ class MatchViewModel: ObservableObject {
 
             if success {
                 await refreshMatch()
+
+                // Update Live Activity with new scores
+                if let detail = matchDetail {
+                    await MatchLiveActivityManager.shared.updateActivity(with: detail)
+                }
             }
 
             isUpdatingScores = false

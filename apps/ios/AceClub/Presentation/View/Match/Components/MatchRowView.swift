@@ -203,11 +203,11 @@ struct MatchRowViewLegacy: View {
     }
 
     private var homeName: String {
-        match.homeParticipant?.user?.name ?? "N/A"
+        match.homeParticipant?.userName ?? "N/A"
     }
 
     private var awayName: String {
-        match.awayParticipant?.user?.name ?? "N/A"
+        match.awayParticipant?.userName ?? "N/A"
     }
 
     private var isHomeWinner: Bool {

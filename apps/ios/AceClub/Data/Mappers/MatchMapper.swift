@@ -95,7 +95,9 @@ class MatchMapper {
             side: mapSide(participantDTO.side),
             isWinner: participantDTO.isWinner,
             createdAt: parseDate(participantDTO.createdAt) ?? Date(),
-            user: participantDTO.user.map { UserMapper.map(userDTO: $0) }
+            userName: participantDTO.userName,
+            userEmail: participantDTO.userEmail,
+            userImage: participantDTO.userImage
         )
     }
 

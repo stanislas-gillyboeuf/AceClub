@@ -139,13 +139,29 @@ struct MatchParticipant: Identifiable {
     let side: MatchSide
     let isWinner: Bool
     let createdAt: Date
-    let user: User?
+    let userName: String?
+    let userEmail: String?
+    let userImage: String?
 
     // MARK: - Computed Properties
 
     /// Badge de victoire
     var winnerBadge: String {
         isWinner ? "🏆" : ""
+    }
+
+    var userImageURL: URL? {
+        guard let userImage, !userImage.isEmpty else { return nil }
+        return URL(string: userImage)
+    }
+
+    var userInitials: String {
+        guard let userName else { return "??" }
+        let components = userName.split(separator: " ")
+        if components.count >= 2 {
+            return "\(components[0].prefix(1))\(components[1].prefix(1))".uppercased()
+        }
+        return String(userName.prefix(2)).uppercased()
     }
 }
 

@@ -6,10 +6,7 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var organizationViewModel: OrganizationViewModel
 
-    @Query(
-        sort: \MatchModel.createdAt,
-        order: .reverse
-    )
+    @Query(sort: \MatchModel.createdAt, order: .reverse)
     private var allMatches: [MatchModel]
 
     @State private var viewModel = HomeFeedViewModel()
@@ -97,9 +94,6 @@ struct HomeView: View {
             }
             .task {
                 await initialLoad()
-            }
-            .onChange(of: allMatches.count) {
-                recalculateStats()
             }
         }
     }

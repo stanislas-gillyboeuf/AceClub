@@ -12,6 +12,7 @@ struct MatchDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(AuthViewModel.self) private var authViewModel
+    @Environment(DeepLinkManager.self) private var deepLinkManager
 
     let matchId: String
 
@@ -135,6 +136,13 @@ struct MatchDetailView: View {
             syncService = MatchSyncService(modelContext: modelContext)
             await loadMatch()
         }
+        .onChange(of: match?.id) { _, _ in
+            // Open score editor if requested via deep link (after match loads)
+            if deepLinkManager.shouldOpenScoreEditor && canEditScores {
+                showingEditScores = true
+                deepLinkManager.clearPendingNavigation()
+            }
+        }
     }
 
     // MARK: - Private Methods
@@ -157,7 +165,7 @@ struct MatchDetailView: View {
         do {
             try await syncService?.syncMatch(id: matchId)
         } catch {
-            print("Refresh error: \(error)")
+            // Error silently handled
         }
         isLoading = false
     }
@@ -173,6 +181,11 @@ struct MatchDetailView: View {
                 startedAt: Date()
             )
             successMessage = "Match démarré"
+
+            // Start Live Activity
+            if let match {
+                try? await MatchLiveActivityManager.shared.startActivity(for: match)
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -192,6 +205,9 @@ struct MatchDetailView: View {
                 winnerId: winnerId
             )
             successMessage = "Match terminé"
+
+            // End Live Activity
+            await MatchLiveActivityManager.shared.endActivity(withFinalState: match)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -817,6 +833,8 @@ struct EditMatchScoresViewSwiftData: View {
         do {
             let success = try await syncService?.updateScores(matchId: match.id, sets: setsData) ?? false
             if success {
+                // Update Live Activity with new scores
+                await MatchLiveActivityManager.shared.updateActivity(with: match)
                 isPresented = false
             }
         } catch {

@@ -6,13 +6,16 @@
 //
 
 import SwiftUI
+import SwiftData
 import Combine
 
 struct CreateMatchView: View {
     @Binding var isPresented: Bool
     @StateObject private var viewModel = CreateMatchViewModel()
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @State private var showingCreateMatch = false
+    @State private var syncService: MatchSyncService?
     var onMatchCreated: (() -> Void)? = nil
 
     var body: some View {
@@ -61,11 +64,15 @@ struct CreateMatchView: View {
             } message: {
                 Text(viewModel.errorMessage ?? "")
             }
-            .onChange(of: viewModel.createdMatch != nil) { _, becameNonNil in
-                if becameNonNil {
+            .onChange(of: viewModel.createdMatch) { _, created in
+                if created {
                     onMatchCreated?()
                     dismiss()
                 }
+            }
+            .task {
+                syncService = MatchSyncService(modelContext: modelContext)
+                viewModel.syncService = syncService
             }
         }
     }
@@ -247,11 +254,11 @@ class CreateMatchViewModel: ObservableObject {
 
     @Published var isCreating: Bool = false
     @Published var errorMessage: String? = nil
-    @Published var createdMatch: MatchDetail? = nil
+    @Published var createdMatch: Bool = false
 
-    // MARK: - Use Cases
+    // MARK: - Services & Use Cases
 
-    private let createMatchUseCase = CreateMatchUseCase()
+    var syncService: MatchSyncService?
     private let getMeUseCase = GetMeUseCase()
 
     // MARK: - Computed Properties
@@ -304,6 +311,11 @@ class CreateMatchViewModel: ObservableObject {
             return
         }
 
+        guard let syncService else {
+            errorMessage = "Service non initialisé"
+            return
+        }
+
         isCreating = true
         errorMessage = nil
 
@@ -353,8 +365,8 @@ class CreateMatchViewModel: ObservableObject {
                 creationDate = endDate
             }
 
-            // Create match
-            let match = try await createMatchUseCase.execute(
+            // Create match via syncService (will insert into SwiftData)
+            _ = try await syncService.createMatch(
                 createdBy: currentUser.id,
                 status: status,
                 type: type,
@@ -366,7 +378,7 @@ class CreateMatchViewModel: ObservableObject {
                 sets: setsData
             )
 
-            createdMatch = match
+            createdMatch = true
 
         } catch {
             errorMessage = error.localizedDescription

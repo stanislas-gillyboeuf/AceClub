@@ -19,6 +19,10 @@ struct MatchListContent: View {
     @Binding var selectedStatus: MatchStatus?
     @State private var syncService: MatchSyncService?
     @State private var isLoading = false
+    @State private var isLoadingMore = false
+    @State private var hasMorePages = true
+    @State private var currentPage = 1
+    private let pageSize = 20
 
     private var matches: [MatchModel] {
         guard let status = selectedStatus else {
@@ -42,9 +46,14 @@ struct MatchListContent: View {
                     } label: {
                         MatchRowView(match: match)
                     }
+                    .onAppear {
+                        if shouldLoadMore(for: match) {
+                            Task { await loadMoreMatches() }
+                        }
+                    }
                 }
 
-                if isLoading {
+                if isLoadingMore {
                     HStack {
                         Spacer()
                         ProgressView()
@@ -52,7 +61,6 @@ struct MatchListContent: View {
                     }
                     .listRowSeparator(.hidden)
                 }
-                
             }
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
@@ -68,11 +76,21 @@ struct MatchListContent: View {
         }
     }
 
+    private func shouldLoadMore(for match: MatchModel) -> Bool {
+        guard matches.count >= 3 else { return false }
+        let lastThree = matches.suffix(3)
+        return lastThree.contains { $0.id == match.id }
+    }
+
     private func initialSync() async {
         guard !isLoading else { return }
         isLoading = true
+        currentPage = 1
+        hasMorePages = true
         do {
-            try await syncService?.syncMatches()
+            let result = try await syncService?.syncMatchesPage(page: 1, limit: pageSize, purgeOnFirstPage: true)
+            hasMorePages = result?.hasMore ?? false
+            currentPage = 1
         } catch {
             print("Initial sync error: \(error)")
         }
@@ -82,11 +100,31 @@ struct MatchListContent: View {
     private func refresh() async {
         guard !isLoading else { return }
         isLoading = true
+        currentPage = 1
+        hasMorePages = true
         do {
-            try await syncService?.syncMatches()
+            let result = try await syncService?.syncMatchesPage(page: 1, limit: pageSize, purgeOnFirstPage: true)
+            hasMorePages = result?.hasMore ?? false
+            currentPage = 1
         } catch {
             print("Refresh error: \(error)")
         }
         isLoading = false
+    }
+
+    private func loadMoreMatches() async {
+        guard !isLoadingMore, !isLoading, hasMorePages else { return }
+        isLoadingMore = true
+        do {
+            let nextPage = currentPage + 1
+            let result = try await syncService?.syncMatchesPage(page: nextPage, limit: pageSize, purgeOnFirstPage: false)
+            if let result {
+                hasMorePages = result.hasMore
+                currentPage = result.currentPage
+            }
+        } catch {
+            print("Load more error: \(error)")
+        }
+        isLoadingMore = false
     }
 }

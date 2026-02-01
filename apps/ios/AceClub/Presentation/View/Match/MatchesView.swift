@@ -10,6 +10,7 @@ import SwiftData
 
 struct MatchesView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(DeepLinkManager.self) private var deepLinkManager
 
     // SwiftData query - auto-updates when data changes
     @Query(sort: \MatchModel.createdAt, order: .reverse)
@@ -20,9 +21,10 @@ struct MatchesView: View {
     @State private var isLoading = false
     @State private var selectedStatus: MatchStatus?
     @State private var syncService: MatchSyncService?
+    @State private var navigationPath = NavigationPath()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             ZStack {
                 if isLoading && matches.isEmpty {
                     ScrollView {
@@ -39,6 +41,9 @@ struct MatchesView: View {
                 }
             }
             .navigationTitle("Matchs")
+            .navigationDestination(for: String.self) { matchId in
+                MatchDetailView(matchId: matchId)
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -70,6 +75,11 @@ struct MatchesView: View {
                 syncService = MatchSyncService(modelContext: modelContext)
                 if matches.isEmpty {
                     await loadMatches()
+                }
+            }
+            .onChange(of: deepLinkManager.pendingMatchId) { _, matchId in
+                if let matchId {
+                    navigationPath.append(matchId)
                 }
             }
         }

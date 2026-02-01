@@ -52,7 +52,7 @@ struct EditMatchScoresView: View {
                             Text("Domicile")
                                 .foregroundStyle(.secondary)
                             Spacer()
-                            Text(home.user?.name ?? "N/A")
+                            Text(home.userName ?? "N/A")
                                 .fontWeight(.medium)
                         }
                     }
@@ -62,7 +62,7 @@ struct EditMatchScoresView: View {
                             Text("Extérieur")
                                 .foregroundStyle(.secondary)
                             Spacer()
-                            Text(away.user?.name ?? "N/A")
+                            Text(away.userName ?? "N/A")
                                 .fontWeight(.medium)
                         }
                     }

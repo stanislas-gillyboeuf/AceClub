@@ -88,15 +88,9 @@ export const listMatches = async (c: Context<HonoContext>) => {
         side: matchParticipant.side,
         isWinner: matchParticipant.isWinner,
         createdAt: matchParticipant.createdAt,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          emailVerified: user.emailVerified,
-          image: user.image,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-        },
+        userName: user.name,
+        userEmail: user.email,
+        userImage: user.image,
       })
       .from(matchParticipant)
       .leftJoin(user, eq(matchParticipant.userId, user.id))

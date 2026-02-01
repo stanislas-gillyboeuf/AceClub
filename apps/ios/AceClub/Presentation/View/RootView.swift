@@ -9,6 +9,7 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(AuthViewModel.self) private var authViewModel
+    @Environment(DeepLinkManager.self) private var deepLinkManager
     @State private var selection: Tab = .feed
     @State private var showingCreateMatch = false
     @StateObject private var profileViewModel = ProfileViewModel()
@@ -72,6 +73,11 @@ struct RootView: View {
         .onChange(of: isAdmin) { _, newValue in
             if !newValue {
                 selection = .feed
+            }
+        }
+        .onChange(of: deepLinkManager.pendingMatchId) { _, matchId in
+            if matchId != nil {
+                selection = .matches
             }
         }
         .background(Theme.primaryBackground)

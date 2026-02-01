@@ -18,7 +18,7 @@ export const searchUsers = async (c: Context<HonoContext>) => {
         name: user.name,
         email: user.email,
         image: user.image,
-        isGhost: user.isGhost,
+        isGhost: user.is_ghost,
       })
       .from(user)
       .where(

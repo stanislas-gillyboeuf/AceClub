@@ -449,9 +449,9 @@ final class MatchSyncService {
         if let existing = fetchParticipant(id: dto.id) {
             existing.side = dto.side
             existing.isWinner = dto.isWinner
-            existing.userName = dto.user?.name
-            existing.userEmail = dto.user?.email
-            existing.userImage = dto.user?.image
+            existing.userName = dto.userName
+            existing.userEmail = dto.userEmail
+            existing.userImage = dto.userImage
             return existing
         } else {
             let participant = MatchParticipantModel(
@@ -461,9 +461,9 @@ final class MatchSyncService {
                 side: dto.side,
                 isWinner: dto.isWinner,
                 createdAt: parseDate(dto.createdAt) ?? Date(),
-                userName: dto.user?.name,
-                userEmail: dto.user?.email,
-                userImage: dto.user?.image
+                userName: dto.userName,
+                userEmail: dto.userEmail,
+                userImage: dto.userImage
             )
             participant.match = match
             modelContext.insert(participant)

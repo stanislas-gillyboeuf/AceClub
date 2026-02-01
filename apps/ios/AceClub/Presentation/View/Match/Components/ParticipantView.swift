@@ -23,7 +23,7 @@ struct ParticipantView: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
 
-                Text(participant?.user?.name ?? "N/A")
+                Text(participant?.userName ?? "N/A")
                     .font(.subheadline)
                     .fontWeight(isWinner ? .bold : .regular)
                     .lineLimit(1)
