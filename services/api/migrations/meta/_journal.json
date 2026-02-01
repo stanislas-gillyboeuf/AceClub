@@ -5,8 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1769855327980,
-      "tag": "0000_rare_nemesis",
+      "when": 1769945039560,
+      "tag": "0000_tense_lady_bullseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1769945100000,
+      "tag": "0001_seed_badges",
       "breakpoints": true
     }
   ]

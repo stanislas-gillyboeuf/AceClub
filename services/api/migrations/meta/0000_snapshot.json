@@ -1,5 +1,5 @@
 {
-  "id": "954e6adf-6189-4c0a-87da-b41db6c7b4d1",
+  "id": "76d18cb7-5cd3-463f-bbd5-024a7a25fe06",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -631,7 +631,7 @@
           "name": "is_ghost",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "default": false
         }
       },
@@ -2621,8 +2621,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "icon_name": {
-          "name": "icon_name",
+        "image_url": {
+          "name": "image_url",
           "type": "text",
           "primaryKey": false,
           "notNull": true

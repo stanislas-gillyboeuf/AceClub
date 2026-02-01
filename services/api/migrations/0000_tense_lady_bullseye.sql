@@ -87,7 +87,7 @@ CREATE TABLE "user" (
 	"phone_number" text,
 	"phone_number_verified" boolean,
 	"onboarding_completed" boolean DEFAULT false,
-	"is_ghost" boolean DEFAULT false NOT NULL,
+	"is_ghost" boolean DEFAULT false,
 	CONSTRAINT "user_email_unique" UNIQUE("email"),
 	CONSTRAINT "user_phone_number_unique" UNIQUE("phone_number")
 );
@@ -290,7 +290,7 @@ CREATE TABLE "badge" (
 	"name_en" text NOT NULL,
 	"description_fr" text NOT NULL,
 	"description_en" text NOT NULL,
-	"icon_name" text NOT NULL,
+	"image_url" text NOT NULL,
 	"required_level" integer,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"display_order" integer DEFAULT 0 NOT NULL,
