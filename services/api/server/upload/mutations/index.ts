@@ -1,2 +1,2 @@
-export { getUserImageUploadUrl } from "./get-user-image-upload-url";
-export { getOrgLogoUploadUrl } from "./get-org-logo-upload-url";
+export { uploadUserImage } from "./get-user-image-upload-url";
+export { uploadOrgLogo } from "./get-org-logo-upload-url";

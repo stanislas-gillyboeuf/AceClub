@@ -90,8 +90,6 @@ class ConversationMapper {
     // MARK: - Message Mapping
 
     static func map(messageDTO: MessageDTO) -> Message {
-        // For WebSocket messages, isFromMe is not provided by the server
-        // If nil, it means the message came from someone else (we only receive others' messages via WS)
         let isFromMe = messageDTO.isFromMe ?? false
 
         return Message(

@@ -35,3 +35,20 @@ export async function deleteObject(key: string): Promise<void> {
   });
   await minioClient.send(command);
 }
+
+export async function uploadBuffer(
+  key: string,
+  buffer: Buffer,
+  contentType: string,
+): Promise<string> {
+  const command = new PutObjectCommand({
+    Bucket: process.env.MINIO_BUCKET_NAME!,
+    Key: key,
+    Body: buffer,
+    ContentType: contentType,
+  });
+
+  await minioClient.send(command);
+
+  return `${process.env.MINIO_PUBLIC_URL}/${process.env.MINIO_BUCKET_NAME}/${key}`;
+}

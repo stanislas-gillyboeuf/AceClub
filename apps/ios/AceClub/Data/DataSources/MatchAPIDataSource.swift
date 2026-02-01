@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum MatchAPIDataSourceError: Error {
+enum MatchAPIDataSourceError: LocalizedError {
     case invalidURL
     case requestFailed(statusCode: Int)
     case decodingFailed(Error)
@@ -17,24 +17,16 @@ enum MatchAPIDataSourceError: Error {
     case badRequest(String)
     case unknown
 
-    var localizedDescription: String {
+    var errorDescription: String? {
         switch self {
-        case .invalidURL:
-            return "URL invalide"
-        case .requestFailed(let statusCode):
-            return "Échec de la requête (code: \(statusCode))"
-        case .decodingFailed(let error):
-            return "Erreur de décodage: \(error.localizedDescription)"
-        case .encodingFailed(let error):
-            return "Erreur d'encodage: \(error.localizedDescription)"
-        case .unauthorized:
-            return "Non autorisé"
-        case .notFound:
-            return "Match introuvable"
-        case .badRequest(let message):
-            return "Requête invalide: \(message)"
-        case .unknown:
-            return "Erreur inconnue"
+        case .invalidURL: return "URL invalide"
+        case .requestFailed(let statusCode): return "Échec de la requête (code: \(statusCode))"
+        case .decodingFailed: return "Erreur de décodage"
+        case .encodingFailed: return "Erreur d'encodage"
+        case .unauthorized: return "Non autorisé"
+        case .notFound: return "Match introuvable"
+        case .badRequest(let message): return "Requête invalide: \(message)"
+        case .unknown: return "Erreur inconnue"
         }
     }
 }

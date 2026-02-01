@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum MatchIntentAPIDataSourceError: Error {
+enum MatchIntentAPIDataSourceError: LocalizedError {
     case invalidURL
     case requestFailed(statusCode: Int)
     case decodingFailed(Error)
@@ -14,6 +14,19 @@ enum MatchIntentAPIDataSourceError: Error {
     case notFound
     case badRequest(String)
     case unknown
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL: return "URL invalide"
+        case .requestFailed(let statusCode): return "Échec de la requête (code: \(statusCode))"
+        case .decodingFailed: return "Erreur de décodage"
+        case .encodingFailed: return "Erreur d'encodage"
+        case .unauthorized: return "Non autorisé"
+        case .notFound: return "Intention introuvable"
+        case .badRequest(let message): return "Requête invalide: \(message)"
+        case .unknown: return "Erreur inconnue"
+        }
+    }
 }
 
 class MatchIntentAPIDataSource {
