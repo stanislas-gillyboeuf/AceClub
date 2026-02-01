@@ -167,7 +167,7 @@ export const listConversations = async (c: Context<HonoContext>) => {
                   .from(userLevel)
                   .where(sql`${userLevel.totalAces} > ${userLevelData.totalAces}`);
 
-                return { odUserId: userId, rank: rankResult?.rank || 1 };
+                return { odUserId: userId, rank: Number(rankResult?.rank) || 1 };
               })
             )
           : [];

@@ -1,21 +1,32 @@
 import { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
-import { generateUploadUrl } from "../../../lib/minio";
+import { uploadBuffer } from "../../../lib/minio";
+import { processProfileImage } from "../../../lib/image-processor";
 import { ulid } from "ulid";
 
-export const getUserImageUploadUrl = async (c: Context<HonoContext>) => {
+export const uploadUserImage = async (c: Context<HonoContext>) => {
   const user = c.get("user")!;
-  // @ts-ignore
-  const validated = c.req.valid("json") as { contentType: string };
 
-  const extension = validated.contentType.split("/")[1];
-  const key = `users/${user.id}/profile-${ulid()}.${extension}`;
+  const formData = await c.req.formData();
+  const file = formData.get("image");
 
-  const { signedUrl, publicUrl } = await generateUploadUrl(key, validated.contentType);
+  if (!file || !(file instanceof File)) {
+    return c.json({ error: "BadRequest", message: "Image file is required" }, 400);
+  }
 
-  return c.json({
-    uploadUrl: signedUrl,
-    imageUrl: publicUrl,
-    expiresIn: 3600,
-  });
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/heic"];
+  if (!allowedTypes.includes(file.type)) {
+    return c.json(
+      { error: "BadRequest", message: "Content type must be image/jpeg, image/png, image/webp, or image/heic" },
+      400,
+    );
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  const processedBuffer = await processProfileImage(arrayBuffer);
+
+  const key = `users/${user.id}/profile-${ulid()}.webp`;
+  const imageUrl = await uploadBuffer(key, processedBuffer, "image/webp");
+
+  return c.json({ imageUrl });
 };
