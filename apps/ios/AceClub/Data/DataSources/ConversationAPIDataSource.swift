@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ConversationAPIDataSourceError: Error {
+enum ConversationAPIDataSourceError: LocalizedError {
     case invalidURL
     case requestFailed(statusCode: Int)
     case decodingFailed(Error)
@@ -18,24 +18,24 @@ enum ConversationAPIDataSourceError: Error {
     case badRequest(String)
     case unknown
 
-    var localizedDescription: String {
+    var errorDescription: String? {
         switch self {
         case .invalidURL:
             return String(localized: "URL invalide")
         case .requestFailed(let statusCode):
-            return String(localized: "Echec de la requete (code: \(statusCode))")
-        case .decodingFailed(let error):
-            return String(localized: "Erreur de decodage: \(error.localizedDescription)")
+            return String(localized: "Échec de la requête (code: \(statusCode))")
+        case .decodingFailed:
+            return String(localized: "Erreur de décodage des données")
         case .encodingFailed(let error):
             return String(localized: "Erreur d'encodage: \(error.localizedDescription)")
         case .unauthorized:
-            return String(localized: "Non autorise")
+            return String(localized: "Non autorisé")
         case .notFound:
             return String(localized: "Conversation introuvable")
         case .forbidden:
-            return String(localized: "Acces interdit")
+            return String(localized: "Accès interdit")
         case .badRequest(let message):
-            return String(localized: "Requete invalide: \(message)")
+            return String(localized: "Requête invalide: \(message)")
         case .unknown:
             return String(localized: "Erreur inconnue")
         }

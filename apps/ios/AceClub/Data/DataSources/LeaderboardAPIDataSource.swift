@@ -1,11 +1,21 @@
 import Foundation
 
-enum LeaderboardAPIDataSourceError: Error {
+enum LeaderboardAPIDataSourceError: LocalizedError {
     case invalidURL
     case requestFailed
     case decodingFailed
     case unauthorized
     case unknown
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL: return "URL invalide"
+        case .requestFailed: return "Échec de la requête"
+        case .decodingFailed: return "Échec du décodage"
+        case .unauthorized: return "Non autorisé"
+        case .unknown: return "Erreur inconnue"
+        }
+    }
 }
 
 class LeaderboardAPIDataSource {

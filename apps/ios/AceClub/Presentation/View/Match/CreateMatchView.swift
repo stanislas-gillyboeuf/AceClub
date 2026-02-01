@@ -23,7 +23,11 @@ struct CreateMatchView: View {
             Form {
                 MatchTypeSection(type: $viewModel.type)
                 MatchStatusSection(status: $viewModel.status)
-                ParticipantsSection(homeUser: $viewModel.homeUser, awayUser: $viewModel.awayUser)
+                ParticipantsSection(
+                    homeUser: viewModel.homeUser,
+                    awayUser: $viewModel.awayUser,
+                    isLoadingCurrentUser: viewModel.isLoadingCurrentUser
+                )
                 if viewModel.status != .scheduled {
                     SetsSection(
                         sets: $viewModel.sets,
@@ -79,6 +83,7 @@ struct CreateMatchView: View {
             .task {
                 syncService = MatchSyncService(modelContext: modelContext)
                 viewModel.syncService = syncService
+                await viewModel.loadCurrentUser()
             }
         }
     }
@@ -114,16 +119,52 @@ private struct MatchStatusSection: View {
 }
 
 private struct ParticipantsSection: View {
-    @Binding var homeUser: User?
+    let homeUser: User?
     @Binding var awayUser: User?
+    let isLoadingCurrentUser: Bool
+
     var body: some View {
         Section("Participants") {
             VStack(alignment: .leading, spacing: 12) {
-                UserSearchField(
-                    label: "Joueur Domicile",
-                    selectedUser: $homeUser,
-                    excludedUserIds: awayUser.map { [$0.id] } ?? []
-                )
+                // Joueur Domicile - Non modifiable (utilisateur connecté)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Joueur Domicile")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    if isLoadingCurrentUser {
+                        HStack {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                            Text("Chargement...")
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, 8)
+                    } else if let user = homeUser {
+                        HStack(spacing: 12) {
+                            AsyncImage(url: URL(string: user.image ?? "")) { image in
+                                image.resizable().scaledToFill()
+                            } placeholder: {
+                                Circle().fill(Color.gray.opacity(0.3))
+                            }
+                            .frame(width: 36, height: 36)
+                            .clipShape(Circle())
+
+                            VStack(alignment: .leading) {
+                                Text(user.displayName)
+                                    .font(.body)
+                                Text("Vous")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                        }
+                        .padding(.vertical, 4)
+                    } else {
+                        Text("Erreur de chargement")
+                            .foregroundStyle(.red)
+                            .padding(.vertical, 8)
+                    }
+                }
                 Divider()
                 UserSearchField(
                     label: "Joueur Extérieur",
@@ -241,6 +282,7 @@ class CreateMatchViewModel: ObservableObject {
     @Published var finishedAt: Date = Date()
 
     @Published var isCreating: Bool = false
+    @Published var isLoadingCurrentUser: Bool = false
     @Published var errorMessage: String? = nil
     @Published var createdMatch: Bool = false
 
@@ -248,6 +290,19 @@ class CreateMatchViewModel: ObservableObject {
 
     var syncService: MatchSyncService?
     private let getMeUseCase = GetMeUseCase()
+
+    // MARK: - Initialization
+
+    func loadCurrentUser() async {
+        isLoadingCurrentUser = true
+        do {
+            let currentUser = try await getMeUseCase.execute()
+            homeUser = currentUser
+        } catch {
+            errorMessage = "Impossible de charger votre profil"
+        }
+        isLoadingCurrentUser = false
+    }
 
     // MARK: - Computed Properties
 
