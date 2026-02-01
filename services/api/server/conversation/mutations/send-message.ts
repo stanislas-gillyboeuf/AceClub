@@ -11,6 +11,7 @@ import { eq, and, ne, sql } from "drizzle-orm";
 import { ulid } from "ulid";
 import { redis, CHAT_CHANNEL } from "../../../lib/redis";
 import { sendNotificationToUser } from "../../../services/apns/notification-service";
+import { isUserConnectedWs } from "../../ws/chat-handler";
 
 export const sendMessage = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user");
@@ -138,9 +139,13 @@ export const sendMessage = async (c: Context<HonoContext>) => {
     }
   }
 
-  // Send push notifications to participants who might be offline
+  // Send push notifications only to participants who are NOT connected via WebSocket
   for (const participant of otherParticipants) {
     if (!participant.isMuted) {
+      if (isUserConnectedWs(participant.userId)) {
+        continue;
+      }
+
       try {
         await sendNotificationToUser({
           userId: participant.userId,

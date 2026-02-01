@@ -38,8 +38,11 @@ class ConversationListViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
+            try Task.checkCancellation()
             conversations = try await listConversationsUseCase.execute()
             totalUnreadCount = conversations.reduce(0) { $0 + $1.unreadCount }
+        } catch is CancellationError {
+            // Task was cancelled (e.g., view disappeared), ignore silently
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -94,7 +97,7 @@ class ConversationListViewModel: ObservableObject {
                     lastMessagePreview: messageDTO.content,
                     lastMessageSenderId: messageDTO.senderId,
                     createdAt: updatedConversation.createdAt,
-                    unreadCount: messageDTO.isFromMe ? updatedConversation.unreadCount : updatedConversation.unreadCount + 1,
+                    unreadCount: (messageDTO.isFromMe ?? false) ? updatedConversation.unreadCount : updatedConversation.unreadCount + 1,
                     isMuted: updatedConversation.isMuted,
                     otherParticipants: updatedConversation.otherParticipants
                 )

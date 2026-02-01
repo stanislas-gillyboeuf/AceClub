@@ -52,7 +52,7 @@ struct MessageDTO: Codable {
     let content: String
     let createdAt: String
     let clientMessageId: String?
-    let isFromMe: Bool
+    let isFromMe: Bool?  // Optional because WebSocket messages don't include this field
 }
 
 // MARK: - Conversation DTO
