@@ -10,7 +10,7 @@ struct CreateMatchIntentSheet: View {
     var onCreated: (() -> Void)?
 
     @State private var matchDate = Date()
-    @State private var matchTime = Date()
+    @State private var matchTime = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date()
     @State private var durationMinutes: Int = 90
     @State private var intentType: MatchIntentType = .match
     @State private var intentDescription: String = ""
@@ -20,6 +20,30 @@ struct CreateMatchIntentSheet: View {
     private let createUseCase = CreateMatchIntentUseCase()
     private let durationOptions = [60, 90, 120, 180]
 
+    private var minimumDateTime: Date {
+        Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date()
+    }
+    private var combinedDateTime: Date {
+        let calendar = Calendar.current
+        var components = calendar.dateComponents([.year, .month, .day], from: matchDate)
+        let timeComponents = calendar.dateComponents([.hour, .minute], from: matchTime)
+        components.hour = timeComponents.hour
+        components.minute = timeComponents.minute
+        return calendar.date(from: components) ?? matchDate
+    }
+
+    private var isTimeValid: Bool {
+        combinedDateTime >= minimumDateTime
+    }
+
+    private var timeValidationMessage: String? {
+        guard !isTimeValid else { return nil }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        let minTime = formatter.string(from: minimumDateTime)
+        return "L'heure doit être au moins 1h dans le futur (minimum \(minTime) aujourd'hui)"
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -28,6 +52,11 @@ struct CreateMatchIntentSheet: View {
                     DatePicker("Heure", selection: $matchTime, displayedComponents: .hourAndMinute)
                 } header: {
                     Text("Quand ?")
+                } footer: {
+                    if let message = timeValidationMessage {
+                        Text(message)
+                            .foregroundStyle(.red)
+                    }
                 }
 
                 Section {
@@ -85,7 +114,7 @@ struct CreateMatchIntentSheet: View {
                     Button("Publier") {
                         Task { await createIntent() }
                     }
-                    .disabled(isLoading)
+                    .disabled(isLoading || !isTimeValid)
                     .fontWeight(.semibold)
                 }
             }

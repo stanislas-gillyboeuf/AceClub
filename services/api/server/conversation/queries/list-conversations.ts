@@ -53,22 +53,12 @@ export const listConversations = async (c: Context<HonoContext>) => {
       createdAt: conversation.createdAt,
     })
     .from(conversation)
-    .where(
-      conversationIds.length === 1
-        ? eq(conversation.id, conversationIds[0])
-        : // For multiple IDs, we need to use SQL IN
-          eq(conversation.id, conversationIds[0]) // Simplified, will handle in mapping
-    )
+    .where(inArray(conversation.id, conversationIds))
     .orderBy(desc(conversation.lastMessageAt));
-
-  // Filter to only include conversations the user participates in
-  const filteredConversations = conversations.filter((conv) =>
-    conversationIds.includes(conv.id)
-  );
 
   // Get other participants for each conversation
   const result = await Promise.all(
-    filteredConversations.map(async (conv) => {
+    conversations.map(async (conv) => {
       const myParticipation = myParticipations.find(
         (p) => p.conversationId === conv.id
       );
