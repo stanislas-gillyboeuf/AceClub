@@ -1,40 +1,34 @@
+import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { cors } from "hono/cors";
 import { auth } from "./auth";
 import { serverRouter } from "./server/router";
+import { initializeWebSocketServer } from "./server/ws/chat-handler";
 import type { HonoContext } from "./types/hono";
 
 const app = new Hono<HonoContext>();
 
-// Logging
 app.use("*", logger());
 
-// CORS configuration for iOS app and web
 app.use(
   "*",
   cors({
     origin: (origin) => {
-      // Allow requests with no origin (mobile apps, Postman, etc.)
       if (!origin) return "*";
 
-      // Allow localhost for development
       if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
         return origin;
       }
 
-      // Allow iOS app custom scheme
       if (origin.startsWith("apply://")) {
         return origin;
       }
 
-      // Allow local network IPs for device testing
       if (/^https?:\/\/(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/.test(origin)) {
         return origin;
       }
 
-      // Add your production domain here
-      // if (origin === 'https://yourdomain.com') return origin
 
       return null;
     },
@@ -46,7 +40,6 @@ app.use(
   }),
 );
 
-// Better Auth routes - handles sign up, sign in, sign out, etc.
 app.on(["POST", "GET"], "/api/auth/*", (c) => {
   return auth.handler(c.req.raw);
 });
@@ -64,13 +57,19 @@ app.get("/api/session", async (c) => {
   });
 });
 
-// routes
 app.route("/api", serverRouter);
 
-// Root route
 app.get("/", (c) => c.json({ message: "AceClub API", status: "ok" }));
 
-// Health check
 app.get("/health", (c) => c.json({ status: "ok" }));
+
+const port = Number(process.env.PORT) || 3000;
+
+const server = serve({
+  fetch: app.fetch,
+  port,
+});
+
+initializeWebSocketServer(server);
 
 export default app;
