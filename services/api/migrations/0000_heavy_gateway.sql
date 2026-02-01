@@ -7,12 +7,13 @@ CREATE TYPE "public"."match_request_status" AS ENUM('pending', 'accepted', 'reje
 CREATE TYPE "public"."swipe_action" AS ENUM('like', 'pass');--> statement-breakpoint
 CREATE TYPE "public"."sport_type" AS ENUM('tennis', 'padel');--> statement-breakpoint
 CREATE TYPE "public"."device_platform" AS ENUM('ios', 'android');--> statement-breakpoint
-CREATE TYPE "public"."notification_type" AS ENUM('match_request_accepted', 'invitation_accepted', 'new_match_request', 'match_reminder', 'challenge_assigned', 'streak_warning');--> statement-breakpoint
+CREATE TYPE "public"."notification_type" AS ENUM('match_request_accepted', 'invitation_accepted', 'new_match_request', 'match_reminder', 'challenge_assigned', 'streak_warning', 'new_message');--> statement-breakpoint
 CREATE TYPE "public"."aces_transaction_type" AS ENUM('match_participation', 'match_victory', 'challenge_completed', 'streak_bonus', 'level_up_bonus', 'badge_bonus');--> statement-breakpoint
 CREATE TYPE "public"."challenge_difficulty" AS ENUM('easy', 'medium', 'hard');--> statement-breakpoint
 CREATE TYPE "public"."challenge_type" AS ENUM('quantitative', 'social', 'performance');--> statement-breakpoint
 CREATE TYPE "public"."user_challenge_status" AS ENUM('active', 'completed', 'expired');--> statement-breakpoint
 CREATE TYPE "public"."badge_category" AS ENUM('level', 'achievement', 'milestone', 'special');--> statement-breakpoint
+CREATE TYPE "public"."conversation_type" AS ENUM('match', 'group');--> statement-breakpoint
 CREATE TABLE "account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
@@ -326,6 +327,42 @@ CREATE TABLE "user_title" (
 	CONSTRAINT "user_title_user_id_unique" UNIQUE("user_id")
 );
 --> statement-breakpoint
+CREATE TABLE "conversation" (
+	"id" text PRIMARY KEY NOT NULL,
+	"match_id" text,
+	"name" text,
+	"type" "conversation_type" DEFAULT 'match' NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"last_message_at" timestamp,
+	"last_message_preview" text,
+	"last_message_sender_id" text
+);
+--> statement-breakpoint
+CREATE TABLE "conversation_participant" (
+	"id" text PRIMARY KEY NOT NULL,
+	"conversation_id" text NOT NULL,
+	"user_id" text NOT NULL,
+	"last_read_at" timestamp,
+	"unread_count" integer DEFAULT 0 NOT NULL,
+	"is_muted" boolean DEFAULT false NOT NULL,
+	"is_deleted" boolean DEFAULT false NOT NULL,
+	"deleted_at" timestamp,
+	"joined_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "message" (
+	"id" text PRIMARY KEY NOT NULL,
+	"conversation_id" text NOT NULL,
+	"sender_id" text NOT NULL,
+	"content" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"is_deleted" boolean DEFAULT false NOT NULL,
+	"deleted_at" timestamp,
+	"client_message_id" text
+);
+--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invitation" ADD CONSTRAINT "invitation_organization_id_organization_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invitation" ADD CONSTRAINT "invitation_inviter_id_user_id_fk" FOREIGN KEY ("inviter_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -359,6 +396,11 @@ ALTER TABLE "user_badge" ADD CONSTRAINT "user_badge_user_id_user_id_fk" FOREIGN 
 ALTER TABLE "user_badge" ADD CONSTRAINT "user_badge_badge_id_badge_id_fk" FOREIGN KEY ("badge_id") REFERENCES "public"."badge"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_title" ADD CONSTRAINT "user_title_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_title" ADD CONSTRAINT "user_title_title_id_title_id_fk" FOREIGN KEY ("title_id") REFERENCES "public"."title"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "conversation" ADD CONSTRAINT "conversation_match_id_match_id_fk" FOREIGN KEY ("match_id") REFERENCES "public"."match"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "conversation_participant" ADD CONSTRAINT "conversation_participant_conversation_id_conversation_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversation"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "conversation_participant" ADD CONSTRAINT "conversation_participant_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "message" ADD CONSTRAINT "message_conversation_id_conversation_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversation"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "message" ADD CONSTRAINT "message_sender_id_user_id_fk" FOREIGN KEY ("sender_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "account_userId_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "invitation_organizationId_idx" ON "invitation" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX "invitation_email_idx" ON "invitation" USING btree ("email");--> statement-breakpoint
@@ -396,4 +438,14 @@ CREATE UNIQUE INDEX "user_challenge_userId_templateId_week_unique" ON "user_chal
 CREATE INDEX "user_streak_userId_idx" ON "user_streak" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "user_badge_userId_idx" ON "user_badge" USING btree ("user_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "user_badge_userId_badgeId_unique" ON "user_badge" USING btree ("user_id","badge_id");--> statement-breakpoint
-CREATE INDEX "user_title_userId_idx" ON "user_title" USING btree ("user_id");
+CREATE INDEX "user_title_userId_idx" ON "user_title" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "conversation_matchId_idx" ON "conversation" USING btree ("match_id");--> statement-breakpoint
+CREATE INDEX "conversation_lastMessageAt_idx" ON "conversation" USING btree ("last_message_at");--> statement-breakpoint
+CREATE UNIQUE INDEX "conversation_matchId_unique" ON "conversation" USING btree ("match_id");--> statement-breakpoint
+CREATE INDEX "conversation_participant_conversationId_idx" ON "conversation_participant" USING btree ("conversation_id");--> statement-breakpoint
+CREATE INDEX "conversation_participant_userId_idx" ON "conversation_participant" USING btree ("user_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "conversation_participant_unique" ON "conversation_participant" USING btree ("conversation_id","user_id");--> statement-breakpoint
+CREATE INDEX "message_conversationId_idx" ON "message" USING btree ("conversation_id");--> statement-breakpoint
+CREATE INDEX "message_senderId_idx" ON "message" USING btree ("sender_id");--> statement-breakpoint
+CREATE INDEX "message_conversationId_createdAt_idx" ON "message" USING btree ("conversation_id","created_at");--> statement-breakpoint
+CREATE INDEX "message_clientMessageId_idx" ON "message" USING btree ("client_message_id");

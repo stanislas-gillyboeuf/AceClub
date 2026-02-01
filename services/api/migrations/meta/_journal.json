@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1769945039560,
-      "tag": "0000_tense_lady_bullseye",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1769945100000,
-      "tag": "0001_seed_badges",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1769946067077,
-      "tag": "0002_chubby_lightspeed",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1769946388112,
-      "tag": "0003_military_legion",
+      "when": 1769952941308,
+      "tag": "0000_heavy_gateway",
       "breakpoints": true
     }
   ]
