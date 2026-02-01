@@ -25,13 +25,13 @@ struct AdminView: View {
                     }
                 }
 
-                Section("Users") {
+                Section("Utilisateurs") {
                     if viewModel.isLoading && viewModel.users.isEmpty {
                         SkeletonList(count: 5) {
                             SkeletonRow(showAvatar: false, lineCount: 2, titleWidth: 120)
                         }
                     } else if viewModel.users.isEmpty {
-                        Text("No users yet.")
+                        Text("Aucun utilisateur.")
                             .foregroundColor(.secondary)
                     } else {
                         ForEach(viewModel.users) { user in
@@ -52,12 +52,12 @@ struct AdminView: View {
                         Button {
                             isCreateUserPresented = true
                         } label: {
-                            Label("Create user", systemImage: "person")
+                            Label("Créer un utilisateur", systemImage: "person")
                         }
                         Button {
                             isCreateOrganizationPresented = true
                         } label: {
-                            Label("Create organization", systemImage: "building")
+                            Label("Créer une organisation", systemImage: "building")
                         }
                     } label: {
                         Label("Actions", systemImage: "plus")
@@ -89,7 +89,7 @@ struct AdminView: View {
                     .font(.headline)
 
                 if user.banned! {
-                    Text("BANNED")
+                    Text("BANNI")
                         .font(.caption2)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
@@ -149,7 +149,7 @@ struct AdminUserDetailView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("User") {
+                Section("Utilisateur") {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(user.name)
                             .font(.headline)
@@ -158,19 +158,19 @@ struct AdminUserDetailView: View {
                             .foregroundColor(.secondary)
                     }
                     if user.isBanned {
-                        Text("User is banned")
+                        Text("Utilisateur banni")
                             .font(.footnote)
                             .foregroundColor(.red)
                     }
                 }
 
-                Section("Update Info") {
-                    TextField("Name", text: $name)
+                Section("Modifier les infos") {
+                    TextField("Nom", text: $name)
                     TextField("Email", text: $email)
                         .autocapitalization(.none)
                         .keyboardType(.emailAddress)
-                    SecureField("Password (optional)", text: $updatePassword)
-                    Button("Update User") {
+                    SecureField("Mot de passe (optionnel)", text: $updatePassword)
+                    Button("Mettre à jour") {
                         Task {
                             if let updated = await viewModel.updateUser(userId: user.id, name: name, email: email, password: updatePassword) {
                                 user = updated
@@ -181,9 +181,9 @@ struct AdminUserDetailView: View {
                     .disabled(viewModel.isLoading || name.isEmpty || email.isEmpty)
                 }
 
-                Section("Password") {
-                    SecureField("New Password", text: $newPassword)
-                    Button("Set Password") {
+                Section("Mot de passe") {
+                    SecureField("Nouveau mot de passe", text: $newPassword)
+                    Button("Définir le mot de passe") {
                         Task {
                             if let updated = await viewModel.setPassword(userId: user.id, password: newPassword) {
                                 user = updated
@@ -196,8 +196,8 @@ struct AdminUserDetailView: View {
                 }
 
                 Section("Sessions") {
-                    TextField("Session ID", text: $sessionId)
-                    Button("Revoke Session") {
+                    TextField("ID de session", text: $sessionId)
+                    Button("Révoquer la session") {
                         Task {
                             if let updated = await viewModel.revokeUserSession(userId: user.id, sessionId: sessionId) {
                                 user = updated
@@ -208,7 +208,7 @@ struct AdminUserDetailView: View {
                     }
                     .disabled(viewModel.isLoading || sessionId.isEmpty)
 
-                    Button("Revoke All Sessions") {
+                    Button("Révoquer toutes les sessions") {
                         Task {
                             if let updated = await viewModel.revokeUserSessions(userId: user.id) {
                                 user = updated
@@ -219,8 +219,8 @@ struct AdminUserDetailView: View {
                     .disabled(viewModel.isLoading)
                 }
 
-                Section("Access") {
-                    Button(user.isBanned ? "Unban User" : "Ban User") {
+                Section("Accès") {
+                    Button(user.isBanned ? "Débannir l'utilisateur" : "Bannir l'utilisateur") {
                         Task {
                             if user.isBanned {
                                 if let updated = await viewModel.unbanUser(userId: user.id) {
@@ -238,17 +238,17 @@ struct AdminUserDetailView: View {
                     .disabled(viewModel.isLoading)
                 }
             }
-            .navigationTitle("Manage User")
+            .navigationTitle("Gérer l'utilisateur")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         dismiss()
                     } label: {
-                        Label("Close", systemImage: "xmark")
+                        Label("Fermer", systemImage: "xmark")
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
+                    Button("Terminé") {
                         dismiss()
                     }
                 }
@@ -273,21 +273,21 @@ struct CreateUserSheet: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Create User") {
-                    TextField("Name", text: $name)
+                Section("Créer un utilisateur") {
+                    TextField("Nom", text: $name)
                     TextField("Email", text: $email)
                         .autocapitalization(.none)
                         .keyboardType(.emailAddress)
-                    SecureField("Password", text: $password)
+                    SecureField("Mot de passe", text: $password)
                 }
             }
-            .navigationTitle("Create User")
+            .navigationTitle("Créer un utilisateur")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { isPresented = false }
+                    Button("Annuler") { isPresented = false }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Create") {
+                    Button("Créer") {
                         Task {
                             await viewModel.createUser(name: name, email: email, password: password)
                             if viewModel.errorMessage == nil {

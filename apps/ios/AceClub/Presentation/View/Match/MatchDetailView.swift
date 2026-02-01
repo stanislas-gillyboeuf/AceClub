@@ -294,6 +294,15 @@ struct MatchDetailView: View {
                 .listRowBackground(Color.clear)
             }
 
+            // Section Chrono (seulement pour les matchs en cours)
+            if match.isOngoing, let startedAt = match.startedAt {
+                Section {
+                    MatchElapsedTimeView(startedAt: startedAt)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                }
+            }
+
             // Section 2: Participants
             Section("Participants") {
                 if let home = match.homeParticipant {
@@ -584,6 +593,11 @@ struct EditMatchScoresViewSwiftData: View {
                     // Header avec les participants
                     matchHeader
                         .padding(.bottom, 8)
+
+                    // Chrono temps de jeu
+                    if let startedAt = match.startedAt {
+                        MatchElapsedTimeView(startedAt: startedAt)
+                    }
 
                     // Sets éditables
                     ForEach($editedSets) { $setData in

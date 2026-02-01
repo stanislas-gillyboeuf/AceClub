@@ -24,7 +24,7 @@ struct CreateMatchIntentSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    DatePicker("Date", selection: $matchDate, displayedComponents: .date)
+                    DatePicker("Date", selection: $matchDate, in: Date()..., displayedComponents: .date)
                     DatePicker("Heure", selection: $matchTime, displayedComponents: .hourAndMinute)
                 } header: {
                     Text("Quand ?")

@@ -17,15 +17,15 @@ enum AuthError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "Invalid URL"
+            return "URL invalide"
         case .invalidResponse:
-            return "Invalid response from server"
+            return "Réponse invalide du serveur"
         case .serverError(let message):
             return message
         case .decodingError:
-            return "Failed to decode response"
+            return "Échec du décodage de la réponse"
         case .networkError(let error):
-            return "Network error: \(error.localizedDescription)"
+            return "Erreur réseau : \(error.localizedDescription)"
         }
     }
 }
@@ -54,7 +54,7 @@ class AuthAPIDataSource {
             }
 
             if httpResponse.statusCode != 200 {
-                throw AuthError.serverError("Sign out failed with status code: \(httpResponse.statusCode)")
+                throw AuthError.serverError("Échec de la déconnexion (code \(httpResponse.statusCode))")
             }
 
         } catch let error as AuthError {
@@ -96,7 +96,7 @@ class AuthAPIDataSource {
                    let message = errorResponse["message"] {
                     throw AuthError.serverError(message)
                 }
-                throw AuthError.serverError("Google Sign-In failed with status code: \(httpResponse.statusCode)")
+                throw AuthError.serverError("Échec de la connexion Google (code \(httpResponse.statusCode))")
             }
 
             let authResponse = try JSONDecoder().decode(AuthResponseDTO.self, from: data)
@@ -149,7 +149,7 @@ class AuthAPIDataSource {
                    let message = errorResponse["message"] {
                     throw AuthError.serverError(message)
                 }
-                throw AuthError.serverError("Apple Sign-In failed with status code: \(httpResponse.statusCode)")
+                throw AuthError.serverError("Échec de la connexion Apple (code \(httpResponse.statusCode))")
             }
 
             let authResponse = try JSONDecoder().decode(AuthResponseDTO.self, from: data)
@@ -171,7 +171,7 @@ class AuthAPIDataSource {
         let (data, response) = try await APIClient.shared.authenticatedRequest(url: url)
 
         guard response.statusCode == 200 else {
-            throw AuthError.serverError("Get session failed with status code: \(response.statusCode)")
+            throw AuthError.serverError("Échec de la récupération de session (code \(response.statusCode))")
         }
 
         do {

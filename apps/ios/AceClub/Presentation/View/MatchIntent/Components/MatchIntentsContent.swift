@@ -44,11 +44,9 @@ struct MatchIntentsContent: View {
         .animation(.easeOut(duration: 0.25), value: viewModel.discoverItems.count)
     }
 
-    // MARK: - Card stack
 
     private var cardStack: some View {
         ZStack {
-            // Background cards (stack)
             ForEach(Array(viewModel.discoverItems.enumerated()), id: \.element.id) { index, item in
                 if index > 0 && index < maxVisibleCards {
                     DiscoverCardView(item: item)
@@ -58,13 +56,9 @@ struct MatchIntentsContent: View {
                 }
             }
 
-            // Top card (draggable + tappable)
             if let top = viewModel.topCard {
                 ZStack {
                     DiscoverCardView(item: top)
-
-                    // Swipe feedback overlays
-                    swipeOverlays
                 }
                 .offset(dragOffset)
                 .rotationEffect(.degrees(rotationForDrag))
@@ -92,73 +86,7 @@ struct MatchIntentsContent: View {
 
     // MARK: - Swipe Overlays
 
-    private var swipeOverlays: some View {
-        ZStack {
-            // Like overlay (right swipe)
-            likeOverlay
-                .opacity(likeOverlayOpacity)
-
-            // Pass overlay (left swipe)
-            passOverlay
-                .opacity(passOverlayOpacity)
-        }
-    }
-
-    private var likeOverlay: some View {
-        VStack {
-            HStack {
-                Spacer()
-                Text("LIKE")
-                    .font(.title.weight(.bold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .background(Color.green)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .rotationEffect(.degrees(-15))
-                    .padding(.top, 40)
-                    .padding(.trailing, 20)
-            }
-            Spacer()
-        }
-    }
-
-    private var passOverlay: some View {
-        VStack {
-            HStack {
-                Text("NOPE")
-                    .font(.title.weight(.bold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .background(Color.red)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .rotationEffect(.degrees(15))
-                    .padding(.top, 40)
-                    .padding(.leading, 20)
-                Spacer()
-            }
-            Spacer()
-        }
-    }
-
-    private var likeOverlayOpacity: Double {
-        let threshold: CGFloat = 30
-        let maxOpacity: Double = 1.0
-        if dragOffset.width > threshold {
-            return min(Double(dragOffset.width - threshold) / 70, maxOpacity)
-        }
-        return 0
-    }
-
-    private var passOverlayOpacity: Double {
-        let threshold: CGFloat = 30
-        let maxOpacity: Double = 1.0
-        if dragOffset.width < -threshold {
-            return min(Double(abs(dragOffset.width) - threshold) / 70, maxOpacity)
-        }
-        return 0
-    }
+    // Les fonctions de overlays et d'opacité sont supprimées (plus de "LIKE"/"NOPE")
 
     // MARK: - Swipe Handling
 

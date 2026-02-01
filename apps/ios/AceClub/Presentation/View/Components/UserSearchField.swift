@@ -10,6 +10,7 @@ import SwiftUI
 struct UserSearchField: View {
     let label: String
     @Binding var selectedUser: User?
+    var excludedUserIds: [String] = []
     @State private var searchQuery: String = ""
     @State private var searchResults: [User] = []
     @State private var isSearching: Bool = false
@@ -307,9 +308,11 @@ struct UserSearchField: View {
 
                 guard !Task.isCancelled else { return }
 
+                let filteredResults = results.filter { !excludedUserIds.contains($0.id) }
+
                 await MainActor.run {
                     withAnimation(.snappy(duration: 0.2)) {
-                        searchResults = results
+                        searchResults = filteredResults
                         isSearching = false
                     }
                 }

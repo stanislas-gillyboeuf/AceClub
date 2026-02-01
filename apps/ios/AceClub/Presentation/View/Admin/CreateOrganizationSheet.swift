@@ -28,11 +28,11 @@ struct CreateOrganizationSheet: View {
 
                 navigationButtons
             }
-            .navigationTitle(currentStep == 0 ? "Create Organization" : "Invite Members")
+            .navigationTitle(currentStep == 0 ? "Créer une organisation" : "Inviter des membres")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button("Annuler") {
                         isPresented = false
                     }
                 }
@@ -54,11 +54,11 @@ struct CreateOrganizationSheet: View {
 
     private var stepOneContent: some View {
         VStack(spacing: 24) {
-            Text("Create a new organization")
+            Text("Créer une nouvelle organisation")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
 
-            TextField("Organization Name", text: $name)
+            TextField("Nom de l'organisation", text: $name)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .onChange(of: name) { _, newValue in
                     slug = slugify(name: newValue)
@@ -83,12 +83,12 @@ struct CreateOrganizationSheet: View {
 
     private var stepTwoContent: some View {
         VStack(spacing: 24) {
-            Text("Invite members to your organization")
+            Text("Inviter des membres dans votre organisation")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
 
             HStack {
-                TextField("Email address", text: $newEmail)
+                TextField("Adresse email", text: $newEmail)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .textInputAutocapitalization(.never)
                     .keyboardType(.emailAddress)
@@ -103,7 +103,7 @@ struct CreateOrganizationSheet: View {
 
             if !memberEmails.isEmpty {
                 List {
-                    Section("Members to invite") {
+                    Section("Membres à inviter") {
                         ForEach(memberEmails, id: \.self) { email in
                             Text(email)
                         }
@@ -119,7 +119,7 @@ struct CreateOrganizationSheet: View {
     private var navigationButtons: some View {
         HStack(spacing: 16) {
             if currentStep > 0 {
-                Button("Back") {
+                Button("Retour") {
                     withAnimation {
                         currentStep -= 1
                     }
@@ -129,7 +129,7 @@ struct CreateOrganizationSheet: View {
                 .background(Theme.tertiaryBackground)
             }
 
-            Button(currentStep == 0 ? "Next" : "Create") {
+            Button(currentStep == 0 ? "Suivant" : "Créer") {
                 if currentStep == 0 {
                     withAnimation {
                         currentStep += 1

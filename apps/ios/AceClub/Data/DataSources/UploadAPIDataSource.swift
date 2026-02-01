@@ -12,15 +12,15 @@ enum UploadError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "Invalid URL"
+            return "URL invalide"
         case .requestFailed:
-            return "Request failed"
+            return "Échec de la requête"
         case .decodingFailed:
-            return "Failed to decode response"
+            return "Échec du décodage de la réponse"
         case .imageCompressionFailed:
-            return "Failed to compress image"
+            return "Échec de la compression de l'image"
         case .uploadFailed(let statusCode):
-            return "Upload failed with status code \(statusCode)"
+            return "Échec de l'envoi (code \(statusCode))"
         }
     }
 }

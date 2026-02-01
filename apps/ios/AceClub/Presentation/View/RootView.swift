@@ -33,7 +33,7 @@ struct RootView: View {
         TabView(selection: $selection) {
             HomeView()
                 .tabItem {
-                    Label("Feed", systemImage: "list.dash")
+                    Label("Accueil", systemImage: "list.dash")
                 }
                 .tag(Tab.feed)
 
@@ -55,7 +55,7 @@ struct RootView: View {
                 progressionViewModel: progressionViewModel
             )
                 .tabItem {
-                    Label("Profile", systemImage: "person")
+                    Label("Profil", systemImage: "person")
                 }
                 .tag(Tab.profile)
 

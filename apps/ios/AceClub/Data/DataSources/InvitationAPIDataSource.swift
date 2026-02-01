@@ -9,11 +9,11 @@ enum InvitationError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidURL: return "Invalid URL"
-        case .invalidResponse: return "Invalid response from server"
+        case .invalidURL: return "URL invalide"
+        case .invalidResponse: return "Réponse invalide du serveur"
         case .serverError(let message): return message
-        case .decodingError: return "Failed to decode response"
-        case .networkError(let error): return "Network error: \(error.localizedDescription)"
+        case .decodingError: return "Échec du décodage de la réponse"
+        case .networkError(let error): return "Erreur réseau : \(error.localizedDescription)"
         }
     }
 }

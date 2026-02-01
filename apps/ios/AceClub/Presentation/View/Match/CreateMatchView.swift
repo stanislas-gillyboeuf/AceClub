@@ -25,7 +25,13 @@ struct CreateMatchView: View {
                 MatchStatusSection(status: $viewModel.status)
                 ParticipantsSection(homeUser: $viewModel.homeUser, awayUser: $viewModel.awayUser)
                 if viewModel.status != .scheduled {
-                    SetsSection(sets: $viewModel.sets, addSet: viewModel.addSet, removeSet: viewModel.removeSet)
+                    SetsSection(
+                        sets: $viewModel.sets,
+                        homeName: viewModel.homeUser?.displayName ?? "Domicile",
+                        awayName: viewModel.awayUser?.displayName ?? "Extérieur",
+                        addSet: viewModel.addSet,
+                        removeSet: viewModel.removeSet
+                    )
                 }
                 if viewModel.status == .finished {
                     WinnerSection(winnerSide: $viewModel.winnerSide)
@@ -113,9 +119,17 @@ private struct ParticipantsSection: View {
     var body: some View {
         Section("Participants") {
             VStack(alignment: .leading, spacing: 12) {
-                UserSearchField(label: "Joueur Domicile", selectedUser: $homeUser)
+                UserSearchField(
+                    label: "Joueur Domicile",
+                    selectedUser: $homeUser,
+                    excludedUserIds: awayUser.map { [$0.id] } ?? []
+                )
                 Divider()
-                UserSearchField(label: "Joueur Extérieur", selectedUser: $awayUser)
+                UserSearchField(
+                    label: "Joueur Extérieur",
+                    selectedUser: $awayUser,
+                    excludedUserIds: homeUser.map { [$0.id] } ?? []
+                )
             }
         }
     }
@@ -123,71 +137,45 @@ private struct ParticipantsSection: View {
 
 private struct SetsSection: View {
     @Binding var sets: [SetInput]
+    let homeName: String
+    let awayName: String
     var addSet: () -> Void
     var removeSet: (Int) -> Void
+
     var body: some View {
         Section {
             ForEach(Array(sets.enumerated()), id: \.offset) { index, _ in
-                SetRow(index: index, homeScore: $sets[index].homeScore, awayScore: $sets[index].awayScore, canRemove: sets.count > 1) {
-                    removeSet(index)
-                }
+                SetScoreEditorRow(
+                    setNumber: index + 1,
+                    homeName: homeName,
+                    awayName: awayName,
+                    homeScore: $sets[index].homeScore,
+                    awayScore: $sets[index].awayScore,
+                    canDelete: sets.count > 1,
+                    onDelete: { removeSet(index) }
+                )
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
             }
             if sets.count < 5 {
                 Button(action: addSet) {
                     Label("Ajouter un set", systemImage: "plus.circle.fill")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(Color.accentColor)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color.accentColor.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
                 }
+                .buttonStyle(.plain)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
             }
         } header: {
             Text("Sets")
         } footer: {
             Text("Un match de ping-pong peut avoir jusqu'à 5 sets.")
                 .font(.caption)
-        }
-    }
-}
-
-private struct SetRow: View {
-    let index: Int
-    @Binding var homeScore: Int
-    @Binding var awayScore: Int
-    let canRemove: Bool
-    let onRemove: () -> Void
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Set \(index + 1)")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                Spacer()
-                if canRemove {
-                    Button(role: .destructive, action: onRemove) {
-                        Image(systemName: "minus.circle.fill")
-                            .foregroundStyle(.red)
-                    }
-                }
-            }
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Domicile")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                    TextField("Score", value: $homeScore, format: .number)
-                        .keyboardType(.numberPad)
-                        .textFieldStyle(.roundedBorder)
-                }
-                Text(":")
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.secondary)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Extérieur")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                    TextField("Score", value: $awayScore, format: .number)
-                        .keyboardType(.numberPad)
-                        .textFieldStyle(.roundedBorder)
-                }
-            }
         }
     }
 }
