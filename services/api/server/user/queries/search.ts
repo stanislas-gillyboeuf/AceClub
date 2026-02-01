@@ -16,7 +16,6 @@ export const searchUsers = async (c: Context<HonoContext>) => {
       .select({
         id: user.id,
         name: user.name,
-        email: user.email,
         image: user.image,
         isGhost: user.is_ghost,
       })

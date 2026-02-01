@@ -67,9 +67,6 @@ struct UserSearchField: View {
                             .clipShape(Capsule())
                     }
                 }
-                Text(user.email)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
 
             Spacer()
@@ -259,10 +256,6 @@ struct UserSearchField: View {
                                 .clipShape(Capsule())
                         }
                     }
-                    Text(user.email)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
                 }
 
                 Spacer()
