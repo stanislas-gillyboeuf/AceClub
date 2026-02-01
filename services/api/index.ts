@@ -1,10 +1,14 @@
-import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { cors } from "hono/cors";
 import { auth } from "./auth";
 import { serverRouter } from "./server/router";
-import { initializeWebSocketServer } from "./server/ws/chat-handler";
+import {
+  websocketHandlers,
+  authenticateWebSocket,
+  initializeRedisSubscriber,
+  type WebSocketData,
+} from "./server/ws/bun-chat-handler";
 import type { HonoContext } from "./types/hono";
 
 const app = new Hono<HonoContext>();
@@ -29,7 +33,6 @@ app.use(
         return origin;
       }
 
-
       return null;
     },
     allowHeaders: ["Content-Type", "Authorization"],
@@ -37,7 +40,7 @@ app.use(
     exposeHeaders: ["Content-Length", "Authorization"],
     maxAge: 600,
     credentials: true,
-  }),
+  })
 );
 
 app.on(["POST", "GET"], "/api/auth/*", (c) => {
@@ -63,13 +66,43 @@ app.get("/", (c) => c.json({ message: "AceClub API", status: "ok" }));
 
 app.get("/health", (c) => c.json({ status: "ok" }));
 
+// Initialize Redis subscriber for cross-pod messaging
+initializeRedisSubscriber();
+
+// Start Bun server with native WebSocket support
 const port = Number(process.env.PORT) || 3000;
 
-const server = serve({
-  fetch: app.fetch,
+const server = Bun.serve<WebSocketData>({
   port,
+  async fetch(req, server) {
+    const url = new URL(req.url);
+
+    // Handle WebSocket upgrade for /ws/chat
+    if (url.pathname === "/ws/chat") {
+      const authResult = await authenticateWebSocket(req);
+
+      if (!authResult) {
+        return new Response("Unauthorized", { status: 401 });
+      }
+
+      const success = server.upgrade(req, {
+        data: authResult,
+      });
+
+      if (success) {
+        return undefined;
+      }
+
+      return new Response("WebSocket upgrade failed", { status: 500 });
+    }
+
+    // Handle regular HTTP requests with Hono
+    return app.fetch(req);
+  },
+  websocket: websocketHandlers,
 });
 
-initializeWebSocketServer(server);
+console.log(`🚀 Server running on http://localhost:${server.port}`);
+console.log(`[WS] WebSocket server initialized on /ws/chat`);
 
 export default app;

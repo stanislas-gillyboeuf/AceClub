@@ -11,7 +11,7 @@ import { eq, and, ne, sql } from "drizzle-orm";
 import { ulid } from "ulid";
 import { redis, CHAT_CHANNEL } from "../../../lib/redis";
 import { sendNotificationToUser } from "../../../services/apns/notification-service";
-import { isUserConnectedWs } from "../../ws/chat-handler";
+import { isUserConnectedWs } from "../../ws/bun-chat-handler";
 
 export const sendMessage = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user");
