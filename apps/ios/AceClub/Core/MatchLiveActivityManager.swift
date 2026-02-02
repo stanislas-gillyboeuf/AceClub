@@ -223,12 +223,27 @@ final class MatchLiveActivityManager {
             $0.userId == match.awayParticipant?.userId
         }?.games ?? 0
 
+        // Build completed sets array (all sets except the current one)
+        let completedSets: [MatchLiveActivityAttributes.CompletedSetScore] = match.sets
+            .filter { $0.setNumber < currentSetNumber }
+            .sorted { $0.setNumber < $1.setNumber }
+            .compactMap { set in
+                let homeScore = set.scores.first { $0.userId == match.homeParticipant?.userId }?.games ?? 0
+                let awayScore = set.scores.first { $0.userId == match.awayParticipant?.userId }?.games ?? 0
+                return MatchLiveActivityAttributes.CompletedSetScore(
+                    setNumber: set.setNumber,
+                    homeGames: homeScore,
+                    awayGames: awayScore
+                )
+            }
+
         return MatchLiveActivityAttributes.ContentState(
             homeSetScore: setScores.home,
             awaySetScore: setScores.away,
             currentSetNumber: currentSetNumber,
             currentSetHomeGames: homeGames,
-            currentSetAwayGames: awayGames
+            currentSetAwayGames: awayGames,
+            completedSets: completedSets
         )
     }
 
@@ -246,12 +261,27 @@ final class MatchLiveActivityManager {
             $0.userId == matchDetail.awayParticipant?.userId
         }?.games ?? 0
 
+        // Build completed sets array (all sets except the current one)
+        let completedSets: [MatchLiveActivityAttributes.CompletedSetScore] = matchDetail.sets
+            .filter { $0.setNumber < currentSetNumber }
+            .sorted { $0.setNumber < $1.setNumber }
+            .compactMap { set in
+                let homeScore = set.scores.first { $0.userId == matchDetail.homeParticipant?.userId }?.games ?? 0
+                let awayScore = set.scores.first { $0.userId == matchDetail.awayParticipant?.userId }?.games ?? 0
+                return MatchLiveActivityAttributes.CompletedSetScore(
+                    setNumber: set.setNumber,
+                    homeGames: homeScore,
+                    awayGames: awayScore
+                )
+            }
+
         return MatchLiveActivityAttributes.ContentState(
             homeSetScore: setScores.home,
             awaySetScore: setScores.away,
             currentSetNumber: currentSetNumber,
             currentSetHomeGames: homeGames,
-            currentSetAwayGames: awayGames
+            currentSetAwayGames: awayGames,
+            completedSets: completedSets
         )
     }
 
