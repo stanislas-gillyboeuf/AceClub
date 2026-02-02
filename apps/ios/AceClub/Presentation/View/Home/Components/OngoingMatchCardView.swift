@@ -59,22 +59,13 @@ struct OngoingMatchCardView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                if let imageURLString = participant?.userImage,
-                   let imageURL = URL(string: imageURLString) {
-                    AsyncImage(url: imageURL) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFill()
-                        case .empty:
-                            ProgressView()
-                                .tint(Theme.tintColor)
-                        case .failure:
-                            EmptyView()
-                        @unknown default:
-                            EmptyView()
-                        }
+                if let imageURL = participant?.cacheBustedImageURL() {
+                    CachedAsyncImage(url: imageURL) { image in
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    } placeholder: {
+                        EmptyView()
                     }
                 }
             }

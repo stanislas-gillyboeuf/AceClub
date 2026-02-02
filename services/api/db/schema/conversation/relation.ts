@@ -1,13 +1,8 @@
 import { relations } from "drizzle-orm";
 import { conversation, conversationParticipant, message } from "./schema";
 import { user } from "../auth/schema";
-import { match } from "../match/schema";
 
-export const conversationRelations = relations(conversation, ({ one, many }) => ({
-  match: one(match, {
-    fields: [conversation.matchId],
-    references: [match.id],
-  }),
+export const conversationRelations = relations(conversation, ({ many }) => ({
   participants: many(conversationParticipant),
   messages: many(message),
 }));

@@ -61,7 +61,6 @@ struct MessageDTO: Codable {
 // MARK: - Conversation DTO
 struct ConversationDTO: Codable {
     let id: String
-    let matchId: String?
     let name: String?
     let type: String
     let lastMessageAt: String?

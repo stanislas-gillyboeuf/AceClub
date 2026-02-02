@@ -190,7 +190,6 @@ export const getConversation = async (c: Context<HonoContext>) => {
 
   return c.json({
     id: conv.id,
-    matchId: conv.matchId,
     name: conv.name,
     type: conv.type,
     lastMessageAt: conv.lastMessageAt?.toISOString() || null,

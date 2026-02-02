@@ -23,6 +23,7 @@ class ConversationListViewModel: ObservableObject {
     private let listConversationsUseCase = ListConversationsUseCase()
     private let deleteConversationUseCase = DeleteConversationUseCase()
     private var cancellables = Set<AnyCancellable>()
+    private var isLoadingInProgress = false
 
     // MARK: - Init
 
@@ -32,20 +33,32 @@ class ConversationListViewModel: ObservableObject {
 
     // MARK: - Public Methods
 
-    func loadConversations() async {
-        isLoading = true
+    func loadConversations(force: Bool = false) async {
+        guard !isLoadingInProgress || force else { return }
+
+        isLoadingInProgress = true
+        isLoading = conversations.isEmpty
         errorMessage = nil
-        defer { isLoading = false }
+        defer {
+            isLoading = false
+            isLoadingInProgress = false
+        }
 
         do {
-            try Task.checkCancellation()
             conversations = try await listConversationsUseCase.execute()
             totalUnreadCount = conversations.reduce(0) { $0 + $1.unreadCount }
+        } catch let error as URLError where error.code == .cancelled {
+            // Request was cancelled, ignore silently
         } catch is CancellationError {
-            // Task was cancelled (e.g., view disappeared), ignore silently
+            // Task was cancelled, ignore silently
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    func loadConversationsIfNeeded() async {
+        guard conversations.isEmpty, !isLoadingInProgress else { return }
+        await loadConversations()
     }
 
     func deleteConversation(at offsets: IndexSet) async {
@@ -90,7 +103,6 @@ class ConversationListViewModel: ObservableObject {
                 // Update last message info
                 conversations[index] = Conversation(
                     id: updatedConversation.id,
-                    matchId: updatedConversation.matchId,
                     name: updatedConversation.name,
                     type: updatedConversation.type,
                     lastMessageAt: Date(),

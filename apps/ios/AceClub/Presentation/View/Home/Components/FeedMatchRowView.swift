@@ -131,18 +131,13 @@ struct FeedMatchRowView: View {
     @ViewBuilder
     private func commentAvatar(comment: MatchCommentModel) -> some View {
         Group {
-            if let imageURL = comment.userImageURL {
-                AsyncImage(url: imageURL) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    case .failure, .empty:
-                        initialsPlaceholder(initials: comment.userInitials, size: 24)
-                    @unknown default:
-                        initialsPlaceholder(initials: comment.userInitials, size: 24)
-                    }
+            if let imageURL = comment.cacheBustedImageURL() {
+                CachedAsyncImage(url: imageURL) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    initialsPlaceholder(initials: comment.userInitials, size: 24)
                 }
             } else {
                 initialsPlaceholder(initials: comment.userInitials, size: 24)
@@ -176,21 +171,13 @@ struct FeedMatchRowView: View {
     @ViewBuilder
     private func playerAvatar(participant: MatchParticipantModel?) -> some View {
         Group {
-            if let imageURL = participant?.userImageURL {
-                AsyncImage(url: imageURL) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                    case .empty:
-                        ProgressView()
-                            .tint(Theme.tintColor)
-                    case .failure:
-                        initialsPlaceholder(initials: participant?.userInitials ?? "?", size: 40)
-                    @unknown default:
-                        initialsPlaceholder(initials: participant?.userInitials ?? "?", size: 40)
-                    }
+            if let imageURL = participant?.cacheBustedImageURL() {
+                CachedAsyncImage(url: imageURL) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    initialsPlaceholder(initials: participant?.userInitials ?? "?", size: 40)
                 }
             } else {
                 initialsPlaceholder(initials: participant?.userInitials ?? "?", size: 40)
