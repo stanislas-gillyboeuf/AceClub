@@ -132,7 +132,7 @@ struct FeedMatchRowView: View {
     private func commentAvatar(comment: MatchCommentModel) -> some View {
         Group {
             if let imageURL = comment.cacheBustedImageURL() {
-                CachedAsyncImage(url: imageURL) { image in
+                AsyncImage(url: imageURL) { image in
                     image
                         .resizable()
                         .scaledToFill()
@@ -172,7 +172,7 @@ struct FeedMatchRowView: View {
     private func playerAvatar(participant: MatchParticipantModel?) -> some View {
         Group {
             if let imageURL = participant?.cacheBustedImageURL() {
-                CachedAsyncImage(url: imageURL) { image in
+                AsyncImage(url: imageURL) { image in
                     image
                         .resizable()
                         .scaledToFill()

@@ -60,7 +60,7 @@ struct OngoingMatchCardView: View {
                 }
 
                 if let imageURL = participant?.cacheBustedImageURL() {
-                    CachedAsyncImage(url: imageURL) { image in
+                    AsyncImage(url: imageURL) { image in
                         image
                             .resizable()
                             .scaledToFill()
