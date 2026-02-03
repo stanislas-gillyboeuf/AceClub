@@ -57,3 +57,17 @@ struct SearchOrganizationsResponseDTO: Codable {
     let total: Int
     let hasMore: Bool
 }
+
+// MARK: - Club Request
+
+struct ClubRequestDTO: Codable {
+    let name: String
+    let city: String
+}
+
+struct ClubRequestResponseDTO: Codable {
+    let success: Bool
+    let message: String
+    let requestCount: Int
+    let status: String
+}

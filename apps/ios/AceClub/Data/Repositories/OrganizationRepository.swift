@@ -106,4 +106,14 @@ class OrganizationRepository: OrganizationRepositoryProtocol {
             activityRate: statsDTO.activityRate
         )
     }
+
+    func requestClub(name: String, city: String) async throws -> ClubRequestResult {
+        let response = try await dataSource.requestClub(name: name, city: city)
+        return ClubRequestResult(
+            success: response.success,
+            message: response.message,
+            requestCount: response.requestCount,
+            status: ClubRequestStatus(rawValue: response.status) ?? .pending
+        )
+    }
 }

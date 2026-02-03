@@ -63,6 +63,9 @@ struct OnboardingClubStepView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .sheet(isPresented: $viewModel.showRequestClubSheet) {
+            RequestClubSheet(viewModel: viewModel)
+        }
     }
 
     private var loadingView: some View {
@@ -77,7 +80,7 @@ struct OnboardingClubStepView: View {
     }
 
     private var emptyView: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 16) {
             Spacer()
             Image(systemName: "building.2")
                 .font(.system(size: 40, weight: .light))
@@ -85,6 +88,19 @@ struct OnboardingClubStepView: View {
             Text("Aucun club trouve")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+
+            Button {
+                viewModel.showRequestClubSheet = true
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "plus.circle")
+                    Text("Proposer mon club")
+                }
+            }
+            .font(.subheadline)
+            .foregroundStyle(Color.accentColor)
+            .padding(.top, 8)
+
             Spacer()
         }
     }
