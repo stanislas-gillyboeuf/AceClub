@@ -27,6 +27,8 @@ struct SettingsView: View {
 
                         notificationsSection
 
+                        LegalLinksSection()
+
                         if let error = viewModel.errorMessage {
                             errorBanner(error)
                         }
