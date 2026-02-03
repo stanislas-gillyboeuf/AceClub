@@ -44,7 +44,6 @@ export const listConversations = async (c: Context<HonoContext>) => {
   const conversations = await db
     .select({
       id: conversation.id,
-      matchId: conversation.matchId,
       name: conversation.name,
       type: conversation.type,
       lastMessageAt: conversation.lastMessageAt,
@@ -206,7 +205,6 @@ export const listConversations = async (c: Context<HonoContext>) => {
 
       return {
         id: conv.id,
-        matchId: conv.matchId,
         name: conv.name,
         type: conv.type,
         lastMessageAt: conv.lastMessageAt?.toISOString() || null,

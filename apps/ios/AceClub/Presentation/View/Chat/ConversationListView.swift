@@ -27,12 +27,13 @@ struct ConversationListView: View {
             }
             .navigationTitle("Messages")
             .refreshable {
-                await viewModel.loadConversations()
+                await viewModel.loadConversations(force: true)
             }
-            .task {
-                await viewModel.loadConversations()
-                // Connect WebSocket when entering chat
-                await WebSocketManager.shared.connect()
+            .onAppear {
+                Task {
+                    await viewModel.loadConversationsIfNeeded()
+                    await WebSocketManager.shared.connect()
+                }
             }
             .alert("Erreur", isPresented: .constant(viewModel.errorMessage != nil)) {
                 Button("OK") {

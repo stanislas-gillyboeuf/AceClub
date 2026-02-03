@@ -49,6 +49,12 @@ final class MatchCommentModel {
         return URL(string: userImage)
     }
 
+    /// Returns image URL with cache busting parameter when the image has been invalidated
+    func cacheBustedImageURL(with cacheManager: ImageCacheManager = .shared) -> URL? {
+        guard let userImage, !userImage.isEmpty else { return nil }
+        return cacheManager.cacheBustedURL(for: userImage, userId: userId)
+    }
+
     var userInitials: String {
         let components = userName.split(separator: " ")
         if components.count >= 2 {

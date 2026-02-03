@@ -348,6 +348,9 @@ final class MatchSyncService {
             }
         }
 
+        // Force SwiftData to notify @Query observers by touching the model after all relationships are set
+        model.lastSyncedAt = Date()
+
         return model
     }
 
@@ -387,6 +390,9 @@ final class MatchSyncService {
                 upsertSet(from: setDTO, match: model)
             }
         }
+
+        // Force SwiftData to notify @Query observers by touching the model after all relationships are set
+        model.lastSyncedAt = Date()
 
         return model
     }
@@ -441,20 +447,25 @@ final class MatchSyncService {
             }
         }
 
+        // Force SwiftData to notify @Query observers by touching the model after all relationships are set
+        model.lastSyncedAt = Date()
+
         return model
     }
 
     @discardableResult
     private func upsertParticipant(from dto: MatchParticipantDTO, match: MatchModel) -> MatchParticipantModel {
+        let participant: MatchParticipantModel
+
         if let existing = fetchParticipant(id: dto.id) {
             existing.side = dto.side
             existing.isWinner = dto.isWinner
             existing.userName = dto.user?.name
             existing.userEmail = dto.user?.email
             existing.userImage = dto.user?.image
-            return existing
+            participant = existing
         } else {
-            let participant = MatchParticipantModel(
+            participant = MatchParticipantModel(
                 id: dto.id,
                 matchId: dto.matchId,
                 userId: dto.userId,
@@ -467,8 +478,14 @@ final class MatchSyncService {
             )
             participant.match = match
             modelContext.insert(participant)
-            return participant
         }
+
+        // Invalidate image cache to force refresh when participant has an image
+        if dto.user?.image != nil {
+            ImageCacheManager.shared.invalidateImage(for: dto.userId)
+        }
+
+        return participant
     }
 
     @discardableResult
@@ -545,14 +562,16 @@ final class MatchSyncService {
 
     @discardableResult
     private func upsertComment(from dto: MatchCommentDTO, match: MatchModel) -> MatchCommentModel {
+        let comment: MatchCommentModel
+
         if let existing = fetchComment(id: dto.id) {
             existing.content = dto.content
             existing.userName = dto.user?.name ?? ""
             existing.userImage = dto.user?.image
             existing.updatedAt = parseDate(dto.updatedAt) ?? Date()
-            return existing
+            comment = existing
         } else {
-            let comment = MatchCommentModel(
+            comment = MatchCommentModel(
                 id: dto.id,
                 matchId: dto.matchId,
                 userId: dto.userId,
@@ -564,7 +583,13 @@ final class MatchSyncService {
             )
             comment.match = match
             modelContext.insert(comment)
-            return comment
         }
+
+        // Invalidate image cache to force refresh when comment author has an image
+        if dto.user?.image != nil {
+            ImageCacheManager.shared.invalidateImage(for: dto.userId)
+        }
+
+        return comment
     }
 }

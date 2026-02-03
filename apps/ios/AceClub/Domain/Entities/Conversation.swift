@@ -134,7 +134,6 @@ struct Message: Identifiable, Equatable {
 // MARK: - Conversation Entity
 struct Conversation: Identifiable, Equatable, Hashable {
     let id: String
-    let matchId: String?
     let name: String?
     let type: ConversationType
     let lastMessageAt: Date?

@@ -3,7 +3,7 @@ import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { matchRequest, matchIntent, match, matchParticipant, user } from "../../../db/schema";
 import { conversation, conversationParticipant } from "../../../db/schema/conversation/schema";
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, ne, sql } from "drizzle-orm";
 import { sendNotificationToUser } from "../../../services/apns/notification-service";
 
 export const acceptRequest = async (c: Context<HonoContext>) => {
@@ -40,11 +40,54 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
       return c.json({ error: "Match intent not found" }, 404);
     }
 
-    // Créer le vrai match
+    // Chercher une conversation existante entre les deux joueurs
+    let conversationId: string;
+    const [existingConversation] = await db
+      .select({ id: conversation.id })
+      .from(conversation)
+      .where(
+        and(
+          eq(conversation.type, "match"),
+          sql`EXISTS (SELECT 1 FROM conversation_participant WHERE conversation_id = ${conversation.id} AND user_id = ${intent.userId})`,
+          sql`EXISTS (SELECT 1 FROM conversation_participant WHERE conversation_id = ${conversation.id} AND user_id = ${request.requesterId})`,
+          sql`(SELECT COUNT(*) FROM conversation_participant WHERE conversation_id = ${conversation.id}) = 2`
+        )
+      )
+      .limit(1);
+
+    if (existingConversation) {
+      // Réutiliser la conversation existante
+      conversationId = existingConversation.id;
+    } else {
+      // Créer une nouvelle conversation (sans matchId)
+      const [newConversation] = await db
+        .insert(conversation)
+        .values({
+          type: "match",
+        })
+        .returning();
+
+      conversationId = newConversation.id;
+
+      // Ajouter les participants à la conversation
+      await db.insert(conversationParticipant).values([
+        {
+          conversationId: conversationId,
+          userId: intent.userId,
+        },
+        {
+          conversationId: conversationId,
+          userId: request.requesterId,
+        },
+      ]);
+    }
+
+    // Créer le vrai match avec conversationId
     const [newMatch] = await db
       .insert(match)
       .values({
         createdBy: intent.userId,
+        conversationId: conversationId,
         status: "scheduled",
         type: intent.type ?? "match",
         scheduledAt: intent.date ?? undefined,
@@ -62,27 +105,6 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
         matchId: newMatch.id,
         userId: request.requesterId,
         side: "away",
-      },
-    ]);
-
-    // Créer la conversation pour ce match
-    const [newConversation] = await db
-      .insert(conversation)
-      .values({
-        matchId: newMatch.id,
-        type: "match",
-      })
-      .returning();
-
-    // Ajouter les participants à la conversation
-    await db.insert(conversationParticipant).values([
-      {
-        conversationId: newConversation.id,
-        userId: intent.userId,
-      },
-      {
-        conversationId: newConversation.id,
-        userId: request.requesterId,
       },
     ]);
 
@@ -152,7 +174,7 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
       request: updatedRequest,
       match: newMatch,
       requester: requesterInfo ?? null,
-      conversationId: newConversation.id,
+      conversationId: conversationId,
       message: "Match created successfully!",
     });
   } catch (error) {

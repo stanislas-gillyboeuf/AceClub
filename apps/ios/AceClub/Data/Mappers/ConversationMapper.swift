@@ -104,7 +104,6 @@ class ConversationMapper {
     static func map(conversationDTO: ConversationDTO) -> Conversation {
         return Conversation(
             id: conversationDTO.id,
-            matchId: conversationDTO.matchId,
             name: conversationDTO.name,
             type: mapType(conversationDTO.type),
             lastMessageAt: conversationDTO.lastMessageAt.flatMap { parseDate($0) },
