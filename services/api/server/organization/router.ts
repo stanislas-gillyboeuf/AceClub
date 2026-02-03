@@ -13,6 +13,7 @@ import {
   acceptInvitation,
   rejectInvitation,
   cancelInvitation,
+  requestClub,
 } from "./mutations";
 import {
   createOrganizationValidator,
@@ -44,7 +45,7 @@ import {
   searchOrganizations,
   getOrganizationStats,
 } from "./queries";
-import { searchOrganizationsValidator, getOrganizationStatsValidator } from "./validators";
+import { searchOrganizationsValidator, getOrganizationStatsValidator, requestClubValidator } from "./validators";
 
 export const organizationRouter = new Hono<HonoContext>();
 
@@ -133,6 +134,12 @@ organizationRouter.post(
   "/cancel-invitation",
   zValidator("json", invitationIdValidator),
   cancelInvitation,
+);
+
+organizationRouter.post(
+  "/request-club",
+  zValidator("json", requestClubValidator),
+  requestClub,
 );
 
 // Admin-only routes

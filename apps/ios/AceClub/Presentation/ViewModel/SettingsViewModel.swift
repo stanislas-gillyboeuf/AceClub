@@ -22,6 +22,14 @@ final class SettingsViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var successMessage: String?
 
+    // Club Request State
+    @Published var showRequestClubSheet: Bool = false
+    @Published var clubRequestName: String = ""
+    @Published var clubRequestCity: String = ""
+    @Published var isSubmittingClubRequest: Bool = false
+    @Published var clubRequestSuccess: Bool = false
+    @Published var clubRequestMessage: String?
+
     // Original values to detect changes
     private var originalName: String = ""
     private var originalPhoneNumber: String = ""
@@ -35,6 +43,7 @@ final class SettingsViewModel: ObservableObject {
     private let updateProfileUseCase = UpdateProfileUseCase()
     private let searchOrganizationsUseCase = SearchOrganizationsUseCase()
     private let uploadUserImageUseCase = UploadUserImageUseCase()
+    private let requestClubUseCase = RequestClubUseCase()
 
     // MARK: - Tasks
     private var searchTask: Task<Void, Never>?
@@ -180,5 +189,38 @@ final class SettingsViewModel: ObservableObject {
             errorMessage = error.localizedDescription
             return nil
         }
+    }
+
+    // MARK: - Club Request
+    var canSubmitClubRequest: Bool {
+        !clubRequestName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !clubRequestCity.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    func submitClubRequest() async {
+        guard canSubmitClubRequest else { return }
+
+        isSubmittingClubRequest = true
+        clubRequestMessage = nil
+        defer { isSubmittingClubRequest = false }
+
+        do {
+            let result = try await requestClubUseCase.execute(
+                name: clubRequestName.trimmingCharacters(in: .whitespacesAndNewlines),
+                city: clubRequestCity.trimmingCharacters(in: .whitespacesAndNewlines)
+            )
+            clubRequestSuccess = result.success
+            clubRequestMessage = result.message
+        } catch {
+            clubRequestSuccess = false
+            clubRequestMessage = error.localizedDescription
+        }
+    }
+
+    func resetClubRequest() {
+        clubRequestName = ""
+        clubRequestCity = ""
+        clubRequestSuccess = false
+        clubRequestMessage = nil
     }
 }

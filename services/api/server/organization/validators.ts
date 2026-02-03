@@ -93,3 +93,8 @@ export const searchOrganizationsValidator = z.object({
 export const getOrganizationStatsValidator = z.object({
   organizationId: z.string(),
 });
+
+export const requestClubValidator = z.object({
+  name: z.string().min(1, "Le nom du club est requis"),
+  city: z.string().min(1, "La ville est requise"),
+});

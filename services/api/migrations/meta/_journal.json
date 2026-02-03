@@ -8,6 +8,13 @@
       "when": 1769952941308,
       "tag": "0000_heavy_gateway",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770115768196,
+      "tag": "0001_dashing_dragon_lord",
+      "breakpoints": true
     }
   ]
 }

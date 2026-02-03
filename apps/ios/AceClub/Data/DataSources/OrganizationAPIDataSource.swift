@@ -345,4 +345,26 @@ class OrganizationAPIDataSource {
             throw OrganizationError.decodingError
         }
     }
+
+    // MARK: - Club Request
+
+    func requestClub(name: String, city: String) async throws -> ClubRequestResponseDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/organization/request-club") else {
+            throw OrganizationError.invalidURL
+        }
+
+        let requestBody = ClubRequestDTO(name: name, city: city)
+        let bodyData = try JSONEncoder().encode(requestBody)
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)
+
+        guard response.statusCode == 200 else {
+            throw OrganizationError.serverError("Request club failed: \(response.statusCode)")
+        }
+
+        do {
+            return try JSONDecoder().decode(ClubRequestResponseDTO.self, from: data)
+        } catch {
+            throw OrganizationError.decodingError
+        }
+    }
 }

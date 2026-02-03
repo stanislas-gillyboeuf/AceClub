@@ -25,9 +25,18 @@ final class OnboardingViewModel: ObservableObject {
     @Published var isSubmitting: Bool = false
     @Published var errorMessage: String?
 
+    // MARK: - Club Request State
+    @Published var showRequestClubSheet: Bool = false
+    @Published var clubRequestName: String = ""
+    @Published var clubRequestCity: String = ""
+    @Published var isSubmittingClubRequest: Bool = false
+    @Published var clubRequestSuccess: Bool = false
+    @Published var clubRequestMessage: String?
+
     // MARK: - UseCases
     private let searchOrganizationsUseCase = SearchOrganizationsUseCase()
     private let completeOnboardingUseCase = CompleteOnboardingUseCase()
+    private let requestClubUseCase = RequestClubUseCase()
 
     // MARK: - Tasks
     private var searchTask: Task<Void, Never>?
@@ -97,6 +106,39 @@ final class OnboardingViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    // MARK: - Club Request
+    var canSubmitClubRequest: Bool {
+        !clubRequestName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !clubRequestCity.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    func submitClubRequest() async {
+        guard canSubmitClubRequest else { return }
+
+        isSubmittingClubRequest = true
+        clubRequestMessage = nil
+        defer { isSubmittingClubRequest = false }
+
+        do {
+            let result = try await requestClubUseCase.execute(
+                name: clubRequestName.trimmingCharacters(in: .whitespacesAndNewlines),
+                city: clubRequestCity.trimmingCharacters(in: .whitespacesAndNewlines)
+            )
+            clubRequestSuccess = result.success
+            clubRequestMessage = result.message
+        } catch {
+            clubRequestSuccess = false
+            clubRequestMessage = error.localizedDescription
+        }
+    }
+
+    func resetClubRequest() {
+        clubRequestName = ""
+        clubRequestCity = ""
+        clubRequestSuccess = false
+        clubRequestMessage = nil
     }
 
     // MARK: - Submit
