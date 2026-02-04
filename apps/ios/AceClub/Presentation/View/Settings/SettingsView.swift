@@ -7,6 +7,8 @@ struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
     @State private var showClubSelection = false
     @State private var notificationsEnabled = false
+    @State private var showDeleteAccountConfirmation = false
+    @State private var isDeletingAccount = false
     var onProfileUpdated: ((User) -> Void)?
 
     var body: some View {
@@ -28,6 +30,8 @@ struct SettingsView: View {
                         notificationsSection
 
                         LegalLinksSection()
+
+                        dangerZoneSection
 
                         if let error = viewModel.errorMessage {
                             errorBanner(error)
@@ -71,6 +75,20 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showClubSelection) {
                 ClubSelectionView(viewModel: viewModel)
+            }
+            .confirmationDialog(
+                "Supprimer mon compte",
+                isPresented: $showDeleteAccountConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Supprimer définitivement", role: .destructive) {
+                    Task {
+                        await handleDeleteAccount()
+                    }
+                }
+                Button("Annuler", role: .cancel) {}
+            } message: {
+                Text("Cette action est irréversible. Toutes vos données seront supprimées définitivement.")
             }
         }
         .presentationBackground(.regularMaterial)
@@ -303,6 +321,52 @@ struct SettingsView: View {
                 .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
             }
         }
+    }
+
+    // MARK: - Danger Zone Section
+
+    private var dangerZoneSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: "Zone de danger", icon: "exclamationmark.triangle.fill")
+
+            Button {
+                showDeleteAccountConfirmation = true
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "trash")
+                        .font(.body)
+                        .foregroundStyle(Theme.destructiveColor)
+                        .frame(width: 24)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Supprimer mon compte")
+                            .foregroundStyle(Theme.destructiveColor)
+
+                        Text("Cette action est définitive et irréversible")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    if isDeletingAccount {
+                        ProgressView()
+                    }
+                }
+                .padding(16)
+            }
+            .buttonStyle(.plain)
+            .disabled(isDeletingAccount)
+            .background(Theme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+        }
+    }
+
+    private func handleDeleteAccount() async {
+        isDeletingAccount = true
+        await authViewModel.deleteAccount()
+        isDeletingAccount = false
+        dismiss()
     }
 
     // MARK: - Helpers
