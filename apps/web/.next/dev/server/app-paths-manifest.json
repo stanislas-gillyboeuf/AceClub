@@ -1,6 +1,8 @@
 {
-  "/cgu/page": "app/cgu/page.js",
-  "/contact/page": "app/contact/page.js",
-  "/page": "app/page.js",
-  "/privacy/page": "app/privacy/page.js"
+  "/(admin)/dashboard/page": "app/(admin)/dashboard/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin/login/page": "app/admin/login/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/login/page": "app/login/page.js",
+  "/page": "app/page.js"
 }
