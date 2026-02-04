@@ -34,9 +34,11 @@ export const getGlobalLeaderboard = async (c: Context<HonoContext>) => {
   return c.json({
     leaderboard: results.map((r, index) => ({
       rank: offset + index + 1,
-      userId: r.userId,
-      name: r.userName,
-      image: r.userImage,
+      user: {
+        id: r.userId,
+        name: r.userName,
+        image: r.userImage,
+      },
       aces: Number(r.totalAces),
       level: Number(r.currentLevel),
       streak: Number(r.currentStreak),

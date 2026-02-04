@@ -162,6 +162,36 @@ class AuthAPIDataSource {
         }
     }
 
+    // MARK: - Delete Account
+    func deleteAccount(token: String) async throws {
+        guard let url = URL(string: "\(Config.apiBaseURL)/auth/delete-user") else {
+            throw AuthError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("aceclub://", forHTTPHeaderField: "Origin")
+        request.httpBody = "{}".data(using: .utf8)
+
+        do {
+            let (_, response) = try await session.data(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw AuthError.invalidResponse
+            }
+
+            if httpResponse.statusCode != 200 {
+                throw AuthError.serverError("Échec de la suppression du compte (code \(httpResponse.statusCode))")
+            }
+        } catch let error as AuthError {
+            throw error
+        } catch {
+            throw AuthError.networkError(error)
+        }
+    }
+
     // MARK: - Get Session
     func getSession() async throws -> SessionResponseDTO {
         guard let url = URL(string: "\(Config.apiBaseURL)/session") else {

@@ -12,6 +12,8 @@ import AuthenticationServices
 
 struct SignInView: View {
     @Environment(AuthViewModel.self) private var authViewModel
+    @State private var showTermsOfService = false
+    @State private var showPrivacyPolicy = false
 
     private var isProductionEnvironment: Bool {
         Config.environment == "production"
@@ -127,7 +129,7 @@ struct SignInView: View {
 
                 HStack(spacing: 4) {
                     Button("Conditions d'utilisation") {
-                        // TODO: Open terms
+                        showTermsOfService = true
                     }
                     .font(.caption)
 
@@ -135,8 +137,8 @@ struct SignInView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
-                    Button("Politique de confidentialite") {
-                        // TODO: Open privacy policy
+                    Button("Politique de confidentialité") {
+                        showPrivacyPolicy = true
                     }
                     .font(.caption)
                 }
@@ -145,6 +147,12 @@ struct SignInView: View {
             .padding(.bottom, 16)
         }
         .background(Color(.systemBackground))
+        .sheet(isPresented: $showTermsOfService) {
+            TermsOfServiceView()
+        }
+        .sheet(isPresented: $showPrivacyPolicy) {
+            PrivacyPolicyView()
+        }
     }
 
     private func handleGoogleSignIn() {

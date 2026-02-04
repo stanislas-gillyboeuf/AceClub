@@ -135,13 +135,17 @@ struct Match: Identifiable {
 struct MatchParticipant: Identifiable {
     let id: String
     let matchId: String
-    let userId: String
+    let user: UserSummary
     let side: MatchSide
     let isWinner: Bool
     let createdAt: Date
-    let userName: String?
-    let userEmail: String?
-    let userImage: String?
+
+    // MARK: - Convenience accessors (for backwards compatibility)
+
+    var userId: String { user.id }
+    var userName: String? { user.name }
+    var userEmail: String? { nil }  // No longer available
+    var userImage: String? { user.image }
 
     // MARK: - Computed Properties
 
@@ -150,19 +154,8 @@ struct MatchParticipant: Identifiable {
         isWinner ? "🏆" : ""
     }
 
-    var userImageURL: URL? {
-        guard let userImage, !userImage.isEmpty else { return nil }
-        return URL(string: userImage)
-    }
-
-    var userInitials: String {
-        guard let userName else { return "??" }
-        let components = userName.split(separator: " ")
-        if components.count >= 2 {
-            return "\(components[0].prefix(1))\(components[1].prefix(1))".uppercased()
-        }
-        return String(userName.prefix(2)).uppercased()
-    }
+    var userImageURL: URL? { user.imageURL }
+    var userInitials: String { user.initials }
 }
 
 // MARK: - Set Entity
@@ -228,31 +221,21 @@ struct SetScore: Identifiable {
 struct MatchComment: Identifiable {
     let id: String
     let matchId: String
-    let userId: String
+    let user: UserSummary
     let content: String
-    let userName: String
-    let userImage: String?
     let createdAt: Date
     let updatedAt: Date
 
+    // MARK: - Convenience accessors (for backwards compatibility)
+
+    var userId: String { user.id }
+    var userName: String { user.name }
+    var userImage: String? { user.image }
+
     // MARK: - Computed Properties
 
-    var userImageURL: URL? {
-        guard let userImage, !userImage.isEmpty else { return nil }
-        return URL(string: userImage)
-    }
-
-    var userInitials: String {
-        let components = userName.split(separator: " ")
-        if components.count >= 2 {
-            let firstInitial = components[0].prefix(1)
-            let lastInitial = components[1].prefix(1)
-            return "\(firstInitial)\(lastInitial)".uppercased()
-        } else if let first = components.first {
-            return String(first.prefix(2)).uppercased()
-        }
-        return "??"
-    }
+    var userImageURL: URL? { user.imageURL }
+    var userInitials: String { user.initials }
 
     var formattedDate: String {
         createdAt.formatted(date: .abbreviated, time: .shortened)

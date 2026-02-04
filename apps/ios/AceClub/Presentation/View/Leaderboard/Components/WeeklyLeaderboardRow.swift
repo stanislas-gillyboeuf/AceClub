@@ -114,9 +114,7 @@ struct WeeklyLeaderboardRow: View {
         WeeklyLeaderboardRow(
             entry: WeeklyLeaderboardEntry(
                 rank: 1,
-                userId: "1",
-                name: "Jean Dupont",
-                image: nil,
+                user: UserSummary(id: "1", name: "Jean Dupont", image: nil),
                 weeklyAces: 850
             )
         )
@@ -124,9 +122,7 @@ struct WeeklyLeaderboardRow: View {
         WeeklyLeaderboardRow(
             entry: WeeklyLeaderboardEntry(
                 rank: 2,
-                userId: "2",
-                name: "Marie Martin",
-                image: nil,
+                user: UserSummary(id: "2", name: "Marie Martin", image: nil),
                 weeklyAces: 720
             )
         )

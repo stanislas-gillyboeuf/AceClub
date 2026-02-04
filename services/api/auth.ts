@@ -83,6 +83,9 @@ export const auth = betterAuth({
         input: true,
       },
     },
+    deleteUser: {
+      enabled: true,
+    },
   },
   account: {
     accountLinking: {

@@ -42,6 +42,7 @@ struct CreateMatchView: View {
                 }
                 DatesSection(status: viewModel.status, startedAt: $viewModel.startedAt, finishedAt: $viewModel.finishedAt)
             }
+            .scrollContentBackground(.hidden)
             .navigationTitle("Nouveau match")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -86,6 +87,7 @@ struct CreateMatchView: View {
                 await viewModel.loadCurrentUser()
             }
         }
+        .presentationBackground(.regularMaterial)
     }
 }
 

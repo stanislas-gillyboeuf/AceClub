@@ -28,7 +28,6 @@ struct EditOrganizationSheet: View {
                 .padding(.horizontal, Theme.paddingHorizontal)
                 .padding(.vertical, 16)
             }
-            .background(Theme.primaryBackground)
             .navigationTitle("Modifier le club")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -53,6 +52,7 @@ struct EditOrganizationSheet: View {
             }
             .interactiveDismissDisabled(hasChanges)
         }
+        .presentationBackground(.regularMaterial)
     }
 
     // MARK: - Sections

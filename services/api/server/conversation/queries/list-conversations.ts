@@ -44,7 +44,6 @@ export const listConversations = async (c: Context<HonoContext>) => {
   const conversations = await db
     .select({
       id: conversation.id,
-      matchId: conversation.matchId,
       name: conversation.name,
       type: conversation.type,
       lastMessageAt: conversation.lastMessageAt,
@@ -53,27 +52,16 @@ export const listConversations = async (c: Context<HonoContext>) => {
       createdAt: conversation.createdAt,
     })
     .from(conversation)
-    .where(
-      conversationIds.length === 1
-        ? eq(conversation.id, conversationIds[0])
-        : // For multiple IDs, we need to use SQL IN
-          eq(conversation.id, conversationIds[0]) // Simplified, will handle in mapping
-    )
+    .where(inArray(conversation.id, conversationIds))
     .orderBy(desc(conversation.lastMessageAt));
-
-  // Filter to only include conversations the user participates in
-  const filteredConversations = conversations.filter((conv) =>
-    conversationIds.includes(conv.id)
-  );
 
   // Get other participants for each conversation
   const result = await Promise.all(
-    filteredConversations.map(async (conv) => {
+    conversations.map(async (conv) => {
       const myParticipation = myParticipations.find(
         (p) => p.conversationId === conv.id
       );
 
-      // Get other participant(s) with basic info
       const otherParticipants = await db
         .select({
           id: conversationParticipant.id,
@@ -184,38 +172,39 @@ export const listConversations = async (c: Context<HonoContext>) => {
 
         return {
           id: p.id,
-          userId: p.odUserId,
-          userName: p.userName,
-          userImage: p.userImage,
-          // Level info
-          level: level?.currentLevel || 1,
-          totalAces: level?.totalAces || 0,
-          // Title info
-          title: equippedTitle
-            ? {
-                code: equippedTitle.titleCode,
-                nameFr: equippedTitle.titleNameFr,
-                nameEn: equippedTitle.titleNameEn,
-              }
-            : null,
-          // Badges (top 3)
-          badges: userBadges.map((b) => ({
-            code: b.badgeCode,
-            imageUrl: b.badgeImageUrl,
-            nameFr: b.badgeNameFr,
-            nameEn: b.badgeNameEn,
-          })),
-          // Streak info
-          currentStreak: streak?.currentStreak || 0,
-          longestStreak: streak?.longestStreak || 0,
-          // Ranking
-          globalRank: ranking?.rank || null,
+          user: {
+            id: p.odUserId,
+            name: p.userName,
+            image: p.userImage,
+            // Level info
+            level: level?.currentLevel || 1,
+            totalAces: level?.totalAces || 0,
+            // Title info
+            title: equippedTitle
+              ? {
+                  code: equippedTitle.titleCode,
+                  nameFr: equippedTitle.titleNameFr,
+                  nameEn: equippedTitle.titleNameEn,
+                }
+              : null,
+            // Badges (top 3)
+            badges: userBadges.map((b) => ({
+              code: b.badgeCode,
+              imageUrl: b.badgeImageUrl,
+              nameFr: b.badgeNameFr,
+              nameEn: b.badgeNameEn,
+            })),
+            // Streak info
+            currentStreak: streak?.currentStreak || 0,
+            longestStreak: streak?.longestStreak || 0,
+            // Ranking
+            globalRank: ranking?.rank || null,
+          },
         };
       });
 
       return {
         id: conv.id,
-        matchId: conv.matchId,
         name: conv.name,
         type: conv.type,
         lastMessageAt: conv.lastMessageAt?.toISOString() || null,

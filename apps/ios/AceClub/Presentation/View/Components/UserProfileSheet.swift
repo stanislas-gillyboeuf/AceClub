@@ -105,6 +105,7 @@ struct UserProfileSheet: View {
                 }
             }
         }
+        .presentationBackground(.regularMaterial)
     }
 
     // MARK: - Profile Header

@@ -431,7 +431,7 @@ struct MatchDetailView: View {
 
     @ViewBuilder
     private func commentAvatar(comment: MatchCommentModel) -> some View {
-        if let imageURL = comment.userImageURL {
+        if let imageURL = comment.cacheBustedImageURL() {
             AsyncImage(url: imageURL) { phase in
                 switch phase {
                 case .success(let image):
@@ -440,11 +440,8 @@ struct MatchDetailView: View {
                         .scaledToFill()
                         .frame(width: 36, height: 36)
                         .clipShape(Circle())
-                case .failure:
+                case .failure, .empty:
                     avatarPlaceholder(initials: comment.userInitials)
-                case .empty:
-                    ProgressView()
-                        .frame(width: 36, height: 36)
                 @unknown default:
                     avatarPlaceholder(initials: comment.userInitials)
                 }
@@ -488,7 +485,7 @@ struct MatchDetailView: View {
 
     @ViewBuilder
     private func participantAvatar(participant: MatchParticipantModel) -> some View {
-        if let imageURL = participant.userImageURL {
+        if let imageURL = participant.cacheBustedImageURL() {
             AsyncImage(url: imageURL) { phase in
                 switch phase {
                 case .success(let image):
@@ -497,11 +494,8 @@ struct MatchDetailView: View {
                         .scaledToFill()
                         .frame(width: 44, height: 44)
                         .clipShape(Circle())
-                case .failure:
+                case .failure, .empty:
                     avatarPlaceholder(initials: participant.userInitials)
-                case .empty:
-                    ProgressView()
-                        .frame(width: 44, height: 44)
                 @unknown default:
                     avatarPlaceholder(initials: participant.userInitials)
                 }
@@ -702,7 +696,7 @@ struct EditMatchScoresViewSwiftData: View {
 
     @ViewBuilder
     private func participantAvatar(for participant: MatchParticipantModel?) -> some View {
-        if let imageURL = participant?.userImageURL {
+        if let imageURL = participant?.cacheBustedImageURL() {
             AsyncImage(url: imageURL) { phase in
                 switch phase {
                 case .success(let image):

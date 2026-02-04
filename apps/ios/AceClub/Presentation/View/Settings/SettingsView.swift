@@ -7,6 +7,8 @@ struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
     @State private var showClubSelection = false
     @State private var notificationsEnabled = false
+    @State private var showDeleteAccountConfirmation = false
+    @State private var isDeletingAccount = false
     var onProfileUpdated: ((User) -> Void)?
 
     var body: some View {
@@ -27,6 +29,10 @@ struct SettingsView: View {
 
                         notificationsSection
 
+                        LegalLinksSection()
+
+                        dangerZoneSection
+
                         if let error = viewModel.errorMessage {
                             errorBanner(error)
                         }
@@ -39,7 +45,6 @@ struct SettingsView: View {
                 .padding(.horizontal, Theme.paddingHorizontal)
                 .padding(.vertical, 16)
             }
-            .background(Theme.primaryBackground)
             .navigationTitle("Paramètres")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -71,7 +76,22 @@ struct SettingsView: View {
             .sheet(isPresented: $showClubSelection) {
                 ClubSelectionView(viewModel: viewModel)
             }
+            .confirmationDialog(
+                "Supprimer mon compte",
+                isPresented: $showDeleteAccountConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Supprimer définitivement", role: .destructive) {
+                    Task {
+                        await handleDeleteAccount()
+                    }
+                }
+                Button("Annuler", role: .cancel) {}
+            } message: {
+                Text("Cette action est irréversible. Toutes vos données seront supprimées définitivement.")
+            }
         }
+        .presentationBackground(.regularMaterial)
     }
 
     // MARK: - Loading View
@@ -303,6 +323,52 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - Danger Zone Section
+
+    private var dangerZoneSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: "Zone de danger", icon: "exclamationmark.triangle.fill")
+
+            Button {
+                showDeleteAccountConfirmation = true
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "trash")
+                        .font(.body)
+                        .foregroundStyle(Theme.destructiveColor)
+                        .frame(width: 24)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Supprimer mon compte")
+                            .foregroundStyle(Theme.destructiveColor)
+
+                        Text("Cette action est définitive et irréversible")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    if isDeletingAccount {
+                        ProgressView()
+                    }
+                }
+                .padding(16)
+            }
+            .buttonStyle(.plain)
+            .disabled(isDeletingAccount)
+            .background(Theme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+        }
+    }
+
+    private func handleDeleteAccount() async {
+        isDeletingAccount = true
+        await authViewModel.deleteAccount()
+        isDeletingAccount = false
+        dismiss()
+    }
+
     // MARK: - Helpers
 
     private func sectionHeader(title: String, icon: String) -> some View {
@@ -401,11 +467,27 @@ struct ClubSelectionView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if viewModel.organizations.isEmpty {
                     VStack(spacing: 16) {
-                        ContentUnavailableView {
-                            Label("Aucun club trouvé", systemImage: "building.2")
-                        } description: {
-                            Text("Essaie avec un autre nom")
+                        Spacer()
+                        Image(systemName: "building.2")
+                            .font(.system(size: 40, weight: .light))
+                            .foregroundStyle(.tertiary)
+                        Text("Aucun club trouvé")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        Button {
+                            viewModel.showRequestClubSheet = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "plus.circle")
+                                Text("Proposer mon club")
+                            }
                         }
+                        .font(.subheadline)
+                        .foregroundStyle(Color.accentColor)
+                        .padding(.top, 8)
+
+                        Spacer()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
@@ -428,6 +510,7 @@ struct ClubSelectionView: View {
                                         }
                                     }
                                     .padding(16)
+                                    .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
 
@@ -444,7 +527,6 @@ struct ClubSelectionView: View {
                     }
                 }
             }
-            .background(Theme.primaryBackground)
             .navigationTitle("Choisir un club")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -459,6 +541,121 @@ struct ClubSelectionView: View {
                     await viewModel.searchOrganizations()
                 }
             }
+            .sheet(isPresented: $viewModel.showRequestClubSheet) {
+                SettingsRequestClubSheet(viewModel: viewModel)
+            }
+        }
+        .presentationBackground(.regularMaterial)
+    }
+}
+
+// MARK: - Request Club Sheet
+
+struct SettingsRequestClubSheet: View {
+    @ObservedObject var viewModel: SettingsViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                if viewModel.clubRequestSuccess {
+                    successView
+                } else {
+                    formView
+                }
+            }
+            .navigationTitle("Proposer un club")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Fermer") {
+                        viewModel.resetClubRequest()
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .presentationBackground(.regularMaterial)
+    }
+
+    private var formView: some View {
+        VStack(spacing: 20) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Ton club n'est pas encore disponible ?")
+                    .font(.headline)
+                Text("Propose-le et nous l'ajouterons prochainement.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, Theme.paddingHorizontal)
+            .padding(.top, 20)
+
+            VStack(spacing: 12) {
+                TextField("Nom du club", text: $viewModel.clubRequestName)
+                    .aceTextFieldStyle()
+
+                TextField("Ville", text: $viewModel.clubRequestCity)
+                    .aceTextFieldStyle()
+            }
+            .padding(.horizontal, Theme.paddingHorizontal)
+
+            if let message = viewModel.clubRequestMessage, !viewModel.clubRequestSuccess {
+                Text(message)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .padding(.horizontal, Theme.paddingHorizontal)
+            }
+
+            Spacer()
+
+            Button {
+                Task {
+                    await viewModel.submitClubRequest()
+                }
+            } label: {
+                if viewModel.isSubmittingClubRequest {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                } else {
+                    Text("Envoyer")
+                }
+            }
+            .buttonStyle(.appPrimary)
+            .disabled(!viewModel.canSubmitClubRequest || viewModel.isSubmittingClubRequest)
+            .padding(.horizontal, Theme.paddingHorizontal)
+            .padding(.bottom, 20)
+        }
+    }
+
+    private var successView: some View {
+        VStack(spacing: 20) {
+            Spacer()
+
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 60))
+                .foregroundStyle(.green)
+
+            Text("Demande envoyée !")
+                .font(.title2)
+                .fontWeight(.semibold)
+
+            Text(viewModel.clubRequestMessage ?? "Nous avons bien reçu ta demande.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, Theme.paddingHorizontal)
+
+            Spacer()
+
+            Button("Fermer") {
+                viewModel.resetClubRequest()
+                dismiss()
+            }
+            .buttonStyle(.appPrimary)
+            .padding(.horizontal, Theme.paddingHorizontal)
+            .padding(.bottom, 20)
         }
     }
 }

@@ -9,7 +9,6 @@ import {
   integer,
 } from "drizzle-orm/pg-core";
 import { user } from "../auth/schema";
-import { match } from "../match/schema";
 import { ulid } from "ulid";
 
 export const ConversationType = pgEnum("conversation_type", ["match", "group"]);
@@ -20,8 +19,6 @@ export const conversation = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => ulid()),
-    // matchId is nullable to support future group conversations
-    matchId: text("match_id").references(() => match.id, { onDelete: "cascade" }),
     // Name for group conversations (null for 1:1 match conversations)
     name: text("name"),
     type: ConversationType("type").notNull().default("match"),
@@ -33,9 +30,7 @@ export const conversation = pgTable(
     lastMessageSenderId: text("last_message_sender_id"),
   },
   (table) => [
-    index("conversation_matchId_idx").on(table.matchId),
     index("conversation_lastMessageAt_idx").on(table.lastMessageAt),
-    uniqueIndex("conversation_matchId_unique").on(table.matchId),
   ]
 );
 

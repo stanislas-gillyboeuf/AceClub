@@ -130,9 +130,7 @@ struct LeaderboardRow: View {
         LeaderboardRow(
             entry: LeaderboardEntry(
                 rank: 1,
-                userId: "1",
-                name: "Jean Dupont",
-                image: nil,
+                user: UserSummary(id: "1", name: "Jean Dupont", image: nil),
                 aces: 5420,
                 level: 25,
                 streak: 5
@@ -142,9 +140,7 @@ struct LeaderboardRow: View {
         LeaderboardRow(
             entry: LeaderboardEntry(
                 rank: 2,
-                userId: "2",
-                name: "Marie Martin",
-                image: nil,
+                user: UserSummary(id: "2", name: "Marie Martin", image: nil),
                 aces: 4890,
                 level: 23,
                 streak: 3
@@ -154,9 +150,7 @@ struct LeaderboardRow: View {
         LeaderboardRow(
             entry: LeaderboardEntry(
                 rank: 3,
-                userId: "3",
-                name: "Pierre Bernard",
-                image: nil,
+                user: UserSummary(id: "3", name: "Pierre Bernard", image: nil),
                 aces: 4200,
                 level: 21,
                 streak: 0
@@ -166,9 +160,7 @@ struct LeaderboardRow: View {
         LeaderboardRow(
             entry: LeaderboardEntry(
                 rank: 4,
-                userId: "4",
-                name: "Sophie Petit",
-                image: nil,
+                user: UserSummary(id: "4", name: "Sophie Petit", image: nil),
                 aces: 3800,
                 level: 19,
                 streak: 2

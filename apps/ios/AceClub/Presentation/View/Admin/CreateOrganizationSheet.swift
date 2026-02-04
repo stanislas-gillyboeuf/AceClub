@@ -38,6 +38,7 @@ struct CreateOrganizationSheet: View {
                 }
             }
         }
+        .presentationBackground(.regularMaterial)
     }
 
     private var stepIndicator: some View {
@@ -111,6 +112,7 @@ struct CreateOrganizationSheet: View {
                     }
                 }
                 .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
                 .frame(height: 300)
             }
         }

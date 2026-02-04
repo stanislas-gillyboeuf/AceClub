@@ -22,12 +22,11 @@ struct ParticipantBadgeDTO: Codable {
     let nameEn: String
 }
 
-// MARK: - Conversation Participant DTO
-struct ConversationParticipantDTO: Codable {
+// MARK: - Participant User DTO (nested user object with full profile)
+struct ParticipantUserDTO: Codable {
     let id: String
-    let userId: String
-    let userName: String
-    let userImage: String?
+    let name: String
+    let image: String?
     // Level info
     let level: Int?
     let totalAces: Int?
@@ -42,13 +41,17 @@ struct ConversationParticipantDTO: Codable {
     let globalRank: Int?
 }
 
+// MARK: - Conversation Participant DTO
+struct ConversationParticipantDTO: Codable {
+    let id: String
+    let user: ParticipantUserDTO
+}
+
 // MARK: - Message DTO
 struct MessageDTO: Codable {
     let id: String
     let conversationId: String
-    let senderId: String
-    let senderName: String
-    let senderImage: String?
+    let sender: MessageSenderDTO
     let content: String
     let createdAt: String
     let clientMessageId: String?
@@ -58,7 +61,6 @@ struct MessageDTO: Codable {
 // MARK: - Conversation DTO
 struct ConversationDTO: Codable {
     let id: String
-    let matchId: String?
     let name: String?
     let type: String
     let lastMessageAt: String?

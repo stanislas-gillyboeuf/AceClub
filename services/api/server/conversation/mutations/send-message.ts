@@ -117,9 +117,11 @@ export const sendMessage = async (c: Context<HonoContext>) => {
     message: {
       id: newMessage.id,
       conversationId,
-      senderId: currentUser.id,
-      senderName: sender?.name || "Unknown",
-      senderImage: sender?.image || null,
+      sender: {
+        id: currentUser.id,
+        name: sender?.name || "Unknown",
+        image: sender?.image || null,
+      },
       content,
       createdAt: newMessage.createdAt.toISOString(),
       clientMessageId,
@@ -171,9 +173,11 @@ export const sendMessage = async (c: Context<HonoContext>) => {
     {
       id: newMessage.id,
       conversationId,
-      senderId: currentUser.id,
-      senderName: sender?.name || "Unknown",
-      senderImage: sender?.image || null,
+      sender: {
+        id: currentUser.id,
+        name: sender?.name || "Unknown",
+        image: sender?.image || null,
+      },
       content,
       createdAt: newMessage.createdAt.toISOString(),
       clientMessageId,

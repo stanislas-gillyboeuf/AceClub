@@ -45,7 +45,7 @@ struct ProgressionView: View {
             } else {
                 LevelProgressCard(userLevel: viewModel.userLevel)
                     .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 8, leading: Theme.paddingHorizontal, bottom: 8, trailing: Theme.paddingHorizontal))
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                     .listRowBackground(Color.clear)
             }
         }
@@ -61,7 +61,7 @@ struct ProgressionView: View {
             } else {
                 StreakCard(streak: viewModel.userStreak)
                     .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 0, leading: Theme.paddingHorizontal, bottom: 8, trailing: Theme.paddingHorizontal))
+                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
                     .listRowBackground(Color.clear)
             }
         } header: {
@@ -84,11 +84,22 @@ struct ProgressionView: View {
                 } description: {
                     Text("Les défis hebdomadaires arrivent bientôt.")
                 }
+                .padding(.vertical, 24)
+                .frame(maxWidth: .infinity)
+                .background(Theme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
+                        .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
+                }
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
+                .listRowBackground(Color.clear)
             } else {
                 ForEach(viewModel.challenges) { challenge in
                     ChallengeRow(challenge: challenge)
                         .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 4, leading: Theme.paddingHorizontal, bottom: 4, trailing: Theme.paddingHorizontal))
+                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                         .listRowBackground(Color.clear)
                 }
             }
@@ -120,10 +131,28 @@ struct ProgressionView: View {
                 } description: {
                     Text("Les badges seront bientôt disponibles.")
                 }
+                .padding(.vertical, 24)
+                .frame(maxWidth: .infinity)
+                .background(Theme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
+                        .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
+                }
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
+                .listRowBackground(Color.clear)
             } else {
                 BadgeGrid(badges: viewModel.badges, allBadges: viewModel.allBadges)
+                    .padding(Theme.paddingCard)
+                    .background(Theme.cardBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
+                            .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
+                    }
                     .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 8, leading: Theme.paddingHorizontal, bottom: 8, trailing: Theme.paddingHorizontal))
+                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
                     .listRowBackground(Color.clear)
             }
         } header: {

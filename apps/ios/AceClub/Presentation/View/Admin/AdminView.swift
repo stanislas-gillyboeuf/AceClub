@@ -238,6 +238,7 @@ struct AdminUserDetailView: View {
                     .disabled(viewModel.isLoading)
                 }
             }
+            .scrollContentBackground(.hidden)
             .navigationTitle("Gérer l'utilisateur")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -254,6 +255,7 @@ struct AdminUserDetailView: View {
                 }
             }
         }
+        .presentationBackground(.regularMaterial)
     }
 
     private func syncCurrentUserIfNeeded(_ updated: User) {
@@ -281,6 +283,7 @@ struct CreateUserSheet: View {
                     SecureField("Mot de passe", text: $password)
                 }
             }
+            .scrollContentBackground(.hidden)
             .navigationTitle("Créer un utilisateur")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -302,6 +305,7 @@ struct CreateUserSheet: View {
                 }
             }
         }
+        .presentationBackground(.regularMaterial)
     }
 
     private var isFormValid: Bool {

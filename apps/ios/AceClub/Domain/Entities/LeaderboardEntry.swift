@@ -2,14 +2,18 @@ import Foundation
 
 struct LeaderboardEntry: Identifiable {
     let rank: Int
-    let userId: String
-    let name: String
-    let image: String?
+    let user: UserSummary
     let aces: Int
     let level: Int
     let streak: Int
 
-    var id: String { "\(rank)-\(userId)" }
+    // MARK: - Convenience accessors (for backwards compatibility)
+
+    var userId: String { user.id }
+    var name: String { user.name }
+    var image: String? { user.image }
+
+    var id: String { "\(rank)-\(user.id)" }
 
     var formattedRank: String {
         "#\(rank)"
@@ -40,6 +44,9 @@ struct LeaderboardEntry: Identifiable {
         default: return "primary"
         }
     }
+
+    var userImageURL: URL? { user.imageURL }
+    var userInitials: String { user.initials }
 }
 
 struct Leaderboard {
@@ -55,12 +62,16 @@ struct Leaderboard {
 
 struct WeeklyLeaderboardEntry: Identifiable {
     let rank: Int
-    let userId: String
-    let name: String
-    let image: String?
+    let user: UserSummary
     let weeklyAces: Int
 
-    var id: String { "\(rank)-\(userId)" }
+    // MARK: - Convenience accessors (for backwards compatibility)
+
+    var userId: String { user.id }
+    var name: String { user.name }
+    var image: String? { user.image }
+
+    var id: String { "\(rank)-\(user.id)" }
 
     var formattedRank: String {
         "#\(rank)"
@@ -69,6 +80,9 @@ struct WeeklyLeaderboardEntry: Identifiable {
     var formattedWeeklyAces: String {
         "+\(weeklyAces) Aces"
     }
+
+    var userImageURL: URL? { user.imageURL }
+    var userInitials: String { user.initials }
 }
 
 struct WeeklyLeaderboard {

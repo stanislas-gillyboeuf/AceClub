@@ -91,9 +91,7 @@ class ChatViewModel: ObservableObject {
         let optimisticMessage = Message(
             id: clientMessageId,
             conversationId: conversation.id,
-            senderId: "",
-            senderName: "Moi",
-            senderImage: nil,
+            sender: MessageSender(id: "", name: "Moi", image: nil),
             content: trimmedContent,
             createdAt: Date(),
             clientMessageId: clientMessageId,

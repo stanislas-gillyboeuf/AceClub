@@ -4,9 +4,7 @@ class LeaderboardMapper {
     static func map(entryDTO: LeaderboardEntryDTO) -> LeaderboardEntry {
         return LeaderboardEntry(
             rank: entryDTO.rank,
-            userId: entryDTO.userId,
-            name: entryDTO.name,
-            image: entryDTO.image,
+            user: UserSummaryMapper.map(dto: entryDTO.user),
             aces: entryDTO.aces,
             level: entryDTO.level,
             streak: entryDTO.streak
@@ -26,9 +24,7 @@ class LeaderboardMapper {
     static func map(weeklyEntryDTO: WeeklyLeaderboardEntryDTO) -> WeeklyLeaderboardEntry {
         return WeeklyLeaderboardEntry(
             rank: weeklyEntryDTO.rank,
-            userId: weeklyEntryDTO.userId,
-            name: weeklyEntryDTO.name,
-            image: weeklyEntryDTO.image,
+            user: UserSummaryMapper.map(dto: weeklyEntryDTO.user),
             weeklyAces: weeklyEntryDTO.weeklyAces
         )
     }

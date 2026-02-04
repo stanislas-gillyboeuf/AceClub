@@ -9,26 +9,34 @@ import {
   integer,
 } from "drizzle-orm/pg-core";
 import { user } from "../auth/schema";
+import { conversation } from "../conversation/schema";
 import { ulid } from "ulid";
 
 export const MatchStatus = pgEnum("match_status", ["scheduled", "ongoing", "finished"]);
 export const MatchSide = pgEnum("match_side", ["home", "away"]);
 export const MatchType = pgEnum("match_type", ["match", "training"]);
 
-export const match = pgTable("match", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => ulid()),
-  createdBy: text("created_by")
-    .notNull()
-    .references(() => user.id),
-  status: MatchStatus("status").notNull().default("scheduled"),
-  type: MatchType("type").notNull().default("match"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  scheduledAt: timestamp("scheduled_at"),
-  startedAt: timestamp("started_at"),
-  finishedAt: timestamp("finished_at"),
-});
+export const match = pgTable(
+  "match",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => user.id),
+    conversationId: text("conversation_id").references(() => conversation.id),
+    status: MatchStatus("status").notNull().default("scheduled"),
+    type: MatchType("type").notNull().default("match"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    scheduledAt: timestamp("scheduled_at"),
+    startedAt: timestamp("started_at"),
+    finishedAt: timestamp("finished_at"),
+  },
+  (table) => [
+    index("match_conversationId_idx").on(table.conversationId),
+  ]
+);
 
 export const matchParticipant = pgTable(
   "match_participant",

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LeaderboardView: View {
     @ObservedObject var viewModel: LeaderboardViewModel
+    @EnvironmentObject private var organizationViewModel: OrganizationViewModel
 
     var body: some View {
         NavigationStack {
@@ -15,17 +16,25 @@ struct LeaderboardView: View {
             .background(Theme.primaryBackground)
             .navigationTitle("Classement")
             .task(id: "leaderboard-load") {
+                updateOrganizationId()
                 await viewModel.loadLeaderboard()
             }
-            .onChange(of: viewModel.selectedType) { _, newValue in
+            .onChange(of: viewModel.selectedType) {
                 Task {
-                    await viewModel.selectType(newValue)
+                    updateOrganizationId()
+                    await viewModel.selectType(viewModel.selectedType)
                 }
             }
             .refreshable {
+                updateOrganizationId()
                 await viewModel.loadLeaderboard()
             }
         }
+    }
+
+    private func updateOrganizationId() {
+        viewModel.currentOrganizationId = organizationViewModel.activeMember?.organizationId
+            ?? organizationViewModel.organizations.first?.id
     }
 
     @ViewBuilder
@@ -174,8 +183,4 @@ struct LeaderboardView: View {
         formatter.dateFormat = "'Semaine du' d MMMM"
         return formatter.string(from: date)
     }
-}
-
-#Preview {
-    LeaderboardView(viewModel: LeaderboardViewModel())
 }

@@ -10,7 +10,7 @@ import {
 } from "../../../db/schema/conversation/schema";
 import { user } from "../../../db/schema/auth/schema";
 import { NewSetScore } from "../../../db/schema/match/type";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 
 export const createMatch = async (c: Context<HonoContext>) => {
   try {
@@ -124,11 +124,52 @@ export const createMatch = async (c: Context<HonoContext>) => {
 
 
     const result = await db.transaction(async (tx) => {
-      // Create match
+      // Check for existing conversation between the two participants
+      const userIds = validated.participants.map((p) => p.userId);
+      const [existingConversation] = await tx
+        .select({ id: conversation.id })
+        .from(conversation)
+        .where(
+          and(
+            eq(conversation.type, "match"),
+            sql`EXISTS (SELECT 1 FROM conversation_participant WHERE conversation_id = ${conversation.id} AND user_id = ${userIds[0]})`,
+            sql`EXISTS (SELECT 1 FROM conversation_participant WHERE conversation_id = ${conversation.id} AND user_id = ${userIds[1]})`,
+            sql`(SELECT COUNT(*) FROM conversation_participant WHERE conversation_id = ${conversation.id}) = 2`
+          )
+        )
+        .limit(1);
+
+      let conversationId: string;
+
+      if (existingConversation) {
+        // Reuse existing conversation
+        conversationId = existingConversation.id;
+      } else {
+        // Create new conversation (without matchId)
+        const [createdConversation] = await tx
+          .insert(conversation)
+          .values({
+            type: "match",
+          })
+          .returning();
+
+        conversationId = createdConversation.id;
+
+        // Create conversation participants
+        await tx.insert(conversationParticipant).values(
+          validated.participants.map((participant) => ({
+            conversationId: conversationId,
+            userId: participant.userId,
+          }))
+        );
+      }
+
+      // Create match with conversationId
       const [createdMatch] = await tx
         .insert(match)
         .values({
           createdBy: validated.createdBy,
+          conversationId: conversationId,
           status: validated.status,
           type: validated.type,
           createdAt: new Date(validated.createdAt),
@@ -150,23 +191,6 @@ export const createMatch = async (c: Context<HonoContext>) => {
           })),
         )
         .returning();
-
-      // Create conversation for this match
-      const [createdConversation] = await tx
-        .insert(conversation)
-        .values({
-          matchId: createdMatch.id,
-          type: "match",
-        })
-        .returning();
-
-      // Create conversation participants
-      await tx.insert(conversationParticipant).values(
-        validated.participants.map((participant) => ({
-          conversationId: createdConversation.id,
-          userId: participant.userId,
-        }))
-      );
 
       // Create lookup map for participants
       const participantMap = new Map(participants.map((p) => [p.userId, p]));

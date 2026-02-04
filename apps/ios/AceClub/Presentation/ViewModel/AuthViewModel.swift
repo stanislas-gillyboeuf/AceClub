@@ -154,6 +154,28 @@ class AuthViewModel {
         isLoading = false
     }
 
+    // MARK: - Delete Account
+    @MainActor
+    func deleteAccount() async {
+        isLoading = true
+        errorMessage = nil
+
+        // Unregister device token before deleting account
+        await NotificationManager.shared.unregisterDeviceToken()
+
+        do {
+            let token = try KeychainManager.shared.getAuthToken()
+            try await AuthAPIDataSource().deleteAccount(token: token)
+            try? KeychainManager.shared.deleteAuthToken()
+            currentUser = nil
+            isAuthenticated = false
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+
+        isLoading = false
+    }
+
     // MARK: - Clear Error
     func clearError() {
         errorMessage = nil
