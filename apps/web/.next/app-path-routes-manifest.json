@@ -1,0 +1,12 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/contact/route": "/api/contact",
+  "/cgu/page": "/cgu",
+  "/contact/page": "/contact",
+  "/favicon.ico/route": "/favicon.ico",
+  "/og/route": "/og",
+  "/page": "/",
+  "/privacy/page": "/privacy",
+  "/sitemap.xml/route": "/sitemap.xml"
+}
