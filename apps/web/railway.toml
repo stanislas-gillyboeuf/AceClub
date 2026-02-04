@@ -1,0 +1,8 @@
+[deploy]
+startCommand = "npm run start"
+
+[build]
+buildCommand = "npm run build"
+
+[[services]]
+internalPort = 3000
