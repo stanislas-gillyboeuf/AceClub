@@ -148,7 +148,6 @@
     --animate-spin: spin 1s linear infinite;
     --animate-pulse: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
     --blur-md: 12px;
-    --aspect-video: 16 / 9;
     --default-transition-duration: .15s;
     --default-transition-timing-function: cubic-bezier(.4, 0, .2, 1);
     --default-font-family: var(--font-geist-sans);
@@ -807,10 +806,6 @@
     aspect-ratio: 1;
   }
 
-  .aspect-video {
-    aspect-ratio: var(--aspect-video);
-  }
-
   .size-4 {
     width: calc(var(--spacing) * 4);
     height: calc(var(--spacing) * 4);
@@ -1327,10 +1322,6 @@
 
   .columns-1 {
     columns: 1;
-  }
-
-  .auto-rows-min {
-    grid-auto-rows: min-content;
   }
 
   .grid-cols-1 {
@@ -2548,6 +2539,10 @@
     padding-right: calc(var(--spacing) * 8);
   }
 
+  .group-data-\[collapsible\=icon\]\:-mt-6:is(:where(.group)[data-collapsible="icon"] *) {
+    margin-top: calc(var(--spacing) * -6);
+  }
+
   .group-data-\[collapsible\=icon\]\:-mt-8:is(:where(.group)[data-collapsible="icon"] *) {
     margin-top: calc(var(--spacing) * -8);
   }
@@ -3556,12 +3551,6 @@
   @media (min-width: 48rem) {
     .md\:hidden {
       display: none;
-    }
-  }
-
-  @media (min-width: 48rem) {
-    .md\:min-h-min {
-      min-height: min-content;
     }
   }
 

@@ -26,7 +26,7 @@ export function LoginForm({
     try {
       await signIn.social({
         provider,
-        callbackURL: "/dashboard",
+        callbackURL: "http://localhost:3001/dashboard",
       })
     } catch (error) {
       console.error(`${provider} sign in error:`, error)
