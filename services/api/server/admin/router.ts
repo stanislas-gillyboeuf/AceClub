@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { HonoContext } from "../../types/hono";
 import { requireAuth } from "../../middleware/auth";
 import { isAdmin } from "../../middleware/admin";
-import { listUsers, listUserSessions } from "./queries";
+import { listUsers, listUserSessions, userStats } from "./queries";
 import { zValidator } from "@hono/zod-validator";
 import {
   banUserValidator,
@@ -40,6 +40,8 @@ adminRouter.get(
   zValidator("query", listUserSessionsValidator),
   listUserSessions,
 );
+
+adminRouter.get("/user-stats/:userId", userStats);
 
 adminRouter.put("/update-user", zValidator("json", updateUserValidator), updateUser);
 
