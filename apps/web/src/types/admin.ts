@@ -72,6 +72,49 @@ export interface ChallengeEntry {
   templateType: string
 }
 
+export interface Organization {
+  id: string
+  name: string
+  slug: string
+  logo: string | null
+  createdAt: string
+  metadata: string | null
+  memberCount: number
+}
+
+export interface OrganizationMember {
+  id: string
+  role: string
+  createdAt: string
+  userId: string
+  userName: string
+  userEmail: string
+  userImage: string | null
+  userBanned: boolean | null
+}
+
+export interface ListOrganizationsParams {
+  searchValue?: string
+  limit?: number
+  offset?: number
+}
+
+export interface ListOrganizationsResponse {
+  organizations: Organization[]
+  total: number
+}
+
+export interface ListOrganizationMembersParams {
+  organizationId: string
+  limit?: number
+  offset?: number
+}
+
+export interface ListOrganizationMembersResponse {
+  members: OrganizationMember[]
+  total: number
+}
+
 export interface ListUsersParams {
   searchValue?: string
   searchField?: "email" | "name"
@@ -86,5 +129,27 @@ export interface ListUsersParams {
 
 export interface ListUsersResponse {
   users: User[]
+  total: number
+}
+
+export interface Invitation {
+  id: string
+  organizationId: string
+  email: string
+  role: string | null
+  status: string
+  expiresAt: string
+  createdAt: string
+  inviterId: string
+  inviterName: string | null
+  inviterEmail: string | null
+}
+
+export interface ListOrganizationInvitationsParams {
+  organizationId: string
+}
+
+export interface ListOrganizationInvitationsResponse {
+  invitations: Invitation[]
   total: number
 }

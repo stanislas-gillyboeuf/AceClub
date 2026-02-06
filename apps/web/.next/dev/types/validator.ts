@@ -47,6 +47,24 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 }
 
 
+// Validate ../../../src/app/(admin)/dashboard/organizations/[organizationId]/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/dashboard/organizations/[organizationId]">> = Specific
+  const handler = {} as typeof import("../../../src/app/(admin)/dashboard/organizations/[organizationId]/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../src/app/(admin)/dashboard/organizations/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/dashboard/organizations">> = Specific
+  const handler = {} as typeof import("../../../src/app/(admin)/dashboard/organizations/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../src/app/(admin)/dashboard/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/dashboard">> = Specific

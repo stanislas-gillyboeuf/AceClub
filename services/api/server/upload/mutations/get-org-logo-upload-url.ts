@@ -37,13 +37,15 @@ export const uploadOrgLogo = async (c: Context<HonoContext>) => {
     .limit(1);
 
   if (!memberRecord || !["owner", "admin"].includes(memberRecord.role)) {
-    return c.json(
-      {
-        error: "Forbidden",
-        message: "Not authorized to update organization logo",
-      },
-      403,
-    );
+    if (user.role !== "admin") {
+      return c.json(
+        {
+          error: "Forbidden",
+          message: "Not authorized to update organization logo",
+        },
+        403,
+      );
+    }
   }
 
   const arrayBuffer = await file.arrayBuffer();

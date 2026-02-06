@@ -21,7 +21,7 @@ export default function AdminLayout({
   const { data: session, isPending } = useSession()
 
   useEffect(() => {
-    if (!isPending && !session) {
+    if (!isPending && (!session || session.user.role !== "admin")) {
       router.replace("/login")
     }
   }, [session, isPending, router])
@@ -34,7 +34,7 @@ export default function AdminLayout({
     )
   }
 
-  if (!session) {
+  if (!session || session.user.role !== "admin") {
     return null
   }
 

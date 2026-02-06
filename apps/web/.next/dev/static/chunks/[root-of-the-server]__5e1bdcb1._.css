@@ -1218,6 +1218,10 @@
     width: calc(var(--spacing) * 11);
   }
 
+  .w-12 {
+    width: calc(var(--spacing) * 12);
+  }
+
   .w-16 {
     width: calc(var(--spacing) * 16);
   }
@@ -1260,6 +1264,10 @@
 
   .w-\[1px\] {
     width: 1px;
+  }
+
+  .w-\[80px\] {
+    width: 80px;
   }
 
   .w-\[100px\] {
@@ -1324,6 +1332,10 @@
 
   .max-w-\[--skeleton-width\] {
     max-width: --skeleton-width;
+  }
+
+  .max-w-\[120px\] {
+    max-width: 120px;
   }
 
   .max-w-\[250px\] {

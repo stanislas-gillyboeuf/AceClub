@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import {
+  Building2,
   LayoutDashboard,
   LifeBuoy,
   Users,
@@ -33,6 +34,11 @@ const navMain = [
     title: "Utilisateurs",
     url: "/dashboard/users",
     icon: Users,
+  },
+  {
+    title: "Organisations",
+    url: "/dashboard/organizations",
+    icon: Building2,
   },
 ]
 
