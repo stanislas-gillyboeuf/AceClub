@@ -308,6 +308,7 @@ struct SettingsView: View {
                                 }
                             }
                             .padding(16)
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
 

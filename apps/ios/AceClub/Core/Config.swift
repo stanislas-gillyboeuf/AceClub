@@ -42,12 +42,14 @@ enum Config {
 
     // MARK: - WebSocket Configuration
     static var wsBaseURL: String {
-        // Derive WebSocket URL from API URL
-        let apiURL = apiBaseURL
+        var wsURL = apiBaseURL
 
-        // Replace /api suffix and change protocol
-        var wsURL = apiURL
-            .replacingOccurrences(of: "/api", with: "")
+        if wsURL.hasSuffix("/api") {
+            wsURL = String(wsURL.dropLast(4))
+        }
+
+        // Change protocol
+        wsURL = wsURL
             .replacingOccurrences(of: "https://", with: "wss://")
             .replacingOccurrences(of: "http://", with: "ws://")
 

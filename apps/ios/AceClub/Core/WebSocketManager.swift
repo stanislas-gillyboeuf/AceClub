@@ -35,6 +35,7 @@ class WebSocketManager: ObservableObject {
     // MARK: - Private Properties
 
     private var webSocketTask: URLSessionWebSocketTask?
+    private var urlSession: URLSession?
     private var pingTimer: Timer?
     private var reconnectAttempts = 0
     private let maxReconnectAttempts = 5
@@ -66,7 +67,13 @@ class WebSocketManager: ObservableObject {
                 return
             }
 
-            let session = URLSession(configuration: .default)
+            let configuration = URLSessionConfiguration.default
+            configuration.timeoutIntervalForRequest = 30
+            configuration.timeoutIntervalForResource = 60
+            
+            let session = URLSession(configuration: configuration)
+            self.urlSession = session
+            
             webSocketTask = session.webSocketTask(with: url)
             webSocketTask?.resume()
 
@@ -87,6 +94,8 @@ class WebSocketManager: ObservableObject {
     func disconnect() {
         webSocketTask?.cancel(with: .normalClosure, reason: nil)
         webSocketTask = nil
+        urlSession?.invalidateAndCancel()
+        urlSession = nil
         isConnected = false
         pingTimer?.invalidate()
         pingTimer = nil
@@ -115,33 +124,27 @@ class WebSocketManager: ObservableObject {
     }
 
     private func receiveMessages() {
-        webSocketTask?.receive { [weak self] result in
-            guard let self = self else { return }
+        guard let webSocketTask else { return }
 
-            switch result {
-            case .success(let message):
-                switch message {
-                case .string(let text):
-                    Task { @MainActor in
-                        self.handleMessage(text)
-                    }
-                case .data(let data):
-                    if let text = String(data: data, encoding: .utf8) {
-                        Task { @MainActor in
-                            self.handleMessage(text)
+        Task {
+            while isConnected {
+                do {
+                    let message = try await webSocketTask.receive()
+                    switch message {
+                    case .string(let text):
+                        handleMessage(text)
+                    case .data(let data):
+                        if let text = String(data: data, encoding: .utf8) {
+                            handleMessage(text)
                         }
+                    @unknown default:
+                        break
                     }
-                @unknown default:
-                    break
-                }
-                // Continue receiving
-                self.receiveMessages()
-
-            case .failure(let error):
-                Task { @MainActor in
-                    self.isConnected = false
-                    self.eventSubject.send(.error(error))
-                    self.attemptReconnect()
+                } catch {
+                    isConnected = false
+                    eventSubject.send(.error(error))
+                    attemptReconnect()
+                    return
                 }
             }
         }

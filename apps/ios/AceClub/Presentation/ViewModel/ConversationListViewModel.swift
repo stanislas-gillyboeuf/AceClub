@@ -18,6 +18,10 @@ class ConversationListViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var totalUnreadCount = 0
 
+    // MARK: - Properties
+
+    private(set) var activeConversationId: String?
+
     // MARK: - Private Properties
 
     private let listConversationsUseCase = ListConversationsUseCase()
@@ -82,6 +86,32 @@ class ConversationListViewModel: ObservableObject {
         }
     }
 
+    func markConversationAsRead(conversationId: String) {
+        activeConversationId = conversationId
+
+        guard let index = conversations.firstIndex(where: { $0.id == conversationId }),
+              conversations[index].unreadCount > 0 else { return }
+
+        let conv = conversations[index]
+        conversations[index] = Conversation(
+            id: conv.id,
+            name: conv.name,
+            type: conv.type,
+            lastMessageAt: conv.lastMessageAt,
+            lastMessagePreview: conv.lastMessagePreview,
+            lastMessageSenderId: conv.lastMessageSenderId,
+            createdAt: conv.createdAt,
+            unreadCount: 0,
+            isMuted: conv.isMuted,
+            otherParticipants: conv.otherParticipants
+        )
+        totalUnreadCount = conversations.reduce(0) { $0 + $1.unreadCount }
+    }
+
+    func clearActiveConversation() {
+        activeConversationId = nil
+    }
+
     // MARK: - Private Methods
 
     private func setupWebSocketListener() {
@@ -100,7 +130,7 @@ class ConversationListViewModel: ObservableObject {
             if let index = conversations.firstIndex(where: { $0.id == messageDTO.conversationId }) {
                 var updatedConversation = conversations[index]
 
-                // Update last message info
+                let isViewingConversation = activeConversationId == messageDTO.conversationId
                 conversations[index] = Conversation(
                     id: updatedConversation.id,
                     name: updatedConversation.name,
@@ -109,7 +139,7 @@ class ConversationListViewModel: ObservableObject {
                     lastMessagePreview: messageDTO.content,
                     lastMessageSenderId: messageDTO.sender.id,
                     createdAt: updatedConversation.createdAt,
-                    unreadCount: (messageDTO.isFromMe ?? false) ? updatedConversation.unreadCount : updatedConversation.unreadCount + 1,
+                    unreadCount: (messageDTO.isFromMe ?? false || isViewingConversation) ? updatedConversation.unreadCount : updatedConversation.unreadCount + 1,
                     isMuted: updatedConversation.isMuted,
                     otherParticipants: updatedConversation.otherParticipants
                 )

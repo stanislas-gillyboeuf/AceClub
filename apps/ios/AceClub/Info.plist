@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>API_BASE_URL</key>
+	<string>$(API_BASE_URL)</string>
+	<key>APP_ENV</key>
+	<string>$(APP_ENV)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -45,10 +49,6 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>GIDClientID</key>
 	<string>131274084335-lv3cs6n1eqajr5letmpgm57alipg51gb.apps.googleusercontent.com</string>
-	<key>API_BASE_URL</key>
-	<string>$(API_BASE_URL)</string>
-	<key>APP_ENV</key>
-	<string>$(APP_ENV)</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.sports</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -71,15 +71,13 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
 </dict>
 </plist>
