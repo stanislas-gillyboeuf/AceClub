@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@available(iOS 26.0, *)
 struct RootView: View {
     @Environment(AuthViewModel.self) private var authViewModel
     @Environment(DeepLinkManager.self) private var deepLinkManager
@@ -37,7 +38,6 @@ struct RootView: View {
 
         switch deepLink.type {
         case "new_message":
-            // Navigate to chat with the conversation
             deepLinkManager.pendingConversationId = deepLink.referenceId
             selection = .chat
             notificationManager.clearPendingDeepLink()
@@ -53,11 +53,12 @@ struct RootView: View {
         }
     }
 
+    @available(iOS 26.0, *)
     var body: some View {
         TabView(selection: $selection) {
             HomeView()
                 .tabItem {
-                    Label("Accueil", systemImage: "list.dash")
+                    Label("Accueil", systemImage: "house")
                 }
                 .tag(Tab.feed)
 
@@ -76,7 +77,7 @@ struct RootView: View {
 
             MatchIntentsView()
                 .tabItem {
-                    Label("Découvrir", systemImage: "list.dash")
+                    Label("Découvrir", systemImage: "magnifyingglass")
                 }
                 .tag(Tab.discover)
             ProfileView(
@@ -91,12 +92,20 @@ struct RootView: View {
                 .tag(Tab.profile)
 
             if isAdmin {
-                AdminView()
-                    .tabItem {
-                        Label("Admin", systemImage: "square.and.pencil")
-                    }
-                    .tabBarMinimizeBehavior(.automatic)
-                    .tag(Tab.admin)
+                if #available(iOS 26.0, *) {
+                    AdminView()
+                        .tabItem {
+                            Label("Admin", systemImage: "square.and.pencil")
+                        }
+                        .tabBarMinimizeBehavior(.automatic)
+                        .tag(Tab.admin)
+                } else {
+                    AdminView()
+                        .tabItem {
+                            Label("Admin", systemImage: "square.and.pencil")
+                        }
+                        .tag(Tab.admin)
+                }
             }
         }
         .tabViewStyle(.sidebarAdaptable)

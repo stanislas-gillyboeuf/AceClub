@@ -38,7 +38,6 @@ struct OrganizationMembersSection: View {
                         memberRow
                             .listRowBackground(Theme.cardBackground)
                             .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
-                            // Swipe gauche : Supprimer
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 if canDeleteMember(member) {
                                     Button(role: .destructive) {
@@ -49,7 +48,6 @@ struct OrganizationMembersSection: View {
                                     }
                                 }
                             }
-                            // Swipe droite : Changer le rôle
                             .swipeActions(edge: .leading, allowsFullSwipe: false) {
                                 if canManageMembers && memberRow.canManageRole {
                                     ForEach(availableRoles(for: member), id: \.self) { role in
@@ -66,7 +64,7 @@ struct OrganizationMembersSection: View {
                 }
                 .listStyle(.plain)
                 .scrollDisabled(true)
-                .frame(height: CGFloat(members.count * 68))
+                .frame(height: CGFloat(members.count * 75))
                 .background(Theme.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
             }

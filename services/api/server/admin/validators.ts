@@ -4,8 +4,8 @@ export const listUsersValidator = z.object({
   searchValue: z.string().optional(),
   searchField: z.enum(["email", "name"]).optional(),
   searchOperator: z.enum(["contains", "starts_with", "ends_with"]).optional(),
-  limit: z.number().optional(),
-  offset: z.number().optional(),
+  limit: z.coerce.number().optional(),
+  offset: z.coerce.number().optional(),
   sortBy: z.string().optional(),
   sortDirection: z.enum(["asc", "desc"]).optional(),
   filterField: z.string().optional(),
@@ -56,4 +56,44 @@ export const setRoleValidator = z.object({
 export const setUserPasswordValidator = z.object({
   newPassword: z.string().min(8),
   userId: z.string(),
+});
+
+export const listOrganizationsValidator = z.object({
+  searchValue: z.string().optional(),
+  limit: z.coerce.number().optional(),
+  offset: z.coerce.number().optional(),
+});
+
+export const listOrganizationMembersValidator = z.object({
+  organizationId: z.string(),
+  limit: z.coerce.number().optional(),
+  offset: z.coerce.number().optional(),
+});
+
+export const updateOrganizationAdminValidator = z.object({
+  organizationId: z.string(),
+  data: z.object({
+    name: z.string().optional(),
+    slug: z.string().optional(),
+    logo: z.string().optional(),
+    metadata: z.record(z.string(), z.any()).optional(),
+  }),
+});
+
+export const deleteOrganizationAdminValidator = z.object({
+  organizationId: z.string(),
+});
+
+export const listOrganizationInvitationsValidator = z.object({
+  organizationId: z.string(),
+});
+
+export const createOrganizationInvitationAdminValidator = z.object({
+  organizationId: z.string(),
+  email: z.string().email(),
+  role: z.string().default("member"),
+});
+
+export const cancelOrganizationInvitationAdminValidator = z.object({
+  invitationId: z.string(),
 });

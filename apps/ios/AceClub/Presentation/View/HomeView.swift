@@ -193,11 +193,13 @@ struct HomeView: View {
 
     private func initialLoad() async {
         viewModel.initialize(modelContext: modelContext)
+        viewModel.organizationId = organizationViewModel.activeMember?.organizationId
         await viewModel.syncMatches()
         recalculateStats()
     }
 
     private func refresh() async {
+        viewModel.organizationId = organizationViewModel.activeMember?.organizationId
         await viewModel.syncMatches()
         recalculateStats()
     }
