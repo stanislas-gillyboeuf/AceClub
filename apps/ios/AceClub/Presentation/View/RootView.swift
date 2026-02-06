@@ -12,7 +12,7 @@ struct RootView: View {
     @Environment(AuthViewModel.self) private var authViewModel
     @Environment(DeepLinkManager.self) private var deepLinkManager
     @Environment(NotificationManager.self) private var notificationManager
-    @State private var selection: Tab = .feed
+    @State private var selection: Tab = .discover
     @State private var showingCreateMatch = false
     @StateObject private var profileViewModel = ProfileViewModel()
     @StateObject private var organizationViewModel = OrganizationViewModel()
@@ -53,7 +53,8 @@ struct RootView: View {
         }
     }
 
-    @available(iOS 26.0, *)
+
+
     var body: some View {
         TabView(selection: $selection) {
             HomeView()
@@ -92,20 +93,12 @@ struct RootView: View {
                 .tag(Tab.profile)
 
             if isAdmin {
-                if #available(iOS 26.0, *) {
-                    AdminView()
-                        .tabItem {
-                            Label("Admin", systemImage: "square.and.pencil")
-                        }
-                        .tabBarMinimizeBehavior(.automatic)
-                        .tag(Tab.admin)
-                } else {
-                    AdminView()
-                        .tabItem {
-                            Label("Admin", systemImage: "square.and.pencil")
-                        }
-                        .tag(Tab.admin)
-                }
+                AdminView()
+                    .tabItem {
+                        Label("Admin", systemImage: "square.and.pencil")
+                    }
+                    .tabBarMinimizeBehavior(.automatic)
+                    .tag(Tab.admin)
             }
         }
         .tabViewStyle(.sidebarAdaptable)
