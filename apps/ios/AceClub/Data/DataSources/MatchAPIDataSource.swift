@@ -64,6 +64,7 @@ class MatchAPIDataSource {
     func listMatches(
         status: String? = nil,
         userId: String? = nil,
+        organizationId: String? = nil,
         participantOnly: Bool = true,
         page: Int = 1,
         limit: Int = 10
@@ -82,6 +83,10 @@ class MatchAPIDataSource {
 
         if let userId = userId {
             queryItems.append(URLQueryItem(name: "userId", value: userId))
+        }
+
+        if let organizationId = organizationId {
+            queryItems.append(URLQueryItem(name: "organizationId", value: organizationId))
         }
 
         components?.queryItems = queryItems
@@ -276,6 +281,7 @@ class MatchAPIDataSource {
                 let commentResponse = try JSONDecoder().decode(MatchCommentDTO.self, from: data)
                 return commentResponse
             } catch {
+                print("🔴 CREATE COMMENT DECODE ERROR: \(error)")
                 throw MatchAPIDataSourceError.decodingFailed(error)
             }
         case 400, 403, 409:

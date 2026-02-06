@@ -56,7 +56,7 @@ struct MatchCommentDTO: Codable {
     let content: String
     let createdAt: String
     let updatedAt: String
-    let user: UserDTO?
+    let user: MessageSenderDTO?
 }
 
 // MARK: - Complete Match Response DTO

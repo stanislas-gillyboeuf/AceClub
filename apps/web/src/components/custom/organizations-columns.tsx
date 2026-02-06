@@ -28,6 +28,16 @@ export const organizationsColumns: ColumnDef<Organization>[] = [
     header: "Organisation",
     cell: ({ row }) => {
       const org = row.original
+      let isHidden = false
+      if (org.metadata) {
+        try {
+          const meta =
+            typeof org.metadata === "string"
+              ? JSON.parse(org.metadata)
+              : org.metadata
+          isHidden = !!meta.hidden
+        } catch {}
+      }
       return (
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
@@ -37,6 +47,11 @@ export const organizationsColumns: ColumnDef<Organization>[] = [
             </AvatarFallback>
           </Avatar>
           <span className="font-medium">{org.name}</span>
+          {isHidden && (
+            <Badge variant="outline" className="text-orange-600 border-orange-600">
+              Caché
+            </Badge>
+          )}
         </div>
       )
     },

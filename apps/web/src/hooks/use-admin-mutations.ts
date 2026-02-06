@@ -46,6 +46,21 @@ export function useSetRole() {
   })
 }
 
+export function useSetUserPassword() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { userId: string; newPassword: string }) =>
+      apiClient("/admin/set-user-password", {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] })
+    },
+  })
+}
+
 export function useUpdateUser() {
   const queryClient = useQueryClient()
 

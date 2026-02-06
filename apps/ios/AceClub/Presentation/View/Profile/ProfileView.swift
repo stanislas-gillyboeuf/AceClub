@@ -14,7 +14,6 @@ struct ProfileView: View {
     private var allMatches: [MatchModel]
 
     var body: some View {
-        NavigationStack {
             List {
                 if let user = profileViewModel.user {
                     Section {
@@ -252,7 +251,6 @@ struct ProfileView: View {
                     }
                 }
             }
-        }
     }
 
     private func getMemberRole(for organizationId: String) -> MemberRole? {

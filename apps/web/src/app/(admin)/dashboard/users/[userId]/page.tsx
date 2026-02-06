@@ -23,6 +23,7 @@ import { MatchChart } from "@/components/custom/charts/match-chart"
 import { BadgeChart } from "@/components/custom/charts/badge-chart"
 import {
   SetRoleDialog,
+  SetPasswordDialog,
   BanUserDialog,
   UnbanUserDialog,
 } from "@/components/custom/user-actions"
@@ -62,6 +63,7 @@ export default function UserDetailPage() {
   })
 
   const [roleDialogOpen, setRoleDialogOpen] = useState(false)
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false)
   const [banDialogOpen, setBanDialogOpen] = useState(false)
   const [unbanDialogOpen, setUnbanDialogOpen] = useState(false)
 
@@ -125,6 +127,13 @@ export default function UserDetailPage() {
               </div>
             </div>
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPasswordDialogOpen(true)}
+              >
+                Mot de passe
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -356,6 +365,11 @@ export default function UserDetailPage() {
       {/* Dialogs */}
       {user && (
         <>
+          <SetPasswordDialog
+            user={user}
+            open={passwordDialogOpen}
+            onOpenChange={setPasswordDialogOpen}
+          />
           <SetRoleDialog
             user={user}
             open={roleDialogOpen}

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Pencil, Trash2, Plus, X } from "lucide-react"
+import { ArrowLeft, Pencil, Trash2, Plus, X, Eye, EyeOff } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -28,7 +28,7 @@ import {
   useOrganizationMembers,
   useOrganizationInvitations,
 } from "@/hooks/use-admin-queries"
-import { useCancelInvitation } from "@/hooks/use-admin-mutations"
+import { useCancelInvitation, useUpdateOrganization } from "@/hooks/use-admin-mutations"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { OrganizationMember, Invitation } from "@/types/admin"
 
@@ -166,6 +166,41 @@ export default function OrganizationDetailPage() {
     useOrganizationInvitations({ organizationId })
 
   const cancelInvitationMutation = useCancelInvitation()
+  const updateOrganizationMutation = useUpdateOrganization()
+
+  const isHidden = (() => {
+    if (!org?.metadata) return false
+    try {
+      const meta =
+        typeof org.metadata === "string"
+          ? JSON.parse(org.metadata)
+          : org.metadata
+      return !!meta.hidden
+    } catch {
+      return false
+    }
+  })()
+
+  const handleToggleVisibility = useCallback(() => {
+    if (!org) return
+    let existingMeta: Record<string, unknown> = {}
+    if (org.metadata) {
+      try {
+        existingMeta =
+          typeof org.metadata === "string"
+            ? JSON.parse(org.metadata)
+            : org.metadata
+      } catch {
+        existingMeta = {}
+      }
+    }
+    updateOrganizationMutation.mutate({
+      organizationId: org.id,
+      data: {
+        metadata: { ...existingMeta, hidden: !isHidden },
+      },
+    })
+  }, [org, isHidden, updateOrganizationMutation])
 
   const handleMemberClick = useCallback(
     (member: OrganizationMember) => {
@@ -210,7 +245,14 @@ export default function OrganizationDetailPage() {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <h2 className="text-xl font-semibold">{org.name}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-semibold">{org.name}</h2>
+                {isHidden && (
+                  <Badge variant="outline" className="text-orange-600 border-orange-600">
+                    Caché
+                  </Badge>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground">{org.slug}</p>
               <div className="mt-1 flex items-center gap-2">
                 <Badge variant="secondary">
@@ -227,6 +269,24 @@ export default function OrganizationDetailPage() {
               )}
             </div>
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleToggleVisibility}
+                disabled={updateOrganizationMutation.isPending}
+              >
+                {isHidden ? (
+                  <>
+                    <Eye className="mr-2 h-3 w-3" />
+                    Rendre visible
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="mr-2 h-3 w-3" />
+                    Cacher
+                  </>
+                )}
+              </Button>
               <Button
                 variant="outline"
                 size="sm"

@@ -19,6 +19,8 @@ final class HomeFeedViewModel {
         syncService = MatchSyncService(modelContext: modelContext)
     }
 
+    var organizationId: String?
+
     func syncMatches() async {
         guard !isLoading else { return }
         isLoading = true
@@ -27,7 +29,13 @@ final class HomeFeedViewModel {
         hasMorePages = true
 
         do {
-            let result = try await syncService?.syncMatchesPage(page: 1, limit: pageSize, purgeOnFirstPage: true)
+            let result = try await syncService?.syncMatchesPage(
+                page: 1,
+                limit: pageSize,
+                purgeOnFirstPage: true,
+                participantOnly: organizationId == nil,
+                organizationId: organizationId
+            )
             hasMorePages = result?.hasMore ?? false
             currentPage = 1
         } catch {
@@ -43,7 +51,13 @@ final class HomeFeedViewModel {
 
         do {
             let nextPage = currentPage + 1
-            let result = try await syncService?.syncMatchesPage(page: nextPage, limit: pageSize, purgeOnFirstPage: false)
+            let result = try await syncService?.syncMatchesPage(
+                page: nextPage,
+                limit: pageSize,
+                purgeOnFirstPage: false,
+                participantOnly: organizationId == nil,
+                organizationId: organizationId
+            )
             if let result {
                 hasMorePages = result.hasMore
                 currentPage = result.currentPage
