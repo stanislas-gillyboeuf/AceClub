@@ -6,22 +6,40 @@ struct MatchIntentsView: View {
     @State private var selectedItem: MatchIntentDiscoverItem?
     @State private var showCreateSheet = false
 
+    private let radiusOptions: [(label: String, value: Int?)] = [
+        ("5 km", 5),
+        ("10 km", 10),
+        ("25 km", 25),
+        ("50 km", 50),
+        ("Tous", nil),
+    ]
+
     var body: some View {
         NavigationStack {
-            ZStack {
-                if viewModel.isLoading, viewModel.discoverItems.isEmpty {
-                    ProgressView("Chargement...")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    MatchIntentsContent(
-                        viewModel: viewModel,
-                        selectedItem: $selectedItem,
-                        onCreateIntent: { showCreateSheet = true }
-                    )
+            VStack(spacing: 0) {
+                // Radius picker
+                radiusPicker
+                    .padding(.horizontal, Theme.paddingHorizontal)
+                    .padding(.vertical, 8)
+
+                ZStack {
+                    if viewModel.isLoading, viewModel.discoverItems.isEmpty {
+                        ProgressView("Chargement...")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        MatchIntentsContent(
+                            viewModel: viewModel,
+                            selectedItem: $selectedItem,
+                            onCreateIntent: { showCreateSheet = true }
+                        )
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .navigationTitle("Trouver un partenaire")
             .task {
+                viewModel.locationManager.requestPermission()
+                viewModel.locationManager.requestLocation()
                 await viewModel.loadDiscover()
             }
             .refreshable {
@@ -56,6 +74,47 @@ struct MatchIntentsView: View {
                 }
             }
             .background(Theme.primaryBackground)
+        }
+    }
+
+    // MARK: - Radius Picker
+
+    private var radiusPicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(radiusOptions, id: \.label) { option in
+                    Button {
+                        viewModel.selectedRadius = option.value
+                        Task { await viewModel.loadDiscover() }
+                    } label: {
+                        Text(option.label)
+                            .font(.subheadline.weight(.medium))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(
+                                viewModel.selectedRadius == option.value
+                                    ? Theme.tintColor
+                                    : Theme.cardBackground
+                            )
+                            .foregroundStyle(
+                                viewModel.selectedRadius == option.value
+                                    ? .white
+                                    : Theme.labelPrimary
+                            )
+                            .clipShape(Capsule())
+                            .overlay {
+                                Capsule()
+                                    .strokeBorder(
+                                        viewModel.selectedRadius == option.value
+                                            ? Color.clear
+                                            : Theme.borderColor,
+                                        lineWidth: Theme.borderWidth
+                                    )
+                            }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
         }
     }
 }

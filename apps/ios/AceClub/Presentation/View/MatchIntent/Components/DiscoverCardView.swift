@@ -63,6 +63,11 @@ struct DiscoverCardView: View {
             if let org = item.user?.organization {
                 organizationBadge(org)
             }
+
+            // Distance badge
+            if let distance = item.distance {
+                distanceBadge(distance)
+            }
         }
     }
 
@@ -147,6 +152,22 @@ struct DiscoverCardView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
         .background(Theme.tintColor.opacity(0.1))
+        .clipShape(Capsule())
+    }
+
+    private func distanceBadge(_ distance: Double) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: "location.fill")
+                .font(.caption2)
+                .foregroundStyle(Theme.labelSecondary)
+
+            Text(distance < 1 ? String(format: "%.0f m", distance * 1000) : String(format: "%.1f km", distance))
+                .font(.caption.weight(.medium))
+                .foregroundStyle(Theme.labelSecondary)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(Theme.secondaryBackground)
         .clipShape(Capsule())
     }
 

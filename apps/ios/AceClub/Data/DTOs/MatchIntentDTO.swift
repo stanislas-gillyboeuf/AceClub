@@ -45,6 +45,7 @@ struct MatchIntentWithUserDTO: Codable {
     let status: String?
     let createdAt: String?
     let user: UserBriefDTO?
+    let distance: Double?
 }
 
 struct OrganizationBriefDTO: Codable {

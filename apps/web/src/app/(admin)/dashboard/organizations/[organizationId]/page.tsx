@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Pencil, Trash2, Plus, X, Eye, EyeOff } from "lucide-react"
+import { ArrowLeft, Pencil, Trash2, Plus, X, Eye, EyeOff, MapPin } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -254,6 +254,12 @@ export default function OrganizationDetailPage() {
                 )}
               </div>
               <p className="text-sm text-muted-foreground">{org.slug}</p>
+              {org.address && (
+                <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
+                  <MapPin className="h-3 w-3" />
+                  {org.address}
+                </p>
+              )}
               <div className="mt-1 flex items-center gap-2">
                 <Badge variant="secondary">
                   {org.memberCount} membre{org.memberCount > 1 ? "s" : ""}

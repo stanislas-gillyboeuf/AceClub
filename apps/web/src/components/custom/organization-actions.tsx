@@ -68,6 +68,7 @@ export function CreateOrganizationDialog({
   const [name, setName] = useState("")
   const [slug, setSlug] = useState("")
   const [slugManual, setSlugManual] = useState(false)
+  const [address, setAddress] = useState("")
   const [metadata, setMetadata] = useState("")
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
@@ -96,6 +97,7 @@ export function CreateOrganizationDialog({
     setName("")
     setSlug("")
     setSlugManual(false)
+    setAddress("")
     setMetadata("")
     setLogoFile(null)
     setLogoPreview(null)
@@ -110,6 +112,7 @@ export function CreateOrganizationDialog({
       name,
       slug,
       metadata: parsedMetadata,
+      ...(address.trim() && { address: address.trim() }),
     })
 
     const orgId = (result as { id?: string })?.id
@@ -169,6 +172,15 @@ export function CreateOrganizationDialog({
                 setSlugManual(true)
               }}
               placeholder="mon-organisation"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="org-address">Adresse</Label>
+            <Input
+              id="org-address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="123 Rue du Tennis, 75001 Paris"
             />
           </div>
           <div className="grid gap-2">
@@ -250,6 +262,7 @@ export function EditOrganizationDialog({
 }) {
   const [name, setName] = useState(org.name)
   const [slug, setSlug] = useState(org.slug)
+  const [address, setAddress] = useState(org.address ?? "")
   const [metadata, setMetadata] = useState(() => {
     if (!org.metadata) return ""
     try {
@@ -269,6 +282,7 @@ export function EditOrganizationDialog({
     if (open) {
       setName(org.name)
       setSlug(org.slug)
+      setAddress(org.address ?? "")
       setMetadata(() => {
         if (!org.metadata) return ""
         try {
@@ -313,6 +327,7 @@ export function EditOrganizationDialog({
         slug,
         ...(logoUrl && { logo: logoUrl }),
         ...(parsedMetadata !== undefined && { metadata: parsedMetadata }),
+        address: address.trim() || undefined,
       },
     })
 
@@ -346,6 +361,15 @@ export function EditOrganizationDialog({
               id="edit-org-slug"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="edit-org-address">Adresse</Label>
+            <Input
+              id="edit-org-address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="123 Rue du Tennis, 75001 Paris"
             />
           </div>
           <div className="grid gap-2">
