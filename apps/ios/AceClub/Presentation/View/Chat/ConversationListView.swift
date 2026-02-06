@@ -46,6 +46,12 @@ struct ConversationListView: View {
             }
             .navigationDestination(for: Conversation.self) { conversation in
                 ChatView(conversation: conversation)
+                    .onAppear {
+                        viewModel.markConversationAsRead(conversationId: conversation.id)
+                    }
+                    .onDisappear {
+                        viewModel.clearActiveConversation()
+                    }
             }
             .onChange(of: deepLinkManager.pendingConversationId) { _, conversationId in
                 handleDeepLink(conversationId: conversationId)
