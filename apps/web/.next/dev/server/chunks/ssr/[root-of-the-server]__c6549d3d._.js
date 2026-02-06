@@ -507,11 +507,11 @@ const siteConfig = {
                     text: "Accueil"
                 },
                 {
-                    href: "#features",
+                    href: "/#features",
                     text: "Fonctionnalités"
                 },
                 {
-                    href: "#pricing",
+                    href: "/#pricing",
                     text: "Tarifs"
                 },
                 {

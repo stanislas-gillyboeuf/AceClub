@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { z } from "zod";
-import { ilike, sql } from "drizzle-orm";
+import { and, ilike, sql, or, not } from "drizzle-orm";
 import { db } from "../../../db";
 import { organization } from "../../../db/schema/auth/schema";
 import { searchOrganizationsValidator } from "../validators";
@@ -12,33 +12,30 @@ export const searchOrganizations = async (c: Context<HonoContext>) => {
     const validated = c.req.valid("query") as z.infer<typeof searchOrganizationsValidator>;
 
     const query = validated.query?.trim();
-    const whereClause = query ? ilike(organization.name, `%${query}%`) : undefined;
+    const notHidden = or(
+      sql`${organization.metadata} IS NULL`,
+      not(sql`${organization.metadata} LIKE '%"hidden":true%'`),
+    );
+    const whereClause = query
+      ? and(ilike(organization.name, `%${query}%`), notHidden)
+      : notHidden;
 
-    const organizationsQuery = whereClause
-      ? db
-          .select({
-            id: organization.id,
-            name: organization.name,
-            slug: organization.slug,
-            logo: organization.logo,
-          })
-          .from(organization)
-          .where(whereClause)
-      : db
-          .select({
-            id: organization.id,
-            name: organization.name,
-            slug: organization.slug,
-            logo: organization.logo,
-          })
-          .from(organization);
+    const selectFields = {
+      id: organization.id,
+      name: organization.name,
+      slug: organization.slug,
+      logo: organization.logo,
+    };
 
-    const totalQuery = whereClause
-      ? db
-          .select({ count: sql<number>`count(*)` })
-          .from(organization)
-          .where(whereClause)
-      : db.select({ count: sql<number>`count(*)` }).from(organization);
+    const organizationsQuery = db
+      .select(selectFields)
+      .from(organization)
+      .where(whereClause);
+
+    const totalQuery = db
+      .select({ count: sql<number>`count(*)` })
+      .from(organization)
+      .where(whereClause);
 
     const [rows, [countRow]] = await Promise.all([
       organizationsQuery.orderBy(organization.name).limit(validated.limit).offset(validated.offset),

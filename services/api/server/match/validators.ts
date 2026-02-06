@@ -229,6 +229,7 @@ export const updateMatchScoresValidator = z
 export const listMatchesQueryValidator = z.object({
   status: z.enum(["scheduled", "ongoing", "finished"]).optional(),
   userId: z.string().optional(),
+  organizationId: z.string().optional(),
   participantOnly: z
     .enum(["true", "false"])
     .default("true")

@@ -3,7 +3,7 @@ import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { db } from "../../../db";
 import { match, matchParticipant, set, setScore } from "../../../db/schema/match/schema";
-import { user } from "../../../db/schema/auth/schema";
+import { user, member } from "../../../db/schema/auth/schema";
 import { and, eq, desc, sql, inArray } from "drizzle-orm";
 import { listMatchesQueryValidator } from "../validators";
 
@@ -13,7 +13,7 @@ export const listMatches = async (c: Context<HonoContext>) => {
     const query = c.req.query();
     const validatedQuery = listMatchesQueryValidator.parse(query);
 
-    const { status, userId, participantOnly, page, limit } = validatedQuery;
+    const { status, userId, organizationId, participantOnly, page, limit } = validatedQuery;
     const offset = (page - 1) * limit;
 
     const conditions = [];
@@ -24,27 +24,55 @@ export const listMatches = async (c: Context<HonoContext>) => {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const filterUserId = userId || (participantOnly && currentUser ? currentUser.id : null);
-
     let matchIdsFilter: string[] | undefined;
-    if (filterUserId) {
-      const userMatches = await db
+
+    if (organizationId) {
+      // Get all user IDs that are members of this organization
+      const orgMembers = await db
+        .select({ userId: member.userId })
+        .from(member)
+        .where(eq(member.organizationId, organizationId));
+
+      const orgMemberUserIds = orgMembers.map((m) => m.userId);
+
+      if (orgMemberUserIds.length === 0) {
+        return c.json({
+          matches: [],
+          pagination: { page, limit, total: 0, totalPages: 0 },
+        });
+      }
+
+      // Get all matches where at least 1 participant is a member of the organization
+      const orgMatches = await db
         .select({ matchId: matchParticipant.matchId })
         .from(matchParticipant)
-        .where(eq(matchParticipant.userId, filterUserId));
+        .where(inArray(matchParticipant.userId, orgMemberUserIds));
 
-      matchIdsFilter = userMatches.map((m) => m.matchId);
+      matchIdsFilter = [...new Set(orgMatches.map((m) => m.matchId))];
 
       if (matchIdsFilter.length === 0) {
         return c.json({
           matches: [],
-          pagination: {
-            page,
-            limit,
-            total: 0,
-            totalPages: 0,
-          },
+          pagination: { page, limit, total: 0, totalPages: 0 },
         });
+      }
+    } else {
+      const filterUserId = userId || (participantOnly && currentUser ? currentUser.id : null);
+
+      if (filterUserId) {
+        const userMatches = await db
+          .select({ matchId: matchParticipant.matchId })
+          .from(matchParticipant)
+          .where(eq(matchParticipant.userId, filterUserId));
+
+        matchIdsFilter = userMatches.map((m) => m.matchId);
+
+        if (matchIdsFilter.length === 0) {
+          return c.json({
+            matches: [],
+            pagination: { page, limit, total: 0, totalPages: 0 },
+          });
+        }
       }
     }
 

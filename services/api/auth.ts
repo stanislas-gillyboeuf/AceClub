@@ -92,6 +92,9 @@ export const auth = betterAuth({
       enabled: true,
     },
   },
+  emailAndPassword: {
+    enabled: true,
+  },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -107,10 +110,15 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
     "aceclub://",
     "https://ace-club-production.up.railway.app",
+    "https://ace-club.app",
     "https://appleid.apple.com",
-  ],
+    process.env.NGROK_URL || "",
+  ].filter(Boolean),
 
   plugins: [
     bearer(),

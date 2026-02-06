@@ -40,8 +40,7 @@ class GoogleSignInManager {
     /// Configure Google Sign-In with the client ID
     /// Call this in AceClubApp init or on first launch
     func configure() {
-        // The client ID should match the one in your GoogleService-Info.plist
-        // or be configured via Info.plist URL schemes
+
     }
 
     /// Handle URL callback from Google Sign-In

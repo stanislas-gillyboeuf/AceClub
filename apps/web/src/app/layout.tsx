@@ -1,5 +1,3 @@
-import { Footer } from "@/components/sections/footer";
-import { Header } from "@/components/sections/header";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -44,11 +42,7 @@ export default function RootLayout({
           defaultTheme="light"
           enableSystem={false}
         >
-          <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
+          {children}
           <ThemeToggle />
           <TailwindIndicator />
         </ThemeProvider>
