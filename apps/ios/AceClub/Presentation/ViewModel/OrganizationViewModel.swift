@@ -319,11 +319,12 @@ class OrganizationViewModel: ObservableObject {
 
     // MARK: - Organization Update Methods
 
-    func updateOrganization(organizationId: String, name: String? = nil, slug: String? = nil) async throws -> Organization {
+    func updateOrganization(organizationId: String, name: String? = nil, slug: String? = nil, address: String? = nil) async throws -> Organization {
         let updatedOrg = try await organizationRepository.updateOrganization(
             organizationId: organizationId,
             name: name,
-            slug: slug
+            slug: slug,
+            address: address
         )
 
         // Update local state

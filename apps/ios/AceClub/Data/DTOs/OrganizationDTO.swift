@@ -21,6 +21,9 @@ struct FullOrganizationDTO: Codable {
     let logo: String?
     let createdAt: String
     let metadata: String?
+    let address: String?
+    let latitude: Double?
+    let longitude: Double?
     let members: [MemberDTO]
 }
 

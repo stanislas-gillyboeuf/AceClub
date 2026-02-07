@@ -5,6 +5,7 @@ import { organization } from "../../../db/schema/auth/schema";
 import { eq } from "drizzle-orm";
 import { updateOrganizationAdminValidator } from "../validators";
 import { z } from "zod";
+import { geocodeAddress } from "../../organization/services/geocoding";
 
 export const updateOrganization = async (c: Context<HonoContext>) => {
   // @ts-ignore
@@ -31,6 +32,15 @@ export const updateOrganization = async (c: Context<HonoContext>) => {
   if (validated.data.logo !== undefined) updateData.logo = validated.data.logo;
   if (validated.data.metadata !== undefined)
     updateData.metadata = JSON.stringify(validated.data.metadata);
+
+  if (validated.data.address !== undefined) {
+    updateData.address = validated.data.address || null;
+    const coords = validated.data.address
+      ? await geocodeAddress(validated.data.address)
+      : null;
+    updateData.latitude = coords?.latitude ?? null;
+    updateData.longitude = coords?.longitude ?? null;
+  }
 
   const [updated] = await db
     .update(organization)

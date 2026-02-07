@@ -7,6 +7,7 @@ struct EditOrganizationSheet: View {
 
     @State private var name: String = ""
     @State private var slug: String = ""
+    @State private var address: String = ""
     @State private var isSaving = false
     @State private var errorMessage: String?
 
@@ -19,6 +20,9 @@ struct EditOrganizationSheet: View {
 
                     // Slug field
                     slugSection
+
+                    // Address field
+                    addressSection
 
                     // Error message
                     if let error = errorMessage {
@@ -49,6 +53,7 @@ struct EditOrganizationSheet: View {
             .onAppear {
                 name = organization.name
                 slug = organization.slug
+                address = organization.address ?? ""
             }
             .interactiveDismissDisabled(hasChanges)
         }
@@ -105,6 +110,21 @@ struct EditOrganizationSheet: View {
         }
     }
 
+    private var addressSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: "Adresse", icon: "mappin.and.ellipse")
+
+            VStack(spacing: 0) {
+                inputRow(title: "Adresse") {
+                    TextField("7 Rue du Club, 75001 Paris", text: $address)
+                        .textContentType(.fullStreetAddress)
+                }
+            }
+            .background(Theme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+        }
+    }
+
     // MARK: - Helpers
 
     private func sectionHeader(title: String, icon: String) -> some View {
@@ -151,7 +171,7 @@ struct EditOrganizationSheet: View {
     // MARK: - Computed Properties
 
     private var hasChanges: Bool {
-        name != organization.name || slug != organization.slug
+        name != organization.name || slug != organization.slug || address != (organization.address ?? "")
     }
 
     private var canSave: Bool {
@@ -168,7 +188,8 @@ struct EditOrganizationSheet: View {
             _ = try await organizationViewModel.updateOrganization(
                 organizationId: organization.id,
                 name: name != organization.name ? name : nil,
-                slug: slug != organization.slug ? slug : nil
+                slug: slug != organization.slug ? slug : nil,
+                address: address != (organization.address ?? "") ? address : nil
             )
             await MainActor.run {
                 isPresented = false

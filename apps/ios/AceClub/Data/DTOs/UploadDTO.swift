@@ -23,4 +23,5 @@ struct UpdateOrganizationDataDTO: Codable {
     let name: String?
     let slug: String?
     let logo: String?
+    let address: String?
 }
