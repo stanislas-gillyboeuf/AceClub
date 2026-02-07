@@ -11,9 +11,9 @@ const EMAIL = "nicolas.becharat@gmail.com";
 const password = crypto.randomBytes(16).toString("base64url");
 
 async function main() {
-  const ctx = await (auth as any).$context;
 
-  // Find user by email
+  const ctx = await auth.$context;
+
   const [foundUser] = await db
     .select()
     .from(user)

@@ -122,6 +122,7 @@ export function useUpdateOrganization() {
         slug?: string
         logo?: string
         metadata?: Record<string, unknown>
+        address?: string
       }
     }) =>
       apiClient("/admin/update-organization", {
