@@ -80,6 +80,9 @@ export interface Organization {
   createdAt: string
   metadata: string | null
   memberCount: number
+  address: string | null
+  latitude: number | null
+  longitude: number | null
 }
 
 export interface OrganizationMember {

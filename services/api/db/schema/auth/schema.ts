@@ -6,6 +6,7 @@ import {
   boolean,
   index,
   uniqueIndex,
+  doublePrecision,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -99,6 +100,9 @@ export const organization = pgTable(
     logo: text("logo"),
     createdAt: timestamp("created_at").notNull(),
     metadata: text("metadata"),
+    address: text("address"),
+    latitude: doublePrecision("latitude"),
+    longitude: doublePrecision("longitude"),
   },
   (table) => [uniqueIndex("organization_slug_uidx").on(table.slug)],
 );

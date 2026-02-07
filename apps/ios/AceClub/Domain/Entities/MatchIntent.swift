@@ -93,6 +93,7 @@ struct UserBrief: Identifiable {
 struct MatchIntentDiscoverItem: Identifiable {
     let intent: MatchIntent
     let user: UserBrief?
+    let distance: Double?
 
     var id: String { intent.id }
 }

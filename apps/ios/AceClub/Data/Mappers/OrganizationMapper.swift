@@ -8,7 +8,10 @@ class OrganizationMapper {
             slug: organizationDTO.slug,
             logo: organizationDTO.logo,
             createdAt: organizationDTO.createdAt ?? "",
-            metadata: organizationDTO.metadata
+            metadata: organizationDTO.metadata,
+            address: organizationDTO.address,
+            latitude: organizationDTO.latitude,
+            longitude: organizationDTO.longitude
         )
     }
 

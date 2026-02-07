@@ -123,7 +123,29 @@ export const auth = betterAuth({
   plugins: [
     bearer(),
     admin(),
-    organization(),
+    organization({
+      schema: {
+        organization: {
+          additionalFields: {
+            address: {
+              type: "string",
+              input: true,
+              required: false,
+            },
+            latitude: {
+              type: "number",
+              input: true,
+              required: false,
+            },
+            longitude: {
+              type: "number",
+              input: true,
+              required: false,
+            },
+          },
+        },
+      },
+    }),
     phoneNumber(),
   ],
 });

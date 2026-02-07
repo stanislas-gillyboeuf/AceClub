@@ -33,6 +33,10 @@ app.use(
         return origin;
       }
 
+      if (origin.endsWith(".aceclub.app") || origin === "https://aceclub.app") {
+        return origin;
+      }
+
       return null;
     },
     allowHeaders: ["Content-Type", "Authorization"],

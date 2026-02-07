@@ -3,6 +3,10 @@ import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { createOrganizationValidator } from "../validators";
 import { auth } from "../../../auth";
+import { geocodeAddress } from "../services/geocoding";
+import { db } from "../../../db";
+import { organization } from "../../../db/schema/auth/schema";
+import { eq } from "drizzle-orm";
 
 export const createOrganization = async (c: Context<HonoContext>) => {
   try {
@@ -20,6 +24,20 @@ export const createOrganization = async (c: Context<HonoContext>) => {
       },
       headers: c.req.raw.headers,
     });
+
+    if (validated.address && createdOrganization.id) {
+      const coords = await geocodeAddress(validated.address);
+      await db
+        .update(organization)
+        .set({
+          address: validated.address,
+          ...(coords && {
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+          }),
+        })
+        .where(eq(organization.id, createdOrganization.id));
+    }
 
     return c.json(createdOrganization);
   } catch (error) {

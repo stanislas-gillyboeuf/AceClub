@@ -65,11 +65,18 @@ class MatchIntentAPIDataSource {
 
     // MARK: - Discover (feed)
 
-    func discover(cursor: String? = nil, limit: Int = 20) async throws -> DiscoverMatchIntentsResponseDTO {
+    func discover(cursor: String? = nil, limit: Int = 20, latitude: Double? = nil, longitude: Double? = nil, radius: Int? = nil) async throws -> DiscoverMatchIntentsResponseDTO {
         var components = URLComponents(string: "\(baseURL)/discover")
         var queryItems: [URLQueryItem] = [URLQueryItem(name: "limit", value: "\(min(limit, 100))")]
         if let cursor = cursor {
             queryItems.append(URLQueryItem(name: "cursor", value: cursor))
+        }
+        if let latitude = latitude, let longitude = longitude {
+            queryItems.append(URLQueryItem(name: "latitude", value: "\(latitude)"))
+            queryItems.append(URLQueryItem(name: "longitude", value: "\(longitude)"))
+        }
+        if let radius = radius {
+            queryItems.append(URLQueryItem(name: "radius", value: "\(radius)"))
         }
         components?.queryItems = queryItems
 
