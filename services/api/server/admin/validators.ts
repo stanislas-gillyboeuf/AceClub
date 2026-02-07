@@ -77,6 +77,7 @@ export const updateOrganizationAdminValidator = z.object({
     slug: z.string().optional(),
     logo: z.string().optional(),
     metadata: z.record(z.string(), z.any()).optional(),
+    address: z.string().optional(),
   }),
 });
 

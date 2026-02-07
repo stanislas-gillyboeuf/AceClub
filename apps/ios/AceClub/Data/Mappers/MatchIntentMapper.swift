@@ -119,7 +119,7 @@ class MatchIntentMapper {
             createdAt: parseDate(discoverItemDTO.createdAt)
         )
         let user = discoverItemDTO.user.map { map(userBriefDTO: $0) }
-        return MatchIntentDiscoverItem(intent: intent, user: user)
+        return MatchIntentDiscoverItem(intent: intent, user: user, distance: discoverItemDTO.distance)
     }
 
     static func map(discoverDTO: DiscoverMatchIntentsResponseDTO) -> DiscoverListResult {

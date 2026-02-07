@@ -7,6 +7,7 @@ export const createOrganizationValidator = z.object({
   metadata: z.record(z.string(), z.any()).optional(),
   userId: z.string().optional(),
   keepCurrentActiveOrganization: z.boolean().optional(),
+  address: z.string().optional(),
 });
 
 export const setActiveOrganizationValidator = z.object({
@@ -26,6 +27,7 @@ export const updateOrganizationValidator = z.object({
     slug: z.string().optional(),
     logo: z.string().optional(),
     metadata: z.record(z.string(), z.any()).optional(),
+    address: z.string().optional(),
   }),
   organizationId: z.string(),
 });

@@ -40,7 +40,10 @@ class OrganizationRepository: OrganizationRepositoryProtocol {
             slug: fullOrgDTO.slug,
             logo: fullOrgDTO.logo,
             createdAt: fullOrgDTO.createdAt,
-            metadata: fullOrgDTO.metadata
+            metadata: fullOrgDTO.metadata,
+            address: fullOrgDTO.address,
+            latitude: fullOrgDTO.latitude,
+            longitude: fullOrgDTO.longitude
         )
         let members = MemberMapper.map(memberDTOs: fullOrgDTO.members)
         return (organization, members)
@@ -92,8 +95,8 @@ class OrganizationRepository: OrganizationRepositoryProtocol {
         return OrganizationMapper.map(organizationDTO: organizationDTO)
     }
 
-    func updateOrganization(organizationId: String, name: String? = nil, slug: String? = nil, logo: String? = nil) async throws -> Organization {
-        let organizationDTO = try await dataSource.updateOrganization(organizationId: organizationId, name: name, slug: slug, logo: logo)
+    func updateOrganization(organizationId: String, name: String? = nil, slug: String? = nil, logo: String? = nil, address: String? = nil) async throws -> Organization {
+        let organizationDTO = try await dataSource.updateOrganization(organizationId: organizationId, name: name, slug: slug, logo: logo, address: address)
         return OrganizationMapper.map(organizationDTO: organizationDTO)
     }
 

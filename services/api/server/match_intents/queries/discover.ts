@@ -22,6 +22,18 @@ export const discover = async (c: Context<HonoContext>) => {
     const cursor = c.req.query("cursor");
     const limit = Math.min(parseInt(c.req.query("limit") || "20"), 100);
 
+    const userLat = c.req.query("latitude")
+      ? parseFloat(c.req.query("latitude")!)
+      : null;
+    const userLng = c.req.query("longitude")
+      ? parseFloat(c.req.query("longitude")!)
+      : null;
+    const radius = c.req.query("radius")
+      ? parseFloat(c.req.query("radius")!)
+      : null;
+
+    const hasLocation = userLat !== null && userLng !== null;
+
     const now = new Date();
 
     // Get current user's organization and level for scoring
@@ -63,9 +75,32 @@ export const discover = async (c: Context<HonoContext>) => {
     // +100 pts if same organization
     // +50 pts if level within ±3 (decreasing by 10 for each level difference)
     // +20 pts if created in last 24 hours
+    // +80/60/40/20 pts based on distance (if location provided)
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    // Raw score SQL without alias - use this in WHERE clauses
+    const distanceExpressionRaw = hasLocation
+      ? sql<number>`
+        6371 * acos(
+          LEAST(1.0, GREATEST(-1.0,
+            cos(radians(${userLat})) * cos(radians(${organization.latitude}))
+            * cos(radians(${organization.longitude}) - radians(${userLng}))
+            + sin(radians(${userLat})) * sin(radians(${organization.latitude}))
+          ))
+        )`
+      : null;
+
+    const distanceBonusExpression = hasLocation
+      ? sql`
+        CASE
+          WHEN ${organization.latitude} IS NULL OR ${organization.longitude} IS NULL THEN 0
+          WHEN (${distanceExpressionRaw}) <= 5 THEN 80
+          WHEN (${distanceExpressionRaw}) <= 10 THEN 60
+          WHEN (${distanceExpressionRaw}) <= 25 THEN 40
+          WHEN (${distanceExpressionRaw}) <= 50 THEN 20
+          ELSE 0
+        END`
+      : sql`0`;
+
     const scoreExpressionRaw = sql<number>`
       (
         CASE WHEN ${currentUserOrgId ? sql`${intentOwnerMember.organizationId} = ${currentUserOrgId}` : sql`FALSE`} THEN 100 ELSE 0 END
@@ -77,6 +112,8 @@ export const discover = async (c: Context<HonoContext>) => {
         END
       ) + (
         CASE WHEN ${matchIntent.createdAt} > ${oneDayAgo} THEN 20 ELSE 0 END
+      ) + (
+        ${distanceBonusExpression}
       )
     `;
 
@@ -104,12 +141,15 @@ export const discover = async (c: Context<HonoContext>) => {
               END
             ) + (
               CASE WHEN ${matchIntent.createdAt} > ${oneDayAgo} THEN 20 ELSE 0 END
+            ) + (
+              ${distanceBonusExpression}
             )
           `,
         })
         .from(matchIntent)
         .leftJoin(userLevel, eq(matchIntent.userId, userLevel.userId))
         .leftJoin(intentOwnerMember, eq(matchIntent.userId, intentOwnerMember.userId))
+        .leftJoin(organization, eq(intentOwnerMember.organizationId, organization.id))
         .where(eq(matchIntent.id, cursor))
         .limit(1);
 
@@ -117,6 +157,12 @@ export const discover = async (c: Context<HonoContext>) => {
         cursorScore = cursorData.score;
         cursorCreatedAt = cursorData.createdAt;
       }
+    }
+
+    if (hasLocation && radius !== null && distanceExpressionRaw) {
+      conditions.push(
+        sql`${organization.latitude} IS NOT NULL AND ${organization.longitude} IS NOT NULL AND (${distanceExpressionRaw}) <= ${radius}`,
+      );
     }
 
     // Add cursor condition if we have cursor data
@@ -153,6 +199,9 @@ export const discover = async (c: Context<HonoContext>) => {
         org_name: organization.name,
         org_logo: organization.logo,
         score: scoreExpression,
+        distance: hasLocation && distanceExpressionRaw
+          ? sql<number>`CASE WHEN ${organization.latitude} IS NOT NULL AND ${organization.longitude} IS NOT NULL THEN ROUND((${distanceExpressionRaw})::numeric, 1) ELSE NULL END`.as("distance")
+          : sql<number>`NULL`.as("distance"),
       })
       .from(matchIntent)
       .leftJoin(userTable, eq(matchIntent.userId, userTable.id))
@@ -177,6 +226,7 @@ export const discover = async (c: Context<HonoContext>) => {
       description: row.description,
       status: row.status,
       createdAt: row.createdAt,
+      distance: row.distance != null ? Number(row.distance) : null,
       user:
         row.user_id != null && row.user_name != null && row.user_email != null
           ? {

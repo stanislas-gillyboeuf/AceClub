@@ -24,10 +24,14 @@ class MatchIntentsViewModel: ObservableObject {
     @Published var lastSwipeMessage: String?
     @Published var didMatch = false
 
-    // MARK: - Use Cases
+    // Location & radius filter
+    @Published var selectedRadius: Int? = nil
+
+    // MARK: - Dependencies
 
     private let discoverUseCase = DiscoverMatchIntentsUseCase()
     private let swipeUseCase = SwipeMatchIntentUseCase()
+    let locationManager = LocationManager()
 
     // MARK: - Public Methods
 
@@ -39,7 +43,13 @@ class MatchIntentsViewModel: ObservableObject {
         hasMore = true
 
         do {
-            let result = try await discoverUseCase.execute(cursor: nil, limit: 20)
+            let result = try await discoverUseCase.execute(
+                cursor: nil,
+                limit: 20,
+                latitude: locationManager.userLatitude,
+                longitude: locationManager.userLongitude,
+                radius: selectedRadius
+            )
             discoverItems = result.data
             nextCursor = result.nextCursor
             hasMore = result.hasMore
@@ -54,7 +64,13 @@ class MatchIntentsViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         do {
-            let result = try await discoverUseCase.execute(cursor: cursor, limit: 20)
+            let result = try await discoverUseCase.execute(
+                cursor: cursor,
+                limit: 20,
+                latitude: locationManager.userLatitude,
+                longitude: locationManager.userLongitude,
+                radius: selectedRadius
+            )
             discoverItems.append(contentsOf: result.data)
             nextCursor = result.nextCursor
             hasMore = result.hasMore

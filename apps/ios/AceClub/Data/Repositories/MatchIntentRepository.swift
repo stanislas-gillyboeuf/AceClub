@@ -7,7 +7,7 @@ import Foundation
 
 protocol MatchIntentRepositoryProtocol {
     func listMatchIntents(cursor: String?, limit: Int) async throws -> MatchIntentListResult
-    func discover(cursor: String?, limit: Int) async throws -> DiscoverListResult
+    func discover(cursor: String?, limit: Int, latitude: Double?, longitude: Double?, radius: Int?) async throws -> DiscoverListResult
     func listRequests() async throws -> [MatchRequestWithDetails]
     func createMatchIntent(date: Date, time: Date, duration: Int, type: MatchIntentType, description: String?) async throws -> MatchIntent
     func deleteMatchIntent(id: String) async throws
@@ -28,8 +28,8 @@ class MatchIntentRepository: MatchIntentRepositoryProtocol {
         return MatchIntentMapper.map(listDTO: dto)
     }
 
-    func discover(cursor: String? = nil, limit: Int = 20) async throws -> DiscoverListResult {
-        let dto = try await dataSource.discover(cursor: cursor, limit: limit)
+    func discover(cursor: String? = nil, limit: Int = 20, latitude: Double? = nil, longitude: Double? = nil, radius: Int? = nil) async throws -> DiscoverListResult {
+        let dto = try await dataSource.discover(cursor: cursor, limit: limit, latitude: latitude, longitude: longitude, radius: radius)
         return MatchIntentMapper.map(discoverDTO: dto)
     }
 

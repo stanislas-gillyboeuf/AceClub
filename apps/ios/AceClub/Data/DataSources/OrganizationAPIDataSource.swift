@@ -323,14 +323,14 @@ class OrganizationAPIDataSource {
         }
     }
 
-    func updateOrganization(organizationId: String, name: String? = nil, slug: String? = nil, logo: String? = nil) async throws -> OrganizationDTO {
+    func updateOrganization(organizationId: String, name: String? = nil, slug: String? = nil, logo: String? = nil, address: String? = nil) async throws -> OrganizationDTO {
         guard let url = URL(string: "\(Config.apiBaseURL)/organization/update") else {
             throw OrganizationError.invalidURL
         }
 
         let requestBody = UpdateOrganizationRequestDTO(
             organizationId: organizationId,
-            data: UpdateOrganizationDataDTO(name: name, slug: slug, logo: logo)
+            data: UpdateOrganizationDataDTO(name: name, slug: slug, logo: logo, address: address)
         )
         let bodyData = try JSONEncoder().encode(requestBody)
         let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)
