@@ -124,9 +124,7 @@ struct ProfileView: View {
                             }
                         }
 
-                        if organizationViewModel.isLoading {
-                            SkeletonRow(lineCount: 2, titleWidth: 140)
-                        } else if let organization = organizationViewModel.organizations.first {
+                        if let organization = organizationViewModel.organizations.first {
                             let memberRole = getMemberRole(for: organization.id)
 
                             NavigationLink {
@@ -144,6 +142,8 @@ struct ProfileView: View {
                                     onTap: nil
                                 )
                             }
+                        } else if organizationViewModel.isLoading {
+                            SkeletonRow(lineCount: 2, titleWidth: 140)
                         } else {
                             ContentUnavailableView {
                                 Label("Aucun club", systemImage: "building.2")

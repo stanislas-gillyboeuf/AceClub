@@ -2,7 +2,7 @@ import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { db } from "../../../db";
-import { match, matchParticipant, set, setScore } from "../../../db/schema/match/schema";
+import { match, matchParticipant, set, setScore, matchComment } from "../../../db/schema/match/schema";
 import { user, member } from "../../../db/schema/auth/schema";
 import { and, eq, desc, sql, inArray } from "drizzle-orm";
 import { listMatchesQueryValidator } from "../validators";
@@ -160,6 +160,29 @@ export const listMatches = async (c: Context<HonoContext>) => {
       .where(inArray(set.matchId, matchIds))
       .orderBy(set.setNumber);
 
+    const commentsRaw = await db
+      .select({
+        id: matchComment.id,
+        matchId: matchComment.matchId,
+        userId: matchComment.userId,
+        content: matchComment.content,
+        createdAt: matchComment.createdAt,
+        updatedAt: matchComment.updatedAt,
+        user: user,
+      })
+      .from(matchComment)
+      .leftJoin(user, eq(matchComment.userId, user.id))
+      .where(inArray(matchComment.matchId, matchIds))
+      .orderBy(matchComment.createdAt);
+
+    const commentsByMatch = new Map<string, typeof commentsRaw>();
+    for (const comment of commentsRaw) {
+      if (!commentsByMatch.has(comment.matchId)) {
+        commentsByMatch.set(comment.matchId, []);
+      }
+      commentsByMatch.get(comment.matchId)!.push(comment);
+    }
+
     const setsByMatch = new Map<
       string,
       Map<
@@ -214,6 +237,7 @@ export const listMatches = async (c: Context<HonoContext>) => {
         ...matchData,
         participants: participantsByMatch.get(matchData.id) || [],
         sets,
+        comments: commentsByMatch.get(matchData.id) || [],
       };
     });
 

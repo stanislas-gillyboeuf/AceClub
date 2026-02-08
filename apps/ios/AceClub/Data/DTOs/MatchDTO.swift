@@ -84,6 +84,7 @@ struct MatchWithParticipantsDTO: Codable {
     let finishedAt: String?
     let participants: [MatchParticipantDTO]
     let sets: [SetDTO]?
+    let comments: [MatchCommentDTO]?
 }
 
 struct PaginationDTO: Codable {

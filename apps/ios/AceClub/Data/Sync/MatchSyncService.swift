@@ -393,6 +393,20 @@ final class MatchSyncService {
             }
         }
 
+        if let comments = dto.comments {
+            let apiCommentIds = Set(comments.map { $0.id })
+
+            for commentDTO in comments {
+                upsertComment(from: commentDTO, match: model)
+            }
+
+            for existingComment in model.comments {
+                if !apiCommentIds.contains(existingComment.id) {
+                    modelContext.delete(existingComment)
+                }
+            }
+        }
+
         // Force SwiftData to notify @Query observers by touching the model after all relationships are set
         model.lastSyncedAt = Date()
 

@@ -46,6 +46,10 @@ class LocationManager: NSObject, ObservableObject {
     var hasLocation: Bool {
         userLatitude != nil && userLongitude != nil
     }
+
+    var isPermissionGranted: Bool {
+        authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways
+    }
 }
 
 // MARK: - CLLocationManagerDelegate
