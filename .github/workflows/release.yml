@@ -36,6 +36,25 @@ jobs:
           git checkout main
           git pull origin main
           git merge origin/dev -m "chore: merge dev into main for release v${{ inputs.version }}"
+
+      - name: Bump iOS version
+        run: |
+          PBXPROJ="apps/ios/AceClub.xcodeproj/project.pbxproj"
+
+          # Update MARKETING_VERSION to the release version
+          sed -i "s/MARKETING_VERSION = [^;]*/MARKETING_VERSION = ${{ inputs.version }}/" "$PBXPROJ"
+
+          # Increment CURRENT_PROJECT_VERSION (build number)
+          CURRENT_BUILD=$(grep -m1 'CURRENT_PROJECT_VERSION' "$PBXPROJ" | sed 's/[^0-9]*//g')
+          NEW_BUILD=$((CURRENT_BUILD + 1))
+          sed -i "s/CURRENT_PROJECT_VERSION = [0-9]*/CURRENT_PROJECT_VERSION = $NEW_BUILD/g" "$PBXPROJ"
+
+          echo "📱 Version: ${{ inputs.version }} (build $NEW_BUILD)"
+
+      - name: Commit version bump
+        run: |
+          git add apps/ios/AceClub.xcodeproj/project.pbxproj
+          git commit -m "chore: bump iOS version to ${{ inputs.version }}"
           git push origin main
 
       - name: Create and push tag
