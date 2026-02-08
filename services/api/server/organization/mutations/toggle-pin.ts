@@ -12,23 +12,27 @@ export const togglePin = async (c: Context<HonoContext>) => {
     // @ts-ignore
     const validated = c.req.valid("json") as z.infer<typeof togglePinValidator>;
 
-    const [membership] = await db
-      .select({ role: member.role })
-      .from(member)
-      .where(
-        and(
-          eq(member.organizationId, validated.organizationId),
-          eq(member.userId, authUser!.id),
-          inArray(member.role, ["admin", "owner"]),
-        ),
-      )
-      .limit(1);
+    const isPlatformAdmin = authUser!.role === "admin";
 
-    if (!membership) {
-      return c.json(
-        { error: "Forbidden", message: "You must be an admin or owner of this organization" },
-        403,
-      );
+    if (!isPlatformAdmin) {
+      const [membership] = await db
+        .select({ role: member.role })
+        .from(member)
+        .where(
+          and(
+            eq(member.organizationId, validated.organizationId),
+            eq(member.userId, authUser!.id),
+            inArray(member.role, ["admin", "owner"]),
+          ),
+        )
+        .limit(1);
+
+      if (!membership) {
+        return c.json(
+          { error: "Forbidden", message: "You must be an admin or owner of this organization" },
+          403,
+        );
+      }
     }
 
     await db
