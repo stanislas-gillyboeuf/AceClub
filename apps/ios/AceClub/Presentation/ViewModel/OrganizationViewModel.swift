@@ -16,6 +16,8 @@ class OrganizationViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var selectedLogo: UIImage?
     @Published var isUploadingLogo = false
+    @Published var organizationPin: String?
+    @Published var isPinEnabled: Bool = false
 
     // MARK: - UseCases
     private let listOrganizationsUseCase = ListOrganizationsUseCase()
@@ -30,6 +32,9 @@ class OrganizationViewModel: ObservableObject {
     private let leaveOrganizationUseCase = LeaveOrganizationUseCase()
     private let uploadOrgLogoUseCase = UploadOrgLogoUseCase()
     private let updateOrganizationUseCase = UpdateOrganizationUseCase()
+    private let getOrganizationPinUseCase = GetOrganizationPinUseCase()
+    private let toggleOrganizationPinUseCase = ToggleOrganizationPinUseCase()
+    private let regenerateOrganizationPinUseCase = RegenerateOrganizationPinUseCase()
 
     // MARK: - Repository
     private let organizationRepository = OrganizationRepository()
@@ -339,6 +344,41 @@ class OrganizationViewModel: ObservableObject {
         }
 
         return updatedOrg
+    }
+
+    // MARK: - PIN Management
+
+    func loadOrganizationPin(organizationId: String) async {
+        do {
+            let pinData = try await getOrganizationPinUseCase.execute(organizationId: organizationId)
+            organizationPin = pinData.pin
+            isPinEnabled = pinData.pinEnabled
+        } catch {
+            // Silently fail - PIN data is only for admins
+            organizationPin = nil
+            isPinEnabled = false
+        }
+    }
+
+    func togglePin(organizationId: String) async {
+        let newEnabled = !isPinEnabled
+        do {
+            try await toggleOrganizationPinUseCase.execute(organizationId: organizationId, enabled: newEnabled)
+            // Reload full PIN data to get current pin + pinEnabled state
+            await loadOrganizationPin(organizationId: organizationId)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func regeneratePin(organizationId: String) async {
+        do {
+            let pinData = try await regenerateOrganizationPinUseCase.execute(organizationId: organizationId)
+            organizationPin = pinData.pin
+            isPinEnabled = pinData.pinEnabled
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     // MARK: - Computed Properties

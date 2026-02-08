@@ -16,12 +16,14 @@ export const cleanupExpiredIntentsTask = schedules.task({
 
     const result = await cleanupExpiredMatchIntents();
 
-    console.log(`[TRIGGER] Cleanup completed: ${result.deletedIntents} intents, ${result.deletedSwipes} swipes, ${result.deletedRequests} requests`);
+    console.log(
+      `[TRIGGER] Cleanup completed: ${result.deletedIntents} intents, ${result.deletedSwipes} swipes, ${result.deletedRequests} requests`,
+    );
 
     return {
       success: true,
       ...result,
-      timestamp: payload.timestamp
+      timestamp: payload.timestamp,
     };
   },
 });

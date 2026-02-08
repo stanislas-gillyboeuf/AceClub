@@ -26,12 +26,7 @@ export const updateComment = async (c: Context<HonoContext>) => {
     const [existingComment] = await db
       .select()
       .from(matchComment)
-      .where(
-        and(
-          eq(matchComment.matchId, matchId),
-          eq(matchComment.userId, currentUser.id),
-        ),
-      )
+      .where(and(eq(matchComment.matchId, matchId), eq(matchComment.userId, currentUser.id)))
       .limit(1);
 
     if (!existingComment) {

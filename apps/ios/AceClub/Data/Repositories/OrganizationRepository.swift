@@ -43,7 +43,8 @@ class OrganizationRepository: OrganizationRepositoryProtocol {
             metadata: fullOrgDTO.metadata,
             address: fullOrgDTO.address,
             latitude: fullOrgDTO.latitude,
-            longitude: fullOrgDTO.longitude
+            longitude: fullOrgDTO.longitude,
+            pinEnabled: false
         )
         let members = MemberMapper.map(memberDTOs: fullOrgDTO.members)
         return (organization, members)
@@ -108,6 +109,18 @@ class OrganizationRepository: OrganizationRepositoryProtocol {
             activeMembers: statsDTO.activeMembers,
             activityRate: statsDTO.activityRate
         )
+    }
+
+    func getOrganizationPin(organizationId: String) async throws -> OrganizationPinDTO {
+        return try await dataSource.getOrganizationPin(organizationId: organizationId)
+    }
+
+    func toggleOrganizationPin(organizationId: String, enabled: Bool) async throws {
+        try await dataSource.toggleOrganizationPin(organizationId: organizationId, enabled: enabled)
+    }
+
+    func regenerateOrganizationPin(organizationId: String) async throws -> OrganizationPinDTO {
+        return try await dataSource.regenerateOrganizationPin(organizationId: organizationId)
     }
 
     func requestClub(name: String, city: String) async throws -> ClubRequestResult {

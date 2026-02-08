@@ -20,12 +20,7 @@ export const deleteComment = async (c: Context<HonoContext>) => {
     // Find and delete the user's comment for this match
     const [deletedComment] = await db
       .delete(matchComment)
-      .where(
-        and(
-          eq(matchComment.matchId, matchId),
-          eq(matchComment.userId, currentUser.id),
-        ),
-      )
+      .where(and(eq(matchComment.matchId, matchId), eq(matchComment.userId, currentUser.id)))
       .returning({ id: matchComment.id });
 
     if (!deletedComment) {

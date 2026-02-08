@@ -11,6 +11,7 @@ struct OrganizationDTO: Codable {
     let address: String?
     let latitude: Double?
     let longitude: Double?
+    let pinEnabled: Bool?
 }
 
 // MARK: - Full Organization Response
@@ -76,4 +77,11 @@ struct ClubRequestResponseDTO: Codable {
     let message: String
     let requestCount: Int
     let status: String
+}
+
+// MARK: - Organization PIN
+
+struct OrganizationPinDTO: Codable {
+    let pin: String?
+    let pinEnabled: Bool
 }

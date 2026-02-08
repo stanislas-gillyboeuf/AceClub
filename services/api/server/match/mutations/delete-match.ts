@@ -22,18 +22,12 @@ export const deleteMatch = async (c: Context<HonoContext>) => {
       .select({ id: matchParticipant.id })
       .from(matchParticipant)
       .where(
-        and(
-          eq(matchParticipant.matchId, matchId),
-          eq(matchParticipant.userId, currentUser.id)
-        )
+        and(eq(matchParticipant.matchId, matchId), eq(matchParticipant.userId, currentUser.id)),
       )
       .limit(1);
 
     if (!participant) {
-      return c.json(
-        { error: "Only match participants can delete the match" },
-        403
-      );
+      return c.json({ error: "Only match participants can delete the match" }, 403);
     }
 
     // Delete match and all related data in an optimized transaction

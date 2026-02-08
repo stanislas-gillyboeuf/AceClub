@@ -23,9 +23,7 @@ export const updateOrganization = async (c: Context<HonoContext>) => {
 
   // Geocode address if it changed
   if (validated.data.address !== undefined) {
-    const coords = validated.data.address
-      ? await geocodeAddress(validated.data.address)
-      : null;
+    const coords = validated.data.address ? await geocodeAddress(validated.data.address) : null;
     await db
       .update(organization)
       .set({

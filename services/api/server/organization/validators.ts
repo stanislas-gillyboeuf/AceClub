@@ -100,3 +100,16 @@ export const requestClubValidator = z.object({
   name: z.string().min(1, "Le nom du club est requis"),
   city: z.string().min(1, "La ville est requise"),
 });
+
+export const togglePinValidator = z.object({
+  organizationId: z.string(),
+  enabled: z.boolean(),
+});
+
+export const regeneratePinValidator = z.object({
+  organizationId: z.string(),
+});
+
+export const getPinValidator = z.object({
+  organizationId: z.string(),
+});

@@ -94,6 +94,8 @@ export async function seedLevels(
     await db.insert(acesTransaction).values(transactionRows);
   }
 
-  console.log(`  Inserted ${levelRows.length} user levels and ${transactionRows.length} aces transactions`);
+  console.log(
+    `  Inserted ${levelRows.length} user levels and ${transactionRows.length} aces transactions`,
+  );
   return { userLevels };
 }

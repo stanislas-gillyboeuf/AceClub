@@ -7,19 +7,16 @@ export const conversationRelations = relations(conversation, ({ many }) => ({
   messages: many(message),
 }));
 
-export const conversationParticipantRelations = relations(
-  conversationParticipant,
-  ({ one }) => ({
-    conversation: one(conversation, {
-      fields: [conversationParticipant.conversationId],
-      references: [conversation.id],
-    }),
-    user: one(user, {
-      fields: [conversationParticipant.userId],
-      references: [user.id],
-    }),
-  })
-);
+export const conversationParticipantRelations = relations(conversationParticipant, ({ one }) => ({
+  conversation: one(conversation, {
+    fields: [conversationParticipant.conversationId],
+    references: [conversation.id],
+  }),
+  user: one(user, {
+    fields: [conversationParticipant.userId],
+    references: [user.id],
+  }),
+}));
 
 export const messageRelations = relations(message, ({ one }) => ({
   conversation: one(conversation, {

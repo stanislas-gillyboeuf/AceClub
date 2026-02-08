@@ -10,6 +10,7 @@ struct Organization: Identifiable {
     let address: String?
     let latitude: Double?
     let longitude: Double?
+    let pinEnabled: Bool
 
     var logoURL: URL? {
         guard let logo, !logo.isEmpty else { return nil }

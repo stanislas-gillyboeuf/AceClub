@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createOrganizationValidator } from "../validators";
 import { auth } from "../../../auth";
 import { geocodeAddress } from "../services/geocoding";
+import { generatePin } from "../services/pin";
 import { db } from "../../../db";
 import { organization } from "../../../db/schema/auth/schema";
 import { eq } from "drizzle-orm";
@@ -25,17 +26,23 @@ export const createOrganization = async (c: Context<HonoContext>) => {
       headers: c.req.raw.headers,
     });
 
-    if (validated.address && createdOrganization.id) {
-      const coords = await geocodeAddress(validated.address);
+    if (createdOrganization.id) {
+      const updateData: Record<string, unknown> = {
+        pin: generatePin(),
+      };
+
+      if (validated.address) {
+        const coords = await geocodeAddress(validated.address);
+        updateData.address = validated.address;
+        if (coords) {
+          updateData.latitude = coords.latitude;
+          updateData.longitude = coords.longitude;
+        }
+      }
+
       await db
         .update(organization)
-        .set({
-          address: validated.address,
-          ...(coords && {
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-          }),
-        })
+        .set(updateData)
         .where(eq(organization.id, createdOrganization.id));
     }
 

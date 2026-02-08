@@ -4,9 +4,7 @@ import { user } from "../../db/schema/index.js";
 import type { Database } from "./context.js";
 import { SEED_COUNTS } from "./context.js";
 
-export async function seedUsers(
-  db: Database,
-): Promise<{
+export async function seedUsers(db: Database): Promise<{
   userIds: string[];
   userRows: Map<string, { name: string; image: string | null }>;
 }> {

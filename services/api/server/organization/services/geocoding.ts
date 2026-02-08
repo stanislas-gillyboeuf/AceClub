@@ -3,9 +3,7 @@ interface GeocodingResult {
   longitude: number;
 }
 
-export async function geocodeAddress(
-  address: string,
-): Promise<GeocodingResult | null> {
+export async function geocodeAddress(address: string): Promise<GeocodingResult | null> {
   const query = encodeURIComponent(address);
   const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`;
 
@@ -17,9 +15,7 @@ export async function geocodeAddress(
     });
 
     if (!response.ok) {
-      console.error(
-        `[GEOCODING] Nominatim API error: ${response.status} ${response.statusText}`,
-      );
+      console.error(`[GEOCODING] Nominatim API error: ${response.status} ${response.statusText}`);
       return null;
     }
 

@@ -12,14 +12,12 @@ export const updateMonthlyBadgesTask = schedules.task({
     timezone: "Europe/Paris",
   },
   run: async (payload) => {
-    console.log(
-      `[TRIGGER] Starting update-monthly-badges at ${payload.timestamp.toISOString()}`
-    );
+    console.log(`[TRIGGER] Starting update-monthly-badges at ${payload.timestamp.toISOString()}`);
 
     const result = await updateMonthlyBadgesForAllUsers();
 
     console.log(
-      `[TRIGGER] Completed update-monthly-badges: ${result.processed} users processed, ${result.errors} errors`
+      `[TRIGGER] Completed update-monthly-badges: ${result.processed} users processed, ${result.errors} errors`,
     );
 
     return {

@@ -11,9 +11,7 @@ export const listNotifications = async (c: Context<HonoContext>) => {
       return c.json({ error: "User not authenticated" }, 401);
     }
 
-    const { limit, offset, unreadOnly } = c.req.valid(
-      "query" as never,
-    ) as unknown as {
+    const { limit, offset, unreadOnly } = c.req.valid("query" as never) as unknown as {
       limit: number;
       offset: number;
       unreadOnly: boolean;
@@ -60,9 +58,7 @@ export const getUnreadCount = async (c: Context<HonoContext>) => {
     const [{ count }] = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(notification)
-      .where(
-        and(eq(notification.userId, userId), eq(notification.isRead, false)),
-      );
+      .where(and(eq(notification.userId, userId), eq(notification.isRead, false)));
 
     return c.json({ unreadCount: count });
   } catch (error) {

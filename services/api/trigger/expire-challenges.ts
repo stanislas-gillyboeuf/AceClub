@@ -21,9 +21,7 @@ export const expireChallengesTask = schedules.task({
     const result = await db
       .update(userChallenge)
       .set({ status: "expired" })
-      .where(
-        and(eq(userChallenge.status, "active"), lt(userChallenge.expiresAt, now))
-      )
+      .where(and(eq(userChallenge.status, "active"), lt(userChallenge.expiresAt, now)))
       .returning({ id: userChallenge.id });
 
     console.log(`[TRIGGER] Marked ${result.length} challenges as expired`);
@@ -31,7 +29,7 @@ export const expireChallengesTask = schedules.task({
     return {
       success: true,
       expiredCount: result.length,
-      timestamp: payload.timestamp
+      timestamp: payload.timestamp,
     };
   },
 });

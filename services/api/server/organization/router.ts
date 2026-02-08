@@ -14,6 +14,8 @@ import {
   rejectInvitation,
   cancelInvitation,
   requestClub,
+  togglePin,
+  regeneratePin,
 } from "./mutations";
 import {
   createOrganizationValidator,
@@ -44,8 +46,16 @@ import {
   getInvitation,
   searchOrganizations,
   getOrganizationStats,
+  getPin,
 } from "./queries";
-import { searchOrganizationsValidator, getOrganizationStatsValidator, requestClubValidator } from "./validators";
+import {
+  searchOrganizationsValidator,
+  getOrganizationStatsValidator,
+  requestClubValidator,
+  togglePinValidator,
+  regeneratePinValidator,
+  getPinValidator,
+} from "./validators";
 
 export const organizationRouter = new Hono<HonoContext>();
 
@@ -136,10 +146,15 @@ organizationRouter.post(
   cancelInvitation,
 );
 
+organizationRouter.post("/request-club", zValidator("json", requestClubValidator), requestClub);
+
+// PIN management (org admins/owners)
+organizationRouter.get("/get-pin", zValidator("query", getPinValidator), getPin);
+organizationRouter.post("/toggle-pin", zValidator("json", togglePinValidator), togglePin);
 organizationRouter.post(
-  "/request-club",
-  zValidator("json", requestClubValidator),
-  requestClub,
+  "/regenerate-pin",
+  zValidator("json", regeneratePinValidator),
+  regeneratePin,
 );
 
 // Admin-only routes

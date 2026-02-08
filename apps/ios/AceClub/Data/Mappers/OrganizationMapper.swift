@@ -11,7 +11,8 @@ class OrganizationMapper {
             metadata: organizationDTO.metadata,
             address: organizationDTO.address,
             latitude: organizationDTO.latitude,
-            longitude: organizationDTO.longitude
+            longitude: organizationDTO.longitude,
+            pinEnabled: organizationDTO.pinEnabled ?? false
         )
     }
 

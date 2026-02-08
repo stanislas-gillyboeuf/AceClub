@@ -71,7 +71,7 @@ class UserAPIDataSource {
         }
     }
 
-    func completeOnboarding(organizationId: String, sport: String, skillLevel: String, phoneNumber: String) async throws -> UserDTO {
+    func completeOnboarding(organizationId: String, sport: String, skillLevel: String, phoneNumber: String, pin: String? = nil) async throws -> UserDTO {
         guard let url = URL(string: "\(Config.apiBaseURL)/user/complete-onboarding") else {
             throw UserAPIDateSourceError.invalidURL
         }
@@ -80,7 +80,8 @@ class UserAPIDataSource {
             organizationId: organizationId,
             sport: sport,
             skillLevel: skillLevel,
-            phoneNumber: phoneNumber
+            phoneNumber: phoneNumber,
+            pin: pin
         )
         let body = try JSONEncoder().encode(requestBody)
         let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: body)
@@ -128,7 +129,8 @@ class UserAPIDataSource {
         phoneNumber: String?,
         organizationId: String?,
         sport: String?,
-        skillLevel: String?
+        skillLevel: String?,
+        pin: String? = nil
     ) async throws -> UserDTO {
         guard let url = URL(string: "\(Config.apiBaseURL)/user/profile") else {
             throw UserAPIDateSourceError.invalidURL
@@ -140,7 +142,8 @@ class UserAPIDataSource {
             phoneNumber: phoneNumber,
             organizationId: organizationId,
             sport: sport,
-            skillLevel: skillLevel
+            skillLevel: skillLevel,
+            pin: pin
         )
         let body = try JSONEncoder().encode(requestBody)
         let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "PUT", body: body)

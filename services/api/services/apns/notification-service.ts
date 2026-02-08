@@ -1,11 +1,7 @@
 import { db } from "../../db";
 import { deviceToken, notification } from "../../db/schema";
 import { eq, and } from "drizzle-orm";
-import {
-  sendPushNotification,
-  isInvalidTokenError,
-  type PushNotificationPayload,
-} from "./index";
+import { sendPushNotification, isInvalidTokenError, type PushNotificationPayload } from "./index";
 
 export type NotificationType =
   | "match_request_accepted"
@@ -15,7 +11,6 @@ export type NotificationType =
   | "streak_warning"
   | "challenge_assigned"
   | "new_message";
-
 
 interface SendNotificationParams {
   userId: string;
@@ -27,11 +22,8 @@ interface SendNotificationParams {
   data?: Record<string, string>;
 }
 
-export async function sendNotificationToUser(
-  params: SendNotificationParams,
-): Promise<void> {
-  const { userId, type, title, body, referenceId, referenceType, data } =
-    params;
+export async function sendNotificationToUser(params: SendNotificationParams): Promise<void> {
+  const { userId, type, title, body, referenceId, referenceType, data } = params;
 
   console.log(`[Notification] Sending notification to user ${userId}`);
   console.log(`[Notification] Type: ${type}, Title: ${title}`);

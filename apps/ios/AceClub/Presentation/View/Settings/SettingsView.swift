@@ -548,12 +548,22 @@ struct ClubSelectionView: View {
                         LazyVStack(spacing: 0) {
                             ForEach(Array(viewModel.organizations.enumerated()), id: \.element.id) { index, org in
                                 Button {
-                                    viewModel.selectedOrganization = org
-                                    dismiss()
+                                    if org.pinEnabled {
+                                        viewModel.selectOrganization(org)
+                                    } else {
+                                        viewModel.selectedOrganization = org
+                                        dismiss()
+                                    }
                                 } label: {
                                     HStack {
                                         Text(org.name)
                                             .foregroundStyle(.primary)
+
+                                        if org.pinEnabled {
+                                            Image(systemName: "lock.fill")
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                        }
 
                                         Spacer()
 
@@ -596,6 +606,17 @@ struct ClubSelectionView: View {
             }
             .sheet(isPresented: $viewModel.showRequestClubSheet) {
                 SettingsRequestClubSheet(viewModel: viewModel)
+            }
+            .sheet(isPresented: $viewModel.showPinSheet) {
+                PinEntrySheet(
+                    onValidate: { pinValue in
+                        viewModel.validatePin(pinValue)
+                        dismiss()
+                    },
+                    onDismiss: {
+                        viewModel.cancelPin()
+                    }
+                )
             }
         }
         .presentationBackground(.regularMaterial)

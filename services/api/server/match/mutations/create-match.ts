@@ -4,10 +4,7 @@ import { z } from "zod";
 import { createMatchValidator } from "../validators";
 import { db } from "../../../db";
 import { match, matchParticipant, set, setScore } from "../../../db/schema/match/schema";
-import {
-  conversation,
-  conversationParticipant,
-} from "../../../db/schema/conversation/schema";
+import { conversation, conversationParticipant } from "../../../db/schema/conversation/schema";
 import { user } from "../../../db/schema/auth/schema";
 import { NewSetScore } from "../../../db/schema/match/type";
 import { and, eq, inArray, sql } from "drizzle-orm";
@@ -122,7 +119,6 @@ export const createMatch = async (c: Context<HonoContext>) => {
       }
     }
 
-
     const result = await db.transaction(async (tx) => {
       // Check for existing conversation between the two participants
       const userIds = validated.participants.map((p) => p.userId);
@@ -134,8 +130,8 @@ export const createMatch = async (c: Context<HonoContext>) => {
             eq(conversation.type, "match"),
             sql`EXISTS (SELECT 1 FROM conversation_participant WHERE conversation_id = ${conversation.id} AND user_id = ${userIds[0]})`,
             sql`EXISTS (SELECT 1 FROM conversation_participant WHERE conversation_id = ${conversation.id} AND user_id = ${userIds[1]})`,
-            sql`(SELECT COUNT(*) FROM conversation_participant WHERE conversation_id = ${conversation.id}) = 2`
-          )
+            sql`(SELECT COUNT(*) FROM conversation_participant WHERE conversation_id = ${conversation.id}) = 2`,
+          ),
         )
         .limit(1);
 
@@ -160,7 +156,7 @@ export const createMatch = async (c: Context<HonoContext>) => {
           validated.participants.map((participant) => ({
             conversationId: conversationId,
             userId: participant.userId,
-          }))
+          })),
         );
       }
 
@@ -296,7 +292,7 @@ export const createMatch = async (c: Context<HonoContext>) => {
         409,
       );
     }
-    
+
     return c.json(
       {
         error: "Internal server error",

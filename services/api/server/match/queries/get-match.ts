@@ -1,7 +1,13 @@
 import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { match, matchParticipant, set, setScore, matchComment } from "../../../db/schema/match/schema";
+import {
+  match,
+  matchParticipant,
+  set,
+  setScore,
+  matchComment,
+} from "../../../db/schema/match/schema";
 import { user } from "../../../db/schema/auth/schema";
 import { eq } from "drizzle-orm";
 

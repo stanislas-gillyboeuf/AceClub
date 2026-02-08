@@ -50,6 +50,7 @@ export const completeOnboardingValidator = z
       .refine((value) => value.replace(/\D/g, "").length >= 8, {
         message: "Invalid phone number",
       }),
+    pin: z.string().length(4).optional(),
   })
   .refine(
     (data) => {
@@ -74,6 +75,7 @@ export const updateProfileValidator = z
     organizationId: z.string().min(1, "Organization ID must not be empty").optional(),
     sport: z.enum(["tennis", "padel"]).optional(),
     skillLevel: z.string().min(1, "Skill level must not be empty").optional(),
+    pin: z.string().length(4).optional(),
   })
   .refine(
     (data) => {

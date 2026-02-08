@@ -27,9 +27,7 @@ export const getGlobalLeaderboard = async (c: Context<HonoContext>) => {
     .limit(limit)
     .offset(offset);
 
-  const [{ count }] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(user);
+  const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(user);
 
   return c.json({
     leaderboard: results.map((r, index) => ({

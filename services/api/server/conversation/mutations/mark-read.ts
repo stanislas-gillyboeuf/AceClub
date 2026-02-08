@@ -20,8 +20,8 @@ export const markRead = async (c: Context<HonoContext>) => {
     .where(
       and(
         eq(conversationParticipant.conversationId, conversationId),
-        eq(conversationParticipant.userId, currentUser.id)
-      )
+        eq(conversationParticipant.userId, currentUser.id),
+      ),
     )
     .limit(1);
 
@@ -48,8 +48,8 @@ export const markRead = async (c: Context<HonoContext>) => {
       .where(
         and(
           eq(conversationParticipant.conversationId, conversationId),
-          eq(conversationParticipant.userId, currentUser.id)
-        )
+          eq(conversationParticipant.userId, currentUser.id),
+        ),
       );
 
     const readPayload = {
@@ -66,7 +66,7 @@ export const markRead = async (c: Context<HonoContext>) => {
           JSON.stringify({
             userId: participant.userId,
             payload: readPayload,
-          })
+          }),
         );
       }
     }

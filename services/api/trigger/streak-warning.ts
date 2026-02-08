@@ -7,9 +7,7 @@ import { sendNotificationToUser } from "../services/apns/notification-service";
 function getCurrentWeekAndYear(): { week: number; year: number } {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
-  const days = Math.floor(
-    (now.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000)
-  );
+  const days = Math.floor((now.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
   const weekNumber = Math.ceil((days + startOfYear.getDay() + 1) / 7);
   return { week: weekNumber, year: now.getFullYear() };
 }
@@ -44,9 +42,9 @@ export const streakWarningTask = schedules.task({
             isNull(userStreak.lastActiveWeek),
             isNull(userStreak.lastActiveYear),
             ne(userStreak.lastActiveWeek, currentWeek),
-            ne(userStreak.lastActiveYear, currentYear)
-          )
-        )
+            ne(userStreak.lastActiveYear, currentYear),
+          ),
+        ),
       );
 
     console.log(`[TRIGGER] Found ${usersWithStreak.length} users at risk of losing streak`);
@@ -61,7 +59,7 @@ export const streakWarningTask = schedules.task({
           title: "Ton streak est en danger 🔥",
           body: `Psss, t'as pas encore joué cette semaine ! Tu risques de perdre ta série de ${streak.currentStreak} semaines`,
           referenceId: streak.userId,
-          referenceType: "user"
+          referenceType: "user",
         });
         notificationsSent++;
       } catch (error) {
@@ -75,7 +73,7 @@ export const streakWarningTask = schedules.task({
       success: true,
       usersAtRisk: usersWithStreak.length,
       notificationsSent,
-      timestamp: payload.timestamp
+      timestamp: payload.timestamp,
     };
   },
 });

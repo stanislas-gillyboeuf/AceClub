@@ -39,10 +39,7 @@ export const getMyBadges = async (c: Context<HonoContext>) => {
 export const getAllBadges = async (c: Context<HonoContext>) => {
   const authUser = c.get("user");
 
-  const allBadges = await db
-    .select()
-    .from(badge)
-    .where(eq(badge.isActive, true));
+  const allBadges = await db.select().from(badge).where(eq(badge.isActive, true));
 
   const userBadges = await db
     .select({ badgeId: userBadge.badgeId, unlockedAt: userBadge.unlockedAt })

@@ -83,6 +83,8 @@ export interface Organization {
   address: string | null
   latitude: number | null
   longitude: number | null
+  pin: string | null
+  pinEnabled: boolean
 }
 
 export interface OrganizationMember {

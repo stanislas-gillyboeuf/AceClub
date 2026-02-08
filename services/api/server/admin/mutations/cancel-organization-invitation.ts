@@ -6,9 +6,7 @@ import { and, eq } from "drizzle-orm";
 import { cancelOrganizationInvitationAdminValidator } from "../validators";
 import { z } from "zod";
 
-export const cancelOrganizationInvitation = async (
-  c: Context<HonoContext>,
-) => {
+export const cancelOrganizationInvitation = async (c: Context<HonoContext>) => {
   // @ts-ignore
   const validated = c.req.valid("json") as z.infer<
     typeof cancelOrganizationInvitationAdminValidator
@@ -17,12 +15,7 @@ export const cancelOrganizationInvitation = async (
   const [existing] = await db
     .select()
     .from(invitation)
-    .where(
-      and(
-        eq(invitation.id, validated.invitationId),
-        eq(invitation.status, "pending"),
-      ),
-    )
+    .where(and(eq(invitation.id, validated.invitationId), eq(invitation.status, "pending")))
     .limit(1);
 
   if (!existing) {

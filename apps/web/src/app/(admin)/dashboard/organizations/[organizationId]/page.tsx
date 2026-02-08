@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Pencil, Trash2, Plus, X, Eye, EyeOff, MapPin } from "lucide-react"
+import { ArrowLeft, Pencil, Trash2, Plus, X, Eye, EyeOff, MapPin, Lock, LockOpen, RefreshCw, Copy, Check } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -28,7 +28,7 @@ import {
   useOrganizationMembers,
   useOrganizationInvitations,
 } from "@/hooks/use-admin-queries"
-import { useCancelInvitation, useUpdateOrganization } from "@/hooks/use-admin-mutations"
+import { useCancelInvitation, useUpdateOrganization, useToggleOrganizationPin, useRegenerateOrganizationPin } from "@/hooks/use-admin-mutations"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { OrganizationMember, Invitation } from "@/types/admin"
 
@@ -146,6 +146,8 @@ export default function OrganizationDetailPage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
+  const [pinVisible, setPinVisible] = useState(false)
+  const [pinCopied, setPinCopied] = useState(false)
 
   const { data: orgsData, isLoading: orgLoading } = useAdminOrganizations({
     searchValue: undefined,
@@ -167,6 +169,16 @@ export default function OrganizationDetailPage() {
 
   const cancelInvitationMutation = useCancelInvitation()
   const updateOrganizationMutation = useUpdateOrganization()
+  const togglePinMutation = useToggleOrganizationPin()
+  const regeneratePinMutation = useRegenerateOrganizationPin()
+
+  const handleCopyPin = useCallback(() => {
+    if (org?.pin) {
+      navigator.clipboard.writeText(org.pin)
+      setPinCopied(true)
+      setTimeout(() => setPinCopied(false), 2000)
+    }
+  }, [org?.pin])
 
   const isHidden = (() => {
     if (!org?.metadata) return false
@@ -309,6 +321,82 @@ export default function OrganizationDetailPage() {
                 <Trash2 className="mr-2 h-3 w-3" />
                 Supprimer
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {org && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {org.pinEnabled ? (
+                  <Lock className="h-5 w-5 text-green-600" />
+                ) : (
+                  <LockOpen className="h-5 w-5 text-muted-foreground" />
+                )}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold">Code PIN</h3>
+                    <Badge variant={org.pinEnabled ? "default" : "secondary"}>
+                      {org.pinEnabled ? "Activ\u00e9" : "D\u00e9sactiv\u00e9"}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Les membres doivent saisir ce code pour rejoindre le club
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {org.pin && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-2xl font-bold tracking-[0.3em]">
+                      {pinVisible ? org.pin : "\u2022\u2022\u2022\u2022"}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setPinVisible(!pinVisible)}
+                      title={pinVisible ? "Masquer" : "Afficher"}
+                    >
+                      {pinVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleCopyPin}
+                      title="Copier"
+                    >
+                      {pinCopied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    togglePinMutation.mutate({
+                      organizationId: org.id,
+                      enabled: !org.pinEnabled,
+                    })
+                  }
+                  disabled={togglePinMutation.isPending}
+                >
+                  {org.pinEnabled ? "D\u00e9sactiver" : "Activer"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    regeneratePinMutation.mutate({ organizationId: org.id })
+                  }
+                  disabled={regeneratePinMutation.isPending}
+                >
+                  <RefreshCw className="mr-2 h-3 w-3" />
+                  R\u00e9g\u00e9n\u00e9rer
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

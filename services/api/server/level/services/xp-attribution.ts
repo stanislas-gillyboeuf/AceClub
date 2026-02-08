@@ -7,7 +7,7 @@ import type { MatchParticipant } from "../../../db/schema/match/type";
 export async function attributeMatchAces(
   matchId: string,
   participants: MatchParticipant[],
-  multiplier: number = 1.0
+  multiplier: number = 1.0,
 ): Promise<void> {
   for (const participant of participants) {
     const userId = participant.userId;
@@ -41,13 +41,19 @@ export async function attributeMatchAces(
 async function addAcesTransaction(
   userId: string,
   data: {
-    type: "match_participation" | "match_victory" | "challenge_completed" | "streak_bonus" | "level_up_bonus" | "badge_bonus";
+    type:
+      | "match_participation"
+      | "match_victory"
+      | "challenge_completed"
+      | "streak_bonus"
+      | "level_up_bonus"
+      | "badge_bonus";
     amount: number;
     referenceId?: string;
     referenceType?: string;
     multiplier?: number;
     description?: string;
-  }
+  },
 ): Promise<void> {
   await db.insert(acesTransaction).values({
     userId,
@@ -59,11 +65,7 @@ async function addAcesTransaction(
     description: data.description ?? null,
   });
 
-  const [existing] = await db
-    .select()
-    .from(userLevel)
-    .where(eq(userLevel.userId, userId))
-    .limit(1);
+  const [existing] = await db.select().from(userLevel).where(eq(userLevel.userId, userId)).limit(1);
 
   if (existing) {
     await db
