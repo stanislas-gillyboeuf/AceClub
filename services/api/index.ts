@@ -33,7 +33,7 @@ app.use(
         return origin;
       }
 
-      if (origin.endsWith(".aceclub.app") || origin === "https://aceclub.app") {
+      if (origin.endsWith(".ace-club.app") || origin === "https://ace-club.app") {
         return origin;
       }
 
