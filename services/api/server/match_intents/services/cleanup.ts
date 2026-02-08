@@ -21,12 +21,7 @@ export async function cleanupExpiredMatchIntents(): Promise<{
   const expiredIntents = await db
     .select({ id: matchIntent.id })
     .from(matchIntent)
-    .where(
-      and(
-        lt(matchIntent.date, now),
-        eq(matchIntent.status, "pending")
-      )
-    );
+    .where(and(lt(matchIntent.date, now), eq(matchIntent.status, "pending")));
 
   if (expiredIntents.length === 0) {
     console.log("[CLEANUP] No expired match intents found");
@@ -60,7 +55,7 @@ export async function cleanupExpiredMatchIntents(): Promise<{
   }
 
   console.log(
-    `[CLEANUP] Deleted ${expiredIds.length} intents, ${deletedSwipes} swipes, ${deletedRequests} requests`
+    `[CLEANUP] Deleted ${expiredIds.length} intents, ${deletedSwipes} swipes, ${deletedRequests} requests`,
   );
 
   return {
@@ -80,12 +75,7 @@ export async function markExpiredMatchIntentsAsRejected(): Promise<number> {
   const result = await db
     .update(matchIntent)
     .set({ status: "rejected" })
-    .where(
-      and(
-        lt(matchIntent.date, now),
-        eq(matchIntent.status, "pending")
-      )
-    )
+    .where(and(lt(matchIntent.date, now), eq(matchIntent.status, "pending")))
     .returning({ id: matchIntent.id });
 
   console.log(`[CLEANUP] Marked ${result.length} expired match intents as rejected`);

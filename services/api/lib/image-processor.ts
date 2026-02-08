@@ -53,9 +53,7 @@ export async function processImage(
   return pipeline.webp({ quality }).toBuffer();
 }
 
-export async function processProfileImage(
-  input: Buffer | ArrayBuffer,
-): Promise<Buffer> {
+export async function processProfileImage(input: Buffer | ArrayBuffer): Promise<Buffer> {
   return processImage(input, {
     maxWidth: 400,
     maxHeight: 400,
@@ -64,9 +62,7 @@ export async function processProfileImage(
   });
 }
 
-export async function processOrganizationLogo(
-  input: Buffer | ArrayBuffer,
-): Promise<Buffer> {
+export async function processOrganizationLogo(input: Buffer | ArrayBuffer): Promise<Buffer> {
   return processImage(input, {
     maxWidth: 512,
     maxHeight: 512,

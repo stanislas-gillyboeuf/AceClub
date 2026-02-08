@@ -16,9 +16,7 @@ export const searchOrganizations = async (c: Context<HonoContext>) => {
       sql`${organization.metadata} IS NULL`,
       not(sql`${organization.metadata} LIKE '%"hidden":true%'`),
     );
-    const whereClause = query
-      ? and(ilike(organization.name, `%${query}%`), notHidden)
-      : notHidden;
+    const whereClause = query ? and(ilike(organization.name, `%${query}%`), notHidden) : notHidden;
 
     const selectFields = {
       id: organization.id,
@@ -28,10 +26,7 @@ export const searchOrganizations = async (c: Context<HonoContext>) => {
       pinEnabled: organization.pinEnabled,
     };
 
-    const organizationsQuery = db
-      .select(selectFields)
-      .from(organization)
-      .where(whereClause);
+    const organizationsQuery = db.select(selectFields).from(organization).where(whereClause);
 
     const totalQuery = db
       .select({ count: sql<number>`count(*)` })

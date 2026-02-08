@@ -32,7 +32,7 @@ function getISOWeekInfo(date: Date): { week: number; year: number } {
 
 function calculateWeeksDifference(
   prev: { week: number; year: number },
-  curr: { week: number; year: number }
+  curr: { week: number; year: number },
 ): number {
   if (prev.year === curr.year) {
     return curr.week - prev.week;
@@ -49,17 +49,13 @@ export interface UpdateStreakResult {
 
 export async function updateUserStreak(
   userId: string,
-  matchDate: Date
+  matchDate: Date,
 ): Promise<UpdateStreakResult> {
   const weekInfo = getISOWeekInfo(matchDate);
   const currentWeek = weekInfo.week;
   const currentYear = weekInfo.year;
 
-  const [streak] = await db
-    .select()
-    .from(userStreak)
-    .where(eq(userStreak.userId, userId))
-    .limit(1);
+  const [streak] = await db.select().from(userStreak).where(eq(userStreak.userId, userId)).limit(1);
 
   if (!streak) {
     await db.insert(userStreak).values({
@@ -85,7 +81,7 @@ export async function updateUserStreak(
 
   const weeksDiff = calculateWeeksDifference(
     { week: streak.lastActiveWeek!, year: streak.lastActiveYear! },
-    { week: currentWeek, year: currentYear }
+    { week: currentWeek, year: currentYear },
   );
 
   let newStreak: number;

@@ -18,11 +18,7 @@ async function hasUserBadge(userId: string, badgeCode: string): Promise<boolean>
 }
 
 async function awardBadge(userId: string, badgeCode: string): Promise<void> {
-  const [badgeRecord] = await db
-    .select()
-    .from(badge)
-    .where(eq(badge.code, badgeCode))
-    .limit(1);
+  const [badgeRecord] = await db.select().from(badge).where(eq(badge.code, badgeCode)).limit(1);
 
   if (!badgeRecord) return;
 
@@ -68,7 +64,7 @@ export async function checkBadges(userId: string): Promise<void> {
     .select({
       totalMatches: sql<number>`count(*)`.as("total_matches"),
       totalWins: sql<number>`sum(case when ${matchParticipant.isWinner} then 1 else 0 end)`.as(
-        "total_wins"
+        "total_wins",
       ),
     })
     .from(matchParticipant)

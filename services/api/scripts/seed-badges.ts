@@ -12,7 +12,8 @@ const BADGES = [
     nameEn: "First steps",
     descriptionFr: "Bienvenue dans le club !",
     descriptionEn: "Welcome to the club!",
-    imageUrl: "https://bucket-production-f7ab.up.railway.app/aceclub-production/badges/premiers_pas.png",
+    imageUrl:
+      "https://bucket-production-f7ab.up.railway.app/aceclub-production/badges/premiers_pas.png",
     requiredLevel: null,
     isActive: true,
     displayOrder: 10,
@@ -25,7 +26,8 @@ const BADGES = [
     nameEn: "Regular player",
     descriptionFr: "A joué 5 fois dans le mois",
     descriptionEn: "Played 5 times this month",
-    imageUrl: "https://bucket-production-f7ab.up.railway.app/aceclub-production/badges/joueur_regulier.png",
+    imageUrl:
+      "https://bucket-production-f7ab.up.railway.app/aceclub-production/badges/joueur_regulier.png",
     requiredLevel: null,
     isActive: true,
     displayOrder: 11,
@@ -38,7 +40,8 @@ const BADGES = [
     nameEn: "In shape",
     descriptionFr: "A joué 5 fois par mois pendant 3 mois",
     descriptionEn: "Played 5 times per month for 3 months",
-    imageUrl: "https://bucket-production-f7ab.up.railway.app/aceclub-production/badges/en_forme.png",
+    imageUrl:
+      "https://bucket-production-f7ab.up.railway.app/aceclub-production/badges/en_forme.png",
     requiredLevel: null,
     isActive: true,
     displayOrder: 12,

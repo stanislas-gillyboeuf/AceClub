@@ -1,10 +1,4 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  integer,
-  index,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, index } from "drizzle-orm/pg-core";
 import { user } from "../auth/schema";
 import { ulid } from "ulid";
 

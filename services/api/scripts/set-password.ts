@@ -11,14 +11,9 @@ const EMAIL = "nicolas.becharat@gmail.com";
 const password = crypto.randomBytes(16).toString("base64url");
 
 async function main() {
-
   const ctx = await auth.$context;
 
-  const [foundUser] = await db
-    .select()
-    .from(user)
-    .where(eq(user.email, EMAIL))
-    .limit(1);
+  const [foundUser] = await db.select().from(user).where(eq(user.email, EMAIL)).limit(1);
 
   if (!foundUser) {
     console.error(`User not found: ${EMAIL}`);
@@ -34,12 +29,7 @@ async function main() {
   const [existing] = await db
     .select()
     .from(account)
-    .where(
-      and(
-        eq(account.userId, foundUser.id),
-        eq(account.providerId, "credential"),
-      ),
-    )
+    .where(and(eq(account.userId, foundUser.id), eq(account.providerId, "credential")))
     .limit(1);
 
   if (existing) {

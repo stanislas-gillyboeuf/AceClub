@@ -29,9 +29,7 @@ export const conversation = pgTable(
     lastMessagePreview: text("last_message_preview"),
     lastMessageSenderId: text("last_message_sender_id"),
   },
-  (table) => [
-    index("conversation_lastMessageAt_idx").on(table.lastMessageAt),
-  ]
+  (table) => [index("conversation_lastMessageAt_idx").on(table.lastMessageAt)],
 );
 
 export const conversationParticipant = pgTable(
@@ -60,11 +58,8 @@ export const conversationParticipant = pgTable(
   (table) => [
     index("conversation_participant_conversationId_idx").on(table.conversationId),
     index("conversation_participant_userId_idx").on(table.userId),
-    uniqueIndex("conversation_participant_unique").on(
-      table.conversationId,
-      table.userId
-    ),
-  ]
+    uniqueIndex("conversation_participant_unique").on(table.conversationId, table.userId),
+  ],
 );
 
 export const message = pgTable(
@@ -91,10 +86,7 @@ export const message = pgTable(
   (table) => [
     index("message_conversationId_idx").on(table.conversationId),
     index("message_senderId_idx").on(table.senderId),
-    index("message_conversationId_createdAt_idx").on(
-      table.conversationId,
-      table.createdAt
-    ),
+    index("message_conversationId_createdAt_idx").on(table.conversationId, table.createdAt),
     index("message_clientMessageId_idx").on(table.clientMessageId),
-  ]
+  ],
 );

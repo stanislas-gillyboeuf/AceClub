@@ -35,10 +35,7 @@ export const createComment = async (c: Context<HonoContext>) => {
     }
 
     if (foundMatch.status !== "finished") {
-      return c.json(
-        { error: "Comments can only be added to finished matches" },
-        400,
-      );
+      return c.json({ error: "Comments can only be added to finished matches" }, 400);
     }
 
     // Check if user is a participant
@@ -46,37 +43,23 @@ export const createComment = async (c: Context<HonoContext>) => {
       .select({ id: matchParticipant.id })
       .from(matchParticipant)
       .where(
-        and(
-          eq(matchParticipant.matchId, matchId),
-          eq(matchParticipant.userId, currentUser.id),
-        ),
+        and(eq(matchParticipant.matchId, matchId), eq(matchParticipant.userId, currentUser.id)),
       )
       .limit(1);
 
     if (!participant) {
-      return c.json(
-        { error: "Only match participants can add comments" },
-        403,
-      );
+      return c.json({ error: "Only match participants can add comments" }, 403);
     }
 
     // Check if user already has a comment
     const [existingComment] = await db
       .select({ id: matchComment.id })
       .from(matchComment)
-      .where(
-        and(
-          eq(matchComment.matchId, matchId),
-          eq(matchComment.userId, currentUser.id),
-        ),
-      )
+      .where(and(eq(matchComment.matchId, matchId), eq(matchComment.userId, currentUser.id)))
       .limit(1);
 
     if (existingComment) {
-      return c.json(
-        { error: "You already have a comment on this match" },
-        409,
-      );
+      return c.json({ error: "You already have a comment on this match" }, 409);
     }
 
     // Get user info for denormalization
@@ -119,10 +102,7 @@ export const createComment = async (c: Context<HonoContext>) => {
     const errorMessage = (error as Error).message;
 
     if (errorMessage.includes("unique constraint")) {
-      return c.json(
-        { error: "You already have a comment on this match" },
-        409,
-      );
+      return c.json({ error: "You already have a comment on this match" }, 409);
     }
 
     return c.json({ error: errorMessage }, 500);

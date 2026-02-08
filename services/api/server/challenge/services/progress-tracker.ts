@@ -7,7 +7,7 @@ import { calculateLevelFromAces } from "../../level/services/xp-calculator";
 export async function updateChallengeProgress(
   userId: string,
   matchId: string,
-  isWinner: boolean
+  isWinner: boolean,
 ): Promise<void> {
   const activeChallenges = await db
     .select({
@@ -16,12 +16,7 @@ export async function updateChallengeProgress(
     })
     .from(userChallenge)
     .innerJoin(challengeTemplate, eq(userChallenge.templateId, challengeTemplate.id))
-    .where(
-      and(
-        eq(userChallenge.userId, userId),
-        eq(userChallenge.status, "active")
-      )
-    );
+    .where(and(eq(userChallenge.userId, userId), eq(userChallenge.status, "active")));
 
   for (const { challenge, template } of activeChallenges) {
     let shouldIncrement = false;

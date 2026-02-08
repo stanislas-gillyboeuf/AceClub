@@ -7,11 +7,7 @@ import { user as userTable } from "../../../db/schema/auth/schema";
 export const me = async (c: Context<HonoContext>) => {
   const authUser = c.get("user");
 
-  const [user] = await db
-    .select()
-    .from(userTable)
-    .where(eq(userTable.id, authUser!.id))
-    .limit(1);
+  const [user] = await db.select().from(userTable).where(eq(userTable.id, authUser!.id)).limit(1);
 
   return c.json({
     id: user.id,

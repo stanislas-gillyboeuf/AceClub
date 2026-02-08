@@ -6,9 +6,7 @@ const APNS_KEY_ID = process.env.APNS_KEY_ID!;
 const APNS_SIGNING_KEY = process.env.APNS_SIGNING_KEY!.replace(/\\n/g, "\n");
 const APNS_BUNDLE_ID = process.env.APNS_BUNDLE_ID!;
 const APNS_HOST =
-  process.env.APNS_USE_SANDBOX === "true"
-    ? "api.sandbox.push.apple.com"
-    : "api.push.apple.com";
+  process.env.APNS_USE_SANDBOX === "true" ? "api.sandbox.push.apple.com" : "api.push.apple.com";
 
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
@@ -56,7 +54,7 @@ function sendHttp2Request(
   host: string,
   path: string,
   headers: Record<string, string>,
-  body: string
+  body: string,
 ): Promise<{ statusCode: number; body: string }> {
   return new Promise((resolve, reject) => {
     const client = http2.connect(`https://${host}`);
@@ -101,11 +99,9 @@ function sendHttp2Request(
 }
 
 export async function sendPushNotification(
-  payload: PushNotificationPayload
+  payload: PushNotificationPayload,
 ): Promise<APNsResponse> {
-  console.log(
-    `[APNs] Sending notification to device: ${payload.deviceToken.substring(0, 20)}...`
-  );
+  console.log(`[APNs] Sending notification to device: ${payload.deviceToken.substring(0, 20)}...`);
   console.log(`[APNs] Using host: ${APNS_HOST}`);
 
   try {
@@ -136,7 +132,7 @@ export async function sendPushNotification(
         "apns-priority": "10",
         "content-type": "application/json",
       },
-      body
+      body,
     );
 
     if (response.statusCode === 200) {
@@ -150,9 +146,7 @@ export async function sendPushNotification(
 
     const errorBody = response.body ? JSON.parse(response.body) : {};
     const reason = errorBody.reason || "Unknown error";
-    console.error(
-      `[APNs] Failed! Status: ${response.statusCode}, Reason: ${reason}`
-    );
+    console.error(`[APNs] Failed! Status: ${response.statusCode}, Reason: ${reason}`);
     return {
       success: false,
       statusCode: response.statusCode,
@@ -170,7 +164,7 @@ export async function sendPushNotification(
 }
 
 export async function sendPushNotificationBatch(
-  payloads: PushNotificationPayload[]
+  payloads: PushNotificationPayload[],
 ): Promise<APNsResponse[]> {
   const results = await Promise.all(payloads.map(sendPushNotification));
   return results;
@@ -179,8 +173,6 @@ export async function sendPushNotificationBatch(
 // Verifier si le token APNs est invalide (pour le desactiver)
 export function isInvalidTokenError(reason?: string): boolean {
   return (
-    reason === "BadDeviceToken" ||
-    reason === "Unregistered" ||
-    reason === "DeviceTokenNotForTopic"
+    reason === "BadDeviceToken" || reason === "Unregistered" || reason === "DeviceTokenNotForTopic"
   );
 }

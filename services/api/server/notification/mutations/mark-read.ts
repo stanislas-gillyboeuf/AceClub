@@ -18,12 +18,7 @@ export const markRead = async (c: Context<HonoContext>) => {
     const [updated] = await db
       .update(notification)
       .set({ isRead: true, readAt: new Date() })
-      .where(
-        and(
-          eq(notification.id, notificationId),
-          eq(notification.userId, userId),
-        ),
-      )
+      .where(and(eq(notification.id, notificationId), eq(notification.userId, userId)))
       .returning();
 
     if (!updated) {
@@ -47,9 +42,7 @@ export const markAllRead = async (c: Context<HonoContext>) => {
     await db
       .update(notification)
       .set({ isRead: true, readAt: new Date() })
-      .where(
-        and(eq(notification.userId, userId), eq(notification.isRead, false)),
-      );
+      .where(and(eq(notification.userId, userId), eq(notification.isRead, false)));
 
     return c.json({
       success: true,

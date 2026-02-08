@@ -33,9 +33,7 @@ export const match = pgTable(
     startedAt: timestamp("started_at"),
     finishedAt: timestamp("finished_at"),
   },
-  (table) => [
-    index("match_conversationId_idx").on(table.conversationId),
-  ]
+  (table) => [index("match_conversationId_idx").on(table.conversationId)],
 );
 
 export const matchParticipant = pgTable(

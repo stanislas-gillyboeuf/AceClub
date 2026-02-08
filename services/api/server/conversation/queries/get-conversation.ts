@@ -1,10 +1,7 @@
 import type { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import {
-  conversation,
-  conversationParticipant,
-} from "../../../db/schema/conversation/schema";
+import { conversation, conversationParticipant } from "../../../db/schema/conversation/schema";
 import { user } from "../../../db/schema/auth/schema";
 import { userLevel } from "../../../db/schema/level/schema";
 import { userBadge, badge, userTitle, title } from "../../../db/schema/reward/schema";
@@ -26,8 +23,8 @@ export const getConversation = async (c: Context<HonoContext>) => {
     .where(
       and(
         eq(conversationParticipant.conversationId, conversationId),
-        eq(conversationParticipant.userId, currentUser.id)
-      )
+        eq(conversationParticipant.userId, currentUser.id),
+      ),
     )
     .limit(1);
 
@@ -59,8 +56,8 @@ export const getConversation = async (c: Context<HonoContext>) => {
     .where(
       and(
         eq(conversationParticipant.conversationId, conversationId),
-        ne(conversationParticipant.userId, currentUser.id)
-      )
+        ne(conversationParticipant.userId, currentUser.id),
+      ),
     );
 
   // Get user IDs to fetch enriched data
@@ -141,7 +138,7 @@ export const getConversation = async (c: Context<HonoContext>) => {
               .where(sql`${userLevel.totalAces} > ${userLevelData.totalAces}`);
 
             return { odUserId, rank: Number(rankResult?.rank) || 1 };
-          })
+          }),
         )
       : [];
 
@@ -149,9 +146,7 @@ export const getConversation = async (c: Context<HonoContext>) => {
   const enrichedParticipants = otherParticipants.map((p) => {
     const level = levelsData.find((l) => l.odUserId === p.odUserId);
     const equippedTitle = titlesData.find((t) => t.odUserId === p.odUserId);
-    const userBadges = badgesData
-      .filter((b) => b.odUserId === p.odUserId)
-      .slice(0, 3);
+    const userBadges = badgesData.filter((b) => b.odUserId === p.odUserId).slice(0, 3);
     const streak = streaksData.find((s) => s.odUserId === p.odUserId);
     const ranking = rankingsData.find((r) => r.odUserId === p.odUserId);
 

@@ -45,12 +45,7 @@ cronRouter.post("/expire-challenges", async (c) => {
     const result = await db
       .update(userChallenge)
       .set({ status: "expired" })
-      .where(
-        and(
-          eq(userChallenge.status, "active"),
-          lt(userChallenge.expiresAt, now)
-        )
-      );
+      .where(and(eq(userChallenge.status, "active"), lt(userChallenge.expiresAt, now)));
 
     return c.json({
       success: true,

@@ -63,6 +63,9 @@ export const requestClub = async (c: Context<HonoContext>) => {
     });
   } catch (error) {
     console.error("Request club error:", error);
-    return c.json({ error: "Failed to submit club request", message: (error as Error).message }, 500);
+    return c.json(
+      { error: "Failed to submit club request", message: (error as Error).message },
+      500,
+    );
   }
 };

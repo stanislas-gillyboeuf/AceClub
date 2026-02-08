@@ -45,14 +45,89 @@ const MATCH_HISTORY: Array<{
   status: "finished" | "scheduled" | "ongoing";
 }> = [
   // Finished matches with varied results
-  { sets: [[6, 4], [6, 3]], demoSide: "home", isWinner: true, daysAgo: 2, status: "finished" , type: "match"},
-  { sets: [[4, 6], [6, 7]], demoSide: "away", isWinner: false, daysAgo: 5, status: "finished" },
-  { sets: [[6, 2], [6, 1]], demoSide: "home", isWinner: true, daysAgo: 8, status: "finished" },
-  { sets: [[7, 6], [3, 6], [6, 4]], demoSide: "away", isWinner: true, daysAgo: 12, status: "finished" },
-  { sets: [[2, 6], [4, 6]], demoSide: "home", isWinner: false, daysAgo: 15, status: "finished" },
-  { sets: [[6, 4], [4, 6], [7, 5]], demoSide: "home", isWinner: true, daysAgo: 20, status: "finished" },
-  { sets: [[6, 0], [6, 2]], demoSide: "away", isWinner: true, daysAgo: 25, status: "finished" },
-  { sets: [[3, 6], [6, 7]], demoSide: "home", isWinner: false, daysAgo: 30, status: "finished" },
+  {
+    sets: [
+      [6, 4],
+      [6, 3],
+    ],
+    demoSide: "home",
+    isWinner: true,
+    daysAgo: 2,
+    status: "finished",
+    type: "match",
+  },
+  {
+    sets: [
+      [4, 6],
+      [6, 7],
+    ],
+    demoSide: "away",
+    isWinner: false,
+    daysAgo: 5,
+    status: "finished",
+  },
+  {
+    sets: [
+      [6, 2],
+      [6, 1],
+    ],
+    demoSide: "home",
+    isWinner: true,
+    daysAgo: 8,
+    status: "finished",
+  },
+  {
+    sets: [
+      [7, 6],
+      [3, 6],
+      [6, 4],
+    ],
+    demoSide: "away",
+    isWinner: true,
+    daysAgo: 12,
+    status: "finished",
+  },
+  {
+    sets: [
+      [2, 6],
+      [4, 6],
+    ],
+    demoSide: "home",
+    isWinner: false,
+    daysAgo: 15,
+    status: "finished",
+  },
+  {
+    sets: [
+      [6, 4],
+      [4, 6],
+      [7, 5],
+    ],
+    demoSide: "home",
+    isWinner: true,
+    daysAgo: 20,
+    status: "finished",
+  },
+  {
+    sets: [
+      [6, 0],
+      [6, 2],
+    ],
+    demoSide: "away",
+    isWinner: true,
+    daysAgo: 25,
+    status: "finished",
+  },
+  {
+    sets: [
+      [3, 6],
+      [6, 7],
+    ],
+    demoSide: "home",
+    isWinner: false,
+    daysAgo: 30,
+    status: "finished",
+  },
   // Scheduled match (upcoming)
   { sets: [], demoSide: "home", isWinner: false, daysAgo: -3, status: "scheduled" },
   // Ongoing match
@@ -93,15 +168,18 @@ async function seedDemoUser(): Promise<void> {
   for (const ghost of GHOST_PLAYERS) {
     const id = ulid();
     ghostUserIds.push(id);
-    await db.insert(user).values({
-      id,
-      name: ghost.name,
-      email: `ghost-${id.toLowerCase()}@aceclub.demo`,
-      emailVerified: false,
-      image: ghost.image,
-      is_ghost: true,
-      onboarding_completed: true,
-    }).onConflictDoNothing();
+    await db
+      .insert(user)
+      .values({
+        id,
+        name: ghost.name,
+        email: `ghost-${id.toLowerCase()}@aceclub.demo`,
+        emailVerified: false,
+        image: ghost.image,
+        is_ghost: true,
+        onboarding_completed: true,
+      })
+      .onConflictDoNothing();
   }
   console.log(`  ✓ Created ${ghostUserIds.length} ghost players`);
 
@@ -110,7 +188,11 @@ async function seedDemoUser(): Promise<void> {
   const orgId = ulid();
 
   // Check if org with same slug exists
-  const [existingOrg] = await db.select().from(organization).where(eq(organization.slug, DEMO_ORG.slug)).limit(1);
+  const [existingOrg] = await db
+    .select()
+    .from(organization)
+    .where(eq(organization.slug, DEMO_ORG.slug))
+    .limit(1);
 
   let finalOrgId = orgId;
   if (!existingOrg) {
@@ -197,7 +279,8 @@ async function seedDemoUser(): Promise<void> {
     const awayParticipantId = ulid();
 
     const demoParticipantId = matchData.demoSide === "home" ? homeParticipantId : awayParticipantId;
-    const opponentParticipantId = matchData.demoSide === "home" ? awayParticipantId : homeParticipantId;
+    const opponentParticipantId =
+      matchData.demoSide === "home" ? awayParticipantId : homeParticipantId;
 
     await db.insert(matchParticipant).values([
       {
@@ -205,18 +288,24 @@ async function seedDemoUser(): Promise<void> {
         matchId,
         userId: matchData.demoSide === "home" ? DEMO_USER_ID : opponentId,
         side: "home",
-        isWinner: matchData.status === "finished"
-          ? (matchData.demoSide === "home" ? matchData.isWinner : !matchData.isWinner)
-          : false,
+        isWinner:
+          matchData.status === "finished"
+            ? matchData.demoSide === "home"
+              ? matchData.isWinner
+              : !matchData.isWinner
+            : false,
       },
       {
         id: awayParticipantId,
         matchId,
         userId: matchData.demoSide === "away" ? DEMO_USER_ID : opponentId,
         side: "away",
-        isWinner: matchData.status === "finished"
-          ? (matchData.demoSide === "away" ? matchData.isWinner : !matchData.isWinner)
-          : false,
+        isWinner:
+          matchData.status === "finished"
+            ? matchData.demoSide === "away"
+              ? matchData.isWinner
+              : !matchData.isWinner
+            : false,
       },
     ]);
 
@@ -330,7 +419,7 @@ async function seedDemoUser(): Promise<void> {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
   const currentWeek = Math.ceil(
-    ((now.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7
+    ((now.getTime() - startOfYear.getTime()) / 86400000 + startOfYear.getDay() + 1) / 7,
   );
 
   const [existingStreak] = await db

@@ -12,7 +12,9 @@ export const assignWeeklyChallengesTask = schedules.task({
     timezone: "UTC",
   },
   run: async (payload) => {
-    console.log(`[TRIGGER] Starting assign-weekly-challenges at ${payload.timestamp.toISOString()}`);
+    console.log(
+      `[TRIGGER] Starting assign-weekly-challenges at ${payload.timestamp.toISOString()}`,
+    );
 
     await assignWeeklyChallenges();
 

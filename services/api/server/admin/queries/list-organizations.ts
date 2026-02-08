@@ -8,9 +8,7 @@ import { z } from "zod";
 
 export const listOrganizations = async (c: Context<HonoContext>) => {
   // @ts-ignore
-  const validated = c.req.valid("query") as z.infer<
-    typeof listOrganizationsValidator
-  >;
+  const validated = c.req.valid("query") as z.infer<typeof listOrganizationsValidator>;
 
   const limit = validated.limit ?? 20;
   const offset = validated.offset ?? 0;
@@ -21,8 +19,7 @@ export const listOrganizations = async (c: Context<HonoContext>) => {
     conditions.push(ilike(organization.name, `%${validated.searchValue}%`));
   }
 
-  const whereClause =
-    conditions.length > 0 ? conditions[0] : undefined;
+  const whereClause = conditions.length > 0 ? conditions[0] : undefined;
 
   const [orgs, countResult] = await Promise.all([
     db

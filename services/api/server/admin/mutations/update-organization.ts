@@ -9,9 +9,7 @@ import { geocodeAddress } from "../../organization/services/geocoding";
 
 export const updateOrganization = async (c: Context<HonoContext>) => {
   // @ts-ignore
-  const validated = c.req.valid("json") as z.infer<
-    typeof updateOrganizationAdminValidator
-  >;
+  const validated = c.req.valid("json") as z.infer<typeof updateOrganizationAdminValidator>;
 
   const [existing] = await db
     .select()
@@ -20,10 +18,7 @@ export const updateOrganization = async (c: Context<HonoContext>) => {
     .limit(1);
 
   if (!existing) {
-    return c.json(
-      { error: "NotFound", message: "Organization not found" },
-      404,
-    );
+    return c.json({ error: "NotFound", message: "Organization not found" }, 404);
   }
 
   const updateData: Record<string, unknown> = {};
@@ -35,9 +30,7 @@ export const updateOrganization = async (c: Context<HonoContext>) => {
 
   if (validated.data.address !== undefined) {
     updateData.address = validated.data.address || null;
-    const coords = validated.data.address
-      ? await geocodeAddress(validated.data.address)
-      : null;
+    const coords = validated.data.address ? await geocodeAddress(validated.data.address) : null;
     updateData.latitude = coords?.latitude ?? null;
     updateData.longitude = coords?.longitude ?? null;
   }

@@ -141,7 +141,9 @@ export async function seedMatches(
     ]);
   }
 
-  console.log(`  Inserted ${matchIds.length} matches (${finishedCount} finished, ${ongoingCount} ongoing, ${scheduledCount} scheduled)`);
+  console.log(
+    `  Inserted ${matchIds.length} matches (${finishedCount} finished, ${ongoingCount} ongoing, ${scheduledCount} scheduled)`,
+  );
   console.log(`  Inserted ${matchIds.length * 2} match participants`);
 
   return { matchIds, matchData, finishedMatchIds, matchIdToParticipants };
@@ -231,9 +233,7 @@ export async function seedSetsAndScores(
       ]);
     }
 
-    const winnerParticipantId = homeWinsMatch
-      ? data.homeParticipantId
-      : data.awayParticipantId;
+    const winnerParticipantId = homeWinsMatch ? data.homeParticipantId : data.awayParticipantId;
     const winnerUserId = homeWinsMatch ? data.homeUserId : data.awayUserId;
 
     await db

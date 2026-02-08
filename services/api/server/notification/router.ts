@@ -16,11 +16,7 @@ export const notificationRouter = new Hono<HonoContext>();
 notificationRouter.use("/*", requireAuth);
 
 // Queries
-notificationRouter.get(
-  "/",
-  zValidator("query", listNotificationsValidator),
-  listNotifications,
-);
+notificationRouter.get("/", zValidator("query", listNotificationsValidator), listNotifications);
 notificationRouter.get("/unread-count", getUnreadCount);
 
 // Mutations
@@ -34,9 +30,5 @@ notificationRouter.post(
   zValidator("json", unregisterDeviceTokenValidator),
   unregisterToken,
 );
-notificationRouter.post(
-  "/mark-read",
-  zValidator("json", markNotificationReadValidator),
-  markRead,
-);
+notificationRouter.post("/mark-read", zValidator("json", markNotificationReadValidator), markRead);
 notificationRouter.post("/mark-all-read", markAllRead);

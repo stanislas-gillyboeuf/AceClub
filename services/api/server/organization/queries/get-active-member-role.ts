@@ -15,7 +15,7 @@ export const getActiveMemberRole = async (c: Context<HonoContext>) => {
     if (errorMessage.includes("No active organization") || errorMessage.includes("not found")) {
       return c.json(null);
     }
-    
+
     return c.json({ error: errorMessage }, 500);
   }
 };

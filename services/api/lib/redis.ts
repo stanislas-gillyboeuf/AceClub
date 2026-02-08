@@ -4,9 +4,7 @@ import Redis from "ioredis";
 const redisUrl = process.env.REDIS_URL || process.env.REDIS_PUBLIC_URL;
 
 if (!redisUrl) {
-  console.warn(
-    "[Redis] No REDIS_URL or REDIS_PUBLIC_URL found. Redis features will be disabled."
-  );
+  console.warn("[Redis] No REDIS_URL or REDIS_PUBLIC_URL found. Redis features will be disabled.");
 }
 
 // Main Redis client for publishing

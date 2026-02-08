@@ -1,10 +1,7 @@
 import type { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import {
-  conversation,
-  conversationParticipant,
-} from "../../../db/schema/conversation/schema";
+import { conversation, conversationParticipant } from "../../../db/schema/conversation/schema";
 import { user } from "../../../db/schema/auth/schema";
 import { userLevel } from "../../../db/schema/level/schema";
 import { userBadge, badge, userTitle, title } from "../../../db/schema/reward/schema";
@@ -30,8 +27,8 @@ export const listConversations = async (c: Context<HonoContext>) => {
     .where(
       and(
         eq(conversationParticipant.userId, currentUser.id),
-        eq(conversationParticipant.isDeleted, false)
-      )
+        eq(conversationParticipant.isDeleted, false),
+      ),
     );
 
   if (myParticipations.length === 0) {
@@ -58,9 +55,7 @@ export const listConversations = async (c: Context<HonoContext>) => {
   // Get other participants for each conversation
   const result = await Promise.all(
     conversations.map(async (conv) => {
-      const myParticipation = myParticipations.find(
-        (p) => p.conversationId === conv.id
-      );
+      const myParticipation = myParticipations.find((p) => p.conversationId === conv.id);
 
       const otherParticipants = await db
         .select({
@@ -74,8 +69,8 @@ export const listConversations = async (c: Context<HonoContext>) => {
         .where(
           and(
             eq(conversationParticipant.conversationId, conv.id),
-            ne(conversationParticipant.userId, currentUser.id)
-          )
+            ne(conversationParticipant.userId, currentUser.id),
+          ),
         );
 
       // Get user IDs to fetch enriched data
@@ -156,7 +151,7 @@ export const listConversations = async (c: Context<HonoContext>) => {
                   .where(sql`${userLevel.totalAces} > ${userLevelData.totalAces}`);
 
                 return { odUserId: userId, rank: Number(rankResult?.rank) || 1 };
-              })
+              }),
             )
           : [];
 
@@ -164,9 +159,7 @@ export const listConversations = async (c: Context<HonoContext>) => {
       const enrichedParticipants = otherParticipants.map((p) => {
         const level = levelsData.find((l) => l.odUserId === p.odUserId);
         const equippedTitle = titlesData.find((t) => t.odUserId === p.odUserId);
-        const userBadges = badgesData
-          .filter((b) => b.odUserId === p.odUserId)
-          .slice(0, 3);
+        const userBadges = badgesData.filter((b) => b.odUserId === p.odUserId).slice(0, 3);
         const streak = streaksData.find((s) => s.odUserId === p.odUserId);
         const ranking = rankingsData.find((r) => r.odUserId === p.odUserId);
 
@@ -215,7 +208,7 @@ export const listConversations = async (c: Context<HonoContext>) => {
         isMuted: myParticipation?.isMuted || false,
         otherParticipants: enrichedParticipants,
       };
-    })
+    }),
   );
 
   // Sort by lastMessageAt descending (most recent first)

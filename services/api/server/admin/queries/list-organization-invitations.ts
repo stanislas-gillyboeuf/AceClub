@@ -6,13 +6,9 @@ import { eq, sql } from "drizzle-orm";
 import { listOrganizationInvitationsValidator } from "../validators";
 import { z } from "zod";
 
-export const listOrganizationInvitations = async (
-  c: Context<HonoContext>,
-) => {
+export const listOrganizationInvitations = async (c: Context<HonoContext>) => {
   // @ts-ignore
-  const validated = c.req.valid("query") as z.infer<
-    typeof listOrganizationInvitationsValidator
-  >;
+  const validated = c.req.valid("query") as z.infer<typeof listOrganizationInvitationsValidator>;
 
   const [invitations, countResult] = await Promise.all([
     db

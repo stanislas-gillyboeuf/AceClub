@@ -24,18 +24,12 @@ export const updateMatchScores = async (c: Context<HonoContext>) => {
       .select({ id: matchParticipant.id })
       .from(matchParticipant)
       .where(
-        and(
-          eq(matchParticipant.matchId, matchId),
-          eq(matchParticipant.userId, currentUser.id)
-        )
+        and(eq(matchParticipant.matchId, matchId), eq(matchParticipant.userId, currentUser.id)),
       )
       .limit(1);
 
     if (!participant) {
-      return c.json(
-        { error: "Only match participants can update scores" },
-        403
-      );
+      return c.json({ error: "Only match participants can update scores" }, 403);
     }
 
     // @ts-ignore

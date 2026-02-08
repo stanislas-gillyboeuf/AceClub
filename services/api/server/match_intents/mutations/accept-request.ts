@@ -50,8 +50,8 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
           eq(conversation.type, "match"),
           sql`EXISTS (SELECT 1 FROM conversation_participant WHERE conversation_id = ${conversation.id} AND user_id = ${intent.userId})`,
           sql`EXISTS (SELECT 1 FROM conversation_participant WHERE conversation_id = ${conversation.id} AND user_id = ${request.requesterId})`,
-          sql`(SELECT COUNT(*) FROM conversation_participant WHERE conversation_id = ${conversation.id}) = 2`
-        )
+          sql`(SELECT COUNT(*) FROM conversation_participant WHERE conversation_id = ${conversation.id}) = 2`,
+        ),
       )
       .limit(1);
 

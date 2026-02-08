@@ -146,23 +146,11 @@ organizationRouter.post(
   cancelInvitation,
 );
 
-organizationRouter.post(
-  "/request-club",
-  zValidator("json", requestClubValidator),
-  requestClub,
-);
+organizationRouter.post("/request-club", zValidator("json", requestClubValidator), requestClub);
 
 // PIN management (org admins/owners)
-organizationRouter.get(
-  "/get-pin",
-  zValidator("query", getPinValidator),
-  getPin,
-);
-organizationRouter.post(
-  "/toggle-pin",
-  zValidator("json", togglePinValidator),
-  togglePin,
-);
+organizationRouter.get("/get-pin", zValidator("query", getPinValidator), getPin);
+organizationRouter.post("/toggle-pin", zValidator("json", togglePinValidator), togglePin);
 organizationRouter.post(
   "/regenerate-pin",
   zValidator("json", regeneratePinValidator),
