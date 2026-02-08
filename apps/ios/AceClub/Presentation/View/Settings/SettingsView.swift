@@ -7,6 +7,8 @@ struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
     @State private var showClubSelection = false
     @State private var notificationsEnabled = false
+    @State private var locationEnabled = false
+    @StateObject private var locationManager = LocationManager()
     @State private var showDeleteAccountConfirmation = false
     @State private var isDeletingAccount = false
     var onProfileUpdated: ((User) -> Void)?
@@ -28,6 +30,7 @@ struct SettingsView: View {
                         }
 
                         notificationsSection
+                        locationSection
 
                         LegalLinksSection()
 
@@ -72,6 +75,10 @@ struct SettingsView: View {
                 }
                 await NotificationManager.shared.checkPermissionStatus()
                 notificationsEnabled = NotificationManager.shared.isPermissionGranted
+                locationEnabled = locationManager.isPermissionGranted
+            }
+            .onChange(of: locationManager.authorizationStatus) { _, _ in
+                locationEnabled = locationManager.isPermissionGranted
             }
             .sheet(isPresented: $showClubSelection) {
                 ClubSelectionView(viewModel: viewModel)
@@ -271,6 +278,51 @@ struct SettingsView: View {
                                             await UIApplication.shared.open(url)
                                         }
                                     }
+                                }
+                            }
+                        }
+                }
+                .padding(16)
+            }
+            .background(Theme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+        }
+    }
+
+    // MARK: - Location Section
+
+    private var locationSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: "Localisation", icon: "location.fill")
+
+            VStack(spacing: 0) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Localisation")
+                            .foregroundStyle(.primary)
+
+                        Text("Permet de trouver des joueurs proches de vous")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    Toggle("", isOn: $locationEnabled)
+                        .labelsHidden()
+                        .onChange(of: locationEnabled) { _, newValue in
+                            if newValue {
+                                locationManager.requestPermission()
+                                if !locationManager.isPermissionGranted {
+                                    locationEnabled = false
+                                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                                        UIApplication.shared.open(url)
+                                    }
+                                }
+                            } else {
+                                // Can't revoke programmatically, open Settings
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
                                 }
                             }
                         }

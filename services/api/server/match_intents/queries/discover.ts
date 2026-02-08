@@ -7,6 +7,7 @@ import {
   user as userTable,
   member,
   organization,
+  userPreference,
 } from "../../../db/schema";
 import { userLevel } from "../../../db/schema/level/schema";
 import { and, desc, eq, gte, lt, ne, notExists, or, isNull, sql } from "drizzle-orm";
@@ -36,23 +37,27 @@ export const discover = async (c: Context<HonoContext>) => {
 
     const now = new Date();
 
-    // Get current user's organization and level for scoring
+    // Get current user's organization, level and sport for scoring and filtering
     const [currentUserData] = await db
       .select({
         level: sql<number>`coalesce(${userLevel.currentLevel}, 1)`,
         organizationId: member.organizationId,
+        sport: userPreference.sport,
       })
       .from(userTable)
       .leftJoin(userLevel, eq(userTable.id, userLevel.userId))
       .leftJoin(member, eq(userTable.id, member.userId))
+      .leftJoin(userPreference, eq(userTable.id, userPreference.userId))
       .where(eq(userTable.id, userId))
       .limit(1);
 
     const currentUserLevel = currentUserData?.level ?? 1;
     const currentUserOrgId = currentUserData?.organizationId;
+    const currentUserSport = currentUserData?.sport;
 
-    // Alias for intent owner's member table
+    // Alias for intent owner's member table and preferences
     const intentOwnerMember = alias(member, "intent_owner_member");
+    const intentOwnerPreference = alias(userPreference, "intent_owner_preference");
 
     const conditions = [
       eq(matchIntent.status, "pending"),
@@ -70,6 +75,11 @@ export const discover = async (c: Context<HonoContext>) => {
           ),
       ),
     ];
+
+    // Filter by sport: only show intents from users with the same sport
+    if (currentUserSport) {
+      conditions.push(eq(intentOwnerPreference.sport, currentUserSport));
+    }
 
     // Build scoring expression
     // +100 pts if same organization
@@ -150,6 +160,7 @@ export const discover = async (c: Context<HonoContext>) => {
         .leftJoin(userLevel, eq(matchIntent.userId, userLevel.userId))
         .leftJoin(intentOwnerMember, eq(matchIntent.userId, intentOwnerMember.userId))
         .leftJoin(organization, eq(intentOwnerMember.organizationId, organization.id))
+        .leftJoin(intentOwnerPreference, eq(matchIntent.userId, intentOwnerPreference.userId))
         .where(eq(matchIntent.id, cursor))
         .limit(1);
 
@@ -208,6 +219,7 @@ export const discover = async (c: Context<HonoContext>) => {
       .leftJoin(userLevel, eq(matchIntent.userId, userLevel.userId))
       .leftJoin(intentOwnerMember, eq(matchIntent.userId, intentOwnerMember.userId))
       .leftJoin(organization, eq(intentOwnerMember.organizationId, organization.id))
+      .leftJoin(intentOwnerPreference, eq(matchIntent.userId, intentOwnerPreference.userId))
       .where(and(...conditions))
       .orderBy(desc(scoreExpressionRaw), desc(matchIntent.createdAt))
       .limit(limit + 1);
