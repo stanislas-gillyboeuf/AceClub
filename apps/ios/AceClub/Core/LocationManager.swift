@@ -1,9 +1,9 @@
 import Foundation
+import Combine
 import CoreLocation
 
 @MainActor
 class LocationManager: NSObject, ObservableObject {
-
     // MARK: - Published Properties
 
     @Published var userLatitude: Double?
