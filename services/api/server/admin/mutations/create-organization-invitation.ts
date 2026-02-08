@@ -1,18 +1,13 @@
 import { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import {
-  invitation,
-  organization,
-} from "../../../db/schema/auth/schema";
+import { invitation, organization } from "../../../db/schema/auth/schema";
 import { and, eq } from "drizzle-orm";
 import { createOrganizationInvitationAdminValidator } from "../validators";
 import { z } from "zod";
 import { ulid } from "ulid";
 
-export const createOrganizationInvitation = async (
-  c: Context<HonoContext>,
-) => {
+export const createOrganizationInvitation = async (c: Context<HonoContext>) => {
   const adminUser = c.get("user")!;
 
   // @ts-ignore
@@ -27,10 +22,7 @@ export const createOrganizationInvitation = async (
     .limit(1);
 
   if (!org) {
-    return c.json(
-      { error: "NotFound", message: "Organization not found" },
-      404,
-    );
+    return c.json({ error: "NotFound", message: "Organization not found" }, 404);
   }
 
   const [existingInvitation] = await db

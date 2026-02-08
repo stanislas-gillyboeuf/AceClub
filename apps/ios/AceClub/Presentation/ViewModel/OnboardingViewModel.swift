@@ -25,6 +25,11 @@ final class OnboardingViewModel: ObservableObject {
     @Published var isSubmitting: Bool = false
     @Published var errorMessage: String?
 
+    // MARK: - PIN State
+    @Published var pin: String = ""
+    @Published var showPinSheet: Bool = false
+    @Published var pinError: String?
+
     // MARK: - Club Request State
     @Published var showRequestClubSheet: Bool = false
     @Published var clubRequestName: String = ""
@@ -49,7 +54,9 @@ final class OnboardingViewModel: ObservableObject {
     var canGoNext: Bool {
         switch currentStep {
         case .clubSelection:
-            return selectedOrganization != nil
+            guard let org = selectedOrganization else { return false }
+            if org.pinEnabled { return pin.count == 4 }
+            return true
         case .sportSelection:
             return selectedSport != nil
         case .skillLevelSelection:
@@ -78,6 +85,25 @@ final class OnboardingViewModel: ObservableObject {
         guard let prev = OnboardingStep(rawValue: currentStep.rawValue - 1) else { return }
         currentStep = prev
         errorMessage = nil
+    }
+
+    // MARK: - Organization Selection
+
+    func selectOrganization(_ org: Organization) {
+        if org.pinEnabled {
+            selectedOrganization = org
+            pin = ""
+            pinError = nil
+            showPinSheet = true
+        } else {
+            selectedOrganization = org
+            pin = ""
+        }
+    }
+
+    func validatePin(_ pinValue: String) {
+        pin = pinValue
+        showPinSheet = false
     }
 
     // MARK: - Organizations Search (debounced)
@@ -164,7 +190,8 @@ final class OnboardingViewModel: ObservableObject {
             organizationId: selectedOrganization.id,
             sport: selectedSport.rawValue,
             skillLevel: selectedSkillLevel.value,
-            phoneNumber: phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines)
+            phoneNumber: phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines),
+            pin: selectedOrganization.pinEnabled ? pin : nil
         )
         return updatedUser
     }

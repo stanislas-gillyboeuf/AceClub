@@ -29,12 +29,7 @@ export const getMyChallenges = async (c: Context<HonoContext>) => {
     })
     .from(userChallenge)
     .innerJoin(challengeTemplate, eq(userChallenge.templateId, challengeTemplate.id))
-    .where(
-      and(
-        eq(userChallenge.userId, authUser!.id),
-        eq(userChallenge.status, "active")
-      )
-    );
+    .where(and(eq(userChallenge.userId, authUser!.id), eq(userChallenge.status, "active")));
 
   return c.json({
     challenges: challenges.map((ch) => ({

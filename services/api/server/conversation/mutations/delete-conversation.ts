@@ -19,8 +19,8 @@ export const deleteConversation = async (c: Context<HonoContext>) => {
     .where(
       and(
         eq(conversationParticipant.conversationId, conversationId),
-        eq(conversationParticipant.userId, currentUser.id)
-      )
+        eq(conversationParticipant.userId, currentUser.id),
+      ),
     )
     .limit(1);
 

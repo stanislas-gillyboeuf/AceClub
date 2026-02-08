@@ -37,7 +37,7 @@ export async function awardPremiersPasBadge(userId: string): Promise<void> {
 async function countFinishedMatchesInMonth(
   userId: string,
   year: number,
-  month: number
+  month: number,
 ): Promise<number> {
   const startOfMonth = new Date(year, month, 1);
   const startOfNextMonth = new Date(year, month + 1, 1);
@@ -51,8 +51,8 @@ async function countFinishedMatchesInMonth(
         eq(matchParticipant.userId, userId),
         eq(match.status, "finished"),
         gte(match.finishedAt, startOfMonth),
-        lt(match.finishedAt, startOfNextMonth)
-      )
+        lt(match.finishedAt, startOfNextMonth),
+      ),
     );
 
   return Number(result[0]?.count ?? 0);
@@ -65,11 +65,7 @@ async function countFinishedMatchesInMonth(
  */
 export async function updateJoueurRegulierBadge(userId: string): Promise<void> {
   const now = new Date();
-  const matchCount = await countFinishedMatchesInMonth(
-    userId,
-    now.getFullYear(),
-    now.getMonth()
-  );
+  const matchCount = await countFinishedMatchesInMonth(userId, now.getFullYear(), now.getMonth());
 
   const [joueurRegulierBadge] = await db
     .select({ id: badge.id })
@@ -85,12 +81,7 @@ export async function updateJoueurRegulierBadge(userId: string): Promise<void> {
   const [existingBadge] = await db
     .select()
     .from(userBadge)
-    .where(
-      and(
-        eq(userBadge.userId, userId),
-        eq(userBadge.badgeId, joueurRegulierBadge.id)
-      )
-    )
+    .where(and(eq(userBadge.userId, userId), eq(userBadge.badgeId, joueurRegulierBadge.id)))
     .limit(1);
 
   if (matchCount >= 5 && !existingBadge) {
@@ -105,12 +96,7 @@ export async function updateJoueurRegulierBadge(userId: string): Promise<void> {
     // Remove badge
     await db
       .delete(userBadge)
-      .where(
-        and(
-          eq(userBadge.userId, userId),
-          eq(userBadge.badgeId, joueurRegulierBadge.id)
-        )
-      );
+      .where(and(eq(userBadge.userId, userId), eq(userBadge.badgeId, joueurRegulierBadge.id)));
     console.log(`[BADGE] Removed joueur_regulier from user ${userId} (${matchCount} matches)`);
   }
 }
@@ -129,7 +115,7 @@ export async function updateEnFormeBadge(userId: string): Promise<void> {
     const count = await countFinishedMatchesInMonth(
       userId,
       targetDate.getFullYear(),
-      targetDate.getMonth()
+      targetDate.getMonth(),
     );
     monthlyCounts.push(count);
   }
@@ -148,9 +134,7 @@ export async function updateEnFormeBadge(userId: string): Promise<void> {
   const [existingBadge] = await db
     .select()
     .from(userBadge)
-    .where(
-      and(eq(userBadge.userId, userId), eq(userBadge.badgeId, enFormeBadge.id))
-    )
+    .where(and(eq(userBadge.userId, userId), eq(userBadge.badgeId, enFormeBadge.id)))
     .limit(1);
 
   const qualifies = monthlyCounts.every((count) => count >= 5);

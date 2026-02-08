@@ -1,10 +1,7 @@
 import type { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import {
-  conversationParticipant,
-  message,
-} from "../../../db/schema/conversation/schema";
+import { conversationParticipant, message } from "../../../db/schema/conversation/schema";
 import { user } from "../../../db/schema/auth/schema";
 import { eq, and, desc, lt } from "drizzle-orm";
 
@@ -28,8 +25,8 @@ export const listMessages = async (c: Context<HonoContext>) => {
     .where(
       and(
         eq(conversationParticipant.conversationId, conversationId),
-        eq(conversationParticipant.userId, currentUser.id)
-      )
+        eq(conversationParticipant.userId, currentUser.id),
+      ),
     )
     .limit(1);
 
@@ -38,10 +35,7 @@ export const listMessages = async (c: Context<HonoContext>) => {
   }
 
   // Build query conditions
-  const conditions = [
-    eq(message.conversationId, conversationId),
-    eq(message.isDeleted, false),
-  ];
+  const conditions = [eq(message.conversationId, conversationId), eq(message.isDeleted, false)];
 
   if (before) {
     conditions.push(lt(message.createdAt, before));
@@ -78,6 +72,6 @@ export const listMessages = async (c: Context<HonoContext>) => {
       createdAt: msg.createdAt.toISOString(),
       clientMessageId: msg.clientMessageId,
       isFromMe: msg.senderId === currentUser.id,
-    }))
+    })),
   );
 };

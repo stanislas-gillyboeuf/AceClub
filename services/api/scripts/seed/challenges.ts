@@ -456,7 +456,8 @@ const CHALLENGE_TEMPLATES = [
     difficulty: "easy" as const,
     titleFr: "Équilibre",
     titleEn: "Balance",
-    descriptionFr: "Termine la semaine avec au moins autant de victoires que de défaites (min 4 matchs)",
+    descriptionFr:
+      "Termine la semaine avec au moins autant de victoires que de défaites (min 4 matchs)",
     descriptionEn: "End the week with at least as many wins as losses (min 4 matches)",
     targetValue: 4,
     acesReward: 125,
@@ -524,7 +525,7 @@ export async function seedChallenges(db: Database): Promise<{ templateIds: strin
         minLevel: t.minLevel,
         maxLevel: t.maxLevel,
         isActive: true,
-      }))
+      })),
     )
     .onConflictDoNothing()
     .returning({ id: challengeTemplate.id });

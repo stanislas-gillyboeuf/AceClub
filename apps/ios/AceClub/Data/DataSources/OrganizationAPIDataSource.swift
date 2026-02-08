@@ -346,6 +346,66 @@ class OrganizationAPIDataSource {
         }
     }
 
+    // MARK: - PIN Management
+
+    func getOrganizationPin(organizationId: String) async throws -> OrganizationPinDTO {
+        guard var urlComponents = URLComponents(string: "\(Config.apiBaseURL)/organization/get-pin") else {
+            throw OrganizationError.invalidURL
+        }
+
+        urlComponents.queryItems = [URLQueryItem(name: "organizationId", value: organizationId)]
+
+        guard let url = urlComponents.url else {
+            throw OrganizationError.invalidURL
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url)
+
+        guard response.statusCode == 200 else {
+            throw OrganizationError.serverError("Get organization PIN failed: \(response.statusCode)")
+        }
+
+        do {
+            return try JSONDecoder().decode(OrganizationPinDTO.self, from: data)
+        } catch {
+            throw OrganizationError.decodingError
+        }
+    }
+
+    func toggleOrganizationPin(organizationId: String, enabled: Bool) async throws {
+        guard let url = URL(string: "\(Config.apiBaseURL)/organization/toggle-pin") else {
+            throw OrganizationError.invalidURL
+        }
+
+        let requestBody: [String: Any] = ["organizationId": organizationId, "enabled": enabled]
+        let bodyData = try JSONSerialization.data(withJSONObject: requestBody)
+        let (_, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)
+
+        guard response.statusCode == 200 else {
+            throw OrganizationError.serverError("Toggle PIN failed: \(response.statusCode)")
+        }
+    }
+
+    func regenerateOrganizationPin(organizationId: String) async throws -> OrganizationPinDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/organization/regenerate-pin") else {
+            throw OrganizationError.invalidURL
+        }
+
+        let requestBody = ["organizationId": organizationId]
+        let bodyData = try JSONEncoder().encode(requestBody)
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)
+
+        guard response.statusCode == 200 else {
+            throw OrganizationError.serverError("Regenerate PIN failed: \(response.statusCode)")
+        }
+
+        do {
+            return try JSONDecoder().decode(OrganizationPinDTO.self, from: data)
+        } catch {
+            throw OrganizationError.decodingError
+        }
+    }
+
     // MARK: - Club Request
 
     func requestClub(name: String, city: String) async throws -> ClubRequestResponseDTO {

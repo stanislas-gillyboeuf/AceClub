@@ -45,13 +45,13 @@ function shuffleArray<T>(array: T[]): T[] {
 function weightedRandomSelect(
   templates: ChallengeTemplate[],
   level: number,
-  recentChallenges: RecentChallengeInfo[] = []
+  recentChallenges: RecentChallengeInfo[] = [],
 ): ChallengeTemplate {
   const shuffledTemplates = shuffleArray(templates);
 
   const recentTemplateIds = new Set(recentChallenges.map((c) => c.templateId));
   const completedRecently = new Set(
-    recentChallenges.filter((c) => c.status === "completed").map((c) => c.templateId)
+    recentChallenges.filter((c) => c.status === "completed").map((c) => c.templateId),
   );
 
   const weights = shuffledTemplates.map((t) => {
@@ -89,7 +89,7 @@ function weightedRandomSelect(
 async function getRecentChallengesForUser(
   userId: string,
   currentWeek: number,
-  currentYear: number
+  currentYear: number,
 ): Promise<RecentChallengeInfo[]> {
   const weeksToCheck: { week: number; year: number; weeksAgo: number }[] = [];
 
@@ -118,8 +118,8 @@ async function getRecentChallengesForUser(
         and(
           eq(userChallenge.userId, userId),
           eq(userChallenge.weekNumber, week),
-          eq(userChallenge.year, year)
-        )
+          eq(userChallenge.year, year),
+        ),
       );
 
     for (const c of challenges) {
@@ -134,10 +134,7 @@ async function getRecentChallengesForUser(
   return recentChallenges;
 }
 
-export async function assignWeeklyChallengesForUser(
-  userId: string,
-  level: number
-): Promise<void> {
+export async function assignWeeklyChallengesForUser(userId: string, level: number): Promise<void> {
   const now = new Date();
   const weekInfo = getISOWeekInfo(now);
   const expiresAt = getWeekEndDate(now);
@@ -149,8 +146,8 @@ export async function assignWeeklyChallengesForUser(
       and(
         eq(userChallenge.userId, userId),
         eq(userChallenge.weekNumber, weekInfo.week),
-        eq(userChallenge.year, weekInfo.year)
-      )
+        eq(userChallenge.year, weekInfo.year),
+      ),
     )
     .limit(1);
 
@@ -158,11 +155,7 @@ export async function assignWeeklyChallengesForUser(
     return;
   }
 
-  const recentChallenges = await getRecentChallengesForUser(
-    userId,
-    weekInfo.week,
-    weekInfo.year
-  );
+  const recentChallenges = await getRecentChallengesForUser(userId, weekInfo.week, weekInfo.year);
 
   const eligibleTemplates = await db
     .select()
@@ -171,11 +164,8 @@ export async function assignWeeklyChallengesForUser(
       and(
         eq(challengeTemplate.isActive, true),
         lte(challengeTemplate.minLevel, level),
-        or(
-          isNull(challengeTemplate.maxLevel),
-          gte(challengeTemplate.maxLevel, level)
-        )
-      )
+        or(isNull(challengeTemplate.maxLevel), gte(challengeTemplate.maxLevel, level)),
+      ),
     );
 
   if (eligibleTemplates.length === 0) {

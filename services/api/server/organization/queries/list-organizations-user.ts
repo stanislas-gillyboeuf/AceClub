@@ -9,10 +9,7 @@ export const listOrganizationsUser = async (c: Context<HonoContext>) => {
   const filtered = data.filter((org) => {
     if (!org.metadata) return true;
     try {
-      const meta =
-        typeof org.metadata === "string"
-          ? JSON.parse(org.metadata)
-          : org.metadata;
+      const meta = typeof org.metadata === "string" ? JSON.parse(org.metadata) : org.metadata;
       return !meta.hidden;
     } catch {
       return true;

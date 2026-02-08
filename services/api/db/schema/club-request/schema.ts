@@ -1,10 +1,4 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  integer,
-  uniqueIndex,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const clubRequest = pgTable(
   "club_request",
@@ -20,7 +14,5 @@ export const clubRequest = pgTable(
       .notNull(),
     status: text("status").default("pending").notNull(), // pending | approved | rejected
   },
-  (table) => [
-    uniqueIndex("club_request_name_city_uidx").on(table.name, table.city),
-  ],
+  (table) => [uniqueIndex("club_request_name_city_uidx").on(table.name, table.city)],
 );

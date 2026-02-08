@@ -27,10 +27,7 @@ export const getWeeklyLeaderboard = async (c: Context<HonoContext>) => {
     .from(user)
     .leftJoin(
       acesTransaction,
-      and(
-        eq(user.id, acesTransaction.userId),
-        gte(acesTransaction.createdAt, startOfWeek)
-      )
+      and(eq(user.id, acesTransaction.userId), gte(acesTransaction.createdAt, startOfWeek)),
     )
     .groupBy(user.id, user.name, user.image)
     .orderBy(desc(sql`coalesce(sum(${acesTransaction.amount}), 0)`))
@@ -42,10 +39,7 @@ export const getWeeklyLeaderboard = async (c: Context<HonoContext>) => {
     .from(user)
     .leftJoin(
       acesTransaction,
-      and(
-        eq(user.id, acesTransaction.userId),
-        gte(acesTransaction.createdAt, startOfWeek)
-      )
+      and(eq(user.id, acesTransaction.userId), gte(acesTransaction.createdAt, startOfWeek)),
     );
 
   return c.json({

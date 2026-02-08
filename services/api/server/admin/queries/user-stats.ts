@@ -22,108 +22,88 @@ export const userStats = async (c: Context<HonoContext>) => {
   }
 
   // Run all queries in parallel
-  const [
-    levelData,
-    streakData,
-    matchesData,
-    badgesData,
-    acesHistory,
-    challengesData,
-  ] = await Promise.all([
-    // User level
-    db
-      .select()
-      .from(userLevel)
-      .where(eq(userLevel.userId, userId))
-      .limit(1),
+  const [levelData, streakData, matchesData, badgesData, acesHistory, challengesData] =
+    await Promise.all([
+      // User level
+      db.select().from(userLevel).where(eq(userLevel.userId, userId)).limit(1),
 
-    // User streak
-    db
-      .select()
-      .from(userStreak)
-      .where(eq(userStreak.userId, userId))
-      .limit(1),
+      // User streak
+      db.select().from(userStreak).where(eq(userStreak.userId, userId)).limit(1),
 
-    // Matches with participant data
-    db
-      .select({
-        matchId: match.id,
-        status: match.status,
-        type: match.type,
-        finishedAt: match.finishedAt,
-        scheduledAt: match.scheduledAt,
-        isWinner: matchParticipant.isWinner,
-        side: matchParticipant.side,
-      })
-      .from(matchParticipant)
-      .innerJoin(match, eq(matchParticipant.matchId, match.id))
-      .where(eq(matchParticipant.userId, userId))
-      .orderBy(desc(match.createdAt))
-      .limit(50),
+      // Matches with participant data
+      db
+        .select({
+          matchId: match.id,
+          status: match.status,
+          type: match.type,
+          finishedAt: match.finishedAt,
+          scheduledAt: match.scheduledAt,
+          isWinner: matchParticipant.isWinner,
+          side: matchParticipant.side,
+        })
+        .from(matchParticipant)
+        .innerJoin(match, eq(matchParticipant.matchId, match.id))
+        .where(eq(matchParticipant.userId, userId))
+        .orderBy(desc(match.createdAt))
+        .limit(50),
 
-    // Badges
-    db
-      .select({
-        badgeId: badge.id,
-        code: badge.code,
-        category: badge.category,
-        nameFr: badge.nameFr,
-        nameEn: badge.nameEn,
-        descriptionFr: badge.descriptionFr,
-        descriptionEn: badge.descriptionEn,
-        imageUrl: badge.imageUrl,
-        unlockedAt: userBadge.unlockedAt,
-      })
-      .from(userBadge)
-      .innerJoin(badge, eq(userBadge.badgeId, badge.id))
-      .where(eq(userBadge.userId, userId))
-      .orderBy(desc(userBadge.unlockedAt)),
+      // Badges
+      db
+        .select({
+          badgeId: badge.id,
+          code: badge.code,
+          category: badge.category,
+          nameFr: badge.nameFr,
+          nameEn: badge.nameEn,
+          descriptionFr: badge.descriptionFr,
+          descriptionEn: badge.descriptionEn,
+          imageUrl: badge.imageUrl,
+          unlockedAt: userBadge.unlockedAt,
+        })
+        .from(userBadge)
+        .innerJoin(badge, eq(userBadge.badgeId, badge.id))
+        .where(eq(userBadge.userId, userId))
+        .orderBy(desc(userBadge.unlockedAt)),
 
-    // Aces history (last 30 days, grouped by day)
-    db
-      .select({
-        date: sql<string>`DATE(${acesTransaction.createdAt})`.as("date"),
-        total: sql<number>`SUM(${acesTransaction.amount})`.as("total"),
-      })
-      .from(acesTransaction)
-      .where(
-        and(
-          eq(acesTransaction.userId, userId),
-          gte(
-            acesTransaction.createdAt,
-            sql`NOW() - INTERVAL '30 days'`,
+      // Aces history (last 30 days, grouped by day)
+      db
+        .select({
+          date: sql<string>`DATE(${acesTransaction.createdAt})`.as("date"),
+          total: sql<number>`SUM(${acesTransaction.amount})`.as("total"),
+        })
+        .from(acesTransaction)
+        .where(
+          and(
+            eq(acesTransaction.userId, userId),
+            gte(acesTransaction.createdAt, sql`NOW() - INTERVAL '30 days'`),
           ),
-        ),
-      )
-      .groupBy(sql`DATE(${acesTransaction.createdAt})`)
-      .orderBy(sql`DATE(${acesTransaction.createdAt})`),
+        )
+        .groupBy(sql`DATE(${acesTransaction.createdAt})`)
+        .orderBy(sql`DATE(${acesTransaction.createdAt})`),
 
-    // Challenges
-    db
-      .select({
-        challengeId: userChallenge.id,
-        status: userChallenge.status,
-        currentProgress: userChallenge.currentProgress,
-        targetValue: userChallenge.targetValue,
-        completedAt: userChallenge.completedAt,
-        acesAwarded: userChallenge.acesAwarded,
-        weekNumber: userChallenge.weekNumber,
-        year: userChallenge.year,
-        templateCode: challengeTemplate.code,
-        templateTitleFr: challengeTemplate.titleFr,
-        templateTitleEn: challengeTemplate.titleEn,
-        templateDifficulty: challengeTemplate.difficulty,
-        templateType: challengeTemplate.type,
-      })
-      .from(userChallenge)
-      .innerJoin(
-        challengeTemplate,
-        eq(userChallenge.templateId, challengeTemplate.id),
-      )
-      .where(eq(userChallenge.userId, userId))
-      .orderBy(desc(userChallenge.createdAt))
-      .limit(20),
-  ]);
+      // Challenges
+      db
+        .select({
+          challengeId: userChallenge.id,
+          status: userChallenge.status,
+          currentProgress: userChallenge.currentProgress,
+          targetValue: userChallenge.targetValue,
+          completedAt: userChallenge.completedAt,
+          acesAwarded: userChallenge.acesAwarded,
+          weekNumber: userChallenge.weekNumber,
+          year: userChallenge.year,
+          templateCode: challengeTemplate.code,
+          templateTitleFr: challengeTemplate.titleFr,
+          templateTitleEn: challengeTemplate.titleEn,
+          templateDifficulty: challengeTemplate.difficulty,
+          templateType: challengeTemplate.type,
+        })
+        .from(userChallenge)
+        .innerJoin(challengeTemplate, eq(userChallenge.templateId, challengeTemplate.id))
+        .where(eq(userChallenge.userId, userId))
+        .orderBy(desc(userChallenge.createdAt))
+        .limit(20),
+    ]);
 
   // Compute match stats
   const finishedMatches = matchesData.filter((m) => m.status === "finished");
@@ -148,9 +128,7 @@ export const userStats = async (c: Context<HonoContext>) => {
       total: finishedMatches.length,
       wins,
       losses,
-      winRate: finishedMatches.length > 0
-        ? Math.round((wins / finishedMatches.length) * 100)
-        : 0,
+      winRate: finishedMatches.length > 0 ? Math.round((wins / finishedMatches.length) * 100) : 0,
       recent: matchesData.slice(0, 10).map((m) => ({
         matchId: m.matchId,
         status: m.status,

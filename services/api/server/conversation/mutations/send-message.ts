@@ -30,8 +30,8 @@ export const sendMessage = async (c: Context<HonoContext>) => {
     .where(
       and(
         eq(conversationParticipant.conversationId, conversationId),
-        eq(conversationParticipant.userId, currentUser.id)
-      )
+        eq(conversationParticipant.userId, currentUser.id),
+      ),
     )
     .limit(1);
 
@@ -94,8 +94,8 @@ export const sendMessage = async (c: Context<HonoContext>) => {
     .where(
       and(
         eq(conversationParticipant.conversationId, conversationId),
-        ne(conversationParticipant.userId, currentUser.id)
-      )
+        ne(conversationParticipant.userId, currentUser.id),
+      ),
     );
 
   // Increment unread count for other participants and restore if deleted
@@ -136,7 +136,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
         JSON.stringify({
           userId: participant.userId,
           payload: messagePayload,
-        })
+        }),
       );
     }
   }
@@ -163,7 +163,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
       } catch (error) {
         console.error(
           `[SendMessage] Failed to send push notification to user ${participant.userId}:`,
-          error
+          error,
         );
       }
     }
@@ -183,6 +183,6 @@ export const sendMessage = async (c: Context<HonoContext>) => {
       clientMessageId,
       isFromMe: true,
     },
-    201
+    201,
   );
 };

@@ -11,17 +11,9 @@ import {
 import { user } from "../auth/schema";
 import { ulid } from "ulid";
 
-export const ChallengeType = pgEnum("challenge_type", [
-  "quantitative",
-  "social",
-  "performance",
-]);
+export const ChallengeType = pgEnum("challenge_type", ["quantitative", "social", "performance"]);
 
-export const ChallengeDifficulty = pgEnum("challenge_difficulty", [
-  "easy",
-  "medium",
-  "hard",
-]);
+export const ChallengeDifficulty = pgEnum("challenge_difficulty", ["easy", "medium", "hard"]);
 
 export const UserChallengeStatus = pgEnum("user_challenge_status", [
   "active",

@@ -17,7 +17,7 @@ function addConnection(userId: string, ws: ServerWebSocket<WebSocketData>): void
   }
   localConnections.get(userId)!.add(ws);
   console.log(
-    `[WS] User ${userId} connected. Total connections: ${localConnections.get(userId)!.size}`
+    `[WS] User ${userId} connected. Total connections: ${localConnections.get(userId)!.size}`,
   );
 }
 
@@ -25,9 +25,7 @@ function removeConnection(userId: string, ws: ServerWebSocket<WebSocketData>): v
   const userConnections = localConnections.get(userId);
   if (userConnections) {
     userConnections.delete(ws);
-    console.log(
-      `[WS] User ${userId} disconnected. Remaining connections: ${userConnections.size}`
-    );
+    console.log(`[WS] User ${userId} disconnected. Remaining connections: ${userConnections.size}`);
     if (userConnections.size === 0) {
       localConnections.delete(userId);
     }
@@ -76,7 +74,7 @@ export function initializeRedisSubscriber(): void {
 
 // Authenticate WebSocket upgrade request
 export async function authenticateWebSocket(
-  req: Request
+  req: Request,
 ): Promise<{ userId: string; token: string } | null> {
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
@@ -114,7 +112,7 @@ export const websocketHandlers = {
         type: "connected",
         userId,
         message: "Connected to chat",
-      })
+      }),
     );
 
     console.log(`[WS] User ${userId} opened connection`);

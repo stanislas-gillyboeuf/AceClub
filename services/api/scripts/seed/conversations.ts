@@ -1,12 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { ulid } from "ulid";
 import { eq } from "drizzle-orm";
-import {
-  conversation,
-  conversationParticipant,
-  message,
-  match,
-} from "../../db/schema/index.js";
+import { conversation, conversationParticipant, message, match } from "../../db/schema/index.js";
 import type { Database } from "./context.js";
 
 const TENNIS_MESSAGES_FR = [
@@ -96,10 +91,7 @@ export async function seedConversations(
     await db.insert(message).values(messages);
 
     // Link conversation to match
-    await db
-      .update(match)
-      .set({ conversationId: convId })
-      .where(eq(match.id, m.id));
+    await db.update(match).set({ conversationId: convId }).where(eq(match.id, m.id));
 
     convCount++;
     msgCount += messages.length;

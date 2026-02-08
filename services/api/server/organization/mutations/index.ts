@@ -11,3 +11,5 @@ export * from "./accept-invitation";
 export * from "./reject-invitation";
 export * from "./cancel-invitation";
 export * from "./request-club";
+export * from "./toggle-pin";
+export * from "./regenerate-pin";

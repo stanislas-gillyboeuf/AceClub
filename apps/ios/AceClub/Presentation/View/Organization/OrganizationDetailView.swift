@@ -96,6 +96,22 @@ struct OrganizationDetailView: View {
 
     @ViewBuilder
     private var adminDashboardSections: some View {
+        // PIN Section
+        OrganizationPinSection(
+            pin: organizationViewModel.organizationPin,
+            isPinEnabled: organizationViewModel.isPinEnabled,
+            onToggle: {
+                Task {
+                    await organizationViewModel.togglePin(organizationId: organization.id)
+                }
+            },
+            onRegenerate: {
+                Task {
+                    await organizationViewModel.regeneratePin(organizationId: organization.id)
+                }
+            }
+        )
+
         // Quick Actions
         OrganizationQuickActions(
             onInviteMember: {
@@ -166,9 +182,10 @@ struct OrganizationDetailView: View {
         await organizationViewModel.refreshFullOrganization(slug: organization.slug)
         await invitationViewModel.refreshOrganizationInvitations(organizationId: organization.id)
 
-        // Load stats for admins
+        // Load stats and PIN for admins
         if isAdmin {
             await organizationViewModel.loadOrganizationStats(organizationId: organization.id)
+            await organizationViewModel.loadOrganizationPin(organizationId: organization.id)
         }
     }
 

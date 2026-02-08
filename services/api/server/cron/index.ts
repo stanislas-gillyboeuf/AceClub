@@ -41,9 +41,7 @@ type CronTask =
 function getCurrentWeekAndYear(): { week: number; year: number } {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
-  const days = Math.floor(
-    (now.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000)
-  );
+  const days = Math.floor((now.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
   const weekNumber = Math.ceil((days + startOfYear.getDay() + 1) / 7);
   return { week: weekNumber, year: now.getFullYear() };
 }
@@ -54,14 +52,10 @@ async function expireChallenges() {
   const result = await db
     .update(userChallenge)
     .set({ status: "expired" })
-    .where(
-      and(eq(userChallenge.status, "active"), lt(userChallenge.expiresAt, now))
-    )
+    .where(and(eq(userChallenge.status, "active"), lt(userChallenge.expiresAt, now)))
     .returning({ id: userChallenge.id });
 
-  console.log(
-    `[CRON] Marked ${result.length} challenges as expired at ${now.toISOString()}`
-  );
+  console.log(`[CRON] Marked ${result.length} challenges as expired at ${now.toISOString()}`);
 }
 
 async function sendStreakWarnings() {
@@ -82,14 +76,12 @@ async function sendStreakWarnings() {
           isNull(userStreak.lastActiveWeek),
           isNull(userStreak.lastActiveYear),
           ne(userStreak.lastActiveWeek, currentWeek),
-          ne(userStreak.lastActiveYear, currentYear)
-        )
-      )
+          ne(userStreak.lastActiveYear, currentYear),
+        ),
+      ),
     );
 
-  console.log(
-    `[CRON] Found ${usersWithStreak.length} users at risk of losing streak`
-  );
+  console.log(`[CRON] Found ${usersWithStreak.length} users at risk of losing streak`);
 
   // TODO: Envoyer des notifications push à ces utilisateurs
   // Pour chaque utilisateur, créer une notification "streak_warning"
@@ -97,7 +89,7 @@ async function sendStreakWarnings() {
 
   for (const userStreak of usersWithStreak) {
     console.log(
-      `[CRON] User ${userStreak.userId} has ${userStreak.currentStreak} week streak at risk`
+      `[CRON] User ${userStreak.userId} has ${userStreak.currentStreak} week streak at risk`,
     );
     await sendNotificationToUser({
       userId: userStreak.userId,

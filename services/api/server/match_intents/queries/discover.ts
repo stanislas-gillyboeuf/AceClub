@@ -23,15 +23,9 @@ export const discover = async (c: Context<HonoContext>) => {
     const cursor = c.req.query("cursor");
     const limit = Math.min(parseInt(c.req.query("limit") || "20"), 100);
 
-    const userLat = c.req.query("latitude")
-      ? parseFloat(c.req.query("latitude")!)
-      : null;
-    const userLng = c.req.query("longitude")
-      ? parseFloat(c.req.query("longitude")!)
-      : null;
-    const radius = c.req.query("radius")
-      ? parseFloat(c.req.query("radius")!)
-      : null;
+    const userLat = c.req.query("latitude") ? parseFloat(c.req.query("latitude")!) : null;
+    const userLng = c.req.query("longitude") ? parseFloat(c.req.query("longitude")!) : null;
+    const radius = c.req.query("radius") ? parseFloat(c.req.query("radius")!) : null;
 
     const hasLocation = userLat !== null && userLng !== null;
 
@@ -210,9 +204,12 @@ export const discover = async (c: Context<HonoContext>) => {
         org_name: organization.name,
         org_logo: organization.logo,
         score: scoreExpression,
-        distance: hasLocation && distanceExpressionRaw
-          ? sql<number>`CASE WHEN ${organization.latitude} IS NOT NULL AND ${organization.longitude} IS NOT NULL THEN ROUND((${distanceExpressionRaw})::numeric, 1) ELSE NULL END`.as("distance")
-          : sql<number>`NULL`.as("distance"),
+        distance:
+          hasLocation && distanceExpressionRaw
+            ? sql<number>`CASE WHEN ${organization.latitude} IS NOT NULL AND ${organization.longitude} IS NOT NULL THEN ROUND((${distanceExpressionRaw})::numeric, 1) ELSE NULL END`.as(
+                "distance",
+              )
+            : sql<number>`NULL`.as("distance"),
       })
       .from(matchIntent)
       .leftJoin(userTable, eq(matchIntent.userId, userTable.id))

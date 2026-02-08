@@ -8,9 +8,7 @@ import { z } from "zod";
 
 export const listOrganizationMembers = async (c: Context<HonoContext>) => {
   // @ts-ignore
-  const validated = c.req.valid("query") as z.infer<
-    typeof listOrganizationMembersValidator
-  >;
+  const validated = c.req.valid("query") as z.infer<typeof listOrganizationMembersValidator>;
 
   const limit = validated.limit ?? 20;
   const offset = validated.offset ?? 0;

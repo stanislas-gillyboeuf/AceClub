@@ -4,7 +4,13 @@ import type { Database } from "./context.js";
 
 const TITLES = [
   { code: "debutant", nameFr: "Débutant", nameEn: "Beginner", requiredLevel: 1, displayOrder: 1 },
-  { code: "intermediaire", nameFr: "Intermédiaire", nameEn: "Intermediate", requiredLevel: 2, displayOrder: 2 },
+  {
+    code: "intermediaire",
+    nameFr: "Intermédiaire",
+    nameEn: "Intermediate",
+    requiredLevel: 2,
+    displayOrder: 2,
+  },
   { code: "confirme", nameFr: "Confirmé", nameEn: "Advanced", requiredLevel: 3, displayOrder: 3 },
   { code: "expert", nameFr: "Expert", nameEn: "Expert", requiredLevel: 5, displayOrder: 4 },
   { code: "maitre", nameFr: "Maître", nameEn: "Master", requiredLevel: 7, displayOrder: 5 },

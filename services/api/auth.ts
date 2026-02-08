@@ -142,6 +142,17 @@ export const auth = betterAuth({
               input: true,
               required: false,
             },
+            pin: {
+              type: "string",
+              input: false,
+              required: false,
+            },
+            pinEnabled: {
+              type: "boolean",
+              input: false,
+              required: false,
+              defaultValue: false,
+            },
           },
         },
       },

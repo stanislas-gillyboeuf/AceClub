@@ -17,7 +17,10 @@ export const uploadUserImage = async (c: Context<HonoContext>) => {
   const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/heic"];
   if (!allowedTypes.includes(file.type)) {
     return c.json(
-      { error: "BadRequest", message: "Content type must be image/jpeg, image/png, image/webp, or image/heic" },
+      {
+        error: "BadRequest",
+        message: "Content type must be image/jpeg, image/png, image/webp, or image/heic",
+      },
       400,
     );
   }
