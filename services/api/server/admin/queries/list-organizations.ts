@@ -33,6 +33,8 @@ export const listOrganizations = async (c: Context<HonoContext>) => {
         logo: organization.logo,
         createdAt: organization.createdAt,
         metadata: organization.metadata,
+        pin: organization.pin,
+        pinEnabled: organization.pinEnabled,
         memberCount: sql<number>`cast(count(${member.id}) as int)`,
       })
       .from(organization)

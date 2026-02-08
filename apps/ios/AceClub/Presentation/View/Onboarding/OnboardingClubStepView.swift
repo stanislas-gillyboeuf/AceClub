@@ -66,6 +66,18 @@ struct OnboardingClubStepView: View {
         .sheet(isPresented: $viewModel.showRequestClubSheet) {
             RequestClubSheet(viewModel: viewModel)
         }
+        .sheet(isPresented: $viewModel.showPinSheet) {
+            PinEntrySheet(
+                onValidate: { pinValue in
+                    viewModel.validatePin(pinValue)
+                },
+                onDismiss: {
+                    viewModel.showPinSheet = false
+                    viewModel.selectedOrganization = nil
+                    viewModel.pin = ""
+                }
+            )
+        }
     }
 
     private var loadingView: some View {
@@ -111,10 +123,12 @@ struct OnboardingClubStepView: View {
                 ForEach(viewModel.organizations) { org in
                     OnboardingOrganizationRow(
                         name: org.name,
-                        isSelected: viewModel.selectedOrganization?.id == org.id
+                        isSelected: viewModel.selectedOrganization?.id == org.id,
+                        pinEnabled: org.pinEnabled,
+                        pinValidated: viewModel.selectedOrganization?.id == org.id && viewModel.pin.count == 4
                     ) {
                         withAnimation(.easeInOut(duration: 0.15)) {
-                            viewModel.selectedOrganization = org
+                            viewModel.selectOrganization(org)
                         }
                         triggerHaptic()
                     }
@@ -138,6 +152,8 @@ struct OnboardingClubStepView: View {
 private struct OnboardingOrganizationRow: View {
     let name: String
     let isSelected: Bool
+    var pinEnabled: Bool = false
+    var pinValidated: Bool = false
     let action: () -> Void
 
     var body: some View {
@@ -159,9 +175,15 @@ private struct OnboardingOrganizationRow: View {
                     .font(.body)
                     .foregroundStyle(isSelected ? Color.accentColor : .primary)
 
+                if pinEnabled {
+                    Image(systemName: pinValidated ? "lock.open.fill" : "lock.fill")
+                        .font(.caption)
+                        .foregroundStyle(pinValidated ? .green : .secondary)
+                }
+
                 Spacer()
 
-                if isSelected {
+                if isSelected && (!pinEnabled || pinValidated) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.body)
                         .foregroundStyle(Color.accentColor)

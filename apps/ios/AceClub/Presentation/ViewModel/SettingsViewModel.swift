@@ -30,6 +30,11 @@ final class SettingsViewModel: ObservableObject {
     @Published var clubRequestSuccess: Bool = false
     @Published var clubRequestMessage: String?
 
+    // MARK: - PIN State
+    @Published var pin: String = ""
+    @Published var showPinSheet: Bool = false
+    @Published var pendingPinOrganization: Organization?
+
     // Original values to detect changes
     private var originalName: String = ""
     private var originalPhoneNumber: String = ""
@@ -135,6 +140,34 @@ final class SettingsViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Organization Selection with PIN
+
+    func selectOrganization(_ org: Organization) {
+        if org.pinEnabled {
+            pendingPinOrganization = org
+            pin = ""
+            showPinSheet = true
+        } else {
+            selectedOrganization = org
+            pin = ""
+        }
+    }
+
+    func validatePin(_ pinValue: String) {
+        pin = pinValue
+        if let org = pendingPinOrganization {
+            selectedOrganization = org
+        }
+        pendingPinOrganization = nil
+        showPinSheet = false
+    }
+
+    func cancelPin() {
+        pendingPinOrganization = nil
+        pin = ""
+        showPinSheet = false
+    }
+
     // MARK: - Sport Selection
     func selectSport(_ sport: Sport) {
         selectedSport = sport
@@ -166,13 +199,15 @@ final class SettingsViewModel: ObservableObject {
             }
 
             // 2. Update profile with all changes
+            let orgChanged = selectedOrganization?.id != originalOrganizationId
             let updatedUser = try await updateProfileUseCase.execute(
                 name: name != originalName ? name : nil,
                 image: uploadedImageURL,
                 phoneNumber: phoneNumber != originalPhoneNumber ? phoneNumber : nil,
-                organizationId: selectedOrganization?.id != originalOrganizationId ? selectedOrganization?.id : nil,
+                organizationId: orgChanged ? selectedOrganization?.id : nil,
                 sport: selectedSport?.rawValue != originalSport ? selectedSport?.rawValue : nil,
-                skillLevel: selectedSkillLevel?.value != originalSkillLevel ? selectedSkillLevel?.value : nil
+                skillLevel: selectedSkillLevel?.value != originalSkillLevel ? selectedSkillLevel?.value : nil,
+                pin: orgChanged && !pin.isEmpty ? pin : nil
             )
 
             // Update original values

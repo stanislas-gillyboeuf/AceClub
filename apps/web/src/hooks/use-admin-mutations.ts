@@ -188,6 +188,36 @@ export function useCancelInvitation() {
   })
 }
 
+export function useToggleOrganizationPin() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { organizationId: string; enabled: boolean }) =>
+      apiClient("/organization/toggle-pin", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-organizations"] })
+    },
+  })
+}
+
+export function useRegenerateOrganizationPin() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { organizationId: string }) =>
+      apiClient("/organization/regenerate-pin", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }) as Promise<{ pin: string; pinEnabled: boolean }>,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-organizations"] })
+    },
+  })
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001"
 
 export function useUploadOrganizationLogo() {

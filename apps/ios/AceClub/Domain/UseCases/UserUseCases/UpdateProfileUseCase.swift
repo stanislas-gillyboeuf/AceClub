@@ -9,7 +9,8 @@ class UpdateProfileUseCase {
         phoneNumber: String? = nil,
         organizationId: String? = nil,
         sport: String? = nil,
-        skillLevel: String? = nil
+        skillLevel: String? = nil,
+        pin: String? = nil
     ) async throws -> User {
         return try await userRepository.updateProfile(
             name: name,
@@ -17,7 +18,8 @@ class UpdateProfileUseCase {
             phoneNumber: phoneNumber,
             organizationId: organizationId,
             sport: sport,
-            skillLevel: skillLevel
+            skillLevel: skillLevel,
+            pin: pin
         )
     }
 }

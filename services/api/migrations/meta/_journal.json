@@ -29,6 +29,13 @@
       "when": 1770455568516,
       "tag": "0003_colossal_gorgon",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770580883877,
+      "tag": "0004_odd_blue_blade",
+      "breakpoints": true
     }
   ]
 }

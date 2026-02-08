@@ -21,7 +21,11 @@ export const completeOnboarding = async (c: Context<HonoContext>) => {
   const validated = c.req.valid("json") as z.infer<typeof completeOnboardingValidator>;
 
   const [org] = await db
-    .select({ id: organization.id })
+    .select({
+      id: organization.id,
+      pin: organization.pin,
+      pinEnabled: organization.pinEnabled,
+    })
     .from(organization)
     .where(eq(organization.id, validated.organizationId))
     .limit(1);
@@ -33,6 +37,16 @@ export const completeOnboarding = async (c: Context<HonoContext>) => {
         message: "Organization not found",
       },
       404,
+    );
+  }
+
+  if (org.pinEnabled && org.pin && validated.pin !== org.pin) {
+    return c.json(
+      {
+        error: "InvalidPin",
+        message: "Code PIN incorrect",
+      },
+      403,
     );
   }
 

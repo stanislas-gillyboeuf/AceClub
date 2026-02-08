@@ -19,12 +19,13 @@ class UserRepository {
         return UserMapper.map(userSearchResponseDTO: userSearchResponse)
     }
 
-    func completeOnboarding(organizationId: String, sport: String, skillLevel: String, phoneNumber: String) async throws -> User {
+    func completeOnboarding(organizationId: String, sport: String, skillLevel: String, phoneNumber: String, pin: String? = nil) async throws -> User {
         let userDTO = try await userDataSource.completeOnboarding(
             organizationId: organizationId,
             sport: sport,
             skillLevel: skillLevel,
-            phoneNumber: phoneNumber
+            phoneNumber: phoneNumber,
+            pin: pin
         )
         return UserMapper.map(userDTO: userDTO)
     }
@@ -40,7 +41,8 @@ class UserRepository {
         phoneNumber: String?,
         organizationId: String?,
         sport: String?,
-        skillLevel: String?
+        skillLevel: String?,
+        pin: String? = nil
     ) async throws -> User {
         let userDTO = try await userDataSource.updateProfile(
             name: name,
@@ -48,7 +50,8 @@ class UserRepository {
             phoneNumber: phoneNumber,
             organizationId: organizationId,
             sport: sport,
-            skillLevel: skillLevel
+            skillLevel: skillLevel,
+            pin: pin
         )
         return UserMapper.map(userDTO: userDTO)
     }

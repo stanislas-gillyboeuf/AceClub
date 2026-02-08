@@ -86,6 +86,7 @@ struct CompleteOnboardingRequestDTO: Codable {
     let sport: String
     let skillLevel: String
     let phoneNumber: String
+    let pin: String?
 }
 
 // MARK: - User Preferences DTOs
@@ -108,4 +109,5 @@ struct UpdateProfileRequestDTO: Codable {
     let organizationId: String?
     let sport: String?
     let skillLevel: String?
+    let pin: String?
 }

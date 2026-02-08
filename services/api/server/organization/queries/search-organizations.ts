@@ -25,6 +25,7 @@ export const searchOrganizations = async (c: Context<HonoContext>) => {
       name: organization.name,
       slug: organization.slug,
       logo: organization.logo,
+      pinEnabled: organization.pinEnabled,
     };
 
     const organizationsQuery = db
