@@ -12,75 +12,125 @@ interface MatchData {
   status: MatchStatus;
   startedAt: Date | null;
   finishedAt: Date | null;
+  scheduledAt: Date;
   homeParticipantId: string;
   awayParticipantId: string;
-}
-
-function generateMatchTimestamps(status: MatchStatus): {
-  startedAt: Date | null;
-  finishedAt: Date | null;
-} {
-  if (status === "scheduled") {
-    return { startedAt: null, finishedAt: null };
-  }
-
-  // Match started between 1-30 days ago
-  const startedAt = faker.date.recent({ days: 30 });
-
-  if (status === "ongoing") {
-    return { startedAt, finishedAt: null };
-  }
-
-  // Finished match: duration between 30 min and 2h30
-  const durationMinutes = faker.number.int({ min: 30, max: 150 });
-  const finishedAt = new Date(startedAt.getTime() + durationMinutes * 60 * 1000);
-
-  return { startedAt, finishedAt };
+  homeUserId: string;
+  awayUserId: string;
+  winnerUserId: string | null;
 }
 
 export async function seedMatches(
   db: Database,
   ctx: { userIds: string[] },
-): Promise<{ matchIds: string[]; matchData: MatchData[] }> {
+): Promise<{
+  matchIds: string[];
+  matchData: MatchData[];
+  finishedMatchIds: string[];
+  matchIdToParticipants: Map<
+    string,
+    {
+      homeUserId: string;
+      awayUserId: string;
+      homeParticipantId: string;
+      awayParticipantId: string;
+      winnerUserId: string | null;
+    }
+  >;
+}> {
   const matchIds: string[] = [];
   const matchData: MatchData[] = [];
+  const finishedMatchIds: string[] = [];
+  const matchIdToParticipants = new Map<
+    string,
+    {
+      homeUserId: string;
+      awayUserId: string;
+      homeParticipantId: string;
+      awayParticipantId: string;
+      winnerUserId: string | null;
+    }
+  >();
 
-  // Ensure a balanced distribution: mostly finished, some ongoing, few scheduled
-  const statusDistribution: MatchStatus[] = [];
   const count = SEED_COUNTS.MATCHES_COUNT;
-  const finishedCount = Math.max(1, Math.floor(count * 0.5)); // 50% finished
-  const ongoingCount = Math.max(1, Math.floor(count * 0.25)); // 25% ongoing
-  const scheduledCount = count - finishedCount - ongoingCount; // rest scheduled
+  // 60% finished, 20% ongoing, 20% scheduled
+  const finishedCount = Math.floor(count * 0.6); // 12
+  const ongoingCount = Math.floor(count * 0.2); // 4
+  const scheduledCount = count - finishedCount - ongoingCount; // 4
 
-  for (let i = 0; i < finishedCount; i++) statusDistribution.push("finished");
-  for (let i = 0; i < ongoingCount; i++) statusDistribution.push("ongoing");
-  for (let i = 0; i < scheduledCount; i++) statusDistribution.push("scheduled");
+  const statusList: MatchStatus[] = [];
+  for (let i = 0; i < finishedCount; i++) statusList.push("finished");
+  for (let i = 0; i < ongoingCount; i++) statusList.push("ongoing");
+  for (let i = 0; i < scheduledCount; i++) statusList.push("scheduled");
 
-  // Shuffle the distribution
-  faker.helpers.shuffle(statusDistribution);
+  // Sort so finished are oldest, ongoing recent, scheduled future
+  // We'll assign dates in order below
 
-  for (let i = 0; i < SEED_COUNTS.MATCHES_COUNT; i++) {
+  const now = new Date();
+
+  for (let i = 0; i < count; i++) {
     const id = ulid();
-    const status = statusDistribution[i];
-    const { startedAt, finishedAt } = generateMatchTimestamps(status);
+    const status = statusList[i];
     const [userA, userB] = faker.helpers.arrayElements(ctx.userIds, 2);
     const homeParticipantId = ulid();
     const awayParticipantId = ulid();
 
+    let scheduledAt: Date;
+    let startedAt: Date | null = null;
+    let finishedAt: Date | null = null;
+
+    if (status === "finished") {
+      // Spread finished matches over last 4 weeks
+      const daysAgo = Math.floor((i / finishedCount) * 28) + 1;
+      scheduledAt = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+      startedAt = new Date(scheduledAt.getTime() + 5 * 60 * 1000); // started 5min after scheduled
+      const durationMinutes = faker.number.int({ min: 30, max: 150 });
+      finishedAt = new Date(startedAt.getTime() + durationMinutes * 60 * 1000);
+    } else if (status === "ongoing") {
+      // Ongoing matches: started within last few hours
+      const hoursAgo = faker.number.int({ min: 1, max: 3 });
+      scheduledAt = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
+      startedAt = new Date(scheduledAt.getTime() + 5 * 60 * 1000);
+    } else {
+      // Scheduled: in the next 1-14 days
+      const daysAhead = faker.number.int({ min: 1, max: 14 });
+      scheduledAt = new Date(now.getTime() + daysAhead * 24 * 60 * 60 * 1000);
+    }
+
     matchIds.push(id);
-    matchData.push({
+
+    // Winner will be determined in seedSetsAndScores for finished matches
+    const data: MatchData = {
       id,
       status,
       startedAt,
       finishedAt,
+      scheduledAt,
       homeParticipantId,
       awayParticipantId,
+      homeUserId: userA,
+      awayUserId: userB,
+      winnerUserId: null,
+    };
+    matchData.push(data);
+
+    if (status === "finished") {
+      finishedMatchIds.push(id);
+    }
+
+    matchIdToParticipants.set(id, {
+      homeUserId: userA,
+      awayUserId: userB,
+      homeParticipantId,
+      awayParticipantId,
+      winnerUserId: null,
     });
 
     await db.insert(match).values({
       id,
       createdBy: userA,
       status,
+      scheduledAt,
       startedAt,
       finishedAt,
     });
@@ -91,15 +141,14 @@ export async function seedMatches(
     ]);
   }
 
-  console.log(`  Inserted ${matchIds.length} matches`);
+  console.log(`  Inserted ${matchIds.length} matches (${finishedCount} finished, ${ongoingCount} ongoing, ${scheduledCount} scheduled)`);
   console.log(`  Inserted ${matchIds.length * 2} match participants`);
 
-  return { matchIds, matchData };
+  return { matchIds, matchData, finishedMatchIds, matchIdToParticipants };
 }
 
 /**
  * Generate valid tennis set scores.
- * Winner must have 6+ games with 2+ game lead, or 7 games (tiebreak at 6-6).
  */
 function generateValidSetScore(): { winnerGames: number; loserGames: number } {
   const scenarios = [
@@ -108,49 +157,48 @@ function generateValidSetScore(): { winnerGames: number; loserGames: number } {
     { winnerGames: 6, loserGames: 2 },
     { winnerGames: 6, loserGames: 3 },
     { winnerGames: 6, loserGames: 4 },
-    { winnerGames: 7, loserGames: 5 }, // 7-5
-    { winnerGames: 7, loserGames: 6 }, // Tiebreak 7-6
+    { winnerGames: 7, loserGames: 5 },
+    { winnerGames: 7, loserGames: 6 },
   ];
   return faker.helpers.arrayElement(scenarios);
 }
 
 export async function seedSetsAndScores(
   db: Database,
-  ctx: { matchData: MatchData[] },
+  ctx: {
+    matchData: MatchData[];
+    matchIdToParticipants: Map<
+      string,
+      {
+        homeUserId: string;
+        awayUserId: string;
+        homeParticipantId: string;
+        awayParticipantId: string;
+        winnerUserId: string | null;
+      }
+    >;
+  },
 ): Promise<void> {
   for (const data of ctx.matchData) {
-    // Only finished matches have sets/scores
-    if (data.status !== "finished") {
-      continue;
-    }
+    if (data.status !== "finished") continue;
 
-    // Determine number of sets (best of 3: 2 or 3 sets)
     const setCount = faker.helpers.arrayElement([2, 3]);
-
-    // Track sets won by each participant
     let homeSetsWon = 0;
     let awaySetsWon = 0;
-
-    // Pre-determine the match winner
     const homeWinsMatch = faker.datatype.boolean();
 
     for (let s = 1; s <= setCount; s++) {
       const setId = ulid();
       const { winnerGames, loserGames } = generateValidSetScore();
 
-      // Determine set winner based on match outcome
-      // Winner needs 2 sets to win (best of 3)
       let homeWinsSet: boolean;
-
       if (homeWinsMatch) {
-        // Home needs to win 2 sets
         if (homeSetsWon < 2 && (awaySetsWon === 0 || s === setCount)) {
           homeWinsSet = true;
         } else {
           homeWinsSet = homeSetsWon < 2;
         }
       } else {
-        // Away needs to win 2 sets
         if (awaySetsWon < 2 && (homeSetsWon === 0 || s === setCount)) {
           homeWinsSet = false;
         } else {
@@ -158,11 +206,8 @@ export async function seedSetsAndScores(
         }
       }
 
-      if (homeWinsSet) {
-        homeSetsWon++;
-      } else {
-        awaySetsWon++;
-      }
+      if (homeWinsSet) homeSetsWon++;
+      else awaySetsWon++;
 
       await db.insert(set).values({
         id: setId,
@@ -186,12 +231,22 @@ export async function seedSetsAndScores(
       ]);
     }
 
-    // Update the winner
-    const winnerId = homeWinsMatch ? data.homeParticipantId : data.awayParticipantId;
+    const winnerParticipantId = homeWinsMatch
+      ? data.homeParticipantId
+      : data.awayParticipantId;
+    const winnerUserId = homeWinsMatch ? data.homeUserId : data.awayUserId;
+
     await db
       .update(matchParticipant)
       .set({ isWinner: true })
-      .where(eq(matchParticipant.id, winnerId));
+      .where(eq(matchParticipant.id, winnerParticipantId));
+
+    // Update the matchData and map with winner info
+    data.winnerUserId = winnerUserId;
+    const participants = ctx.matchIdToParticipants.get(data.id);
+    if (participants) {
+      participants.winnerUserId = winnerUserId;
+    }
   }
 
   console.log("  Inserted sets and set scores with winners");
