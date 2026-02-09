@@ -9,6 +9,7 @@ import {
   listOrganizations,
   listOrganizationMembers,
   listOrganizationInvitations,
+  listFeatureFlags,
 } from "./queries";
 import { zValidator } from "@hono/zod-validator";
 import {
@@ -29,6 +30,9 @@ import {
   unbanUserValidator,
   revokeUserSessionsValidator,
   revokeUserSessionValidator,
+  createFeatureFlagValidator,
+  updateFeatureFlagValidator,
+  setFeatureFlagOverrideValidator,
 } from "./validators";
 import {
   banUser,
@@ -43,6 +47,11 @@ import {
   deleteOrganization,
   createOrganizationInvitation,
   cancelOrganizationInvitation,
+  createFeatureFlag,
+  updateFeatureFlag,
+  deleteFeatureFlag,
+  setFeatureFlagOverride,
+  removeFeatureFlagOverride,
 } from "./mutations";
 
 export const adminRouter = new Hono<HonoContext>();
@@ -129,4 +138,32 @@ adminRouter.post(
   "/cancel-organization-invitation",
   zValidator("json", cancelOrganizationInvitationAdminValidator),
   cancelOrganizationInvitation,
+);
+
+// Feature flags
+adminRouter.get("/feature-flags", listFeatureFlags);
+
+adminRouter.post(
+  "/feature-flags",
+  zValidator("json", createFeatureFlagValidator),
+  createFeatureFlag,
+);
+
+adminRouter.put(
+  "/feature-flags/:id",
+  zValidator("json", updateFeatureFlagValidator),
+  updateFeatureFlag,
+);
+
+adminRouter.delete("/feature-flags/:id", deleteFeatureFlag);
+
+adminRouter.post(
+  "/feature-flags/:id/overrides",
+  zValidator("json", setFeatureFlagOverrideValidator),
+  setFeatureFlagOverride,
+);
+
+adminRouter.delete(
+  "/feature-flags/:id/overrides/:orgId",
+  removeFeatureFlagOverride,
 );
