@@ -13,3 +13,7 @@ export const listMessagesValidator = z.object({
 export const muteConversationValidator = z.object({
   isMuted: z.boolean(),
 });
+
+export const findOrCreateConversationValidator = z.object({
+  participantId: z.string().min(1),
+});

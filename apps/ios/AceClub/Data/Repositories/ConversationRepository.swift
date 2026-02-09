@@ -72,4 +72,11 @@ class ConversationRepository {
     func muteConversation(conversationId: String, isMuted: Bool) async throws {
         try await conversationDataSource.muteConversation(conversationId: conversationId, isMuted: isMuted)
     }
+
+    // MARK: - Find Or Create Conversation
+
+    func findOrCreateConversation(participantId: String) async throws -> (conversationId: String, created: Bool) {
+        let response = try await conversationDataSource.findOrCreateConversation(participantId: participantId)
+        return (conversationId: response.conversationId, created: response.created)
+    }
 }
