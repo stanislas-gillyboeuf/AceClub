@@ -17,10 +17,11 @@ struct MatchIntentsView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Radius picker
-                radiusPicker
-                    .padding(.horizontal, Theme.paddingHorizontal)
-                    .padding(.vertical, 8)
+                if !viewModel.isDiscoveryRestricted {
+                    radiusPicker
+                        .padding(.horizontal, Theme.paddingHorizontal)
+                        .padding(.vertical, 8)
+                }
 
                 ZStack {
                     if viewModel.isLoading, viewModel.discoverItems.isEmpty {
@@ -38,9 +39,11 @@ struct MatchIntentsView: View {
             }
             .navigationTitle("Trouver un partenaire")
             .task {
-                viewModel.locationManager.requestPermission()
-                viewModel.locationManager.requestLocation()
                 await viewModel.loadDiscover()
+                if !viewModel.isDiscoveryRestricted {
+                    viewModel.locationManager.requestPermission()
+                    viewModel.locationManager.requestLocation()
+                }
             }
             .refreshable {
                 await viewModel.loadDiscover()

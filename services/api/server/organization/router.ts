@@ -16,6 +16,7 @@ import {
   requestClub,
   togglePin,
   regeneratePin,
+  verifyPin,
 } from "./mutations";
 import {
   createOrganizationValidator,
@@ -55,6 +56,7 @@ import {
   togglePinValidator,
   regeneratePinValidator,
   getPinValidator,
+  verifyPinValidator,
 } from "./validators";
 
 export const organizationRouter = new Hono<HonoContext>();
@@ -156,6 +158,7 @@ organizationRouter.post(
   zValidator("json", regeneratePinValidator),
   regeneratePin,
 );
+organizationRouter.post("/verify-pin", zValidator("json", verifyPinValidator), verifyPin);
 
 // Admin-only routes
 organizationRouter.use("/*", isAdmin);

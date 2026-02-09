@@ -2,22 +2,15 @@ import SwiftUI
 
 struct OnboardingLevelStepView: View {
     @ObservedObject var viewModel: OnboardingViewModel
+    @State private var appeared = false
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Ton niveau")
-                    .font(.title2)
-                    .fontWeight(.bold)
-
-                Text(subtitleText)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, Theme.paddingHorizontal)
-            .padding(.top, 20)
+            OnboardingStepHeader(
+                icon: "chart.bar.fill",
+                title: "Ton niveau",
+                subtitle: subtitleText
+            )
 
             if let sport = viewModel.selectedSport {
                 levelPicker(for: sport)
@@ -27,7 +20,7 @@ struct OnboardingLevelStepView: View {
                     Spacer()
                     Text("Selectionne d'abord un sport")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Theme.labelSecondary)
                     Spacer()
                 }
             }
@@ -36,6 +29,9 @@ struct OnboardingLevelStepView: View {
         }
         .onAppear {
             preselectFirstLevelIfNeeded()
+            withAnimation(.easeOut(duration: 0.3).delay(0.2)) {
+                appeared = true
+            }
         }
     }
 
@@ -53,22 +49,58 @@ struct OnboardingLevelStepView: View {
     private func levelPicker(for sport: Sport) -> some View {
         let levels = SkillLevel.levels(for: sport)
 
-        ScrollView {
-            LazyVStack(spacing: 6) {
-                ForEach(levels) { level in
-                    LevelCard(
+        switch sport {
+        case .padel:
+            // Grid 2x2 for padel (4 levels)
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: 12),
+                GridItem(.flexible(), spacing: 12)
+            ], spacing: 12) {
+                ForEach(Array(levels.enumerated()), id: \.element.id) { index, level in
+                    PadelLevelTile(
                         level: level,
                         isSelected: viewModel.selectedSkillLevel == level
                     ) {
-                        withAnimation(.easeInOut(duration: 0.15)) {
+                        withAnimation(.easeOut(duration: 0.25)) {
                             viewModel.selectedSkillLevel = level
                         }
                         triggerHaptic()
                     }
+                    .opacity(appeared ? 1 : 0)
+                    .offset(y: appeared ? 0 : 20)
+                    .animation(
+                        .easeOut(duration: 0.35).delay(Double(index) * 0.06),
+                        value: appeared
+                    )
                 }
             }
             .padding(.horizontal, Theme.paddingHorizontal)
-            .padding(.bottom, 8)
+
+        case .tennis:
+            // Scrollable list for tennis (22 levels)
+            ScrollView {
+                LazyVStack(spacing: 6) {
+                    ForEach(Array(levels.enumerated()), id: \.element.id) { index, level in
+                        TennisLevelRow(
+                            level: level,
+                            isSelected: viewModel.selectedSkillLevel == level
+                        ) {
+                            withAnimation(.easeOut(duration: 0.25)) {
+                                viewModel.selectedSkillLevel = level
+                            }
+                            triggerHaptic()
+                        }
+                        .opacity(appeared ? 1 : 0)
+                        .offset(y: appeared ? 0 : 15)
+                        .animation(
+                            .easeOut(duration: 0.3).delay(Double(index) * 0.02),
+                            value: appeared
+                        )
+                    }
+                }
+                .padding(.horizontal, Theme.paddingHorizontal)
+                .padding(.bottom, 8)
+            }
         }
     }
 
@@ -79,43 +111,126 @@ struct OnboardingLevelStepView: View {
     }
 
     private func triggerHaptic() {
-        let generator = UISelectionFeedbackGenerator()
-        generator.selectionChanged()
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
     }
 }
 
-// MARK: - Level Card
+// MARK: - Padel Level Tile (Grid)
 
-private struct LevelCard: View {
+private struct PadelLevelTile: View {
+    let level: SkillLevel
+    let isSelected: Bool
+    let action: () -> Void
+
+    @State private var iconPulse = false
+
+    private var levelIcon: String {
+        switch level.value {
+        case "Débutant": return "1.circle.fill"
+        case "Intermédiaire": return "2.circle.fill"
+        case "Avancé": return "3.circle.fill"
+        case "Expert": return "4.circle.fill"
+        default: return "circle.fill"
+        }
+    }
+
+    var body: some View {
+        Button(action: {
+            action()
+            withAnimation(.easeOut(duration: 0.2)) {
+                iconPulse = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    iconPulse = false
+                }
+            }
+        }) {
+            VStack(spacing: 10) {
+                Image(systemName: levelIcon)
+                    .font(.system(size: 30, weight: .medium))
+                    .foregroundStyle(isSelected ? Theme.tintColor : Theme.labelSecondary)
+                    .scaleEffect(iconPulse ? 1.2 : 1)
+
+                Text(level.displayName)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(isSelected ? Theme.tintColor : Theme.labelPrimary)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 110)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous)
+                    .fill(isSelected ? Theme.tintColor.opacity(0.06) : Theme.cardBackground)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous)
+                    .stroke(isSelected ? Theme.tintColor.opacity(0.4) : Theme.borderColor, lineWidth: isSelected ? 2 : Theme.borderWidthSubtle)
+            )
+            .overlay(alignment: .topTrailing) {
+                if isSelected {
+                    ZStack {
+                        Circle()
+                            .fill(Theme.tintColor)
+                            .frame(width: 22, height: 22)
+
+                        Image(systemName: "checkmark")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(.white)
+                    }
+                    .padding(8)
+                    .transition(.scale.combined(with: .opacity))
+                }
+            }
+            .shadow(
+                color: isSelected ? Theme.tintColor.opacity(0.12) : .clear,
+                radius: 8, y: 3
+            )
+            .scaleEffect(isSelected ? 1.02 : 1.0)
+            .animation(.easeOut(duration: 0.25), value: isSelected)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Tennis Level Row (List)
+
+private struct TennisLevelRow: View {
     let level: SkillLevel
     let isSelected: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack {
+            HStack(spacing: 12) {
+                Circle()
+                    .fill(isSelected ? Theme.tintColor : Theme.borderColor)
+                    .frame(width: 8, height: 8)
+
                 Text(level.displayName)
                     .font(.body)
-                    .foregroundStyle(isSelected ? Color.accentColor : .primary)
+                    .foregroundStyle(isSelected ? Theme.tintColor : Theme.labelPrimary)
 
                 Spacer()
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.body)
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.tintColor)
+                        .transition(.scale.combined(with: .opacity))
                 }
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
+            .padding(.horizontal, Theme.paddingCard)
+            .padding(.vertical, 14)
             .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isSelected ? Color.accentColor.opacity(0.06) : Color(uiColor: .secondarySystemBackground))
+                RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous)
+                    .fill(isSelected ? Theme.tintColor.opacity(0.06) : Theme.cardBackground)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(isSelected ? Color.accentColor.opacity(0.25) : Color.clear, lineWidth: 1)
+                RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous)
+                    .stroke(isSelected ? Theme.tintColor.opacity(0.25) : .clear, lineWidth: Theme.borderWidth)
             )
+            .animation(.easeOut(duration: 0.25), value: isSelected)
         }
         .buttonStyle(.plain)
     }
@@ -123,6 +238,6 @@ private struct LevelCard: View {
 
 #Preview {
     let vm = OnboardingViewModel()
-    vm.selectedSport = .tennis
+    vm.selectedSport = .padel
     return OnboardingLevelStepView(viewModel: vm)
 }

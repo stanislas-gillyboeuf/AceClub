@@ -2,9 +2,10 @@ import SwiftUI
 
 struct PinEntrySheet: View {
     @State private var pin: String = ""
-    @State private var errorMessage: String?
     @FocusState private var isFocused: Bool
 
+    let isVerifying: Bool
+    let errorMessage: String?
     let onValidate: (String) -> Void
     let onDismiss: () -> Void
 
@@ -64,29 +65,37 @@ struct PinEntrySheet: View {
                         } else if filtered != newValue {
                             pin = filtered
                         }
-                        errorMessage = nil
                     }
 
                 if let errorMessage {
                     Text(errorMessage)
                         .font(.footnote)
                         .foregroundStyle(Theme.destructiveColor)
+                        .transition(.opacity)
                 }
 
                 Spacer()
 
                 VStack(spacing: 12) {
-                    Button("Valider") {
+                    Button {
                         onValidate(pin)
+                    } label: {
+                        if isVerifying {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        } else {
+                            Text("Valider")
+                        }
                     }
                     .buttonStyle(.appPrimary)
-                    .disabled(pin.count != 4)
+                    .disabled(pin.count != 4 || isVerifying)
 
                     Button("Annuler") {
                         onDismiss()
                     }
                     .font(.body.weight(.medium))
                     .foregroundStyle(.secondary)
+                    .disabled(isVerifying)
                 }
                 .padding(.horizontal, Theme.paddingHorizontal)
                 .padding(.bottom, 20)
@@ -98,13 +107,14 @@ struct PinEntrySheet: View {
             .onAppear {
                 isFocused = true
             }
+            .onChange(of: errorMessage) { _, newError in
+                if newError != nil {
+                    pin = ""
+                }
+            }
         }
         .presentationDetents([.medium])
         .presentationBackground(.regularMaterial)
-    }
-
-    func showError(_ message: String) {
-        errorMessage = message
-        pin = ""
+        .interactiveDismissDisabled(isVerifying)
     }
 }
