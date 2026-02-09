@@ -32,7 +32,6 @@ export const discover = async (c: Context<HonoContext>) => {
 
     const now = new Date();
 
-    // Get current user's organization, level and sport for scoring and filtering
     const [currentUserData] = await db
       .select({
         level: sql<number>`coalesce(${userLevel.currentLevel}, 1)`,
@@ -52,7 +51,6 @@ export const discover = async (c: Context<HonoContext>) => {
 
     const isDiscoveryRestricted = await resolveFeatureFlag("restrict_discovery", currentUserOrgId);
 
-    // Alias for intent owner's member table and preferences
     const intentOwnerMember = alias(member, "intent_owner_member");
     const intentOwnerPreference = alias(userPreference, "intent_owner_preference");
 
@@ -271,6 +269,7 @@ export const discover = async (c: Context<HonoContext>) => {
         hasMore,
         limit,
       },
+      isDiscoveryRestricted,
     });
   } catch (error) {
     const errorMessage = (error as Error).message;

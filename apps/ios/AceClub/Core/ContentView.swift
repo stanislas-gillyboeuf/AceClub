@@ -1,31 +1,37 @@
-//
-//  ContentView.swift
-//  AceClub
-//
-//  Created by Nicolas Becharat on 12/01/2026.
-//
-
 import SwiftUI
 
 struct ContentView: View {
     @Environment(AuthViewModel.self) private var authViewModel
+    @State private var showSplash = true
 
     var body: some View {
-        Group {
-            if authViewModel.isLoading {
-                ProgressView()
-            } else if authViewModel.isAuthenticated {
-                if let user = authViewModel.currentUser, user.isOnboardingCompleted == false {
-                    OnboardingView()
-                } else {
-                    RootView()
+        ZStack {
+            if !showSplash {
+                Group {
+                    if authViewModel.isAuthenticated {
+                        if let user = authViewModel.currentUser, user.isOnboardingCompleted == false {
+                            OnboardingView()
+                        } else {
+                            RootView()
+                        }
+                    } else {
+                        SignInView()
+                    }
                 }
-            } else {
-                SignInView()
+                .transition(.opacity)
+            }
+
+            if showSplash {
+                SplashView()
+                    .transition(.opacity)
             }
         }
+        .animation(.easeInOut(duration: 0.4), value: showSplash)
         .task {
             await authViewModel.checkSession()
+            withAnimation(.easeOut(duration: 0.4)) {
+                showSplash = false
+            }
         }
     }
 }

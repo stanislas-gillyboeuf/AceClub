@@ -24,7 +24,10 @@ class MatchIntentsViewModel: ObservableObject {
     @Published var lastSwipeMessage: String?
     @Published var didMatch = false
 
-    // Location & radius filter
+    // Feature flags
+    @Published var isDiscoveryRestricted = false
+
+    // Location & radius filter (hidden when discovery is restricted)
     @Published var selectedRadius: Int? = nil
 
     // MARK: - Dependencies
@@ -46,10 +49,11 @@ class MatchIntentsViewModel: ObservableObject {
             let result = try await discoverUseCase.execute(
                 cursor: nil,
                 limit: 20,
-                latitude: locationManager.userLatitude,
-                longitude: locationManager.userLongitude,
-                radius: selectedRadius
+                latitude: isDiscoveryRestricted ? nil : locationManager.userLatitude,
+                longitude: isDiscoveryRestricted ? nil : locationManager.userLongitude,
+                radius: isDiscoveryRestricted ? nil : selectedRadius
             )
+            isDiscoveryRestricted = result.isDiscoveryRestricted
             discoverItems = result.data
             nextCursor = result.nextCursor
             hasMore = result.hasMore
@@ -67,9 +71,9 @@ class MatchIntentsViewModel: ObservableObject {
             let result = try await discoverUseCase.execute(
                 cursor: cursor,
                 limit: 20,
-                latitude: locationManager.userLatitude,
-                longitude: locationManager.userLongitude,
-                radius: selectedRadius
+                latitude: isDiscoveryRestricted ? nil : locationManager.userLatitude,
+                longitude: isDiscoveryRestricted ? nil : locationManager.userLongitude,
+                radius: isDiscoveryRestricted ? nil : selectedRadius
             )
             discoverItems.append(contentsOf: result.data)
             nextCursor = result.nextCursor

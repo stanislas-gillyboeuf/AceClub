@@ -609,6 +609,8 @@ struct ClubSelectionView: View {
             }
             .sheet(isPresented: $viewModel.showPinSheet) {
                 PinEntrySheet(
+                    isVerifying: false,
+                    errorMessage: nil,
                     onValidate: { pinValue in
                         viewModel.validatePin(pinValue)
                         dismiss()

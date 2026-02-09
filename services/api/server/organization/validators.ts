@@ -113,3 +113,8 @@ export const regeneratePinValidator = z.object({
 export const getPinValidator = z.object({
   organizationId: z.string(),
 });
+
+export const verifyPinValidator = z.object({
+  organizationId: z.string(),
+  pin: z.string().length(4, "PIN must be 4 digits"),
+});

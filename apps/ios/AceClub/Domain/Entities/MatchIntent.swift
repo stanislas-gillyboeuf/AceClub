@@ -103,6 +103,7 @@ struct DiscoverListResult {
     let nextCursor: String?
     let hasMore: Bool
     let limit: Int
+    let isDiscoveryRestricted: Bool
 }
 
 // MARK: - Match Request Status

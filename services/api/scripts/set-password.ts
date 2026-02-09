@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { auth } from "../auth";
 import { db } from "../db";
 import { user, account } from "../db/schema/auth/schema";
@@ -5,7 +6,7 @@ import { eq, and } from "drizzle-orm";
 import crypto from "crypto";
 import { ulid } from "ulid";
 
-const EMAIL = "nicolas.becharat@gmail.com";
+const EMAIL = process.argv[2] || "nicolas.becharat@gmail.com";
 
 // Generate a secure random password
 const password = crypto.randomBytes(16).toString("base64url");

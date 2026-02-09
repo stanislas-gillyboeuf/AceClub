@@ -127,7 +127,8 @@ class MatchIntentMapper {
             data: discoverDTO.data.map { map(discoverItemDTO: $0) },
             nextCursor: discoverDTO.pagination.nextCursor,
             hasMore: discoverDTO.pagination.hasMore,
-            limit: discoverDTO.pagination.limit
+            limit: discoverDTO.pagination.limit,
+            isDiscoveryRestricted: discoverDTO.isDiscoveryRestricted ?? false
         )
     }
 

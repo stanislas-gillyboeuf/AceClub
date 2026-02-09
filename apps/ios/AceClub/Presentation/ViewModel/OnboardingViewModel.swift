@@ -1,17 +1,19 @@
 import Foundation
 import Combine
+import UIKit
 
 @MainActor
 final class OnboardingViewModel: ObservableObject {
     enum OnboardingStep: Int, CaseIterable {
-        case clubSelection = 0
-        case sportSelection = 1
-        case skillLevelSelection = 2
-        case phoneNumber = 3
+        case welcome = 0
+        case clubSelection = 1
+        case sportSelection = 2
+        case skillLevelSelection = 3
+        case phoneNumber = 4
     }
 
     // MARK: - State
-    @Published var currentStep: OnboardingStep = .clubSelection
+    @Published var currentStep: OnboardingStep = .welcome
 
     @Published var selectedOrganization: Organization?
     @Published var selectedSport: Sport?
@@ -29,6 +31,8 @@ final class OnboardingViewModel: ObservableObject {
     @Published var pin: String = ""
     @Published var showPinSheet: Bool = false
     @Published var pinError: String?
+    @Published var isPinVerified: Bool = false
+    @Published var isVerifyingPin: Bool = false
 
     // MARK: - Club Request State
     @Published var showRequestClubSheet: Bool = false
@@ -42,6 +46,7 @@ final class OnboardingViewModel: ObservableObject {
     private let searchOrganizationsUseCase = SearchOrganizationsUseCase()
     private let completeOnboardingUseCase = CompleteOnboardingUseCase()
     private let requestClubUseCase = RequestClubUseCase()
+    private let verifyPinUseCase = VerifyPinUseCase()
 
     // MARK: - Tasks
     private var searchTask: Task<Void, Never>?
@@ -49,13 +54,15 @@ final class OnboardingViewModel: ObservableObject {
     // MARK: - Computed
     var isLastStep: Bool { currentStep == .phoneNumber }
 
-    var canGoBack: Bool { currentStep.rawValue > 0 }
+    var canGoBack: Bool { currentStep.rawValue > OnboardingStep.welcome.rawValue }
 
     var canGoNext: Bool {
         switch currentStep {
+        case .welcome:
+            return true
         case .clubSelection:
             guard let org = selectedOrganization else { return false }
-            if org.pinEnabled { return pin.count == 4 }
+            if org.pinEnabled { return isPinVerified }
             return true
         case .sportSelection:
             return selectedSport != nil
@@ -76,6 +83,7 @@ final class OnboardingViewModel: ObservableObject {
     func goNext() {
         guard canGoNext else { return }
         guard let next = OnboardingStep(rawValue: currentStep.rawValue + 1) else { return }
+        triggerTransitionHaptic()
         currentStep = next
         errorMessage = nil
     }
@@ -83,8 +91,14 @@ final class OnboardingViewModel: ObservableObject {
     func goBack() {
         guard canGoBack else { return }
         guard let prev = OnboardingStep(rawValue: currentStep.rawValue - 1) else { return }
+        triggerTransitionHaptic()
         currentStep = prev
         errorMessage = nil
+    }
+
+    private func triggerTransitionHaptic() {
+        let generator = UIImpactFeedbackGenerator(style: .soft)
+        generator.impactOccurred()
     }
 
     // MARK: - Organization Selection
@@ -94,16 +108,36 @@ final class OnboardingViewModel: ObservableObject {
             selectedOrganization = org
             pin = ""
             pinError = nil
+            isPinVerified = false
             showPinSheet = true
         } else {
             selectedOrganization = org
             pin = ""
+            isPinVerified = false
         }
     }
 
-    func validatePin(_ pinValue: String) {
-        pin = pinValue
-        showPinSheet = false
+    func validatePin(_ pinValue: String) async {
+        guard let orgId = selectedOrganization?.id else { return }
+
+        isVerifyingPin = true
+        pinError = nil
+        defer { isVerifyingPin = false }
+
+        do {
+            let isValid = try await verifyPinUseCase.execute(organizationId: orgId, pin: pinValue)
+            if isValid {
+                pin = pinValue
+                isPinVerified = true
+                showPinSheet = false
+            } else {
+                pinError = "Code PIN incorrect"
+                isPinVerified = false
+            }
+        } catch {
+            pinError = "Erreur de vérification"
+            isPinVerified = false
+        }
     }
 
     // MARK: - Organizations Search (debounced)

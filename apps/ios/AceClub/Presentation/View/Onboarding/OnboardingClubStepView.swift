@@ -6,24 +6,16 @@ struct OnboardingClubStepView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Choisis ton club")
-                    .font(.title2)
-                    .fontWeight(.bold)
-
-                Text("Rejoins ton club pour acceder aux matchs et evenements.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, Theme.paddingHorizontal)
-            .padding(.top, 20)
+            OnboardingStepHeader(
+                icon: "building.2.fill",
+                title: "Dans quel club joues-tu ?",
+                subtitle: "Rejoins ton club pour acceder aux matchs et evenements."
+            )
 
             // Search field
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.labelSecondary)
 
                 TextField("Rechercher un club...", text: $viewModel.searchQuery)
                     .textFieldStyle(.plain)
@@ -40,14 +32,13 @@ struct OnboardingClubStepView: View {
                         viewModel.onSearchQueryChanged()
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.tertiary)
+                            .foregroundStyle(Theme.labelTertiary)
                     }
                 }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
-            .background(Color(uiColor: .secondarySystemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .inputFieldStyle()
             .padding(.horizontal, Theme.paddingHorizontal)
             .padding(.top, 16)
 
@@ -68,13 +59,16 @@ struct OnboardingClubStepView: View {
         }
         .sheet(isPresented: $viewModel.showPinSheet) {
             PinEntrySheet(
+                isVerifying: viewModel.isVerifyingPin,
+                errorMessage: viewModel.pinError,
                 onValidate: { pinValue in
-                    viewModel.validatePin(pinValue)
+                    Task { await viewModel.validatePin(pinValue) }
                 },
                 onDismiss: {
                     viewModel.showPinSheet = false
                     viewModel.selectedOrganization = nil
                     viewModel.pin = ""
+                    viewModel.isPinVerified = false
                 }
             )
         }
@@ -86,7 +80,7 @@ struct OnboardingClubStepView: View {
             ProgressView()
             Text("Recherche...")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Theme.labelSecondary)
             Spacer()
         }
     }
@@ -96,10 +90,10 @@ struct OnboardingClubStepView: View {
             Spacer()
             Image(systemName: "building.2")
                 .font(.system(size: 40, weight: .light))
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(Theme.labelTertiary)
             Text("Aucun club trouve")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Theme.labelSecondary)
 
             Button {
                 viewModel.showRequestClubSheet = true
@@ -109,8 +103,8 @@ struct OnboardingClubStepView: View {
                     Text("Proposer mon club")
                 }
             }
-            .font(.subheadline)
-            .foregroundStyle(Color.accentColor)
+            .buttonStyle(.appSecondary)
+            .padding(.horizontal, Theme.paddingHorizontal)
             .padding(.top, 8)
 
             Spacer()
@@ -125,9 +119,9 @@ struct OnboardingClubStepView: View {
                         name: org.name,
                         isSelected: viewModel.selectedOrganization?.id == org.id,
                         pinEnabled: org.pinEnabled,
-                        pinValidated: viewModel.selectedOrganization?.id == org.id && viewModel.pin.count == 4
+                        pinValidated: viewModel.selectedOrganization?.id == org.id && viewModel.isPinVerified
                     ) {
-                        withAnimation(.easeInOut(duration: 0.15)) {
+                        withAnimation(.easeOut(duration: 0.25)) {
                             viewModel.selectOrganization(org)
                         }
                         triggerHaptic()
@@ -162,42 +156,47 @@ private struct OnboardingOrganizationRow: View {
                 // Avatar
                 ZStack {
                     Circle()
-                        .fill(isSelected ? Color.accentColor.opacity(0.15) : Color(uiColor: .tertiarySystemFill))
-                        .frame(width: 40, height: 40)
+                        .fill(isSelected ? Theme.tintColor.opacity(0.15) : Theme.borderColor.opacity(0.3))
+                        .frame(width: 48, height: 48)
 
                     Text(String(name.prefix(1)).uppercased())
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(isSelected ? Color.accentColor : .secondary)
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(isSelected ? Theme.tintColor : Theme.labelSecondary)
                 }
 
-                Text(name)
-                    .font(.body)
-                    .foregroundStyle(isSelected ? Color.accentColor : .primary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(name)
+                        .font(.body)
+                        .foregroundStyle(isSelected ? Theme.tintColor : Theme.labelPrimary)
 
-                if pinEnabled {
-                    Image(systemName: pinValidated ? "lock.open.fill" : "lock.fill")
-                        .font(.caption)
-                        .foregroundStyle(pinValidated ? .green : .secondary)
+                    if pinEnabled {
+                        HStack(spacing: 4) {
+                            Image(systemName: pinValidated ? "lock.open.fill" : "lock.fill")
+                                .font(.caption2)
+                            Text(pinValidated ? "Code valide" : "Code requis")
+                                .font(.caption)
+                        }
+                        .foregroundStyle(pinValidated ? .green : Theme.labelTertiary)
+                    }
                 }
 
                 Spacer()
 
                 if isSelected && (!pinEnabled || pinValidated) {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.body)
-                        .foregroundStyle(Color.accentColor)
+                        .font(.title3)
+                        .foregroundStyle(Theme.tintColor)
                 }
             }
-            .padding(.horizontal, 14)
+            .padding(.horizontal, Theme.paddingCard)
             .padding(.vertical, 12)
             .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(isSelected ? Color.accentColor.opacity(0.06) : Color(uiColor: .secondarySystemBackground))
+                RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
+                    .fill(isSelected ? Theme.tintColor.opacity(0.06) : Theme.cardBackground)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(isSelected ? Color.accentColor.opacity(0.25) : Color.clear, lineWidth: 1)
+                RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
+                    .stroke(isSelected ? Theme.tintColor.opacity(0.25) : .clear, lineWidth: Theme.borderWidth)
             )
         }
         .buttonStyle(.plain)

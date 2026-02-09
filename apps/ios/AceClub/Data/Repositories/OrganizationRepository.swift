@@ -123,6 +123,10 @@ class OrganizationRepository: OrganizationRepositoryProtocol {
         return try await dataSource.regenerateOrganizationPin(organizationId: organizationId)
     }
 
+    func verifyPin(organizationId: String, pin: String) async throws -> Bool {
+        return try await dataSource.verifyPin(organizationId: organizationId, pin: pin)
+    }
+
     func requestClub(name: String, city: String) async throws -> ClubRequestResult {
         let response = try await dataSource.requestClub(name: name, city: city)
         return ClubRequestResult(

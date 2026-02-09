@@ -5,18 +5,28 @@ struct OnboardingView: View {
     @StateObject private var viewModel = OnboardingViewModel()
     @State private var keyboardHeight: CGFloat = 0
 
+    private var isWelcomeStep: Bool {
+        viewModel.currentStep == .welcome
+    }
+
     var body: some View {
         VStack(spacing: 0) {
-            // Progress bar
-            OnboardingProgressView(
-                currentStep: viewModel.currentStep.rawValue,
-                totalSteps: OnboardingViewModel.OnboardingStep.allCases.count
-            )
-            .padding(.horizontal, Theme.paddingHorizontal)
-            .padding(.top, 12)
+            // Progress bar (hidden on welcome)
+            if !isWelcomeStep {
+                OnboardingProgressView(
+                    currentStep: viewModel.currentStep.rawValue - 1,
+                    totalSteps: OnboardingViewModel.OnboardingStep.allCases.count - 1
+                )
+                .padding(.horizontal, Theme.paddingHorizontal)
+                .padding(.top, 12)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
 
             // Content
             TabView(selection: $viewModel.currentStep) {
+                OnboardingWelcomeStepView(viewModel: viewModel)
+                    .tag(OnboardingViewModel.OnboardingStep.welcome)
+
                 OnboardingClubStepView(viewModel: viewModel)
                     .tag(OnboardingViewModel.OnboardingStep.clubSelection)
 
@@ -31,7 +41,7 @@ struct OnboardingView: View {
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .gesture(DragGesture())
-            .animation(.easeInOut(duration: 0.25), value: viewModel.currentStep)
+            .animation(.easeOut(duration: 0.35), value: viewModel.currentStep)
 
             // Error
             if let error = viewModel.errorMessage {
@@ -41,14 +51,18 @@ struct OnboardingView: View {
                     .padding(.horizontal, Theme.paddingHorizontal)
             }
 
-            // Buttons
-            OnboardingNavigationButtons(viewModel: viewModel) {
-                Task { await finish() }
+            // Buttons (hidden on welcome)
+            if !isWelcomeStep {
+                OnboardingNavigationButtons(viewModel: viewModel) {
+                    Task { await finish() }
+                }
+                .padding(.horizontal, Theme.paddingHorizontal)
+                .padding(.bottom, keyboardHeight > 0 ? 8 : 28)
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
-            .padding(.horizontal, Theme.paddingHorizontal)
-            .padding(.bottom, keyboardHeight > 0 ? 8 : 28)
         }
-        .background(Color(.systemBackground))
+        .background(Theme.primaryBackground)
+        .animation(.easeOut(duration: 0.35), value: isWelcomeStep)
         .task {
             await viewModel.searchOrganizations(query: nil)
         }
