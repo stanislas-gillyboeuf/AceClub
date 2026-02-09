@@ -9,6 +9,7 @@ import type {
   ListOrganizationMembersResponse,
   ListOrganizationInvitationsParams,
   ListOrganizationInvitationsResponse,
+  ListFeatureFlagsResponse,
   UserStats,
 } from "@/types/admin"
 
@@ -95,5 +96,13 @@ export function useOrganizationInvitations(
         `/admin/list-organization-invitations?${qs}`,
       ),
     enabled: !!params.organizationId,
+  })
+}
+
+export function useFeatureFlags() {
+  return useQuery({
+    queryKey: ["admin-feature-flags"],
+    queryFn: () =>
+      apiClient<ListFeatureFlagsResponse>("/admin/feature-flags"),
   })
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Users, Building2, ArrowRight } from "lucide-react"
+import { Users, Building2, ToggleRight, ArrowRight } from "lucide-react"
 import {
   Card,
   CardContent,
@@ -52,6 +52,24 @@ export default function DashboardPage() {
             <Button asChild size="sm">
               <Link href="/dashboard/organizations">
                 Voir les organisations
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Feature Flags</CardTitle>
+            <ToggleRight className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <CardDescription className="mb-4">
+              G&eacute;rer les flags de configuration
+            </CardDescription>
+            <Button asChild size="sm">
+              <Link href="/dashboard/feature-flags">
+                Voir les flags
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>

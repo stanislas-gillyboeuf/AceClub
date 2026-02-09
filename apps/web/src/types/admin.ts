@@ -158,3 +158,26 @@ export interface ListOrganizationInvitationsResponse {
   invitations: Invitation[]
   total: number
 }
+
+export interface FeatureFlagOverride {
+  id: string
+  organizationId: string
+  organizationName: string | null
+  enabled: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface FeatureFlag {
+  id: string
+  key: string
+  enabled: boolean
+  description: string | null
+  createdAt: string
+  updatedAt: string
+  overrides: FeatureFlagOverride[]
+}
+
+export interface ListFeatureFlagsResponse {
+  featureFlags: FeatureFlag[]
+}

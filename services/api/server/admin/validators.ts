@@ -98,3 +98,19 @@ export const createOrganizationInvitationAdminValidator = z.object({
 export const cancelOrganizationInvitationAdminValidator = z.object({
   invitationId: z.string(),
 });
+
+export const createFeatureFlagValidator = z.object({
+  key: z.string().regex(/^[a-z][a-z0-9_]*$/, "Key must be snake_case"),
+  enabled: z.boolean().default(false),
+  description: z.string().optional(),
+});
+
+export const updateFeatureFlagValidator = z.object({
+  enabled: z.boolean().optional(),
+  description: z.string().optional(),
+});
+
+export const setFeatureFlagOverrideValidator = z.object({
+  organizationId: z.string(),
+  enabled: z.boolean(),
+});
