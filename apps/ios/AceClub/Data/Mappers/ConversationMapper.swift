@@ -37,6 +37,8 @@ class ConversationMapper {
             return .match
         case "group":
             return .group
+        case "direct":
+            return .direct
         default:
             return .match // Default fallback
         }

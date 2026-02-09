@@ -227,6 +227,46 @@ class ConversationAPIDataSource {
         }
     }
 
+    // MARK: - Find Or Create Conversation
+
+    func findOrCreateConversation(participantId: String) async throws -> FindOrCreateConversationResponseDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/conversation/find-or-create") else {
+            throw ConversationAPIDataSourceError.invalidURL
+        }
+
+        let requestDTO = FindOrCreateConversationRequestDTO(participantId: participantId)
+
+        let jsonData: Data
+        do {
+            jsonData = try JSONEncoder().encode(requestDTO)
+        } catch {
+            throw ConversationAPIDataSourceError.encodingFailed(error)
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedRequest(
+            url: url,
+            method: "POST",
+            body: jsonData
+        )
+
+        switch response.statusCode {
+        case 200, 201:
+            do {
+                return try JSONDecoder().decode(FindOrCreateConversationResponseDTO.self, from: data)
+            } catch {
+                throw ConversationAPIDataSourceError.decodingFailed(error)
+            }
+        case 400:
+            throw ConversationAPIDataSourceError.badRequest("Invalid participant")
+        case 401:
+            throw ConversationAPIDataSourceError.unauthorized
+        case 404:
+            throw ConversationAPIDataSourceError.notFound
+        default:
+            throw ConversationAPIDataSourceError.requestFailed(statusCode: response.statusCode)
+        }
+    }
+
     // MARK: - Mute Conversation
 
     func muteConversation(conversationId: String, isMuted: Bool) async throws {

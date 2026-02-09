@@ -85,3 +85,9 @@ struct OrganizationPinDTO: Codable {
     let pin: String?
     let pinEnabled: Bool
 }
+
+// MARK: - Verify PIN Response
+
+struct VerifyPinResponseDTO: Codable {
+    let valid: Bool
+}

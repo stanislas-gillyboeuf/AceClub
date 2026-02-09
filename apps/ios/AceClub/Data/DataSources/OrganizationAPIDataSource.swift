@@ -406,6 +406,27 @@ class OrganizationAPIDataSource {
         }
     }
 
+    func verifyPin(organizationId: String, pin: String) async throws -> Bool {
+        guard let url = URL(string: "\(Config.apiBaseURL)/organization/verify-pin") else {
+            throw OrganizationError.invalidURL
+        }
+
+        let requestBody = ["organizationId": organizationId, "pin": pin]
+        let bodyData = try JSONEncoder().encode(requestBody)
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: bodyData)
+
+        guard response.statusCode == 200 else {
+            throw OrganizationError.serverError("Verify PIN failed: \(response.statusCode)")
+        }
+
+        do {
+            let result = try JSONDecoder().decode(VerifyPinResponseDTO.self, from: data)
+            return result.valid
+        } catch {
+            throw OrganizationError.decodingError
+        }
+    }
+
     // MARK: - Club Request
 
     func requestClub(name: String, city: String) async throws -> ClubRequestResponseDTO {

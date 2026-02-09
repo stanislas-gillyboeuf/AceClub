@@ -8,9 +8,10 @@ struct OnboardingProgressView: View {
         HStack(spacing: 6) {
             ForEach(0..<totalSteps, id: \.self) { index in
                 Capsule()
-                    .fill(index <= currentStep ? Color.accentColor : Color.gray.opacity(0.3))
-                    .frame(height: 4)
-                    .animation(.easeInOut(duration: 0.25), value: currentStep)
+                    .fill(index <= currentStep ? Theme.tintColor : Theme.borderColor)
+                    .frame(height: 6)
+                    .shadow(color: index <= currentStep ? Theme.tintColor.opacity(0.3) : .clear, radius: 2, y: 1)
+                    .animation(.spring(response: 0.4, dampingFraction: 0.7), value: currentStep)
             }
         }
         .padding(.vertical, 8)

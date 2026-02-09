@@ -96,7 +96,7 @@ extension View {
 struct InputFieldStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .background(Theme.secondaryBackground)
+            .background(Theme.inputBackground)
             .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
     }
 }
@@ -115,7 +115,7 @@ struct AceTextFieldStyle: ViewModifier {
             .font(.body)
             .padding(.horizontal, 14)
             .padding(.vertical, 14)
-            .background(Color(uiColor: .secondarySystemBackground))
+            .background(Theme.inputBackground)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }

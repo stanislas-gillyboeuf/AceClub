@@ -17,8 +17,8 @@ struct PrimaryButtonStyle: ButtonStyle {
             .font(.body.weight(.semibold))
             .frame(maxWidth: .infinity)
             .frame(height: Theme.buttonHeight)
-            .foregroundStyle(.white)
-            .background(isEnabled ? Theme.tintColor : Theme.tertiaryBackground)
+            .foregroundStyle(isEnabled ? .white : Theme.labelTertiary)
+            .background(isEnabled ? Theme.tintColor : Theme.borderColor.opacity(0.3))
             .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous))
             .opacity(configuration.isPressed ? 0.9 : 1)
     }

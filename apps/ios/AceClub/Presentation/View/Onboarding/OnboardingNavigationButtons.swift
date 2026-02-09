@@ -14,7 +14,7 @@ struct OnboardingNavigationButtons: View {
                 } label: {
                     Text("Retour")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Theme.labelSecondary)
                 }
                 .buttonStyle(.plain)
             }
@@ -35,18 +35,10 @@ struct OnboardingNavigationButtons: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     } else {
                         Text(viewModel.isLastStep ? "Terminer" : "Continuer")
-                            .font(.body)
-                            .fontWeight(.semibold)
                     }
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: Theme.buttonHeight)
-                .foregroundStyle(.white)
-                .background(
-                    RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
-                        .fill(viewModel.canGoNext ? Color.accentColor : Color.gray.opacity(0.3))
-                )
             }
+            .buttonStyle(.appPrimary)
             .disabled(!viewModel.canGoNext || (viewModel.isSubmitting && viewModel.isLastStep))
         }
         .padding(.top, 8)

@@ -43,6 +43,13 @@
       "when": 1770641847000,
       "tag": "0005_organic_ezekiel",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770654990596,
+      "tag": "0006_known_tana_nile",
+      "breakpoints": true
     }
   ]
 }

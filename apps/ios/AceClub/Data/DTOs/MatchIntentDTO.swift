@@ -73,6 +73,7 @@ struct UserContactDTO: Codable {
 struct DiscoverMatchIntentsResponseDTO: Codable {
     let data: [MatchIntentWithUserDTO]
     let pagination: CursorPaginationDTO
+    let isDiscoveryRestricted: Bool?
 }
 
 // MARK: - Create intent
