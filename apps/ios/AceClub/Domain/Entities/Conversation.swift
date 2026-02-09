@@ -11,11 +11,13 @@ import Foundation
 enum ConversationType: String, CaseIterable {
     case match
     case group
+    case direct
 
     var displayName: String {
         switch self {
         case .match: return "Match"
         case .group: return "Groupe"
+        case .direct: return "Direct"
         }
     }
 }

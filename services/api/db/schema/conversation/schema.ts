@@ -11,7 +11,7 @@ import {
 import { user } from "../auth/schema";
 import { ulid } from "ulid";
 
-export const ConversationType = pgEnum("conversation_type", ["match", "group"]);
+export const ConversationType = pgEnum("conversation_type", ["match", "group", "direct"]);
 
 export const conversation = pgTable(
   "conversation",

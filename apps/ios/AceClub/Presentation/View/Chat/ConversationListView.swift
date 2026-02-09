@@ -11,7 +11,9 @@ struct ConversationListView: View {
 
     @ObservedObject var viewModel: ConversationListViewModel
     @Environment(DeepLinkManager.self) private var deepLinkManager
+    @Environment(AuthViewModel.self) private var authViewModel
     @State private var navigationPath = NavigationPath()
+    @State private var showNewConversation = false
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -26,6 +28,22 @@ struct ConversationListView: View {
                 }
             }
             .navigationTitle("Messages")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showNewConversation = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $showNewConversation) {
+                NewConversationView(
+                    currentUserId: authViewModel.currentUser?.id ?? ""
+                ) { conversation in
+                    handleNewConversation(conversation)
+                }
+            }
             .refreshable {
                 await viewModel.loadConversations(force: true)
             }
@@ -74,13 +92,24 @@ struct ConversationListView: View {
         }
     }
 
+    private func handleNewConversation(_ conversation: Conversation) {
+        // Add to list if not already present
+        if !viewModel.conversations.contains(where: { $0.id == conversation.id }) {
+            viewModel.conversations.insert(conversation, at: 0)
+        }
+        // Navigate after a short delay to let the sheet dismiss
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            navigationPath.append(conversation)
+        }
+    }
+
     // MARK: - Views
 
     private var emptyState: some View {
         ContentUnavailableView {
             Label("Aucune conversation", systemImage: "bubble.left.and.bubble.right")
         } description: {
-            Text("Vos conversations avec vos adversaires apparaitront ici apres avoir cree un match.")
+            Text("Demarrez une conversation avec un membre de votre club en appuyant sur +.")
         }
     }
 

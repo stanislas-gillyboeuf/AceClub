@@ -99,3 +99,13 @@ struct MuteConversationResponseDTO: Codable {
 struct DeleteConversationResponseDTO: Codable {
     let success: Bool
 }
+
+// MARK: - Find Or Create Conversation DTOs
+struct FindOrCreateConversationRequestDTO: Codable {
+    let participantId: String
+}
+
+struct FindOrCreateConversationResponseDTO: Codable {
+    let conversationId: String
+    let created: Bool
+}
