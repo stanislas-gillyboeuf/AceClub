@@ -242,3 +242,79 @@ export function useUploadOrganizationLogo() {
     },
   })
 }
+
+export function useCreateFeatureFlag() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { key: string; enabled?: boolean; description?: string }) =>
+      apiClient("/admin/feature-flags", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-feature-flags"] })
+    },
+  })
+}
+
+export function useUpdateFeatureFlag() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { id: string; enabled?: boolean; description?: string }) =>
+      apiClient(`/admin/feature-flags/${data.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ enabled: data.enabled, description: data.description }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-feature-flags"] })
+    },
+  })
+}
+
+export function useDeleteFeatureFlag() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { id: string }) =>
+      apiClient(`/admin/feature-flags/${data.id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-feature-flags"] })
+    },
+  })
+}
+
+export function useSetFeatureFlagOverride() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { flagId: string; organizationId: string; enabled: boolean }) =>
+      apiClient(`/admin/feature-flags/${data.flagId}/overrides`, {
+        method: "POST",
+        body: JSON.stringify({
+          organizationId: data.organizationId,
+          enabled: data.enabled,
+        }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-feature-flags"] })
+    },
+  })
+}
+
+export function useRemoveFeatureFlagOverride() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { flagId: string; orgId: string }) =>
+      apiClient(`/admin/feature-flags/${data.flagId}/overrides/${data.orgId}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-feature-flags"] })
+    },
+  })
+}
