@@ -11,6 +11,7 @@ import {
 } from "../../../db/schema";
 import { userLevel } from "../../../db/schema/level/schema";
 import { and, desc, eq, gte, lt, ne, notExists, or, isNull, sql } from "drizzle-orm";
+import { resolveFeatureFlag } from "../../../lib/feature-flags";
 import { alias } from "drizzle-orm/pg-core";
 
 export const discover = async (c: Context<HonoContext>) => {
@@ -49,6 +50,8 @@ export const discover = async (c: Context<HonoContext>) => {
     const currentUserOrgId = currentUserData?.organizationId;
     const currentUserSport = currentUserData?.sport;
 
+    const isDiscoveryRestricted = await resolveFeatureFlag("restrict_discovery", currentUserOrgId);
+
     // Alias for intent owner's member table and preferences
     const intentOwnerMember = alias(member, "intent_owner_member");
     const intentOwnerPreference = alias(userPreference, "intent_owner_preference");
@@ -69,6 +72,11 @@ export const discover = async (c: Context<HonoContext>) => {
           ),
       ),
     ];
+
+    // When restrict_discovery is enabled, hard filter to same organization only
+    if (isDiscoveryRestricted && currentUserOrgId) {
+      conditions.push(eq(intentOwnerMember.organizationId, currentUserOrgId));
+    }
 
     // Filter by sport: only show intents from users with the same sport
     if (currentUserSport) {
