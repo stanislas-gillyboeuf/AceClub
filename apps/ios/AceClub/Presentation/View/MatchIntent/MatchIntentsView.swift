@@ -89,9 +89,12 @@ struct MatchIntentsView: View {
                 .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showCreateSheet) {
-                CreateMatchIntentSheet(isPresented: $showCreateSheet) {
-                    Task { await viewModel.loadDiscover() }
+                DynamicSheet(animation: .snappy(duration: 0.3, extraBounce: 0)) {
+                    CreateMatchIntentSheet(isPresented: $showCreateSheet) {
+                        Task { await viewModel.loadDiscover() }
+                    }
                 }
+                .presentationDragIndicator(.visible)
             }
             .background(Theme.primaryBackground)
         }
