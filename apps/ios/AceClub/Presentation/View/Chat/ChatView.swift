@@ -186,7 +186,7 @@ struct ChatView: View {
         }
         .padding(.horizontal, Theme.paddingHorizontal)
         .padding(.vertical, 12)
-        .background(Theme.primaryBackground)
+        .background(.ultraThinMaterial)
     }
 }
 

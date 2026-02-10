@@ -46,7 +46,7 @@ enum Theme {
     static var cardBackground: Color {
         Color(UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark
-                ? .secondarySystemBackground
+                ? .tertiarySystemBackground
                 : .systemBackground
         })
     }
@@ -54,23 +54,34 @@ enum Theme {
     static var inputBackground: Color {
         Color(UIColor { traitCollection in
             traitCollection.userInterfaceStyle == .dark
-                ? UIColor.tertiarySystemBackground 
+                ? UIColor.systemGray4
                 : UIColor.systemBackground
         })
     }
 
-    static var borderColor: Color { Color(.systemGray5) }
+    static var borderColor: Color {
+        Color(UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark
+                ? .systemGray4
+                : .systemGray5
+        })
+    }
     static var borderColorSubtle: Color { Color.secondary.opacity(0.3) }
     static var labelPrimary: Color { Color.primary }
     static var labelSecondary: Color { Color.secondary }
     static var labelTertiary: Color { Color(.tertiaryLabel) }
     static var tintColor: Color { Color.accentColor }
     static var destructiveColor: Color { Color.red }
+
+    // MARK: - Palette vert/orange
+    static var accentGreen: Color { Color.accentColor }
+    static var accentOrange: Color { Color("OrangeAccent") }
 }
 
 // MARK: - Card style
 
 struct CardStyle: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
     var cornerRadius: CGFloat = Theme.cornerRadiusMedium
     var withBorder: Bool = false
 
@@ -79,7 +90,7 @@ struct CardStyle: ViewModifier {
             .background(Theme.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay {
-                if withBorder {
+                if withBorder || colorScheme == .dark {
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
                 }
@@ -125,5 +136,25 @@ struct AceTextFieldStyle: ViewModifier {
 extension View {
     func aceTextFieldStyle() -> some View {
         modifier(AceTextFieldStyle())
+    }
+}
+
+// MARK: - Liquid Glass modifiers
+
+extension View {
+    func glassActionButton(in shape: some Shape = .capsule) -> some View {
+        self.glassEffect(.regular.tint(Theme.accentGreen).interactive(), in: shape)
+    }
+
+    func glassSecondaryButton(in shape: some Shape = .capsule) -> some View {
+        self.glassEffect(.regular.tint(Theme.accentOrange).interactive(), in: shape)
+    }
+
+    func glassBar() -> some View {
+        self.glassEffect(.regular)
+    }
+
+    func glassPanel(cornerRadius: CGFloat = Theme.cornerRadiusLarge) -> some View {
+        self.glassEffect(.regular, in: RoundedRectangle(cornerRadius: cornerRadius))
     }
 }

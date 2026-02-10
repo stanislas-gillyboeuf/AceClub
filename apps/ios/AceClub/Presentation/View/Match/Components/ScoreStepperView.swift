@@ -92,7 +92,7 @@ struct ScoreStepperView: View {
 #Preview {
     VStack(spacing: 24) {
         ScoreStepperView(value: .constant(6), accentColor: .blue)
-        ScoreStepperView(value: .constant(4), accentColor: .orange)
+        ScoreStepperView(value: .constant(4), accentColor: Theme.accentOrange)
         ScoreStepperView(value: .constant(0), accentColor: .green)
     }
     .padding()

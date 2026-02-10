@@ -88,9 +88,9 @@ apps/ios/AceClub/
 **Objectif** : Couche d'implémentation des accès aux données. Gère la communication avec les sources externes (API, base locale) et transforme les données brutes en objets utilisables par le Domain.
 
 #### `Data/DataSources/`
-**Objectif** : Sources de données concrètes. Chaque DataSource encapsule les appels réseau ou l'accès au stockage local pour un domaine fonctionnel.
+**Objectif** : Sources de données concrètes. Chaque DataSource encapsule les appels réseau via `APIClient.shared.authenticatedRequest()`.
 - **Pattern** : Un fichier par domaine fonctionnel (ex: `UserAPIDataSource.swift`)
-- **Responsabilité** : Appels HTTP, gestion des erreurs réseau, décodage JSON
+- **Responsabilité** : Appels HTTP via `APIClient.shared`, gestion des status codes, décodage JSON
 
 #### `Data/DTOs/`
 **Objectif** : Data Transfer Objects. Structures qui représentent exactement le format JSON de l'API. Séparés des Entities pour découpler le format API des modèles métier.
@@ -98,8 +98,8 @@ apps/ios/AceClub/
 - **Caractéristique** : Conformes à `Codable` uniquement
 
 #### `Data/Repositories/`
-**Objectif** : Implémentations des interfaces Repository définies dans le Domain. Orchestrent les DataSources et appliquent les Mappers.
-- **Pattern** : Implémente les protocoles définis dans Domain
+**Objectif** : Classes concrètes qui orchestrent les DataSources et appliquent les Mappers.
+- **Pattern** : Classes concrètes (pas de protocol). Le DataSource est instancié directement comme propriété.
 - **Responsabilité** : Coordination des DataSources, caching si nécessaire
 
 #### `Data/Mappers/`
@@ -145,9 +145,10 @@ View → ViewModel → UseCase → Repository → DataSource → API
 ## Règles d'architecture iOS
 
 1. **Dépendances** : `Presentation → Domain ← Data` (le Domain ne dépend de rien)
-2. **Injection** : Les ViewModels reçoivent leurs UseCases par injection
-3. **Async** : Utiliser `async/await` pour les opérations asynchrones
-4. **Erreurs** : Propager les erreurs via `throws`, gérer dans les ViewModels
+2. **Instanciation directe** : Les UseCases et Repositories sont instanciés inline comme propriétés privées (pas d'injection par constructeur)
+3. **Singletons utilitaires** : `APIClient.shared`, `KeychainManager.shared`, `NotificationManager.shared` sont utilisés dans le code
+4. **Async** : Utiliser `async/await` pour les opérations asynchrones
+5. **Erreurs** : Propager les erreurs via `throws`, gérer dans les ViewModels avec `catch is CancellationError { }` en premier
 
 ---
 

@@ -62,7 +62,7 @@ struct PendingInvitationRow: View {
         if invitation.isExpired {
             return .red
         } else {
-            return .orange
+            return Theme.accentOrange
         }
     }
 }

@@ -35,7 +35,7 @@ struct MatchIntentRow: View {
                 HStack(spacing: 6) {
                     Label(intent.type.displayName, systemImage: intent.type.icon)
                         .font(.caption.weight(.medium))
-                        .foregroundStyle(intent.type == .match ? .blue : .orange)
+                        .foregroundStyle(intent.type == .match ? .blue : Theme.accentOrange)
 
                     if let time = intent.time {
                         Text("•")

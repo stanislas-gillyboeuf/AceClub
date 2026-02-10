@@ -125,6 +125,18 @@ struct DiscoverCardView: View {
         }
     }
 
+    private var typeBadge: some View {
+        Label(item.intent.type.displayName, systemImage: item.intent.type.icon)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(item.intent.type == .match ? .blue : Theme.accentOrange)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                (item.intent.type == .match ? Color.blue : Theme.accentOrange)
+                    .opacity(0.12)
+            )
+            .clipShape(Capsule())
+      
     private func tagView(icon: String, text: String, iconColor: Color? = nil) -> some View {
         HStack(spacing: 4) {
             Image(systemName: icon)

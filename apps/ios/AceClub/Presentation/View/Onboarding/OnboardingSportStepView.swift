@@ -57,7 +57,7 @@ private struct SportTile: View {
 
     private var sportColor: Color {
         switch sport {
-        case .tennis: return .orange
+        case .tennis: return Theme.accentOrange
         case .padel: return .blue
         }
     }

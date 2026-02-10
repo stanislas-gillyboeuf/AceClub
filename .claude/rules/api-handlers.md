@@ -127,6 +127,80 @@ return c.json({ error: "Conflict", message: "Item already exists" }, 409);
 return c.json({ error: "InternalError", message: "Something went wrong" }, 500);
 ```
 
+## Patterns avancés
+
+### Transaction
+
+```typescript
+const result = await db.transaction(async (tx) => {
+  const [item] = await tx
+    .insert(itemTable)
+    .values({ id: ulid(), ...data })
+    .returning();
+
+  await tx
+    .insert(relatedTable)
+    .values({ id: ulid(), itemId: item.id, ...relatedData });
+
+  return item;
+});
+
+return c.json(result, 201);
+```
+
+### Queries parallèles
+
+```typescript
+const [items, count] = await Promise.all([
+  db.select().from(itemTable).where(eq(itemTable.userId, user!.id)),
+  db.select({ count: sql`count(*)` }).from(itemTable).where(eq(itemTable.userId, user!.id)),
+]);
+```
+
+### Gestion erreurs PostgreSQL (unique constraint)
+
+```typescript
+try {
+  const [created] = await db
+    .insert(itemTable)
+    .values({ id: ulid(), ...data })
+    .returning();
+  return c.json(created, 201);
+} catch (err: any) {
+  if (err?.code === "23505") {
+    return c.json({ error: "Conflict", message: "Already exists" }, 409);
+  }
+  throw err;
+}
+```
+
+### Map-based grouping
+
+```typescript
+const rows = await db.select().from(itemTable);
+
+const grouped = new Map<string, typeof rows>();
+for (const row of rows) {
+  const key = row.categoryId;
+  if (!grouped.has(key)) grouped.set(key, []);
+  grouped.get(key)!.push(row);
+}
+```
+
+### Side effects après DB success
+
+```typescript
+const [created] = await db
+  .insert(itemTable)
+  .values({ id: ulid(), ...data })
+  .returning();
+
+// Side effects APRÈS le succès DB
+await NotificationService.send(created.userId, "New item created");
+
+return c.json(created, 201);
+```
+
 ## Barrel exports
 
 Chaque dossier `queries/` et `mutations/` DOIT avoir un `index.ts` :

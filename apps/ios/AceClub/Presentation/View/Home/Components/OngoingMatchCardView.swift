@@ -12,7 +12,7 @@ struct OngoingMatchCardView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Color.orange)
+                    .background(Theme.accentOrange)
                     .clipShape(Capsule())
 
                 Spacer()
@@ -42,7 +42,7 @@ struct OngoingMatchCardView: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
-                .strokeBorder(Color.orange.opacity(0.3), lineWidth: 2)
+                .strokeBorder(Theme.accentOrange.opacity(0.3), lineWidth: 2)
         }
     }
 

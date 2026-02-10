@@ -12,7 +12,7 @@ paths: apps/ios/**/*.swift
 ### TOUJOURS utiliser les composants SwiftUI natifs
 
 ```swift
-// ✅ BON - Composants natifs
+// Composants natifs
 NavigationStack { }           // Navigation
 TabView { }                   // Onglets
 List { }                      // Listes scrollables
@@ -29,16 +29,13 @@ TextEditor()                  // Texte multiligne
 Button()                      // Boutons
 Label()                       // Icône + texte
 AsyncImage()                  // Images distantes
-
-// ❌ MAUVAIS - UIKit wrappers inutiles
-UIViewRepresentable pour un simple TextField
-UIViewControllerRepresentable pour une navigation
+ContentUnavailableView()      // États vides
 ```
 
 ### Navigation
 
 ```swift
-// ✅ BON - NavigationStack moderne (iOS 16+)
+// NavigationStack moderne (iOS 16+)
 NavigationStack {
     List(items) { item in
         NavigationLink(value: item) {
@@ -50,14 +47,35 @@ NavigationStack {
     }
 }
 
-// ❌ MAUVAIS - NavigationView deprecated
-NavigationView { }
+// NavigationView deprecated - NE PAS UTILISER
+```
+
+### Connexion ViewModel ↔ View
+
+```swift
+// Pattern 1 : @StateObject pour ViewModel local
+struct ProfileView: View {
+    @StateObject private var vm = ProfileViewModel()
+
+    var body: some View {
+        // ...
+    }
+}
+
+// Pattern 2 : @Environment pour ViewModel @Observable partagé (iOS 17+)
+struct HomeView: View {
+    @Environment(AuthViewModel.self) var authVM
+
+    var body: some View {
+        // ...
+    }
+}
 ```
 
 ### Modales et Sheets
 
 ```swift
-// ✅ BON - Sheet natif
+// Sheet natif
 .sheet(isPresented: $showSheet) {
     MySheetContent()
 }
@@ -66,13 +84,23 @@ NavigationView { }
     ItemDetailSheet(item: item)
 }
 
-// ✅ BON - Confirmation dialog natif
+// DynamicSheet pour sheets à hauteur dynamique (composant custom du projet)
+DynamicSheet(isPresented: $showSheet) {
+    // Contenu qui détermine la hauteur automatiquement
+}
+
+// fullScreenCover pour les modales plein écran
+.fullScreenCover(isPresented: $showFullScreen) {
+    FullScreenModal()
+}
+
+// Confirmation dialog natif
 .confirmationDialog("Supprimer ?", isPresented: $showConfirm) {
     Button("Supprimer", role: .destructive) { }
     Button("Annuler", role: .cancel) { }
 }
 
-// ✅ BON - Alert natif
+// Alert natif
 .alert("Erreur", isPresented: $showError) {
     Button("OK") { }
 } message: {
@@ -83,7 +111,7 @@ NavigationView { }
 ### Listes et Collections
 
 ```swift
-// ✅ BON - List natif avec swipe actions
+// List natif avec swipe actions (pour listes simples avec comportement standard)
 List {
     ForEach(items) { item in
         ItemRow(item: item)
@@ -102,25 +130,54 @@ List {
 }
 .searchable(text: $searchText)
 
-// ❌ MAUVAIS - ScrollView + ForEach pour une liste simple
+// ScrollView + LazyVStack pour layouts custom (cards, spacing custom, etc.)
 ScrollView {
-    LazyVStack {
+    LazyVStack(spacing: 12) {
         ForEach(items) { item in
-            ItemRow(item: item)
+            ItemCard(item: item)
         }
     }
+    .padding(.horizontal, Theme.paddingHorizontal)
 }
+```
+
+### États vides
+
+```swift
+// ContentUnavailableView pour les listes vides ou états sans contenu
+if items.isEmpty && !isLoading {
+    ContentUnavailableView(
+        "Aucun résultat",
+        systemImage: "magnifyingglass",
+        description: Text("Essayez une autre recherche")
+    )
+}
+```
+
+### Skeleton Loading
+
+Le projet utilise des composants de skeleton loading pour les états de chargement :
+
+```swift
+// SkeletonList / SkeletonRow pour simuler le chargement
+if isLoading {
+    SkeletonList()  // Affiche des lignes placeholder animées
+}
+
+// ShimmerModifier pour l'effet de shimmer
+Rectangle()
+    .modifier(ShimmerModifier())
 ```
 
 ### Images
 
 ```swift
-// ✅ BON - SF Symbols
+// SF Symbols
 Image(systemName: "person.fill")
     .imageScale(.large)
     .foregroundStyle(Theme.tintColor)
 
-// ✅ BON - AsyncImage pour images distantes
+// AsyncImage pour images distantes
 AsyncImage(url: user.imageURL) { image in
     image
         .resizable()
@@ -130,15 +187,12 @@ AsyncImage(url: user.imageURL) { image in
 }
 .frame(width: 50, height: 50)
 .clipShape(Circle())
-
-// ❌ MAUVAIS - Librairie tierce pour les images
-// Ne pas utiliser Kingfisher, SDWebImage, etc. sauf besoin spécifique
 ```
 
 ### Formulaires
 
 ```swift
-// ✅ BON - Form natif pour les settings/préférences
+// Form natif pour les settings/préférences
 Form {
     Section("Compte") {
         TextField("Nom", text: $name)
@@ -153,7 +207,7 @@ Form {
     }
 }
 
-// ✅ BON - Picker natif
+// Picker natif
 Picker("Sport", selection: $sport) {
     Text("Tennis").tag(Sport.tennis)
     Text("Padel").tag(Sport.padel)
@@ -164,7 +218,7 @@ Picker("Sport", selection: $sport) {
 ### Loading States
 
 ```swift
-// ✅ BON - ProgressView natif
+// ProgressView natif
 if isLoading {
     ProgressView()
         .progressViewStyle(.circular)
@@ -179,20 +233,16 @@ Button("Envoyer") { }
                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
         }
     }
-
-// ❌ MAUVAIS - Animation custom pour un simple loader
 ```
 
 ### Gestures
 
 ```swift
-// ✅ BON - Gestures natifs
+// Gestures natifs
 .onTapGesture { }
 .onLongPressGesture { }
 .swipeActions { }  // Pour List
 .refreshable { }   // Pull to refresh
-
-// ❌ MAUVAIS - UIGestureRecognizer via UIViewRepresentable
 ```
 
 ## Règles
@@ -203,6 +253,9 @@ Button("Envoyer") { }
 4. **AsyncImage** : Pour les images distantes (pas de lib tierce)
 5. **NavigationStack** : Pas NavigationView (deprecated)
 6. **iOS 16+** : Utiliser les APIs modernes (NavigationStack, etc.)
+7. **DynamicSheet** : Pour les sheets à hauteur variable
+8. **ContentUnavailableView** : Pour les états vides
+9. **Skeleton loading** : Utiliser les composants skeleton du projet
 
 ## Anti-patterns
 
