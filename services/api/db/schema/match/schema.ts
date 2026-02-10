@@ -8,7 +8,7 @@ import {
   uniqueIndex,
   integer,
 } from "drizzle-orm/pg-core";
-import { user } from "../auth/schema";
+import { user, organization } from "../auth/schema";
 import { conversation } from "../conversation/schema";
 import { ulid } from "ulid";
 
@@ -26,6 +26,7 @@ export const match = pgTable(
       .notNull()
       .references(() => user.id),
     conversationId: text("conversation_id").references(() => conversation.id),
+    venueOrganizationId: text("venue_organization_id").references(() => organization.id),
     status: MatchStatus("status").notNull().default("scheduled"),
     type: MatchType("type").notNull().default("match"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -33,7 +34,10 @@ export const match = pgTable(
     startedAt: timestamp("started_at"),
     finishedAt: timestamp("finished_at"),
   },
-  (table) => [index("match_conversationId_idx").on(table.conversationId)],
+  (table) => [
+    index("match_conversationId_idx").on(table.conversationId),
+    index("match_venueOrganizationId_idx").on(table.venueOrganizationId),
+  ],
 );
 
 export const matchParticipant = pgTable(

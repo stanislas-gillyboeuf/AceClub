@@ -7,17 +7,26 @@ paths: apps/ios/**/*.swift
 
 TOUJOURS utiliser les tokens et styles définis dans `Core/Theme/` au lieu de valeurs hardcodées.
 
+## Palette de couleurs
+
+L'app utilise une palette **vert + orange** :
+
+- **Vert** : Couleur principale / accent (tint, CTA, statuts positifs)
+- **Orange** : Couleur secondaire / highlight (badges, alertes, éléments d'emphase)
+
+Utiliser les couleurs sémantiques `Theme.xxx` qui encapsulent cette palette.
+
 ## Tokens disponibles (Theme.swift)
 
 ### Corner Radius
 
 ```swift
-// ✅ BON
+// BON
 .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall))   // 8
 .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium))  // 12
 .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge))   // 16
 
-// ❌ MAUVAIS
+// MAUVAIS
 .clipShape(RoundedRectangle(cornerRadius: 8))
 .cornerRadius(12)
 ```
@@ -25,13 +34,13 @@ TOUJOURS utiliser les tokens et styles définis dans `Core/Theme/` au lieu de va
 ### Spacing & Padding
 
 ```swift
-// ✅ BON
+// BON
 .padding(.horizontal, Theme.paddingHorizontal)  // 20
 .padding(Theme.paddingCard)                     // 16
 .padding(.vertical, Theme.paddingButtonVertical) // 14
 .frame(height: Theme.buttonHeight)              // 52
 
-// ❌ MAUVAIS
+// MAUVAIS
 .padding(.horizontal, 20)
 .padding(16)
 .frame(height: 52)
@@ -40,18 +49,18 @@ TOUJOURS utiliser les tokens et styles définis dans `Core/Theme/` au lieu de va
 ### Border
 
 ```swift
-// ✅ BON
+// BON
 .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidth)        // 1
 .strokeBorder(Theme.borderColorSubtle, lineWidth: Theme.borderWidthSubtle)  // 0.5
 
-// ❌ MAUVAIS
+// MAUVAIS
 .strokeBorder(Color.gray, lineWidth: 1)
 ```
 
 ### Couleurs sémantiques
 
 ```swift
-// ✅ BON - Couleurs adaptatives light/dark
+// BON - Couleurs adaptatives light/dark
 Theme.primaryBackground      // Background principal
 Theme.secondaryBackground    // Background secondaire
 Theme.tertiaryBackground     // Background tertiaire
@@ -62,21 +71,114 @@ Theme.borderColorSubtle      // Bordure subtile
 Theme.labelPrimary           // Texte principal
 Theme.labelSecondary         // Texte secondaire
 Theme.labelTertiary          // Texte tertiaire
-Theme.tintColor              // Couleur d'accent
+Theme.tintColor              // Couleur d'accent (vert)
 Theme.destructiveColor       // Rouge pour actions destructives
 
-// ❌ MAUVAIS
+// MAUVAIS
 Color(.systemBackground)
 Color.gray.opacity(0.3)
 Color.primary
 ```
+
+## Liquid Glass (iOS 26+)
+
+L'app adopte le design Liquid Glass d'Apple pour les éléments flottants.
+
+### Quand utiliser Liquid Glass
+
+- Toolbars et barres d'action flottantes
+- Boutons d'action (FAB, actions contextuelles)
+- Cards et panels flottants au-dessus du contenu
+- Tab bars et navigation overlays
+
+### Quand NE PAS utiliser Liquid Glass
+
+- Listes denses et tableaux
+- Surfaces plein écran
+- Layouts texte-heavy
+- Contenu principal (glass = navigation layer seulement)
+
+### API de base
+
+```swift
+// Glass effect simple
+Text("Action")
+    .padding()
+    .glassEffect()  // Default: .regular, capsule shape
+
+// Variantes
+.glassEffect(.regular)    // Standard - toolbars, boutons, tab bars
+.glassEffect(.clear)      // Haute transparence - au-dessus de photos/maps
+.glassEffect(.identity)   // Désactivé - pour toggle conditionnel
+
+// Tinting avec les couleurs de l'app
+.glassEffect(.regular.tint(.green))    // Accent principal
+.glassEffect(.regular.tint(.orange))   // Accent secondaire
+
+// Boutons interactifs (scaling, bounce, shimmer)
+Button("Action") { }
+    .glassEffect(.regular.interactive())
+
+// Combiné
+.glassEffect(.regular.tint(.green).interactive())
+```
+
+### Shapes personnalisées
+
+```swift
+.glassEffect(.regular, in: .capsule)
+.glassEffect(.regular, in: .circle)
+.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+```
+
+### GlassEffectContainer (grouper plusieurs éléments glass)
+
+```swift
+GlassEffectContainer {
+    HStack(spacing: 20) {
+        Button { } label: { Image(systemName: "pencil") }
+            .glassEffect(.regular.interactive())
+
+        Button { } label: { Image(systemName: "trash") }
+            .glassEffect(.regular.interactive())
+    }
+}
+```
+
+### Morphing transitions avec glassEffectID
+
+```swift
+@Namespace private var namespace
+
+GlassEffectContainer(spacing: 30) {
+    Button(isExpanded ? "Collapse" : "Expand") {
+        withAnimation(.bouncy) { isExpanded.toggle() }
+    }
+    .glassEffect()
+    .glassEffectID("toggle", in: namespace)
+
+    if isExpanded {
+        Button("Action") { }
+            .glassEffect()
+            .glassEffectID("action", in: namespace)
+    }
+}
+```
+
+### Règles Liquid Glass
+
+1. **Navigation layer seulement** : Glass pour les overlays flottants, JAMAIS pour le contenu
+2. **GlassEffectContainer** : Toujours grouper les éléments glass dans un container
+3. **Tinting sémantique** : Utiliser `.tint(.green)` pour les CTA, `.tint(.orange)` pour les highlights
+4. **Interactive** : Ajouter `.interactive()` sur tous les boutons glass
+5. **Accessibilité** : Le système gère automatiquement Reduce Transparency / Reduce Motion
 
 ## View Modifiers disponibles
 
 ### Card Style
 
 ```swift
-// ✅ BON
+// BON
 VStack { ... }
     .cardStyle()  // Background + corner radius + optionnel border
 
@@ -86,7 +188,7 @@ VStack { ... }
 VStack { ... }
     .cardStyle(cornerRadius: Theme.cornerRadiusLarge, withBorder: true)
 
-// ❌ MAUVAIS
+// MAUVAIS
 VStack { ... }
     .background(Color(.secondarySystemBackground))
     .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -95,11 +197,11 @@ VStack { ... }
 ### Input Field Style
 
 ```swift
-// ✅ BON
+// BON
 HStack { ... }
     .inputFieldStyle()  // Pour les conteneurs de champs de recherche, etc.
 
-// ❌ MAUVAIS
+// MAUVAIS
 HStack { ... }
     .background(Color(.secondarySystemBackground))
     .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -108,11 +210,11 @@ HStack { ... }
 ### TextField Style
 
 ```swift
-// ✅ BON
+// BON
 TextField("Placeholder", text: $text)
     .aceTextFieldStyle()  // Style unifié pour tous les TextFields
 
-// ❌ MAUVAIS
+// MAUVAIS
 TextField("Placeholder", text: $text)
     .padding(.horizontal, 14)
     .padding(.vertical, 14)
@@ -125,11 +227,11 @@ TextField("Placeholder", text: $text)
 ### Primary Button (CTA principal)
 
 ```swift
-// ✅ BON
+// BON
 Button("Connexion") { }
     .buttonStyle(.appPrimary)
 
-// ❌ MAUVAIS
+// MAUVAIS
 Button("Connexion") { }
     .font(.body.weight(.semibold))
     .frame(maxWidth: .infinity)
@@ -142,7 +244,6 @@ Button("Connexion") { }
 ### Secondary Button (actions secondaires)
 
 ```swift
-// ✅ BON
 Button("Annuler") { }
     .buttonStyle(.appSecondary)
 ```
@@ -150,7 +251,6 @@ Button("Annuler") { }
 ### Outlined Button (OAuth, etc.)
 
 ```swift
-// ✅ BON
 Button { } label: {
     Label("Continuer avec Google", image: "google-logo")
 }
@@ -160,7 +260,6 @@ Button { } label: {
 ### Destructive Button (Sign out, Supprimer)
 
 ```swift
-// ✅ BON
 Button("Se déconnecter") { }
     .buttonStyle(.appDestructiveOutlined)
 ```
@@ -168,7 +267,6 @@ Button("Se déconnecter") { }
 ### Card Row Button (lignes cliquables)
 
 ```swift
-// ✅ BON
 Button { } label: {
     HStack {
         Text("Mon organisation")
@@ -185,6 +283,8 @@ Button { } label: {
 2. **TOUJOURS utiliser les modifiers** : `.cardStyle()`, `.inputFieldStyle()`, `.aceTextFieldStyle()`
 3. **TOUJOURS utiliser les ButtonStyles** : `.appPrimary`, `.appSecondary`, `.appOutlined`, `.appDestructiveOutlined`, `.appCardRow`
 4. **Couleurs sémantiques** : Utiliser `Theme.xxx` au lieu de `Color.xxx` ou `Color(.systemXxx)`
+5. **Palette vert/orange** : Vert = accent principal, Orange = accent secondaire
+6. **Liquid Glass** : Pour les éléments flottants et navigation, avec tinting vert/orange
 
 ## Quand créer un nouveau token
 

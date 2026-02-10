@@ -8,8 +8,8 @@ import {
   setScore,
   matchComment,
 } from "../../../db/schema/match/schema";
-import { user } from "../../../db/schema/auth/schema";
-import { eq } from "drizzle-orm";
+import { user, organization, member } from "../../../db/schema/auth/schema";
+import { eq, inArray } from "drizzle-orm";
 
 export const getMatch = async (c: Context<HonoContext>) => {
   try {
@@ -137,11 +137,64 @@ export const getMatch = async (c: Context<HonoContext>) => {
 
     const setsWithScores = Array.from(setsMap.values());
 
+    // Fetch venue organization if set
+    let venueOrganization = null;
+    if (foundMatch.venueOrganizationId) {
+      const [org] = await db
+        .select({
+          id: organization.id,
+          name: organization.name,
+          slug: organization.slug,
+          logo: organization.logo,
+          address: organization.address,
+          latitude: organization.latitude,
+          longitude: organization.longitude,
+        })
+        .from(organization)
+        .where(eq(organization.id, foundMatch.venueOrganizationId))
+        .limit(1);
+
+      venueOrganization = org || null;
+    }
+
+    // Fetch participant organizations
+    const participantUserIds = participants.map((p) => p.userId);
+    const membershipRows = await db
+      .select({
+        userId: member.userId,
+        organization: {
+          id: organization.id,
+          name: organization.name,
+          slug: organization.slug,
+          logo: organization.logo,
+          address: organization.address,
+          latitude: organization.latitude,
+          longitude: organization.longitude,
+        },
+      })
+      .from(member)
+      .innerJoin(organization, eq(member.organizationId, organization.id))
+      .where(inArray(member.userId, participantUserIds));
+
+    // Group by userId, take first org per user
+    const orgByUser = new Map<string, typeof membershipRows[0]["organization"]>();
+    for (const row of membershipRows) {
+      if (!orgByUser.has(row.userId)) {
+        orgByUser.set(row.userId, row.organization);
+      }
+    }
+
+    const participantOrganizations = Array.from(orgByUser.entries()).map(
+      ([userId, org]) => ({ userId, organization: org }),
+    );
+
     return c.json({
       match: foundMatch,
       participants,
       sets: setsWithScores,
       comments,
+      venueOrganization,
+      participantOrganizations,
     });
   } catch (error) {
     return c.json({ error: (error as Error).message }, 500);

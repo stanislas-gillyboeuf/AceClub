@@ -5,3 +5,4 @@ export { deleteMatch } from "./delete-match";
 export { createComment } from "./create-comment";
 export { updateComment } from "./update-comment";
 export { deleteComment } from "./delete-comment";
+export { updateVenue } from "./update-venue";

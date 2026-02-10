@@ -73,6 +73,7 @@ struct Match: Identifiable {
     let scheduledAt: Date?
     let startedAt: Date?
     let finishedAt: Date?
+    let venueOrganizationId: String?
 
     // MARK: - Computed Properties
 
@@ -246,11 +247,19 @@ struct MatchComment: Identifiable {
     }
 }
 
+// MARK: - Participant Organization
+struct ParticipantOrganization {
+    let userId: String
+    let organization: Organization
+}
+
 // MARK: - Complete Match Entity
 struct MatchDetail: Identifiable {
     let match: Match
     let participants: [MatchParticipant]
     let sets: [MatchSet]
+    let venueOrganization: Organization?
+    let participantOrganizations: [ParticipantOrganization]
 
     var id: String { match.id }
 
@@ -304,6 +313,24 @@ struct MatchDetail: Identifiable {
     var hasWinner: Bool {
         winner != nil
     }
+
+    /// Organisation du joueur domicile
+    var homeOrganization: Organization? {
+        guard let homeUserId = homeParticipant?.userId else { return nil }
+        return participantOrganizations.first { $0.userId == homeUserId }?.organization
+    }
+
+    /// Organisation du joueur extérieur
+    var awayOrganization: Organization? {
+        guard let awayUserId = awayParticipant?.userId else { return nil }
+        return participantOrganizations.first { $0.userId == awayUserId }?.organization
+    }
+
+    /// True si les 2 joueurs ont le même club (venue auto)
+    var venueIsAutomatic: Bool {
+        guard let homeOrg = homeOrganization, let awayOrg = awayOrganization else { return false }
+        return homeOrg.id == awayOrg.id
+    }
 }
 
 // MARK: - Match List Item Entity
@@ -316,6 +343,7 @@ struct MatchListItem: Identifiable {
     let scheduledAt: Date?
     let startedAt: Date?
     let finishedAt: Date?
+    let venueOrganizationId: String?
     let participants: [MatchParticipant]
     let sets: [MatchSet]
 

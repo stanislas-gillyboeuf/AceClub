@@ -232,6 +232,48 @@ class MatchAPIDataSource {
         }
     }
 
+    // MARK: - Update Venue
+
+    func updateVenue(id: String, request: UpdateVenueRequestDTO) async throws -> UpdateVenueResponseDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/match/\(id)/venue") else {
+            throw MatchAPIDataSourceError.invalidURL
+        }
+
+        let jsonData: Data
+        do {
+            let encoder = JSONEncoder()
+            jsonData = try encoder.encode(request)
+        } catch {
+            throw MatchAPIDataSourceError.encodingFailed(error)
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "PUT", body: jsonData)
+
+        switch response.statusCode {
+        case 200:
+            do {
+                let venueResponse = try JSONDecoder().decode(UpdateVenueResponseDTO.self, from: data)
+                return venueResponse
+            } catch {
+                throw MatchAPIDataSourceError.decodingFailed(error)
+            }
+        case 400:
+            if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
+               let message = errorResponse["message"] ?? errorResponse["error"] {
+                throw MatchAPIDataSourceError.badRequest(message)
+            }
+            throw MatchAPIDataSourceError.badRequest("Données invalides")
+        case 401:
+            throw MatchAPIDataSourceError.unauthorized
+        case 403:
+            throw MatchAPIDataSourceError.badRequest("Seuls les participants peuvent modifier le lieu")
+        case 404:
+            throw MatchAPIDataSourceError.notFound
+        default:
+            throw MatchAPIDataSourceError.requestFailed(statusCode: response.statusCode)
+        }
+    }
+
     // MARK: - Delete Match
 
     func deleteMatch(id: String) async throws -> DeleteMatchResponseDTO {

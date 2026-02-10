@@ -81,7 +81,8 @@ class MatchMapper {
             createdAt: parseDate(matchDTO.createdAt) ?? Date(),
             scheduledAt: matchDTO.scheduledAt.flatMap { parseDate($0) },
             startedAt: matchDTO.startedAt.flatMap { parseDate($0) },
-            finishedAt: matchDTO.finishedAt.flatMap { parseDate($0) }
+            finishedAt: matchDTO.finishedAt.flatMap { parseDate($0) },
+            venueOrganizationId: matchDTO.venueOrganizationId
         )
     }
 
@@ -128,17 +129,40 @@ class MatchMapper {
         )
     }
 
+    // MARK: - Organization Mapping
+
+    private static func mapOrganization(_ dto: OrganizationDTO) -> Organization {
+        return Organization(
+            id: dto.id,
+            name: dto.name,
+            slug: dto.slug,
+            logo: dto.logo,
+            createdAt: dto.createdAt ?? "",
+            metadata: dto.metadata,
+            address: dto.address,
+            latitude: dto.latitude,
+            longitude: dto.longitude,
+            pinEnabled: dto.pinEnabled ?? false
+        )
+    }
+
     // MARK: - Match Detail Mapping
 
     static func map(detailDTO: MatchDetailResponseDTO) -> MatchDetail {
         let match = map(matchDTO: detailDTO.match)
         let participants = detailDTO.participants.map { map(participantDTO: $0) }
         let sets = detailDTO.sets.map { map(setDTO: $0) }
+        let venueOrganization = detailDTO.venueOrganization.map { mapOrganization($0) }
+        let participantOrganizations = detailDTO.participantOrganizations?.map { dto in
+            ParticipantOrganization(userId: dto.userId, organization: mapOrganization(dto.organization))
+        } ?? []
 
         return MatchDetail(
             match: match,
             participants: participants,
-            sets: sets
+            sets: sets,
+            venueOrganization: venueOrganization,
+            participantOrganizations: participantOrganizations
         )
     }
 
@@ -157,6 +181,7 @@ class MatchMapper {
             scheduledAt: matchWithParticipantsDTO.scheduledAt.flatMap { parseDate($0) },
             startedAt: matchWithParticipantsDTO.startedAt.flatMap { parseDate($0) },
             finishedAt: matchWithParticipantsDTO.finishedAt.flatMap { parseDate($0) },
+            venueOrganizationId: matchWithParticipantsDTO.venueOrganizationId,
             participants: participants,
             sets: sets
         )
@@ -308,7 +333,9 @@ class MatchMapper {
         return MatchDetail(
             match: match,
             participants: participants,
-            sets: sets
+            sets: sets,
+            venueOrganization: nil,
+            participantOrganizations: []
         )
     }
 

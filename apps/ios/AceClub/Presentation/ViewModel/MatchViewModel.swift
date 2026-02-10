@@ -76,7 +76,9 @@ class MatchViewModel: ObservableObject {
                 let newDetail = MatchDetail(
                     match: updatedMatch,
                     participants: currentDetail.participants,
-                    sets: currentDetail.sets
+                    sets: currentDetail.sets,
+                    venueOrganization: currentDetail.venueOrganization,
+                    participantOrganizations: currentDetail.participantOrganizations
                 )
                 matchDetail = newDetail
                 print("[MatchViewModel] MatchDetail created, isOngoing=\(newDetail.match.isOngoing)")
@@ -124,7 +126,9 @@ class MatchViewModel: ObservableObject {
                 let newDetail = MatchDetail(
                     match: updatedMatch,
                     participants: currentDetail.participants,
-                    sets: currentDetail.sets
+                    sets: currentDetail.sets,
+                    venueOrganization: currentDetail.venueOrganization,
+                    participantOrganizations: currentDetail.participantOrganizations
                 )
                 matchDetail = newDetail
 

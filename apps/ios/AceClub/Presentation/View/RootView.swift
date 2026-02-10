@@ -131,6 +131,5 @@ struct RootView: View {
             await organizationViewModel.loadOrganizations()
             await organizationViewModel.loadActiveMember()
         }
-        .background(Theme.primaryBackground)
     }
 }

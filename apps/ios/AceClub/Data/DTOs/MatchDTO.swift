@@ -17,6 +17,7 @@ struct MatchDTO: Codable {
     let scheduledAt: String?
     let startedAt: String?
     let finishedAt: String?
+    let venueOrganizationId: String?
 }
 
 // MARK: - Match Participant DTO
@@ -59,12 +60,20 @@ struct MatchCommentDTO: Codable {
     let user: MessageSenderDTO?
 }
 
+// MARK: - Participant Organization DTO
+struct ParticipantOrganizationDTO: Codable {
+    let userId: String
+    let organization: OrganizationDTO
+}
+
 // MARK: - Complete Match Response DTO
 struct MatchDetailResponseDTO: Codable {
     let match: MatchDTO
     let participants: [MatchParticipantDTO]
     let sets: [SetDTO]
     let comments: [MatchCommentDTO]?
+    let venueOrganization: OrganizationDTO?
+    let participantOrganizations: [ParticipantOrganizationDTO]?
 }
 
 // MARK: - List Matches Response DTO
@@ -82,6 +91,7 @@ struct MatchWithParticipantsDTO: Codable {
     let scheduledAt: String?
     let startedAt: String?
     let finishedAt: String?
+    let venueOrganizationId: String?
     let participants: [MatchParticipantDTO]
     let sets: [SetDTO]?
     let comments: [MatchCommentDTO]?
@@ -172,6 +182,18 @@ struct UpdateMatchScoresResponseDTO: Codable {
     let success: Bool
     let updatedScoresCount: Int
     let updatedScores: [SetScoreResponseDTO]
+}
+
+// MARK: - Update Venue Request DTO
+struct UpdateVenueRequestDTO: Codable {
+    let venueOrganizationId: String?
+}
+
+// MARK: - Update Venue Response DTO
+struct UpdateVenueResponseDTO: Codable {
+    let success: Bool
+    let match: MatchDTO
+    let venueOrganization: OrganizationDTO?
 }
 
 // MARK: - Delete Match Response DTO

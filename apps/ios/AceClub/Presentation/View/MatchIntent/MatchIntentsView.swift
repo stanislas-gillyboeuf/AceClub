@@ -16,28 +16,45 @@ struct MatchIntentsView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                if !viewModel.isDiscoveryRestricted {
-                    radiusPicker
-                        .padding(.horizontal, Theme.paddingHorizontal)
-                        .padding(.vertical, 8)
+            ZStack {
+                if viewModel.isLoading, viewModel.discoverItems.isEmpty {
+                    ProgressView()
+                        .scaleEffect(1.2)
+                        .tint(Theme.tintColor)
+                } else {
+                    MatchIntentsContent(
+                        viewModel: viewModel,
+                        selectedItem: $selectedItem,
+                        onCreateIntent: { showCreateSheet = true }
+                    )
                 }
-
-                ZStack {
-                    if viewModel.isLoading, viewModel.discoverItems.isEmpty {
-                        ProgressView("Chargement...")
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    } else {
-                        MatchIntentsContent(
-                            viewModel: viewModel,
-                            selectedItem: $selectedItem,
-                            onCreateIntent: { showCreateSheet = true }
-                        )
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .navigationTitle("Trouver un partenaire")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    if !viewModel.isDiscoveryRestricted {
+                        Menu {
+                            ForEach(radiusOptions, id: \.label) { option in
+                                Button {
+                                    viewModel.selectedRadius = option.value
+                                    Task { await viewModel.loadDiscover() }
+                                } label: {
+                                    HStack {
+                                        Text(option.label)
+                                        if viewModel.selectedRadius == option.value {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            Image(systemName: "slider.horizontal.3")
+                                .foregroundStyle(Theme.tintColor)
+                        }
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .navigationTitle("Trouver un partenaire")
             .task {
                 await viewModel.loadDiscover()
                 if !viewModel.isDiscoveryRestricted {
@@ -68,56 +85,34 @@ struct MatchIntentsView: View {
                         Task { await viewModel.pass() }
                     }
                 )
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showCreateSheet) {
-                CreateMatchIntentSheet(isPresented: $showCreateSheet) {
-                    Task { await viewModel.loadDiscover() }
-                }
-            }
-            .background(Theme.primaryBackground)
-        }
-    }
-
-    // MARK: - Radius Picker
-
-    private var radiusPicker: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(radiusOptions, id: \.label) { option in
-                    Button {
-                        viewModel.selectedRadius = option.value
+                DynamicSheet(animation: .snappy(duration: 0.3, extraBounce: 0)) {
+                    CreateMatchIntentSheet(isPresented: $showCreateSheet) {
                         Task { await viewModel.loadDiscover() }
                     } label: {
                         Text(option.label)
                             .font(.subheadline.weight(.medium))
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
-                            .background(
-                                viewModel.selectedRadius == option.value
-                                    ? Theme.tintColor
-                                    : Theme.cardBackground
-                            )
                             .foregroundStyle(
                                 viewModel.selectedRadius == option.value
                                     ? .white
                                     : Theme.labelPrimary
                             )
-                            .clipShape(Capsule())
-                            .overlay {
-                                Capsule()
-                                    .strokeBorder(
-                                        viewModel.selectedRadius == option.value
-                                            ? Color.clear
-                                            : Theme.borderColor,
-                                        lineWidth: Theme.borderWidth
-                                    )
-                            }
+                            .glassEffect(
+                                viewModel.selectedRadius == option.value
+                                    ? .regular.tint(Theme.accentGreen).interactive()
+                                    : .regular.interactive(),
+                                in: .capsule
+                            )
                     }
-                    .buttonStyle(.plain)
                 }
+                .presentationDragIndicator(.visible)
             }
+            .background(Theme.primaryBackground)
         }
     }
 }

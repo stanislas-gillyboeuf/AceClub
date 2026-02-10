@@ -1,0 +1,3 @@
+ALTER TABLE "match" ADD COLUMN "venue_organization_id" text;--> statement-breakpoint
+ALTER TABLE "match" ADD CONSTRAINT "match_venue_organization_id_organization_id_fk" FOREIGN KEY ("venue_organization_id") REFERENCES "public"."organization"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "match_venueOrganizationId_idx" ON "match" USING btree ("venue_organization_id");

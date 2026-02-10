@@ -19,6 +19,29 @@ final class MatchModel {
     var startedAt: Date?
     var finishedAt: Date?
 
+    // Venue
+    var venueOrganizationId: String?
+    var venueOrganizationName: String?
+    var venueOrganizationAddress: String?
+    var venueOrganizationLatitude: Double?
+    var venueOrganizationLongitude: Double?
+    var venueOrganizationLogo: String?
+
+    // Participant organizations
+    var homeOrganizationId: String?
+    var homeOrganizationName: String?
+    var homeOrganizationAddress: String?
+    var homeOrganizationLatitude: Double?
+    var homeOrganizationLongitude: Double?
+    var homeOrganizationLogo: String?
+
+    var awayOrganizationId: String?
+    var awayOrganizationName: String?
+    var awayOrganizationAddress: String?
+    var awayOrganizationLatitude: Double?
+    var awayOrganizationLongitude: Double?
+    var awayOrganizationLogo: String?
+
     // Relationships
     @Relationship(deleteRule: .cascade, inverse: \MatchParticipantModel.match)
     var participants: [MatchParticipantModel] = []
@@ -148,6 +171,18 @@ final class MatchModel {
 
     var hasWinner: Bool {
         winner != nil
+    }
+
+    var hasVenue: Bool {
+        venueOrganizationId != nil
+    }
+
+    var hasBothOrganizations: Bool {
+        homeOrganizationId != nil && awayOrganizationId != nil
+    }
+
+    var hasDifferentOrganizations: Bool {
+        hasBothOrganizations && homeOrganizationId != awayOrganizationId
     }
 
     /// Unique hash combining match ID and participant images for SwiftUI view refresh

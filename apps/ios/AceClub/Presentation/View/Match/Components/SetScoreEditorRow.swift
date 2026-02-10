@@ -60,7 +60,7 @@ struct SetScoreEditorRow: View {
                     name: awayName,
                     score: $awayScore,
                     isLeading: awayScore > homeScore,
-                    accentColor: .orange
+                    accentColor: Theme.accentOrange
                 )
             }
         }

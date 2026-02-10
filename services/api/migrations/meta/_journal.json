@@ -50,6 +50,13 @@
       "when": 1770667525562,
       "tag": "0007_normal_adam_warlock",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1770738594461,
+      "tag": "0008_sticky_shaman",
+      "breakpoints": true
     }
   ]
 }
