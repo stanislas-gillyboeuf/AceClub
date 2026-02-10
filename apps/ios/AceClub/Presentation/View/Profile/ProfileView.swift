@@ -238,9 +238,12 @@ struct ProfileView: View {
                 _ = await (userTask, prefsTask, intentsTask, orgsTask, memberTask, invitationsTask, levelTask, badgesTask)
             }
             .sheet(isPresented: $showCreateMatchIntentSheet) {
-                CreateMatchIntentSheet(isPresented: $showCreateMatchIntentSheet) {
-                    Task { await profileViewModel.loadMyMatchIntents() }
+                DynamicSheet(animation: .snappy(duration: 0.3, extraBounce: 0)) {
+                    CreateMatchIntentSheet(isPresented: $showCreateMatchIntentSheet) {
+                        Task { await profileViewModel.loadMyMatchIntents() }
+                    }
                 }
+                .presentationDragIndicator(.visible)
             }
             .fullScreenCover(isPresented: $showSettingsSheet) {
                 SettingsView { updatedUser in
