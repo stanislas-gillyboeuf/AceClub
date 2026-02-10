@@ -29,8 +29,6 @@ struct ChatView: View {
                 typingIndicator
             }
 
-            Divider()
-
             // Input bar
             inputBar
         }
@@ -153,44 +151,48 @@ struct ChatView: View {
         .padding(.vertical, 4)
     }
 
-    private var inputBar: some View {
-        HStack(spacing: 12) {
-            TextField("Message...", text: $messageText, axis: .vertical)
-                .textFieldStyle(.plain)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Theme.cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
-                }
-                .focused($isInputFocused)
-                .lineLimit(1...5)
-                .onChange(of: messageText) { _, _ in
-                    viewModel.sendTypingIndicator()
-                }
+    private var canSend: Bool {
+        !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !viewModel.isSending
+    }
 
-            Button {
-                Task {
-                    let text = messageText
-                    messageText = ""
-                    await viewModel.sendMessage(text)
+    private var inputBar: some View {
+        GlassEffectContainer(spacing: 8) {
+            HStack(spacing: 10) {
+                TextField("Message...", text: $messageText, axis: .vertical)
+                    .textFieldStyle(.plain)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .foregroundStyle(Theme.labelPrimary)
+                    .glassEffect(.regular, in: .capsule)
+                    .focused($isInputFocused)
+                    .lineLimit(1...5)
+                    .onChange(of: messageText) { _, _ in
+                        viewModel.sendTypingIndicator()
+                    }
+
+                Button {
+                    Task {
+                        let text = messageText
+                        messageText = ""
+                        await viewModel.sendMessage(text)
+                    }
+                } label: {
+                    Image(systemName: "arrow.up")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(canSend ? .white : Theme.labelSecondary)
+                        .frame(width: 36, height: 36)
+                        .glassEffect(
+                            canSend
+                                ? .regular.tint(Theme.accentGreen).interactive()
+                                : .regular.interactive(),
+                            in: .circle
+                        )
                 }
-            } label: {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(
-                        messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.isSending
-                        ? Theme.labelSecondary.opacity(0.5)
-                        : Theme.tintColor
-                    )
+                .disabled(!canSend)
             }
-            .disabled(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.isSending)
+            .padding(.horizontal, Theme.paddingHorizontal)
+            .padding(.vertical, 10)
         }
-        .padding(.horizontal, Theme.paddingHorizontal)
-        .padding(.vertical, 12)
-        .background(.ultraThinMaterial)
     }
 }
 
@@ -212,21 +214,13 @@ struct MessageBubble: View {
                     .font(.body)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
-                    .background(
-                        message.isFromMe
-                            ? AnyShapeStyle(Theme.tintColor)
-                            : AnyShapeStyle(Theme.cardBackground)
-                    )
                     .foregroundStyle(message.isFromMe ? .white : Theme.labelPrimary)
-                    .clipShape(
-                        RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
+                    .glassEffect(
+                        message.isFromMe
+                            ? .regular.tint(Theme.accentGreen)
+                            : .regular,
+                        in: .rect(cornerRadius: Theme.cornerRadiusMedium)
                     )
-                    .overlay {
-                        if !message.isFromMe {
-                            RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
-                                .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
-                        }
-                    }
                     .contextMenu {
                         if message.isFromMe && message.sendStatus == .sent {
                             Button(role: .destructive) {
