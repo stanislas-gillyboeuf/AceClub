@@ -92,22 +92,6 @@ struct MatchIntentsView: View {
                 DynamicSheet(animation: .snappy(duration: 0.3, extraBounce: 0)) {
                     CreateMatchIntentSheet(isPresented: $showCreateSheet) {
                         Task { await viewModel.loadDiscover() }
-                    } label: {
-                        Text(option.label)
-                            .font(.subheadline.weight(.medium))
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .foregroundStyle(
-                                viewModel.selectedRadius == option.value
-                                    ? .white
-                                    : Theme.labelPrimary
-                            )
-                            .glassEffect(
-                                viewModel.selectedRadius == option.value
-                                    ? .regular.tint(Theme.accentGreen).interactive()
-                                    : .regular.interactive(),
-                                in: .capsule
-                            )
                     }
                 }
                 .presentationDragIndicator(.visible)
