@@ -12,53 +12,166 @@ struct DiscoverIntentDetailSheet: View {
 
     @Environment(\.dismiss) private var dismiss
 
+    private var tier: LevelTier {
+        LevelTier.tier(for: item.user?.level ?? 1)
+    }
+
     var body: some View {
-        if let user = item.user {
-            UserProfileSheet(
-                profile: user,
-                showAvailability: true,
-                availabilityContent: {
-                    AnyView(availabilitySection)
-                },
-                actionButtons: {
-                    AnyView(actionButtons)
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 0) {
+                    heroPhoto
+                        .frame(height: 400)
+                        .clipped()
+
+                    VStack(spacing: 20) {
+                        profileInfo
+                            .padding(.top, 20)
+
+                        Divider()
+
+                        availabilitySection
+
+                        if let desc = item.intent.description, !desc.isEmpty {
+                            descriptionSection(desc)
+                        }
+                    }
+                    .padding(.horizontal, Theme.paddingHorizontal)
+                    .padding(.bottom, 100)
                 }
-            )
-        } else {
-            // Fallback si pas d'utilisateur
-            ContentUnavailableView(
-                "Utilisateur introuvable",
-                systemImage: "person.slash",
-                description: Text("Les informations de cet utilisateur ne sont pas disponibles.")
-            )
+            }
+            .ignoresSafeArea(edges: .top)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Fermer") { dismiss() }
+                        .foregroundStyle(Theme.tintColor)
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                actionButtons
+            }
         }
+    }
+
+    // MARK: - Hero Photo
+
+    private var heroPhoto: some View {
+        ZStack(alignment: .bottom) {
+            photoOrFallback
+
+            LinearGradient(
+                colors: [.clear, Theme.primaryBackground],
+                startPoint: .center,
+                endPoint: .bottom
+            )
+            .frame(height: 120)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private var photoOrFallback: some View {
+        if let imageURL = item.user?.imageURL {
+            AsyncImage(url: imageURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().scaledToFill()
+                case .empty:
+                    fallbackGradient.overlay { ProgressView().tint(.white) }
+                case .failure:
+                    fallbackGradient
+                @unknown default:
+                    fallbackGradient
+                }
+            }
+        } else {
+            fallbackGradient
+        }
+    }
+
+    private var fallbackGradient: some View {
+        ZStack {
+            LinearGradient(
+                colors: [tier.color.opacity(0.7), tier.color.opacity(0.3)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            Text(item.user?.initials ?? "?")
+                .font(.system(size: 80, weight: .bold, design: .rounded))
+                .foregroundStyle(.white.opacity(0.6))
+        }
+    }
+
+    // MARK: - Profile Info
+
+    private var profileInfo: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Text(item.user?.name ?? "Joueur")
+                    .font(.title.weight(.bold))
+                    .foregroundStyle(Theme.labelPrimary)
+
+                Spacer()
+
+                HStack(spacing: 4) {
+                    Image(systemName: tier.icon)
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(tier.color)
+                    Text("Niv. \(item.user?.level ?? 1)")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.labelSecondary)
+                }
+            }
+
+            if let org = item.user?.organization {
+                HStack(spacing: 6) {
+                    Image(systemName: "building.2.fill")
+                        .font(.caption)
+                        .foregroundStyle(Theme.tintColor)
+                    Text(org.name)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(Theme.tintColor)
+                }
+            }
+
+            if let distance = item.distance {
+                HStack(spacing: 4) {
+                    Image(systemName: "location.fill")
+                        .font(.caption)
+                        .foregroundStyle(Theme.labelSecondary)
+                    Text(distance < 1
+                        ? String(format: "%.0f m", distance * 1000)
+                        : String(format: "%.1f km", distance))
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(Theme.labelSecondary)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Availability Section
 
     private var availabilitySection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Disponibilite")
+            Text("Disponibilité")
                 .font(.headline)
                 .foregroundStyle(Theme.labelPrimary)
 
             VStack(alignment: .leading, spacing: 12) {
-                // Type
                 detailRow(icon: item.intent.type.icon, title: "Type", value: item.intent.type.displayName)
 
-                // Date
                 if let date = item.intent.date {
                     detailRow(icon: "calendar", title: "Date", value: formatFullDate(date))
                 }
 
-                // Time
                 if let time = item.intent.time {
                     detailRow(icon: "clock", title: "Heure", value: formatTime(time))
                 }
 
-                // Duration
                 if item.intent.duration > 0 {
-                    detailRow(icon: "timer", title: "Duree", value: durationLabel(minutes: item.intent.duration))
+                    detailRow(icon: "timer", title: "Durée", value: durationLabel(minutes: item.intent.duration))
                 }
             }
             .padding(Theme.paddingCard)
@@ -67,11 +180,6 @@ struct DiscoverIntentDetailSheet: View {
             .overlay {
                 RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
                     .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
-            }
-
-            // Description if present
-            if let description = item.intent.description, !description.isEmpty {
-                descriptionSection(description)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -123,31 +231,27 @@ struct DiscoverIntentDetailSheet: View {
 
     private var actionButtons: some View {
         HStack(spacing: 16) {
-            // Pass button
             Button {
                 onPass()
                 dismiss()
             } label: {
                 Image(systemName: "xmark")
-                    .font(.title2.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(Theme.destructiveColor)
                     .frame(width: 60, height: 60)
-                    .background(Theme.cardBackground)
-                    .clipShape(Circle())
+                    .background(.ultraThinMaterial, in: Circle())
                     .overlay {
-                        Circle()
-                            .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidth)
+                        Circle().strokeBorder(Theme.destructiveColor.opacity(0.3), lineWidth: 1)
                     }
             }
             .buttonStyle(.plain)
 
-            // Like button (CTA)
             Button {
                 onLike()
                 dismiss()
             } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: "hand.raised.fill")
+                    Image(systemName: "tennis.racket")
                         .font(.body.weight(.semibold))
 
                     Text("Proposer un match")
