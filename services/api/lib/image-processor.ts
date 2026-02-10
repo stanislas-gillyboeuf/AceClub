@@ -55,9 +55,9 @@ export async function processImage(
 
 export async function processProfileImage(input: Buffer | ArrayBuffer): Promise<Buffer> {
   return processImage(input, {
-    maxWidth: 400,
-    maxHeight: 400,
-    quality: 85,
+    maxWidth: 800,
+    maxHeight: 800,
+    quality: 90,
     cropToSquare: true,
   });
 }

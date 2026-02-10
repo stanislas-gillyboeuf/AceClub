@@ -3,7 +3,7 @@ import type { HonoContext } from "../../types/hono";
 import { zValidator } from "@hono/zod-validator";
 import { requireAuth } from "../../middleware/auth";
 import { sendMessageValidator, muteConversationValidator, findOrCreateConversationValidator } from "./validators";
-import { sendMessage, markRead, muteConversation, deleteConversation, findOrCreateConversation } from "./mutations";
+import { sendMessage, markRead, muteConversation, deleteConversation, deleteMessage, findOrCreateConversation } from "./mutations";
 import { listConversations, getConversation, listMessages } from "./queries";
 
 export const conversationRouter = new Hono<HonoContext>();
@@ -35,6 +35,9 @@ conversationRouter.post(
   zValidator("json", muteConversationValidator),
   muteConversation,
 );
+
+// Delete (soft) a message (only sender can delete)
+conversationRouter.delete("/:id/message/:messageId", deleteMessage);
 
 // Delete (soft) a conversation for the current user
 conversationRouter.delete("/:id", deleteConversation);
