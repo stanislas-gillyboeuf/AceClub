@@ -7,13 +7,13 @@
 ```
 View (SwiftUI)
     ↓
-ViewModel (@MainActor, ObservableObject)
+ViewModel (@MainActor, ObservableObject or @Observable)
     ↓
 UseCase (execute() async throws)
     ↓
-Repository (protocol + implementation)
+Repository (concrete class)
     ↓
-DataSource (HTTP calls)
+DataSource (APIClient.shared)
     ↓
 API
 ```
@@ -69,6 +69,8 @@ func loadData() async {
 
     do {
         data = try await useCase.execute()
+    } catch is CancellationError {
+        // SwiftUI peut annuler les Tasks - ne rien faire
     } catch {
         errorMessage = error.localizedDescription
     }

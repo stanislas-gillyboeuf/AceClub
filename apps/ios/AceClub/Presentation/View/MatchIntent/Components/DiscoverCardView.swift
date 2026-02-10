@@ -223,11 +223,11 @@ struct DiscoverCardView: View {
     private var typeBadge: some View {
         Label(item.intent.type.displayName, systemImage: item.intent.type.icon)
             .font(.subheadline.weight(.semibold))
-            .foregroundStyle(item.intent.type == .match ? .blue : .orange)
+            .foregroundStyle(item.intent.type == .match ? .blue : Theme.accentOrange)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(
-                (item.intent.type == .match ? Color.blue : Color.orange)
+                (item.intent.type == .match ? Color.blue : Theme.accentOrange)
                     .opacity(0.12)
             )
             .clipShape(Capsule())

@@ -94,26 +94,17 @@ struct MatchIntentsView: View {
                             .font(.subheadline.weight(.medium))
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
-                            .background(
-                                viewModel.selectedRadius == option.value
-                                    ? Theme.tintColor
-                                    : Theme.cardBackground
-                            )
                             .foregroundStyle(
                                 viewModel.selectedRadius == option.value
                                     ? .white
                                     : Theme.labelPrimary
                             )
-                            .clipShape(Capsule())
-                            .overlay {
-                                Capsule()
-                                    .strokeBorder(
-                                        viewModel.selectedRadius == option.value
-                                            ? Color.clear
-                                            : Theme.borderColor,
-                                        lineWidth: Theme.borderWidth
-                                    )
-                            }
+                            .glassEffect(
+                                viewModel.selectedRadius == option.value
+                                    ? .regular.tint(Theme.accentGreen).interactive()
+                                    : .regular.interactive(),
+                                in: .capsule
+                            )
                     }
                     .buttonStyle(.plain)
                 }

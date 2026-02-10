@@ -122,3 +122,20 @@ extension ButtonStyle where Self == DestructiveOutlinedButtonStyle {
 extension ButtonStyle where Self == CardRowButtonStyle {
     static var appCardRow: CardRowButtonStyle { CardRowButtonStyle() }
 }
+
+// MARK: - Glass Button (pour les actions flottantes)
+
+struct GlassButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.body.weight(.medium))
+            .padding(.horizontal, Theme.paddingButtonHorizontal)
+            .padding(.vertical, 10)
+            .glassEffect(.regular.tint(Theme.accentGreen).interactive(), in: .capsule)
+            .opacity(configuration.isPressed ? 0.8 : 1)
+    }
+}
+
+extension ButtonStyle where Self == GlassButtonStyle {
+    static var appGlass: GlassButtonStyle { GlassButtonStyle() }
+}

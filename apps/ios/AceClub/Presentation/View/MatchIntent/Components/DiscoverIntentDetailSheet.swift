@@ -132,12 +132,7 @@ struct DiscoverIntentDetailSheet: View {
                     .font(.title2.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .frame(width: 60, height: 60)
-                    .background(Theme.cardBackground)
-                    .clipShape(Circle())
-                    .overlay {
-                        Circle()
-                            .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidth)
-                    }
+                    .glassEffect(.regular.interactive(), in: .circle)
             }
             .buttonStyle(.plain)
 
@@ -156,14 +151,7 @@ struct DiscoverIntentDetailSheet: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
-                .background(
-                    LinearGradient(
-                        colors: [Theme.tintColor, Theme.tintColor.opacity(0.8)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+                .glassEffect(.regular.tint(Theme.accentGreen).interactive(), in: RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium))
             }
             .buttonStyle(.plain)
         }

@@ -39,37 +39,43 @@ struct MatchListContent: View {
                 }
             )
 
-            List {
-                ForEach(matches) { match in
-                    NavigationLink {
-                        MatchDetailView(matchId: match.id)
-                    } label: {
-                        MatchRowView(match: match)
-                    }
-                    .onAppear {
-                        if shouldLoadMore(for: match) {
-                            Task { await loadMoreMatches() }
+            if !isLoading && matches.isEmpty {
+                ContentUnavailableView(
+                    "Aucun match",
+                    systemImage: "tennis.racket",
+                    description: Text("Tes matchs apparaîtront ici une fois planifiés ou joués.")
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                List {
+                    ForEach(matches) { match in
+                        NavigationLink {
+                            MatchDetailView(matchId: match.id)
+                        } label: {
+                            MatchRowView(match: match)
+                        }
+                        .onAppear {
+                            if shouldLoadMore(for: match) {
+                                Task { await loadMoreMatches() }
+                            }
                         }
                     }
-                }
 
-                if isLoadingMore {
-                    HStack {
-                        Spacer()
-                        ProgressView()
-                        Spacer()
+                    if isLoadingMore {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
+                        .listRowSeparator(.hidden)
                     }
-                    .listRowSeparator(.hidden)
                 }
-            }
-            .listStyle(.insetGrouped)
-            .scrollContentBackground(.hidden)
-            .background(Theme.primaryBackground)
-            .refreshable {
-                await refresh()
+                .listStyle(.plain)
+                .refreshable {
+                    await refresh()
+                }
             }
         }
-        .background(Theme.primaryBackground)
         .task {
             syncService = MatchSyncService(modelContext: modelContext)
             await initialSync()

@@ -139,55 +139,36 @@ struct MatchIntentsContent: View {
     // MARK: - Action buttons
 
     private var actionButtons: some View {
-        HStack(spacing: 48) {
-            // Pass button
-            Button {
-                hapticFeedback.impactOccurred()
-                animateSwipeOut(offset: CGSize(width: -500, height: 0))
-                Task { await viewModel.pass() }
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(Theme.cardBackground)
-                        .frame(width: 64, height: 64)
-                        .overlay {
-                            Circle()
-                                .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidth)
-                        }
-
+        GlassEffectContainer {
+            HStack(spacing: 48) {
+                Button {
+                    hapticFeedback.impactOccurred()
+                    animateSwipeOut(offset: CGSize(width: -500, height: 0))
+                    Task { await viewModel.pass() }
+                } label: {
                     Image(systemName: "xmark")
                         .font(.title2.weight(.semibold))
                         .foregroundStyle(.secondary)
+                        .frame(width: 64, height: 64)
+                        .glassEffect(.regular.interactive(), in: .circle)
                 }
-            }
-            .buttonStyle(.plain)
-            .disabled(viewModel.topCard == nil || viewModel.isSwiping)
+                .buttonStyle(.plain)
+                .disabled(viewModel.topCard == nil || viewModel.isSwiping)
 
-            // Like button
-            Button {
-                hapticSuccess.notificationOccurred(.success)
-                animateSwipeOut(offset: CGSize(width: 500, height: 0))
-                Task { await viewModel.like() }
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Theme.tintColor, Theme.tintColor.opacity(0.8)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 72, height: 72)
-                        .shadow(color: Theme.tintColor.opacity(0.4), radius: 8, x: 0, y: 4)
-
+                Button {
+                    hapticSuccess.notificationOccurred(.success)
+                    animateSwipeOut(offset: CGSize(width: 500, height: 0))
+                    Task { await viewModel.like() }
+                } label: {
                     Image(systemName: "hand.raised.fill")
                         .font(.title)
                         .foregroundStyle(.white)
+                        .frame(width: 72, height: 72)
+                        .glassEffect(.regular.tint(Theme.accentGreen).interactive(), in: .circle)
                 }
+                .buttonStyle(.plain)
+                .disabled(viewModel.topCard == nil || viewModel.isSwiping)
             }
-            .buttonStyle(.plain)
-            .disabled(viewModel.topCard == nil || viewModel.isSwiping)
         }
     }
 
@@ -227,8 +208,7 @@ struct MatchIntentsContent: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(Theme.tintColor.opacity(0.15))
-        .clipShape(Capsule())
+        .glassEffect(.regular.tint(Theme.accentGreen), in: .capsule)
         .padding(.top, 12)
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }

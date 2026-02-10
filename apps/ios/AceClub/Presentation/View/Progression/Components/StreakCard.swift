@@ -59,7 +59,7 @@ struct StreakCard: View {
     private var streakColor: Color {
         switch streak.currentStreak {
         case 0: return .gray
-        case 1...3: return .orange
+        case 1...3: return Theme.accentOrange
         case 4...7: return .red
         default: return .purple
         }

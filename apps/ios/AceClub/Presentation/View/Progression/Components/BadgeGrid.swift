@@ -68,7 +68,7 @@ private extension BadgeCategory {
         switch self {
         case .level: return .blue
         case .achievement: return .green
-        case .milestone: return .orange
+        case .milestone: return Theme.accentOrange
         case .special: return .purple
         }
     }

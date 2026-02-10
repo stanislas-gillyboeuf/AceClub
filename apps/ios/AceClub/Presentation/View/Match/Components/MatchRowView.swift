@@ -101,7 +101,7 @@ struct MatchRowView: View {
         case .match:
             return .blue
         case .training:
-            return .orange
+            return Theme.accentOrange
         }
     }
 
@@ -110,7 +110,7 @@ struct MatchRowView: View {
         case .scheduled:
             return .blue
         case .ongoing:
-            return .orange
+            return Theme.accentOrange
         case .finished:
             return .green
         }
@@ -225,7 +225,7 @@ struct MatchRowViewLegacy: View {
         case .match:
             return .blue
         case .training:
-            return .orange
+            return Theme.accentOrange
         }
     }
 
@@ -234,7 +234,7 @@ struct MatchRowViewLegacy: View {
         case .scheduled:
             return .blue
         case .ongoing:
-            return .orange
+            return Theme.accentOrange
         case .finished:
             return .green
         }

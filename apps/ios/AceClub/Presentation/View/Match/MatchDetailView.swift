@@ -333,7 +333,7 @@ struct MatchDetailView: View {
                         Image(systemName: match.matchType.icon)
                         Text(match.matchType.displayName)
                     }
-                    .foregroundStyle(match.matchType == .match ? .blue : .orange)
+                    .foregroundStyle(match.matchType == .match ? .blue : Theme.accentOrange)
                 }
 
                 if let scheduledAt = match.formattedScheduledAt {
@@ -551,7 +551,7 @@ struct MatchDetailView: View {
         case .scheduled:
             return .blue
         case .ongoing:
-            return .orange
+            return Theme.accentOrange
         case .finished:
             return .green
         }

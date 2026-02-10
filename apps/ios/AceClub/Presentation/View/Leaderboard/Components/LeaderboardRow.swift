@@ -34,7 +34,7 @@ struct LeaderboardRow: View {
                         Text("\(entry.streak)")
                             .font(.caption2)
                     }
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Theme.accentOrange)
                 }
             }
         }

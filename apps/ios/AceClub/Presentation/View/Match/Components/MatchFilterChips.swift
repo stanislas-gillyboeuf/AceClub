@@ -72,9 +72,11 @@ private struct FilterChip: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(isSelected ? Theme.tintColor : Theme.cardBackground)
             .foregroundStyle(isSelected ? .white : .primary)
-            .clipShape(Capsule())
+            .glassEffect(
+                isSelected ? .regular.tint(Theme.accentGreen).interactive() : .regular.interactive(),
+                in: .capsule
+            )
         }
         .buttonStyle(.plain)
         .animation(.easeInOut(duration: 0.2), value: isSelected)

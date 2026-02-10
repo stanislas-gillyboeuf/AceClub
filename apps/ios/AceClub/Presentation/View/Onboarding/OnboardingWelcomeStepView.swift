@@ -46,7 +46,7 @@ struct OnboardingWelcomeStepView: View {
             VStack(spacing: 12) {
                 FeatureRow(
                     icon: "figure.tennis",
-                    color: .orange,
+                    color: Theme.accentOrange,
                     title: "Trouve des partenaires",
                     subtitle: "Connecte-toi avec les joueurs de ton club",
                     isVisible: showFeatures,
@@ -64,7 +64,7 @@ struct OnboardingWelcomeStepView: View {
 
                 FeatureRow(
                     icon: "calendar",
-                    color: .orange,
+                    color: Theme.accentOrange,
                     title: "Organise tes matchs",
                     subtitle: "Planifie et rejoins des sessions",
                     isVisible: showFeatures,
