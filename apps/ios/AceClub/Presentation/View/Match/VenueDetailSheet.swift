@@ -17,7 +17,6 @@ struct VenueDetailSheet: View {
     @State private var isCalculatingRoute = false
     @State private var routeError: String?
     @State private var selectedTransport: TransportMode = .car
-    @State private var transitFallbackActive = false
     @State private var alarmEnabled = false
     @State private var alarmDate = Date()
     @State private var alarmScheduled = false
@@ -212,7 +211,7 @@ struct VenueDetailSheet: View {
     private func travelTimeSection(travelTime: String) -> some View {
         VStack(spacing: 8) {
             HStack {
-                Image(systemName: transitFallbackActive ? "car.fill" : selectedTransport.icon)
+                Image(systemName: selectedTransport.icon)
                     .font(.title3)
                     .foregroundStyle(Theme.tintColor)
 
@@ -225,17 +224,6 @@ struct VenueDetailSheet: View {
                 }
 
                 Spacer()
-            }
-
-            if transitFallbackActive {
-                HStack(spacing: 6) {
-                    Image(systemName: "info.circle")
-                        .font(.caption)
-                    Text("Transports en commun indisponibles — estimation en voiture")
-                        .font(.caption)
-                }
-                .foregroundStyle(.orange)
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             if let departureTime = suggestedDepartureTime {
@@ -343,7 +331,6 @@ struct VenueDetailSheet: View {
             travelTime = nil
             travelTimeSeconds = nil
             routeError = nil
-            transitFallbackActive = false
             return
         }
 
@@ -351,7 +338,6 @@ struct VenueDetailSheet: View {
         travelTime = nil
         travelTimeSeconds = nil
         routeError = nil
-        transitFallbackActive = false
 
         let source = MKMapItem(
             location: CLLocation(latitude: userCoord.latitude, longitude: userCoord.longitude),
@@ -367,46 +353,46 @@ struct VenueDetailSheet: View {
         request.destination = destination
         request.transportType = selectedTransport.mkTransportType
 
-        let directions = MKDirections(request: request)
-
-        do {
-            let response = try await directions.calculate()
-            if let route = response.routes.first {
-                applyRoute(route)
-            } else {
-                routeError = "Aucun itinéraire trouvé"
-            }
-        } catch {
-            // If transit fails, fallback to automobile
-            if selectedTransport == .transit {
-                let fallbackRequest = MKDirections.Request()
-                fallbackRequest.source = source
-                fallbackRequest.destination = destination
-                fallbackRequest.transportType = .automobile
-
-                let fallbackDirections = MKDirections(request: fallbackRequest)
-                do {
-                    let fallbackResponse = try await fallbackDirections.calculate()
-                    if let route = fallbackResponse.routes.first {
-                        transitFallbackActive = true
-                        applyRoute(route)
-                    } else {
-                        routeError = "Aucun itinéraire trouvé"
-                    }
-                } catch {
-                    routeError = "Itinéraire indisponible"
-                }
-            } else {
-                routeError = "Itinéraire indisponible pour ce mode"
-            }
+        // Apple MapKit: .transit only supports ETA, not full route calculation.
+        // Use calculateETA() for transit, calculate() for other modes.
+        if selectedTransport == .transit {
+            await calculateTransitETA(request: request)
+        } else {
+            await calculateDirections(request: request)
         }
 
         isCalculatingRoute = false
     }
 
-    private func applyRoute(_ route: MKRoute) {
-        travelTimeSeconds = route.expectedTravelTime
-        let minutes = Int(route.expectedTravelTime / 60)
+    /// Transit mode: use calculateETA() (the only API Apple supports for transit)
+    private func calculateTransitETA(request: MKDirections.Request) async {
+        let directions = MKDirections(request: request)
+        do {
+            let eta = try await directions.calculateETA()
+            applyTravelTime(eta.expectedTravelTime)
+        } catch {
+            routeError = "Temps de trajet en transports indisponible"
+        }
+    }
+
+    /// Car/bike/walking: use calculate() for full route directions
+    private func calculateDirections(request: MKDirections.Request) async {
+        let directions = MKDirections(request: request)
+        do {
+            let response = try await directions.calculate()
+            if let route = response.routes.first {
+                applyTravelTime(route.expectedTravelTime)
+            } else {
+                routeError = "Aucun itinéraire trouvé"
+            }
+        } catch {
+            routeError = "Itinéraire indisponible pour ce mode"
+        }
+    }
+
+    private func applyTravelTime(_ seconds: TimeInterval) {
+        travelTimeSeconds = seconds
+        let minutes = Int(seconds / 60)
         if minutes >= 60 {
             let hours = minutes / 60
             let remainingMinutes = minutes % 60
