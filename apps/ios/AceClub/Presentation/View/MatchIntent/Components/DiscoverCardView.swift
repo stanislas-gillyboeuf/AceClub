@@ -136,7 +136,8 @@ struct DiscoverCardView: View {
                     .opacity(0.12)
             )
             .clipShape(Capsule())
-      
+    }
+
     private func tagView(icon: String, text: String, iconColor: Color? = nil) -> some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
