@@ -91,9 +91,18 @@ export const completeOnboarding = async (c: Context<HonoContext>) => {
 
       const phoneNumber = normalizePhoneNumber(validated.phoneNumber);
 
+      const userUpdate: Record<string, unknown> = {
+        onboarding_completed: true,
+        phoneNumber,
+        phoneNumberVerified: false,
+      };
+      if (validated.imageUrl) {
+        userUpdate.image = validated.imageUrl;
+      }
+
       const [updated] = await tx
         .update(userTable)
-        .set({ onboarding_completed: true, phoneNumber, phoneNumberVerified: false })
+        .set(userUpdate)
         .where(eq(userTable.id, authUser!.id))
         .returning();
 

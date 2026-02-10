@@ -50,6 +50,7 @@ export const completeOnboardingValidator = z
       .refine((value) => value.replace(/\D/g, "").length >= 8, {
         message: "Invalid phone number",
       }),
+    imageUrl: z.string().url("Image must be a valid URL").optional(),
     pin: z.string().length(4).optional(),
   })
   .refine(

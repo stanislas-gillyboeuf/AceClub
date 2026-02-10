@@ -9,7 +9,8 @@ final class OnboardingViewModel: ObservableObject {
         case clubSelection = 1
         case sportSelection = 2
         case skillLevelSelection = 3
-        case phoneNumber = 4
+        case profilePhoto = 4
+        case phoneNumber = 5
     }
 
     // MARK: - State
@@ -18,6 +19,9 @@ final class OnboardingViewModel: ObservableObject {
     @Published var selectedOrganization: Organization?
     @Published var selectedSport: Sport?
     @Published var selectedSkillLevel: SkillLevel?
+    @Published var selectedProfileImage: UIImage?
+    @Published var isUploadingProfileImage: Bool = false
+    @Published var uploadedProfileImageURL: String?
     @Published var phoneNumber: String = ""
 
     @Published var organizations: [Organization] = []
@@ -45,6 +49,7 @@ final class OnboardingViewModel: ObservableObject {
     // MARK: - UseCases
     private let searchOrganizationsUseCase = SearchOrganizationsUseCase()
     private let completeOnboardingUseCase = CompleteOnboardingUseCase()
+    private let uploadUserImageUseCase = UploadUserImageUseCase()
     private let requestClubUseCase = RequestClubUseCase()
     private let verifyPinUseCase = VerifyPinUseCase()
 
@@ -68,6 +73,8 @@ final class OnboardingViewModel: ObservableObject {
             return selectedSport != nil
         case .skillLevelSelection:
             return selectedSkillLevel != nil
+        case .profilePhoto:
+            return selectedProfileImage != nil
         case .phoneNumber:
             return isPhoneNumberValid(phoneNumber)
         }
@@ -212,19 +219,30 @@ final class OnboardingViewModel: ObservableObject {
         guard let selectedSkillLevel else {
             throw NSError(domain: "Onboarding", code: 3, userInfo: [NSLocalizedDescriptionKey: "Veuillez sélectionner un niveau."])
         }
+        guard selectedProfileImage != nil else {
+            throw NSError(domain: "Onboarding", code: 4, userInfo: [NSLocalizedDescriptionKey: "Veuillez ajouter une photo de profil."])
+        }
         guard isPhoneNumberValid(phoneNumber) else {
-            throw NSError(domain: "Onboarding", code: 4, userInfo: [NSLocalizedDescriptionKey: "Veuillez renseigner un numéro de téléphone valide."])
+            throw NSError(domain: "Onboarding", code: 5, userInfo: [NSLocalizedDescriptionKey: "Veuillez renseigner un numéro de téléphone valide."])
         }
 
         isSubmitting = true
         errorMessage = nil
         defer { isSubmitting = false }
 
+        // Upload profile photo if not already uploaded
+        if let image = selectedProfileImage, uploadedProfileImageURL == nil {
+            isUploadingProfileImage = true
+            defer { isUploadingProfileImage = false }
+            uploadedProfileImageURL = try await uploadUserImageUseCase.execute(image: image)
+        }
+
         let updatedUser = try await completeOnboardingUseCase.execute(
             organizationId: selectedOrganization.id,
             sport: selectedSport.rawValue,
             skillLevel: selectedSkillLevel.value,
             phoneNumber: phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines),
+            imageUrl: uploadedProfileImageURL,
             pin: selectedOrganization.pinEnabled ? pin : nil
         )
         return updatedUser

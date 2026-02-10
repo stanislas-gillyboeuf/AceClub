@@ -62,13 +62,15 @@ final class UserSyncService {
         organizationId: String,
         sport: String,
         skillLevel: String,
-        phoneNumber: String
+        phoneNumber: String,
+        imageUrl: String? = nil
     ) async throws -> UserModel {
         let dto = try await dataSource.completeOnboarding(
             organizationId: organizationId,
             sport: sport,
             skillLevel: skillLevel,
-            phoneNumber: phoneNumber
+            phoneNumber: phoneNumber,
+            imageUrl: imageUrl
         )
 
         let model = upsertUser(from: dto, isCurrentUser: true)
