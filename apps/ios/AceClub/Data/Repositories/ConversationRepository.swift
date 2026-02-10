@@ -67,6 +67,12 @@ class ConversationRepository {
         try await conversationDataSource.deleteConversation(conversationId: conversationId)
     }
 
+    // MARK: - Delete Message
+
+    func deleteMessage(conversationId: String, messageId: String) async throws {
+        try await conversationDataSource.deleteMessage(conversationId: conversationId, messageId: messageId)
+    }
+
     // MARK: - Mute Conversation
 
     func muteConversation(conversationId: String, isMuted: Bool) async throws {

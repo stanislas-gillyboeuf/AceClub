@@ -28,6 +28,7 @@ class ChatViewModel: ObservableObject {
 
     private let listMessagesUseCase = ListMessagesUseCase()
     private let sendMessageUseCase = SendMessageUseCase()
+    private let deleteMessageUseCase = DeleteMessageUseCase()
     private let markReadUseCase = MarkConversationReadUseCase()
     private var cancellables = Set<AnyCancellable>()
     private var typingTimer: Timer?
@@ -125,6 +126,23 @@ class ChatViewModel: ObservableObject {
 
     func sendTypingIndicator() {
         WebSocketManager.shared.sendTypingIndicator(conversationId: conversation.id)
+    }
+
+    func deleteMessage(_ message: Message) async {
+        // Optimistic removal from UI
+        messages.removeAll { $0.id == message.id }
+
+        do {
+            try await deleteMessageUseCase.execute(
+                conversationId: conversation.id,
+                messageId: message.id
+            )
+        } catch {
+            // Restore message on failure
+            messages.insert(message, at: 0)
+            messages.sort { $0.createdAt > $1.createdAt }
+            errorMessage = error.localizedDescription
+        }
     }
 
     func retryFailedMessage(_ message: Message) async {

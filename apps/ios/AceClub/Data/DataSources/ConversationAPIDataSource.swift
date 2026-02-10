@@ -227,6 +227,29 @@ class ConversationAPIDataSource {
         }
     }
 
+    // MARK: - Delete Message
+
+    func deleteMessage(conversationId: String, messageId: String) async throws {
+        guard let url = URL(string: "\(Config.apiBaseURL)/conversation/\(conversationId)/message/\(messageId)") else {
+            throw ConversationAPIDataSourceError.invalidURL
+        }
+
+        let (_, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "DELETE")
+
+        switch response.statusCode {
+        case 200:
+            return
+        case 401:
+            throw ConversationAPIDataSourceError.unauthorized
+        case 403:
+            throw ConversationAPIDataSourceError.forbidden
+        case 404:
+            throw ConversationAPIDataSourceError.notFound
+        default:
+            throw ConversationAPIDataSourceError.requestFailed(statusCode: response.statusCode)
+        }
+    }
+
     // MARK: - Find Or Create Conversation
 
     func findOrCreateConversation(participantId: String) async throws -> FindOrCreateConversationResponseDTO {
