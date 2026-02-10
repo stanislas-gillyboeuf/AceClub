@@ -115,6 +115,10 @@ struct ChatView: View {
                             Task {
                                 await viewModel.retryFailedMessage(message)
                             }
+                        } onDelete: {
+                            Task {
+                                await viewModel.deleteMessage(message)
+                            }
                         }
                         .id(message.id)
                         .rotationEffect(.degrees(180))
@@ -196,6 +200,7 @@ struct MessageBubble: View {
 
     let message: Message
     let onRetry: () -> Void
+    let onDelete: () -> Void
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
@@ -220,6 +225,21 @@ struct MessageBubble: View {
                         if !message.isFromMe {
                             RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
                                 .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
+                        }
+                    }
+                    .contextMenu {
+                        if message.isFromMe && message.sendStatus == .sent {
+                            Button(role: .destructive) {
+                                onDelete()
+                            } label: {
+                                Label("Supprimer", systemImage: "trash")
+                            }
+                        }
+
+                        Button {
+                            UIPasteboard.general.string = message.content
+                        } label: {
+                            Label("Copier", systemImage: "doc.on.doc")
                         }
                     }
 
