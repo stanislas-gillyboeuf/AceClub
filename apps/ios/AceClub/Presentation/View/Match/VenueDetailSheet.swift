@@ -13,13 +13,16 @@ struct VenueDetailSheet: View {
     @StateObject private var locationManager = LocationManager()
 
     @State private var travelTime: String?
+    @State private var travelTimeSeconds: TimeInterval?
     @State private var isCalculatingRoute = false
     @State private var routeError: String?
     @State private var selectedTransport: TransportMode = .car
+    @State private var transitFallbackActive = false
     @State private var alarmEnabled = false
     @State private var alarmDate = Date()
     @State private var alarmScheduled = false
     @State private var notificationPermissionGranted = false
+    @State private var hasAutoSetAlarm = false
 
     private var venueCoordinate: CLLocationCoordinate2D? {
         guard let lat = match.venueOrganizationLatitude,
@@ -207,20 +210,63 @@ struct VenueDetailSheet: View {
     }
 
     private func travelTimeSection(travelTime: String) -> some View {
-        HStack {
-            Image(systemName: selectedTransport.icon)
-                .font(.title3)
-                .foregroundStyle(Theme.tintColor)
+        VStack(spacing: 8) {
+            HStack {
+                Image(systemName: transitFallbackActive ? "car.fill" : selectedTransport.icon)
+                    .font(.title3)
+                    .foregroundStyle(Theme.tintColor)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Temps de trajet")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(travelTime)
-                    .font(.headline)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Temps de trajet")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(travelTime)
+                        .font(.headline)
+                }
+
+                Spacer()
             }
 
-            Spacer()
+            if transitFallbackActive {
+                HStack(spacing: 6) {
+                    Image(systemName: "info.circle")
+                        .font(.caption)
+                    Text("Transports en commun indisponibles — estimation en voiture")
+                        .font(.caption)
+                }
+                .foregroundStyle(.orange)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            if let departureTime = suggestedDepartureTime {
+                Divider()
+                HStack {
+                    Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                        .font(.title3)
+                        .foregroundStyle(Theme.accentOrange)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Heure de départ suggérée")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(departureTime.formatted(date: .omitted, time: .shortened))
+                            .font(.headline)
+                            .foregroundStyle(departureTime < Date() ? .red : .primary)
+                    }
+
+                    Spacer()
+
+                    if departureTime < Date() {
+                        Text("Passée")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(.red)
+                            .clipShape(Capsule())
+                    }
+                }
+            }
         }
         .padding(Theme.paddingCard)
         .glassEffect(.regular, in: .rect(cornerRadius: Theme.cornerRadiusMedium))
@@ -248,6 +294,17 @@ struct VenueDetailSheet: View {
             }
 
             if alarmEnabled {
+                if let suggested = suggestedDepartureTime, suggested > Date() {
+                    HStack(spacing: 8) {
+                        Image(systemName: "sparkles")
+                            .foregroundStyle(Theme.tintColor)
+                        Text("Calculé automatiquement selon le temps de trajet")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
                 DatePicker(
                     "Heure du rappel",
                     selection: $alarmDate,
@@ -284,23 +341,30 @@ struct VenueDetailSheet: View {
         guard let venueCoord = venueCoordinate,
               let userCoord = userCoordinate else {
             travelTime = nil
+            travelTimeSeconds = nil
             routeError = nil
+            transitFallbackActive = false
             return
         }
 
         isCalculatingRoute = true
         travelTime = nil
+        travelTimeSeconds = nil
         routeError = nil
+        transitFallbackActive = false
 
-        let request = MKDirections.Request()
-        request.source = MKMapItem(
+        let source = MKMapItem(
             location: CLLocation(latitude: userCoord.latitude, longitude: userCoord.longitude),
             address: nil
         )
-        request.destination = MKMapItem(
+        let destination = MKMapItem(
             location: CLLocation(latitude: venueCoord.latitude, longitude: venueCoord.longitude),
             address: nil
         )
+
+        let request = MKDirections.Request()
+        request.source = source
+        request.destination = destination
         request.transportType = selectedTransport.mkTransportType
 
         let directions = MKDirections(request: request)
@@ -308,22 +372,49 @@ struct VenueDetailSheet: View {
         do {
             let response = try await directions.calculate()
             if let route = response.routes.first {
-                let minutes = Int(route.expectedTravelTime / 60)
-                if minutes >= 60 {
-                    let hours = minutes / 60
-                    let remainingMinutes = minutes % 60
-                    travelTime = "\(hours)h \(remainingMinutes)min"
-                } else {
-                    travelTime = "\(minutes) min"
-                }
+                applyRoute(route)
             } else {
                 routeError = "Aucun itinéraire trouvé"
             }
         } catch {
-            routeError = "Itinéraire indisponible pour ce mode"
+            // If transit fails, fallback to automobile
+            if selectedTransport == .transit {
+                let fallbackRequest = MKDirections.Request()
+                fallbackRequest.source = source
+                fallbackRequest.destination = destination
+                fallbackRequest.transportType = .automobile
+
+                let fallbackDirections = MKDirections(request: fallbackRequest)
+                do {
+                    let fallbackResponse = try await fallbackDirections.calculate()
+                    if let route = fallbackResponse.routes.first {
+                        transitFallbackActive = true
+                        applyRoute(route)
+                    } else {
+                        routeError = "Aucun itinéraire trouvé"
+                    }
+                } catch {
+                    routeError = "Itinéraire indisponible"
+                }
+            } else {
+                routeError = "Itinéraire indisponible pour ce mode"
+            }
         }
 
         isCalculatingRoute = false
+    }
+
+    private func applyRoute(_ route: MKRoute) {
+        travelTimeSeconds = route.expectedTravelTime
+        let minutes = Int(route.expectedTravelTime / 60)
+        if minutes >= 60 {
+            let hours = minutes / 60
+            let remainingMinutes = minutes % 60
+            travelTime = "\(hours)h \(remainingMinutes)min"
+        } else {
+            travelTime = "\(minutes) min"
+        }
+        updateAutoDepartureAlarm()
     }
 
     private func openInMaps() {
@@ -408,5 +499,26 @@ struct VenueDetailSheet: View {
         let identifier = "match-departure-\(match.id)"
         center.removePendingNotificationRequests(withIdentifiers: [identifier])
         alarmScheduled = false
+    }
+
+    // MARK: - Auto Departure
+
+    private var suggestedDepartureTime: Date? {
+        guard let scheduledAt = match.scheduledAt,
+              let seconds = travelTimeSeconds else { return nil }
+        // Add 15 minutes buffer to travel time
+        return scheduledAt.addingTimeInterval(-(seconds + 15 * 60))
+    }
+
+    private func updateAutoDepartureAlarm() {
+        guard !hasAutoSetAlarm,
+              !alarmScheduled,
+              let departureTime = suggestedDepartureTime,
+              departureTime > Date() else { return }
+
+        hasAutoSetAlarm = true
+        alarmDate = departureTime
+        alarmEnabled = true
+        Task { await scheduleAlarm() }
     }
 }
