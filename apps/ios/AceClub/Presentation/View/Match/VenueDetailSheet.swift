@@ -353,41 +353,15 @@ struct VenueDetailSheet: View {
         request.destination = destination
         request.transportType = selectedTransport.mkTransportType
 
-        // Apple MapKit: .transit only supports ETA, not full route calculation.
-        // Use calculateETA() for transit, calculate() for other modes.
-        if selectedTransport == .transit {
-            await calculateTransitETA(request: request)
-        } else {
-            await calculateDirections(request: request)
-        }
-
-        isCalculatingRoute = false
-    }
-
-    /// Transit mode: use calculateETA() (the only API Apple supports for transit)
-    private func calculateTransitETA(request: MKDirections.Request) async {
         let directions = MKDirections(request: request)
         do {
             let eta = try await directions.calculateETA()
             applyTravelTime(eta.expectedTravelTime)
         } catch {
-            routeError = "Temps de trajet en transports indisponible"
+            routeError = "Temps de trajet indisponible pour ce mode"
         }
-    }
 
-    /// Car/bike/walking: use calculate() for full route directions
-    private func calculateDirections(request: MKDirections.Request) async {
-        let directions = MKDirections(request: request)
-        do {
-            let response = try await directions.calculate()
-            if let route = response.routes.first {
-                applyTravelTime(route.expectedTravelTime)
-            } else {
-                routeError = "Aucun itinéraire trouvé"
-            }
-        } catch {
-            routeError = "Itinéraire indisponible pour ce mode"
-        }
+        isCalculatingRoute = false
     }
 
     private func applyTravelTime(_ seconds: TimeInterval) {
