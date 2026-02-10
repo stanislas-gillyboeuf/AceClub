@@ -7,7 +7,6 @@ import { FeatureScroll } from "@/components/sections/feature-scroll";
 import { Features } from "@/components/sections/features";
 import { Hero } from "@/components/sections/hero";
 import { Pricing } from "@/components/sections/pricing";
-import { Testimonials } from "@/components/sections/testimonials";
 
 export default function Home() {
   return (
@@ -18,7 +17,6 @@ export default function Home() {
       <BentoGrid />
       <Benefits />
       <Features />
-      <Testimonials />
       <Pricing />
       <FAQ />
       <CTA />

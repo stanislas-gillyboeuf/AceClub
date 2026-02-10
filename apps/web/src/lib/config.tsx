@@ -12,7 +12,7 @@ export const BLUR_FADE_DELAY = 0.15;
 
 export const siteConfig = {
   name: "AceClub",
-  description: "L'app qui connecte les joueurs de votre club",
+  description: "L'app qui fait bourger votre club",
   cta: "Contacter AceClub",
   url: process.env.NEXT_PUBLIC_APP_URL || "https://aceclub.app",
   navigation: {
@@ -88,61 +88,55 @@ export const siteConfig = {
   },
   features: [
     {
-      name: "Trouvez des partenaires",
+      name: "Activation du club",
       description:
-        "Connectez-vous avec les membres de votre club selon leur niveau et disponibilité.",
+        "Nous créons un espace dédié à votre club : nom et informations du club, accès administrateur pour l'équipe dirigeante et paramétrage initial (sports, niveaux, règles simples).",
       icon: <UsersIcon className="h-6 w-6" />,
     },
     {
-      name: "Organisez vos matchs",
+      name: "Invitation des adhérents",
       description:
-        "Planifiez vos parties en quelques taps et recevez des confirmations instantanées.",
-      icon: <CalendarIcon className="h-6 w-6" />,
-    },
-    {
-      name: "Messagerie intégrée",
-      description:
-        "Discutez directement avec vos partenaires sans quitter l'application.",
-      icon: <MessageSquareIcon className="h-6 w-6" />,
-    },
-    {
-      name: "Défis et récompenses",
-      description:
-        "Gagnez des Aces en relevant des défis et montez dans le classement de votre club.",
-      icon: <TrophyIcon className="h-6 w-6" />,
-    },
-    {
-      name: "Profil personnalisé",
-      description:
-        "Créez votre profil joueur avec votre niveau, vos disponibilités et vos préférences de jeu.",
+        "Les adhérents rejoignent le club très simplement : QR code à afficher au club, lien d'invitation à partager par email ou WhatsApp, inscription en moins d'une minute.",
       icon: <UserCircleIcon className="h-6 w-6" />,
     },
     {
-      name: "Notifications intelligentes",
+      name: "Démarrage de la vie du club",
       description:
-        "Soyez alertés des nouvelles disponibilités et des matchs qui correspondent à votre agenda.",
+        "Dès l'inscription, les adhérents ont accès à toutes les fonctionnalités. L'usage démarre sans formation.",
+      icon: <CalendarIcon className="h-6 w-6" />,
+    },
+    {
+      name: "Rôle du club pendant le test",
+      description:
+        "Le club garde un rôle simple et léger : publier ses événements ou annonces importantes, observer l'activité et l'engagement des adhérents, recueillir les retours.",
       icon: <BellIcon className="h-6 w-6" />,
+    },
+    {
+      name: "Suivi et bilan",
+      description:
+        "À l'issue de la période de test : analyse de l'usage (participation, matchs, engagement), retours qualitatifs des adhérents, échange avec le club pour décider de la suite. Sans engagement.",
+      icon: <TrophyIcon className="h-6 w-6" />,
     },
   ],
   featureHighlight: [
     {
       title: "Trouvez des partenaires facilement",
       description:
-        "Fini les groupes WhatsApp surchargés. Trouvez instantanément des joueurs de votre niveau disponibles à vos horaires.",
+        "Fini les groupes WhatsApp surchargés où tout le monde se perd. Ace Club devient l’app de rencontre de votre club",
       imageSrc: "/Device.png",
       direction: "rtl" as const,
     },
     {
-      title: "Organisez vos matchs en un tap",
+      title: "Gardez une trace de tout ce que vous accomplissez",
       description:
-        "Proposez un créneau, invitez des joueurs, recevez les confirmations. Simple, rapide, efficace.",
+        "Un carnet de bord simple pour suivre ses matchs, partenaires et ressentis, et garder une trace de sa vie au club.",
       imageSrc: "/Device-3.png",
       direction: "ltr" as const,
     },
     {
       title: "Relevez des défis",
       description:
-        "Participez aux challenges de votre club, gagnez des Aces et comparez-vous aux autres membres.",
+        "Progressez au fil des matchs grâce à des niveaux, défis et badges qui valorisent votre engagement au club..",
       imageSrc: "/Device-1.png",
       direction: "rtl" as const,
     },
@@ -157,9 +151,9 @@ export const siteConfig = {
       fullWidth: true,
     },
     {
-      title: "Organisez vos matchs",
+      title: "Classement du club",
       content:
-        "Créez un match, choisissez le terrain et l'horaire, invitez des joueurs et recevez les confirmations en temps réel.",
+        "Chez Ace Club, la régularité compte plus que le niveau. Le classement valorise ceux qui jouent, pas seulement les meilleurs.",
       imageSrc: "/Device-2.png",
       imageAlt: "Organisation de matchs",
       fullWidth: false,
@@ -171,14 +165,6 @@ export const siteConfig = {
       imageSrc: "/Device-3.png",
       imageAlt: "Messagerie",
       fullWidth: false,
-    },
-    {
-      title: "Défis et classements",
-      content:
-        "Participez aux défis hebdomadaires, gagnez des Aces et grimpez dans le classement de votre club pour devenir le champion.",
-      imageSrc: "/Device-4.png",
-      imageAlt: "Défis et récompenses",
-      fullWidth: true,
     },
   ],
   benefits: [
@@ -197,45 +183,62 @@ export const siteConfig = {
       text: "Jouez plus souvent grâce aux notifications intelligentes.",
       image: "/Device-3.png",
     },
-    {
-      id: 4,
-      text: "Renforcez l'esprit de communauté de votre club.",
-      image: "/Device-3.png",
-    },
   ],
   pricing: [
     {
-      name: "Membres",
-      href: "#",
-      price: "Gratuit",
-      period: "",
-      yearlyPrice: "",
+      name: "Petit Club",
+      href: "/contact",
+      price: "49€",
+      period: "mois",
+      yearlyPrice: "490€/an",
       features: [
-        "Accès complet à l'application",
-        "Recherche de partenaires illimitée",
+        "Toutes les fonctionnalités incluses",
+        "Espace club personnalisé",
+        "Gestion des membres",
         "Messagerie instantanée",
-        "Participation aux défis",
-        "Notifications en temps réel",
+        "Défis et classement",
+        "Notifications intelligentes",
+        "Support dédié",
       ],
-      description: "Pour tous les joueurs",
-      buttonText: "Télécharger l'app",
+      description: "Jusqu'à 200 adhérents",
+      buttonText: "Nous contacter",
+      isPopular: false,
+    },
+    {
+      name: "Club Moyen",
+      href: "/contact",
+      price: "79€",
+      period: "mois",
+      yearlyPrice: "790€/an",
+      features: [
+        "Toutes les fonctionnalités incluses",
+        "Espace club personnalisé",
+        "Gestion des membres",
+        "Messagerie instantanée",
+        "Défis et classement",
+        "Notifications intelligentes",
+        "Support dédié",
+      ],
+      description: "De 200 à 600 adhérents",
+      buttonText: "Nous contacter",
       isPopular: true,
     },
     {
-      name: "Clubs",
+      name: "Grand Club",
       href: "/contact",
-      price: "Sur devis",
-      period: "",
-      yearlyPrice: "",
+      price: "129€",
+      period: "mois",
+      yearlyPrice: "1 290€/an",
       features: [
+        "Toutes les fonctionnalités incluses",
         "Espace club personnalisé",
         "Gestion des membres",
-        "Communication club-membres",
-        "Statistiques d'utilisation",
-        "Support prioritaire",
-        "Mise en avant de votre club",
+        "Messagerie instantanée",
+        "Défis et classement",
+        "Notifications intelligentes",
+        "Support dédié",
       ],
-      description: "Pour les clubs et associations",
+      description: "Plus de 600 adhérents",
       buttonText: "Nous contacter",
       isPopular: false,
     },
