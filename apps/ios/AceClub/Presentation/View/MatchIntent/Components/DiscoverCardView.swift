@@ -17,207 +17,112 @@ struct DiscoverCardView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Header section with profile
-            profileSection
-                .padding(.top, 32)
-                .padding(.bottom, 24)
+        GeometryReader { geometry in
+            let tagWidth = geometry.size.width - Theme.glassInset * 2
 
-            Divider()
-                .padding(.horizontal, Theme.paddingCard)
+            ZStack {
+                photoBackground
 
-            // Availability section
-            availabilitySection
-                .padding(.vertical, 20)
-                .padding(.horizontal, Theme.paddingCard)
+                bottomGradient
 
-            Spacer(minLength: 0)
+                infoOverlay(availableWidth: tagWidth)
+                    .padding(.horizontal, Theme.glassInset)
+                    .padding(.bottom, Theme.glassInset + 4)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
 
-            // Footer hint
-            footerHint
-                .padding(.bottom, 20)
+                topBadges
+                    .padding(.horizontal, Theme.glassInset)
+                    .padding(.top, Theme.glassInset)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            }
         }
-        .frame(maxWidth: .infinity)
-        .frame(minHeight: 480, alignment: .top)
-        .cardStyle(cornerRadius: Theme.cornerRadiusLarge, withBorder: true)
-        .shadow(color: .black.opacity(0.1), radius: 16, x: 0, y: 8)
+        .aspectRatio(0.7, contentMode: .fit)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusXLarge, style: .continuous))
+        .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
     }
 
-    // MARK: - Profile Section
+    // MARK: - Photo Background
 
-    private var profileSection: some View {
-        VStack(spacing: 16) {
-            // Large avatar with tier badge
-            largeAvatarWithBadge
+    @ViewBuilder
+    private var photoBackground: some View {
+        if let imageURL = item.user?.imageURL {
+            AsyncImage(url: imageURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().scaledToFill()
+                case .empty:
+                    initialsFallback.overlay { ProgressView().tint(.white) }
+                case .failure:
+                    initialsFallback
+                @unknown default:
+                    initialsFallback
+                }
+            }
+        } else {
+            initialsFallback
+        }
+    }
 
-            // Name
+    private var initialsFallback: some View {
+        ZStack {
+            LinearGradient(
+                colors: [tier.color.opacity(0.7), tier.color.opacity(0.3)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            Text(item.user?.initials ?? "?")
+                .font(.system(size: 80, weight: .bold, design: .rounded))
+                .foregroundStyle(.white.opacity(0.6))
+        }
+    }
+
+    // MARK: - Bottom Gradient
+
+    private var bottomGradient: some View {
+        VStack {
+            Spacer()
+            LinearGradient(
+                colors: [.clear, .black.opacity(0.3), .black.opacity(0.65)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 240)
+        }
+    }
+
+    // MARK: - Info Overlay
+
+    private func infoOverlay(availableWidth: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
             Text(displayName)
                 .font(.title2.weight(.bold))
-                .foregroundStyle(Theme.labelPrimary)
+                .foregroundStyle(.white)
                 .lineLimit(1)
 
-            // Level badge
-            levelBadge
+            WrappingHStack(availableWidth: availableWidth, spacing: 6) {
+                tagView(
+                    icon: tier.icon,
+                    text: "Niv. \(item.user?.level ?? 1)",
+                    iconColor: tier.color
+                )
 
-            // Organization badge (if member of a club)
-            if let org = item.user?.organization {
-                organizationBadge(org)
-            }
+                if let org = item.user?.organization {
+                    tagView(icon: "building.2.fill", text: org.name)
+                }
 
-            // Distance badge
-            if let distance = item.distance {
-                distanceBadge(distance)
-            }
-        }
-    }
+                if let date = item.intent.date {
+                    tagView(icon: "calendar", text: formatDate(date))
+                }
 
-    private var largeAvatarWithBadge: some View {
-        ZStack(alignment: .bottomTrailing) {
-            // Avatar
-            ZStack {
-                Circle()
-                    .fill(Color(.tertiarySystemFill))
+                if let time = item.intent.time {
+                    tagView(icon: "clock", text: formatTime(time))
+                }
 
-                if let imageURL = item.user?.imageURL {
-                    AsyncImage(url: imageURL) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFill()
-                        case .empty:
-                            ProgressView()
-                                .tint(Theme.tintColor)
-                        case .failure:
-                            Text(item.user?.initials ?? "?")
-                                .font(.system(size: 36, weight: .semibold, design: .rounded))
-                                .foregroundStyle(Theme.labelSecondary)
-                        @unknown default:
-                            EmptyView()
-                        }
-                    }
-                } else {
-                    Text(item.user?.initials ?? "?")
-                        .font(.system(size: 36, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Theme.labelSecondary)
+                if item.intent.duration > 0 {
+                    tagView(icon: "timer", text: durationLabel(minutes: item.intent.duration))
                 }
             }
-            .frame(width: 100, height: 100)
-            .clipShape(Circle())
-            .overlay {
-                Circle()
-                    .strokeBorder(tier.color.opacity(0.5), lineWidth: 3)
-            }
-
-            // Tier badge
-            ZStack {
-                Circle()
-                    .fill(tier.color)
-                    .frame(width: 28, height: 28)
-
-                Image(systemName: tier.icon)
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(.white)
-            }
-            .overlay {
-                Circle()
-                    .strokeBorder(Theme.cardBackground, lineWidth: 3)
-            }
-            .offset(x: 4, y: 4)
         }
-    }
-
-    private var levelBadge: some View {
-        HStack(spacing: 6) {
-            Image(systemName: tier.icon)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(tier.color)
-
-            Text("Niveau \(item.user?.level ?? 1)")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(Theme.labelSecondary)
-        }
-    }
-
-    private func organizationBadge(_ org: OrganizationBrief) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: "building.2.fill")
-                .font(.caption)
-                .foregroundStyle(Theme.tintColor)
-
-            Text(org.name)
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(Theme.tintColor)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
-        .background(Theme.tintColor.opacity(0.1))
-        .clipShape(Capsule())
-    }
-
-    private func distanceBadge(_ distance: Double) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: "location.fill")
-                .font(.caption2)
-                .foregroundStyle(Theme.labelSecondary)
-
-            Text(distance < 1 ? String(format: "%.0f m", distance * 1000) : String(format: "%.1f km", distance))
-                .font(.caption.weight(.medium))
-                .foregroundStyle(Theme.labelSecondary)
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
-        .background(Theme.secondaryBackground)
-        .clipShape(Capsule())
-    }
-
-    // MARK: - Availability Section
-
-    private var availabilitySection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // Type badge + date/time in a horizontal layout
-            HStack(spacing: 12) {
-                typeBadge
-
-                Spacer()
-
-                // Compact date/time display
-                if let date = item.intent.date, let time = item.intent.time {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(formatDate(date))
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(Theme.labelPrimary)
-
-                        Text(formatTime(time))
-                            .font(.caption)
-                            .foregroundStyle(Theme.labelSecondary)
-                    }
-                }
-            }
-
-            // Duration
-            if item.intent.duration > 0 {
-                HStack(spacing: 6) {
-                    Image(systemName: "clock")
-                        .font(.caption)
-                        .foregroundStyle(Theme.labelTertiary)
-
-                    Text(durationLabel(minutes: item.intent.duration))
-                        .font(.subheadline)
-                        .foregroundStyle(Theme.labelSecondary)
-                }
-            }
-
-            // Description if present
-            if let description = item.intent.description, !description.isEmpty {
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundStyle(Theme.labelSecondary)
-                    .lineLimit(3)
-                    .padding(.top, 4)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var typeBadge: some View {
@@ -231,19 +136,52 @@ struct DiscoverCardView: View {
                     .opacity(0.12)
             )
             .clipShape(Capsule())
+      
+    private func tagView(icon: String, text: String, iconColor: Color? = nil) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(iconColor ?? .white.opacity(0.9))
+            Text(text)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.white)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(.white.opacity(0.15), in: Capsule())
     }
 
-    // MARK: - Footer
+    // MARK: - Top Badges
 
-    private var footerHint: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "hand.tap")
-                .foregroundStyle(Theme.labelTertiary)
-            Text("Appuie pour voir le profil")
-                .font(.caption)
-                .foregroundStyle(Theme.labelTertiary)
+    private var topBadges: some View {
+        HStack {
+            if let distance = item.distance {
+                HStack(spacing: 4) {
+                    Image(systemName: "location.fill")
+                        .font(.caption2)
+                    Text(distance < 1
+                        ? String(format: "%.0f m", distance * 1000)
+                        : String(format: "%.1f km", distance))
+                        .font(.caption.weight(.semibold))
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(.ultraThinMaterial, in: Capsule())
+            }
+
+            Spacer()
+
+            Label(item.intent.type.displayName, systemImage: item.intent.type.icon)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    (item.intent.type == .match ? Color.blue : Color.orange).opacity(0.85),
+                    in: Capsule()
+                )
         }
-        .frame(maxWidth: .infinity, alignment: .center)
     }
 
     // MARK: - Helpers
@@ -269,5 +207,51 @@ struct DiscoverCardView: View {
             return m > 0 ? "\(h)h \(m)min" : "\(h)h"
         }
         return "\(minutes)min"
+    }
+}
+
+// MARK: - WrappingHStack
+
+private struct WrappingHStack: Layout {
+    var availableWidth: CGFloat
+    var spacing: CGFloat = 6
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = availableWidth
+        var currentX: CGFloat = 0
+        var currentY: CGFloat = 0
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if currentX + size.width > maxWidth, currentX > 0 {
+                currentX = 0
+                currentY += rowHeight + spacing
+                rowHeight = 0
+            }
+            currentX += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
+
+        return CGSize(width: maxWidth, height: currentY + rowHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let maxWidth = availableWidth
+        var currentX: CGFloat = bounds.minX
+        var currentY: CGFloat = bounds.minY
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if currentX - bounds.minX + size.width > maxWidth, currentX > bounds.minX {
+                currentX = bounds.minX
+                currentY += rowHeight + spacing
+                rowHeight = 0
+            }
+            subview.place(at: CGPoint(x: currentX, y: currentY), proposal: .unspecified)
+            currentX += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
     }
 }

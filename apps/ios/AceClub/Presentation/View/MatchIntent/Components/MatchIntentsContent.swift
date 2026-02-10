@@ -38,12 +38,13 @@ struct MatchIntentsContent: View {
 
             actionButtons
                 .padding(.horizontal, Theme.paddingHorizontal)
-                .padding(.bottom, 32)
-                .padding(.top, 16)
+                .padding(.bottom, 20)
+                .padding(.top, 12)
         }
         .animation(.easeOut(duration: 0.25), value: viewModel.discoverItems.count)
     }
 
+    // MARK: - Card Stack
 
     private var cardStack: some View {
         ZStack {
@@ -57,36 +58,51 @@ struct MatchIntentsContent: View {
             }
 
             if let top = viewModel.topCard {
-                ZStack {
-                    DiscoverCardView(item: top)
-                }
-                .offset(dragOffset)
-                .rotationEffect(.degrees(rotationForDrag))
-                .gesture(
-                    DragGesture(minimumDistance: 10)
-                        .onChanged { value in
-                            dragOffset = value.translation
-                        }
-                        .onEnded { value in
-                            handleSwipeEnd(translation: value.translation)
-                        }
-                )
-                .simultaneousGesture(
-                    TapGesture()
-                        .onEnded {
-                            selectedItem = top
-                        }
-                )
-                .zIndex(Double(maxVisibleCards))
-                .allowsHitTesting(!viewModel.isSwiping)
+                DiscoverCardView(item: top)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: Theme.cornerRadiusXLarge, style: .continuous)
+                            .strokeBorder(glowColor, lineWidth: glowWidth)
+                            .opacity(glowOpacity)
+                    }
+                    .offset(dragOffset)
+                    .rotationEffect(.degrees(rotationForDrag))
+                    .gesture(
+                        DragGesture(minimumDistance: 10)
+                            .onChanged { value in
+                                dragOffset = value.translation
+                            }
+                            .onEnded { value in
+                                handleSwipeEnd(translation: value.translation)
+                            }
+                    )
+                    .simultaneousGesture(
+                        TapGesture()
+                            .onEnded {
+                                selectedItem = top
+                            }
+                    )
+                    .zIndex(Double(maxVisibleCards))
+                    .allowsHitTesting(!viewModel.isSwiping)
             }
         }
-        .frame(minHeight: 480)
     }
 
-    // MARK: - Swipe Overlays
+    // MARK: - Glow
 
-    // Les fonctions de overlays et d'opacité sont supprimées (plus de "LIKE"/"NOPE")
+    private var glowColor: Color {
+        if dragOffset.width > 0 { return .green }
+        if dragOffset.width < 0 { return .red }
+        return .clear
+    }
+
+    private var glowWidth: CGFloat {
+        let progress = min(abs(dragOffset.width) / swipeThreshold, 1.0)
+        return progress * 4
+    }
+
+    private var glowOpacity: Double {
+        min(abs(dragOffset.width) / swipeThreshold, 1.0) * 0.8
+    }
 
     // MARK: - Swipe Handling
 
@@ -94,17 +110,14 @@ struct MatchIntentsContent: View {
         let width = translation.width
 
         if width > swipeThreshold {
-            // Like
             hapticSuccess.notificationOccurred(.success)
             Task { await viewModel.like() }
             animateSwipeOut(offset: CGSize(width: 500, height: translation.height))
         } else if width < -swipeThreshold {
-            // Pass
             hapticFeedback.impactOccurred()
             Task { await viewModel.pass() }
             animateSwipeOut(offset: CGSize(width: -500, height: translation.height))
         } else {
-            // Bounce back
             withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
                 dragOffset = .zero
             }
@@ -136,7 +149,7 @@ struct MatchIntentsContent: View {
         }
     }
 
-    // MARK: - Action buttons
+    // MARK: - Action Buttons
 
     private var actionButtons: some View {
         GlassEffectContainer {
@@ -172,7 +185,7 @@ struct MatchIntentsContent: View {
         }
     }
 
-    // MARK: - Empty state
+    // MARK: - Empty State
 
     private var emptyState: some View {
         VStack(spacing: 16) {
@@ -196,7 +209,7 @@ struct MatchIntentsContent: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
     }
 
-    // MARK: - Match banner
+    // MARK: - Match Banner
 
     private func matchBanner(message: String) -> some View {
         HStack(spacing: 8) {
