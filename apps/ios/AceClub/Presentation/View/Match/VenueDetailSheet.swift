@@ -249,7 +249,7 @@ struct VenueDetailSheet: View {
                         Text("Heure de départ suggérée")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        Text(departureTime.formatted(date: .omitted, time: .shortened))
+                        Text(formattedDepartureTime(departureTime))
                             .font(.headline)
                             .foregroundStyle(departureTime < Date() ? .red : .primary)
                     }
@@ -502,6 +502,16 @@ struct VenueDetailSheet: View {
     }
 
     // MARK: - Auto Departure
+
+    private func formattedDepartureTime(_ date: Date) -> String {
+        if Calendar.current.isDateInToday(date) {
+            return date.formatted(date: .omitted, time: .shortened)
+        } else if Calendar.current.isDateInTomorrow(date) {
+            return "Demain, \(date.formatted(date: .omitted, time: .shortened))"
+        } else {
+            return date.formatted(.dateTime.day().month(.wide).hour().minute())
+        }
+    }
 
     private var suggestedDepartureTime: Date? {
         guard let scheduledAt = match.scheduledAt,
