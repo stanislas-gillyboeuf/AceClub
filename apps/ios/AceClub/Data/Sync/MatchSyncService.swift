@@ -210,6 +210,13 @@ final class MatchSyncService {
         return responseDTO.success
     }
 
+    func updateVenue(matchId: String, venueOrganizationId: String?) async throws {
+        let requestDTO = UpdateVenueRequestDTO(venueOrganizationId: venueOrganizationId)
+        _ = try await dataSource.updateVenue(id: matchId, request: requestDTO)
+        // Re-sync to get full venue details
+        try await syncMatch(id: matchId)
+    }
+
     func deleteMatch(id: String) async throws -> Bool {
         let responseDTO = try await dataSource.deleteMatch(id: id)
 
@@ -312,6 +319,7 @@ final class MatchSyncService {
             existing.scheduledAt = parseDate(matchDTO.scheduledAt)
             existing.startedAt = parseDate(matchDTO.startedAt)
             existing.finishedAt = parseDate(matchDTO.finishedAt)
+            existing.venueOrganizationId = matchDTO.venueOrganizationId
             existing.lastSyncedAt = Date()
             model = existing
         } else {
@@ -325,7 +333,50 @@ final class MatchSyncService {
                 startedAt: parseDate(matchDTO.startedAt),
                 finishedAt: parseDate(matchDTO.finishedAt)
             )
+            model.venueOrganizationId = matchDTO.venueOrganizationId
             modelContext.insert(model)
+        }
+
+        // Sync venue organization
+        if let venueOrg = dto.venueOrganization {
+            model.venueOrganizationName = venueOrg.name
+            model.venueOrganizationAddress = venueOrg.address
+            model.venueOrganizationLatitude = venueOrg.latitude
+            model.venueOrganizationLongitude = venueOrg.longitude
+            model.venueOrganizationLogo = venueOrg.logo
+        } else {
+            model.venueOrganizationName = nil
+            model.venueOrganizationAddress = nil
+            model.venueOrganizationLatitude = nil
+            model.venueOrganizationLongitude = nil
+            model.venueOrganizationLogo = nil
+        }
+
+        // Sync participant organizations
+        if let participantOrgs = dto.participantOrganizations {
+            // Find home and away participants
+            let homeParticipant = dto.participants.first { $0.side == "home" }
+            let awayParticipant = dto.participants.first { $0.side == "away" }
+
+            if let homeUserId = homeParticipant?.userId,
+               let homeOrg = participantOrgs.first(where: { $0.userId == homeUserId }) {
+                model.homeOrganizationId = homeOrg.organization.id
+                model.homeOrganizationName = homeOrg.organization.name
+                model.homeOrganizationAddress = homeOrg.organization.address
+                model.homeOrganizationLatitude = homeOrg.organization.latitude
+                model.homeOrganizationLongitude = homeOrg.organization.longitude
+                model.homeOrganizationLogo = homeOrg.organization.logo
+            }
+
+            if let awayUserId = awayParticipant?.userId,
+               let awayOrg = participantOrgs.first(where: { $0.userId == awayUserId }) {
+                model.awayOrganizationId = awayOrg.organization.id
+                model.awayOrganizationName = awayOrg.organization.name
+                model.awayOrganizationAddress = awayOrg.organization.address
+                model.awayOrganizationLatitude = awayOrg.organization.latitude
+                model.awayOrganizationLongitude = awayOrg.organization.longitude
+                model.awayOrganizationLogo = awayOrg.organization.logo
+            }
         }
 
         for participantDTO in dto.participants {
@@ -367,6 +418,7 @@ final class MatchSyncService {
             existing.scheduledAt = parseDate(dto.scheduledAt)
             existing.startedAt = parseDate(dto.startedAt)
             existing.finishedAt = parseDate(dto.finishedAt)
+            existing.venueOrganizationId = dto.venueOrganizationId
             existing.lastSyncedAt = Date()
             model = existing
         } else {
@@ -380,6 +432,7 @@ final class MatchSyncService {
                 startedAt: parseDate(dto.startedAt),
                 finishedAt: parseDate(dto.finishedAt)
             )
+            model.venueOrganizationId = dto.venueOrganizationId
             modelContext.insert(model)
         }
 

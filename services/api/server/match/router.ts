@@ -6,6 +6,7 @@ import {
   createMatchValidator,
   updateMatchValidator,
   updateMatchScoresValidator,
+  updateVenueValidator,
   createCommentValidator,
   updateCommentValidator,
 } from "./validators";
@@ -13,6 +14,7 @@ import {
   createMatch,
   updateMatch,
   updateMatchScores,
+  updateVenue,
   deleteMatch,
   createComment,
   updateComment,
@@ -40,6 +42,9 @@ matchRouter.put("/:id", zValidator("json", updateMatchValidator), updateMatch);
 
 // Update match scores (dedicated endpoint for score updates)
 matchRouter.put("/:id/scores", zValidator("json", updateMatchScoresValidator), updateMatchScores);
+
+// Update match venue
+matchRouter.put("/:id/venue", zValidator("json", updateVenueValidator), updateVenue);
 
 // Delete match and all related data
 matchRouter.delete("/:id", deleteMatch);

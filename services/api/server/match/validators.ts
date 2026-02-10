@@ -249,6 +249,10 @@ export const matchIdValidator = z.object({
   id: z.string().min(1, "Match ID is required"),
 });
 
+export const updateVenueValidator = z.object({
+  venueOrganizationId: z.string().min(1, "Organization ID is required").nullable(),
+});
+
 export const createCommentValidator = z.object({
   content: z
     .string()

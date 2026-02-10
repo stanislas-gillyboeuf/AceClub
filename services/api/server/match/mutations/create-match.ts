@@ -5,7 +5,7 @@ import { createMatchValidator } from "../validators";
 import { db } from "../../../db";
 import { match, matchParticipant, set, setScore } from "../../../db/schema/match/schema";
 import { conversation, conversationParticipant } from "../../../db/schema/conversation/schema";
-import { user } from "../../../db/schema/auth/schema";
+import { user, member, organization } from "../../../db/schema/auth/schema";
 import { NewSetScore } from "../../../db/schema/match/type";
 import { and, eq, inArray, sql } from "drizzle-orm";
 
@@ -160,12 +160,49 @@ export const createMatch = async (c: Context<HonoContext>) => {
         );
       }
 
+      // Auto-determine venue from participants' organizations
+      let venueOrganizationId: string | null = null;
+      const participantUserIds = validated.participants.map((p) => p.userId);
+
+      const memberships = await tx
+        .select({
+          userId: member.userId,
+          organizationId: member.organizationId,
+        })
+        .from(member)
+        .where(inArray(member.userId, participantUserIds));
+
+      if (memberships.length > 0) {
+        const orgsByUser = new Map<string, string[]>();
+        for (const m of memberships) {
+          const orgs = orgsByUser.get(m.userId) || [];
+          orgs.push(m.organizationId);
+          orgsByUser.set(m.userId, orgs);
+        }
+
+        // Check for common organization
+        const user1Orgs = orgsByUser.get(participantUserIds[0]) || [];
+        const user2Orgs = orgsByUser.get(participantUserIds[1]) || [];
+        const commonOrg = user1Orgs.find((org) => user2Orgs.includes(org));
+
+        if (commonOrg) {
+          venueOrganizationId = commonOrg;
+        } else {
+          // Default to creator's first org
+          const creatorOrgs = orgsByUser.get(validated.createdBy) || [];
+          if (creatorOrgs.length > 0) {
+            venueOrganizationId = creatorOrgs[0];
+          }
+        }
+      }
+
       // Create match with conversationId
       const [createdMatch] = await tx
         .insert(match)
         .values({
           createdBy: validated.createdBy,
           conversationId: conversationId,
+          venueOrganizationId,
           status: validated.status,
           type: validated.type,
           createdAt: new Date(validated.createdAt),

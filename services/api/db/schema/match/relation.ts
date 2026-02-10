@@ -1,6 +1,6 @@
 import { match, matchParticipant, set, setScore, matchComment } from "./schema";
 import { relations } from "drizzle-orm";
-import { user } from "../auth/schema";
+import { user, organization } from "../auth/schema";
 import { conversation } from "../conversation/schema";
 
 export const matchRelations = relations(match, ({ one, many }) => ({
@@ -11,6 +11,10 @@ export const matchRelations = relations(match, ({ one, many }) => ({
   conversation: one(conversation, {
     fields: [match.conversationId],
     references: [conversation.id],
+  }),
+  venue: one(organization, {
+    fields: [match.venueOrganizationId],
+    references: [organization.id],
   }),
   participants: many(matchParticipant),
   sets: many(set),

@@ -181,8 +181,8 @@ final class MatchIntentSyncService {
                 createdAt: parseDate(matchDTO.createdAt) ?? Date(),
                 scheduledAt: parseDate(matchDTO.scheduledAt),
                 startedAt: parseDate(matchDTO.startedAt),
-                finishedAt: parseDate(matchDTO.finishedAt)
-            )
+                finishedAt: parseDate(matchDTO.finishedAt),
+                venueOrganizationId: matchDTO.venueOrganizationId)
         }
 
         var request: MatchRequest?

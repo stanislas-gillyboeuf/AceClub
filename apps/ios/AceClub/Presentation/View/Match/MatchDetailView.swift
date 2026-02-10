@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import MapKit
 
 struct MatchDetailView: View {
     @Environment(\.modelContext) private var modelContext
@@ -30,6 +31,8 @@ struct MatchDetailView: View {
     @State private var showingDeleteAlert = false
     @State private var showingEditScores = false
     @State private var showingCommentSheet = false
+    @State private var showingVenueSheet = false
+    @State private var isUpdatingVenue = false
 
     private var currentUserId: String {
         authViewModel.currentUser?.id ?? ""
@@ -132,6 +135,11 @@ struct MatchDetailView: View {
                 )
             }
         }
+        .sheet(isPresented: $showingVenueSheet) {
+            if let match {
+                VenueDetailSheet(match: match)
+            }
+        }
         .task {
             syncService = MatchSyncService(modelContext: modelContext)
             await loadMatch()
@@ -229,6 +237,17 @@ struct MatchDetailView: View {
         isLoading = false
     }
 
+    private func updateVenue(to organizationId: String) async {
+        guard !isUpdatingVenue else { return }
+        isUpdatingVenue = true
+        do {
+            try await syncService?.updateVenue(matchId: matchId, venueOrganizationId: organizationId)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isUpdatingVenue = false
+    }
+
     private func calculateWinner(match: MatchModel) -> String? {
         guard !match.sets.isEmpty else { return nil }
 
@@ -300,6 +319,57 @@ struct MatchDetailView: View {
                     MatchElapsedTimeView(startedAt: startedAt)
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(Color.clear)
+                }
+            }
+
+            // Section: Lieu du match
+            if match.hasDifferentOrganizations || match.hasVenue {
+                Section("Lieu") {
+                    VenueSelectionView(
+                        match: match,
+                        onSelectVenue: { orgId in
+                            Task { await updateVenue(to: orgId) }
+                        },
+                        onTapVenue: {
+                            showingVenueSheet = true
+                        }
+                    )
+                    .disabled(isUpdatingVenue || !isParticipant)
+
+                    // Mini map preview
+                    if match.hasVenue,
+                       let lat = match.venueOrganizationLatitude,
+                       let lon = match.venueOrganizationLongitude {
+                        Button {
+                            showingVenueSheet = true
+                        } label: {
+                            VStack(spacing: 0) {
+                                Map {
+                                    Marker(
+                                        match.venueOrganizationName ?? "Lieu",
+                                        coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon)
+                                    )
+                                }
+                                .frame(height: 150)
+                                .allowsHitTesting(false)
+
+                                HStack {
+                                    Image(systemName: "map.fill")
+                                        .foregroundStyle(Theme.tintColor)
+                                    Text(match.venueOrganizationName ?? "Voir le lieu")
+                                        .font(.subheadline.weight(.medium))
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundStyle(Theme.labelTertiary)
+                                }
+                                .padding(Theme.paddingCard)
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+                            .cardStyle()
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
 
