@@ -14,6 +14,7 @@ enum Theme {
     static let cornerRadiusSmall: CGFloat = 8
     static let cornerRadiusMedium: CGFloat = 12
     static let cornerRadiusLarge: CGFloat = 16
+    static let cornerRadiusXLarge: CGFloat = 24
 
     // MARK: - Spacing
 
@@ -22,6 +23,7 @@ enum Theme {
     static let paddingButtonVertical: CGFloat = 14
     static let paddingButtonHorizontal: CGFloat = 16
     static let buttonHeight: CGFloat = 52
+    static let glassInset: CGFloat = 16
 
     // MARK: - Border
 
