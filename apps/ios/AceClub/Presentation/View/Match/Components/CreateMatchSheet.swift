@@ -201,13 +201,6 @@ struct CreateMatchSheet: View {
 
             switch currentStep {
             case .activityType:
-                Button("Continuer") {
-                    triggerHaptic()
-                    currentStep = .opponent
-                }
-                .buttonStyle(.appPrimary)
-                .disabledWithOpacity(!canContinue)
-
                 Button {
                     isPresented = false
                 } label: {
@@ -218,13 +211,6 @@ struct CreateMatchSheet: View {
                 .buttonStyle(.plain)
 
             case .opponent:
-                Button("Continuer") {
-                    triggerHaptic()
-                    currentStep = .venue
-                }
-                .buttonStyle(.appPrimary)
-                .disabledWithOpacity(!canContinue)
-
                 Button {
                     triggerHaptic()
                     goBack()
@@ -305,6 +291,12 @@ struct CreateMatchSheet: View {
                 matchType = type
             }
             triggerHaptic()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                withAnimation(.snappy(duration: 0.3)) {
+                    triggerHaptic()
+                    currentStep = .opponent
+                }
+            }
         } label: {
             VStack(spacing: 16) {
                 ZStack {
@@ -373,6 +365,16 @@ struct CreateMatchSheet: View {
                 excludedUserIds: currentUser.map { [$0.id] } ?? []
             )
         }
+        .onChange(of: opponent?.id) { _, newValue in
+            if newValue != nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    withAnimation(.snappy(duration: 0.3)) {
+                        triggerHaptic()
+                        currentStep = .venue
+                    }
+                }
+            }
+        }
     }
 
     // MARK: - Step 3: Venue
@@ -411,6 +413,7 @@ struct CreateMatchSheet: View {
         let isSelected = selectedVenue?.id == organization.id
 
         return Button {
+            let wasSelected = isSelected
             withAnimation(.easeOut(duration: 0.2)) {
                 if isSelected {
                     selectedVenue = nil
@@ -419,6 +422,14 @@ struct CreateMatchSheet: View {
                 }
             }
             triggerHaptic()
+            if !wasSelected {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    withAnimation(.snappy(duration: 0.3)) {
+                        triggerHaptic()
+                        currentStep = .dateTime
+                    }
+                }
+            }
         } label: {
             HStack(spacing: 14) {
                 if let url = organization.logoURL {

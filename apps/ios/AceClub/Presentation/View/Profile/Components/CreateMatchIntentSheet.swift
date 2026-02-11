@@ -151,12 +151,6 @@ struct CreateMatchIntentSheet: View {
                 }
             }
 
-            continueButton {
-                triggerHaptic()
-                currentStep = .dateTime
-            }
-            .disabledWithOpacity(intentType == nil)
-
             backButton(label: "Annuler") {
                 isPresented = false
             }
@@ -171,6 +165,12 @@ struct CreateMatchIntentSheet: View {
                 intentType = type
             }
             triggerHaptic()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                withAnimation(.snappy(duration: 0.3)) {
+                    triggerHaptic()
+                    currentStep = .dateTime
+                }
+            }
         } label: {
             VStack(spacing: 14) {
                 ZStack {
@@ -276,12 +276,6 @@ struct CreateMatchIntentSheet: View {
                 }
             }
 
-            continueButton {
-                triggerHaptic()
-                currentStep = .description
-            }
-            .disabledWithOpacity(durationMinutes == nil)
-
             backButton {
                 triggerHaptic()
                 goBack()
@@ -297,6 +291,12 @@ struct CreateMatchIntentSheet: View {
                 durationMinutes = minutes
             }
             triggerHaptic()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                withAnimation(.snappy(duration: 0.3)) {
+                    triggerHaptic()
+                    currentStep = .description
+                }
+            }
         } label: {
             VStack(spacing: 10) {
                 Image(systemName: "clock.fill")
