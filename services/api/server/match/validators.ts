@@ -253,6 +253,24 @@ export const updateVenueValidator = z.object({
   venueOrganizationId: z.string().min(1, "Organization ID is required").nullable(),
 });
 
+export const createFeedbackValidator = z.object({
+  sensation: z.enum(["bad", "average", "good", "great"], {
+    message: "Sensation must be 'bad', 'average', 'good', or 'great'",
+  }),
+  comment: z.string().max(500, "Comment cannot exceed 500 characters").optional(),
+  visibleToClub: z.boolean().default(true),
+});
+
+export const updateFeedbackValidator = z.object({
+  sensation: z
+    .enum(["bad", "average", "good", "great"], {
+      message: "Sensation must be 'bad', 'average', 'good', or 'great'",
+    })
+    .optional(),
+  comment: z.string().max(500, "Comment cannot exceed 500 characters").nullable().optional(),
+  visibleToClub: z.boolean().optional(),
+});
+
 export const createCommentValidator = z.object({
   content: z
     .string()

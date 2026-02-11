@@ -57,6 +57,13 @@
       "when": 1770738594461,
       "tag": "0008_sticky_shaman",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1770844408616,
+      "tag": "0009_soft_ego",
+      "breakpoints": true
     }
   ]
 }

@@ -8,9 +8,10 @@ import {
   set,
   setScore,
   matchComment,
+  matchFeedback,
 } from "../../../db/schema/match/schema";
 import { user, member } from "../../../db/schema/auth/schema";
-import { and, eq, desc, sql, inArray } from "drizzle-orm";
+import { and, eq, desc, sql, inArray, notInArray } from "drizzle-orm";
 import { listMatchesQueryValidator } from "../validators";
 
 export const listMatches = async (c: Context<HonoContext>) => {
@@ -61,6 +62,32 @@ export const listMatches = async (c: Context<HonoContext>) => {
           matches: [],
           pagination: { page, limit, total: 0, totalPages: 0 },
         });
+      }
+
+      // Filter out matches where the current user set visibleToClub = false
+      if (currentUser) {
+        const hiddenFeedbacks = await db
+          .select({ matchId: matchFeedback.matchId })
+          .from(matchFeedback)
+          .where(
+            and(
+              eq(matchFeedback.userId, currentUser.id),
+              eq(matchFeedback.visibleToClub, false),
+              inArray(matchFeedback.matchId, matchIdsFilter),
+            ),
+          );
+
+        const hiddenMatchIds = new Set(hiddenFeedbacks.map((f) => f.matchId));
+        if (hiddenMatchIds.size > 0) {
+          matchIdsFilter = matchIdsFilter.filter((id) => !hiddenMatchIds.has(id));
+
+          if (matchIdsFilter.length === 0) {
+            return c.json({
+              matches: [],
+              pagination: { page, limit, total: 0, totalPages: 0 },
+            });
+          }
+        }
       }
     } else {
       const filterUserId = userId || (participantOnly && currentUser ? currentUser.id : null);

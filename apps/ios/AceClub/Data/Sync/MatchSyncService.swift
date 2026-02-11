@@ -228,6 +228,46 @@ final class MatchSyncService {
         return responseDTO.success
     }
 
+    // MARK: - Feedback Operations
+
+    func createFeedback(matchId: String, sensation: String, comment: String?, visibleToClub: Bool) async throws -> MatchFeedbackModel {
+        let requestDTO = CreateFeedbackRequestDTO(sensation: sensation, comment: comment, visibleToClub: visibleToClub)
+        let responseDTO = try await dataSource.createFeedback(matchId: matchId, request: requestDTO)
+
+        guard let match = fetchMatch(id: matchId) else {
+            throw MatchAPIDataSourceError.notFound
+        }
+
+        let model = upsertFeedback(from: responseDTO, match: match)
+        try modelContext.save()
+
+        return model
+    }
+
+    func updateFeedback(matchId: String, sensation: String?, comment: String?, visibleToClub: Bool?) async throws -> MatchFeedbackModel {
+        let requestDTO = UpdateFeedbackRequestDTO(sensation: sensation, comment: comment, visibleToClub: visibleToClub)
+        let responseDTO = try await dataSource.updateFeedback(matchId: matchId, request: requestDTO)
+
+        guard let match = fetchMatch(id: matchId) else {
+            throw MatchAPIDataSourceError.notFound
+        }
+
+        let model = upsertFeedback(from: responseDTO, match: match)
+        try modelContext.save()
+
+        return model
+    }
+
+    func deleteFeedback(matchId: String) async throws -> Bool {
+        let responseDTO = try await dataSource.deleteFeedback(matchId: matchId)
+
+        if responseDTO.success {
+            try await syncMatch(id: matchId)
+        }
+
+        return responseDTO.success
+    }
+
     // MARK: - Comment Operations
 
     func createComment(matchId: String, content: String) async throws -> MatchCommentModel {
@@ -301,6 +341,12 @@ final class MatchSyncService {
 
     private func fetchComment(id: String) -> MatchCommentModel? {
         let predicate = #Predicate<MatchCommentModel> { $0.id == id }
+        let descriptor = FetchDescriptor(predicate: predicate)
+        return try? modelContext.fetch(descriptor).first
+    }
+
+    private func fetchFeedback(id: String) -> MatchFeedbackModel? {
+        let predicate = #Predicate<MatchFeedbackModel> { $0.id == id }
         let descriptor = FetchDescriptor(predicate: predicate)
         return try? modelContext.fetch(descriptor).first
     }
@@ -399,6 +445,11 @@ final class MatchSyncService {
                     modelContext.delete(existingComment)
                 }
             }
+        }
+
+        // Sync feedback (only the current user's feedback is returned)
+        if let feedbackDTO = dto.myFeedback {
+            upsertFeedback(from: feedbackDTO, match: model)
         }
 
         // Force SwiftData to notify @Query observers by touching the model after all relationships are set
@@ -627,6 +678,34 @@ final class MatchSyncService {
             modelContext.insert(score)
             return score
         }
+    }
+
+    @discardableResult
+    private func upsertFeedback(from dto: MatchFeedbackDTO, match: MatchModel) -> MatchFeedbackModel {
+        let feedback: MatchFeedbackModel
+
+        if let existing = fetchFeedback(id: dto.id) {
+            existing.sensation = dto.sensation
+            existing.comment = dto.comment
+            existing.visibleToClub = dto.visibleToClub
+            existing.updatedAt = parseDate(dto.updatedAt) ?? Date()
+            feedback = existing
+        } else {
+            feedback = MatchFeedbackModel(
+                id: dto.id,
+                matchId: dto.matchId,
+                userId: dto.userId,
+                sensation: dto.sensation,
+                comment: dto.comment,
+                visibleToClub: dto.visibleToClub,
+                createdAt: parseDate(dto.createdAt) ?? Date(),
+                updatedAt: parseDate(dto.updatedAt) ?? Date()
+            )
+            feedback.match = match
+            modelContext.insert(feedback)
+        }
+
+        return feedback
     }
 
     @discardableResult

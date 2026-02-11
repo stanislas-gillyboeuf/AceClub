@@ -381,6 +381,112 @@ class MatchAPIDataSource {
         }
     }
 
+    // MARK: - Create Feedback
+
+    func createFeedback(matchId: String, request: CreateFeedbackRequestDTO) async throws -> MatchFeedbackDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/match/\(matchId)/feedback") else {
+            throw MatchAPIDataSourceError.invalidURL
+        }
+
+        let jsonData: Data
+        do {
+            let encoder = JSONEncoder()
+            jsonData = try encoder.encode(request)
+        } catch {
+            throw MatchAPIDataSourceError.encodingFailed(error)
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "POST", body: jsonData)
+
+        switch response.statusCode {
+        case 201:
+            do {
+                let feedbackResponse = try JSONDecoder().decode(MatchFeedbackDTO.self, from: data)
+                return feedbackResponse
+            } catch {
+                throw MatchAPIDataSourceError.decodingFailed(error)
+            }
+        case 400, 403, 409:
+            if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
+               let message = errorResponse["message"] ?? errorResponse["error"] {
+                throw MatchAPIDataSourceError.badRequest(message)
+            }
+            throw MatchAPIDataSourceError.badRequest("Impossible d'ajouter le feedback")
+        case 401:
+            throw MatchAPIDataSourceError.unauthorized
+        case 404:
+            throw MatchAPIDataSourceError.notFound
+        default:
+            throw MatchAPIDataSourceError.requestFailed(statusCode: response.statusCode)
+        }
+    }
+
+    // MARK: - Update Feedback
+
+    func updateFeedback(matchId: String, request: UpdateFeedbackRequestDTO) async throws -> MatchFeedbackDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/match/\(matchId)/feedback") else {
+            throw MatchAPIDataSourceError.invalidURL
+        }
+
+        let jsonData: Data
+        do {
+            let encoder = JSONEncoder()
+            jsonData = try encoder.encode(request)
+        } catch {
+            throw MatchAPIDataSourceError.encodingFailed(error)
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "PUT", body: jsonData)
+
+        switch response.statusCode {
+        case 200:
+            do {
+                let feedbackResponse = try JSONDecoder().decode(MatchFeedbackDTO.self, from: data)
+                return feedbackResponse
+            } catch {
+                throw MatchAPIDataSourceError.decodingFailed(error)
+            }
+        case 400:
+            if let errorResponse = try? JSONDecoder().decode([String: String].self, from: data),
+               let message = errorResponse["message"] ?? errorResponse["error"] {
+                throw MatchAPIDataSourceError.badRequest(message)
+            }
+            throw MatchAPIDataSourceError.badRequest("Impossible de modifier le feedback")
+        case 401:
+            throw MatchAPIDataSourceError.unauthorized
+        case 404:
+            throw MatchAPIDataSourceError.notFound
+        default:
+            throw MatchAPIDataSourceError.requestFailed(statusCode: response.statusCode)
+        }
+    }
+
+    // MARK: - Delete Feedback
+
+    func deleteFeedback(matchId: String) async throws -> DeleteFeedbackResponseDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/match/\(matchId)/feedback") else {
+            throw MatchAPIDataSourceError.invalidURL
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url, method: "DELETE")
+
+        switch response.statusCode {
+        case 200:
+            do {
+                let deleteResponse = try JSONDecoder().decode(DeleteFeedbackResponseDTO.self, from: data)
+                return deleteResponse
+            } catch {
+                throw MatchAPIDataSourceError.decodingFailed(error)
+            }
+        case 401:
+            throw MatchAPIDataSourceError.unauthorized
+        case 404:
+            throw MatchAPIDataSourceError.notFound
+        default:
+            throw MatchAPIDataSourceError.requestFailed(statusCode: response.statusCode)
+        }
+    }
+
     // MARK: - Delete Comment
 
     func deleteComment(matchId: String) async throws -> DeleteCommentResponseDTO {
