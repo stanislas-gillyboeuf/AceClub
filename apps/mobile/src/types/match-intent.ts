@@ -1,0 +1,98 @@
+import type { Match } from "./match";
+
+export type MatchIntentStatus = "pending" | "accepted" | "rejected";
+export type MatchIntentType = "match" | "training";
+export type MatchRequestStatus = "pending" | "accepted" | "rejected";
+
+export interface MatchIntent {
+  id: string;
+  userId: string;
+  date: string | null;
+  time: string | null;
+  duration: number;
+  type: MatchIntentType;
+  description: string | null;
+  status: MatchIntentStatus;
+  createdAt: string | null;
+}
+
+export interface OrganizationBrief {
+  id: string;
+  name: string;
+  logo: string | null;
+}
+
+export interface UserBrief {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+  level: number;
+  organization: OrganizationBrief | null;
+}
+
+/** Flat item returned from /match-intent/discover */
+export interface MatchIntentDiscoverItem {
+  id: string;
+  type: MatchIntentType;
+  userId: string;
+  date: string | null;
+  time: string | null;
+  duration: number;
+  description: string | null;
+  status: MatchIntentStatus;
+  createdAt: string | null;
+  distance: number | null;
+  user: UserBrief | null;
+}
+
+export interface DiscoverListResult {
+  data: MatchIntentDiscoverItem[];
+  pagination: {
+    nextCursor: string | null;
+    hasMore: boolean;
+    limit: number;
+  };
+  isDiscoveryRestricted: boolean;
+}
+
+export interface MatchRequest {
+  id: string;
+  matchIntentId: string;
+  requesterId: string;
+  receiverId: string;
+  status: MatchRequestStatus;
+  createdAt: string;
+  respondedAt: string | null;
+}
+
+/** As returned by GET /match-intent/requests (Drizzle relations format) */
+export interface MatchRequestWithDetails extends MatchRequest {
+  matchIntent: MatchIntent | null;
+  requester: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
+}
+
+export interface SwipeResult {
+  swipe: unknown;
+  request: MatchRequest | null;
+  message: string;
+}
+
+export interface UserContact {
+  id: string;
+  name: string;
+  image: string | null;
+  phoneNumber: string | null;
+}
+
+export interface AcceptMatchRequestResult {
+  request: MatchRequest;
+  match: Match;
+  requester: UserContact | null;
+  conversationId: string;
+  message: string;
+}
