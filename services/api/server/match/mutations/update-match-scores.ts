@@ -48,8 +48,8 @@ export const updateMatchScores = async (c: Context<HonoContext>) => {
         throw new Error("Match not found");
       }
 
-      if (existingMatch[0].status === "finished") {
-        throw new Error("Cannot update scores for a finished match");
+      if (existingMatch[0].status === "scheduled") {
+        throw new Error("Cannot update scores for a scheduled match");
       }
 
       // Get all sets and participants in parallel

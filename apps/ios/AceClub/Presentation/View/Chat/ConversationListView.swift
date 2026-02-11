@@ -114,19 +114,14 @@ struct ConversationListView: View {
     }
 
     private var conversationList: some View {
-        ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(viewModel.conversations) { conversation in
-                    NavigationLink(value: conversation) {
-                        ConversationRow(conversation: conversation)
-                    }
-                    .buttonStyle(.plain)
+        List {
+            ForEach(viewModel.conversations) { conversation in
+                NavigationLink(value: conversation) {
+                    ConversationRow(conversation: conversation)
                 }
             }
-            .padding(.horizontal, Theme.paddingHorizontal)
-            .padding(.top, 8)
         }
-        .background(Theme.primaryBackground)
+        .listStyle(.insetGrouped)
     }
 }
 
@@ -138,10 +133,8 @@ struct ConversationRow: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            // Avatar
             avatarView
 
-            // Content
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text(conversation.displayName)
@@ -179,17 +172,6 @@ struct ConversationRow: View {
                     }
                 }
             }
-
-            Image(systemName: "chevron.right")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(Theme.labelSecondary)
-        }
-        .padding(Theme.paddingCard)
-        .background(Theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
-                .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
         }
     }
 

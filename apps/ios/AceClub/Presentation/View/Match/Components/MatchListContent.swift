@@ -49,11 +49,11 @@ struct MatchListContent: View {
             } else {
                 List {
                     ForEach(matches) { match in
-                        NavigationLink {
-                            MatchDetailView(matchId: match.id)
-                        } label: {
-                            MatchRowView(match: match)
-                        }
+                        MatchRowView(match: match)
+                            .background(
+                                NavigationLink("", destination: MatchDetailView(matchId: match.id))
+                                    .opacity(0)
+                            )
                         .onAppear {
                             if shouldLoadMore(for: match) {
                                 Task { await loadMoreMatches() }
@@ -70,7 +70,7 @@ struct MatchListContent: View {
                         .listRowSeparator(.hidden)
                     }
                 }
-                .listStyle(.plain)
+                .listStyle(.insetGrouped)
                 .refreshable {
                     await refresh()
                 }
