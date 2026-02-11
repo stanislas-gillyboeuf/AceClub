@@ -12,8 +12,13 @@ struct HomeView: View {
     @State private var viewModel = HomeFeedViewModel()
     @State private var showProgression = false
     @State private var showLeaderboard = false
+    @State private var showFinishSheet = false
+    @State private var selectedMatchForDetail: String?
     @StateObject private var progressionViewModel = ProgressionViewModel()
     @StateObject private var leaderboardViewModel = LeaderboardViewModel()
+
+    @State private var syncService: MatchSyncService?
+    @State private var isStartingMatch = false
 
     private var currentUserId: String {
         authViewModel.currentUser?.id ?? ""
@@ -23,8 +28,21 @@ struct HomeView: View {
         allMatches.filter { $0.isOngoing }
     }
 
+    private var scheduledMatches: [MatchModel] {
+        allMatches.filter { $0.isScheduled }
+            .sorted { ($0.scheduledAt ?? $0.createdAt) < ($1.scheduledAt ?? $1.createdAt) }
+    }
+
     private var finishedMatches: [MatchModel] {
         allMatches.filter { $0.isFinished }
+    }
+
+    /// The most important upcoming activity: ongoing first, then next scheduled
+    private var nextActivity: MatchModel? {
+        if let ongoing = ongoingMatches.first {
+            return ongoing
+        }
+        return scheduledMatches.first
     }
 
     var body: some View {
@@ -45,12 +63,35 @@ struct HomeView: View {
                 .listRowInsets(EdgeInsets(top: 8, leading: Theme.paddingHorizontal, bottom: 8, trailing: Theme.paddingHorizontal))
                 .listRowBackground(Color.clear)
 
-                // Ongoing matches
-                if !ongoingMatches.isEmpty {
+                // Next activity card (prominent)
+                if let activity = nextActivity {
+                    Section {
+                        NextActivityCardView(
+                            match: activity,
+                            currentUserId: currentUserId,
+                            onStart: {
+                                Task { await startMatch(activity) }
+                            },
+                            onFinish: {
+                                showFinishSheet = true
+                            },
+                            onTap: {
+                                selectedMatchForDetail = activity.id
+                            }
+                        )
+                        .disabled(isStartingMatch)
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 4, leading: Theme.paddingHorizontal, bottom: 8, trailing: Theme.paddingHorizontal))
+                    .listRowBackground(Color.clear)
+                }
+
+                // Other ongoing matches (if more than one)
+                if ongoingMatches.count > 1 {
                     Section {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 12) {
-                                ForEach(ongoingMatches) { match in
+                                ForEach(ongoingMatches.dropFirst()) { match in
                                     NavigationLink {
                                         MatchDetailView(matchId: match.id)
                                     } label: {
@@ -65,7 +106,7 @@ struct HomeView: View {
                             }
                         }
                     } header: {
-                        Text("En cours")
+                        Text("Autres matchs en cours")
                     }
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets(top: 4, leading: Theme.paddingHorizontal, bottom: 4, trailing: Theme.paddingHorizontal))
@@ -102,7 +143,7 @@ struct HomeView: View {
                         }
                     }
                 } header: {
-                    Text("Matchs récents au club")
+                    Text("Matchs r\u{00e9}cents au club")
                 }
                 .listRowSeparator(.hidden)
                 .listRowInsets(EdgeInsets(top: 6, leading: Theme.paddingHorizontal, bottom: 6, trailing: Theme.paddingHorizontal))
@@ -111,7 +152,7 @@ struct HomeView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(Theme.primaryBackground)
-            .navigationTitle("Activité")
+            .navigationTitle("Activit\u{00e9}")
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button {
@@ -120,6 +161,9 @@ struct HomeView: View {
                         Image(systemName: "trophy")
                     }
                 }
+            }
+            .navigationDestination(item: $selectedMatchForDetail) { matchId in
+                MatchDetailView(matchId: matchId)
             }
             .fullScreenCover(isPresented: $showProgression) {
                 NavigationStack {
@@ -145,6 +189,16 @@ struct HomeView: View {
                         }
                 }
             }
+            .sheet(isPresented: $showFinishSheet) {
+                if let activity = nextActivity, activity.isOngoing {
+                    FinishActivitySheet(
+                        match: activity,
+                        totalFinishedCount: finishedMatches.filter { $0.type == activity.type }.count,
+                        isPresented: $showFinishSheet
+                    )
+                    .presentationDragIndicator(.visible)
+                }
+            }
             .refreshable {
                 await refresh()
             }
@@ -156,13 +210,14 @@ struct HomeView: View {
 
     private var emptyFeedView: some View {
         ContentUnavailableView(
-            "Aucun match récent",
+            "Aucun match r\u{00e9}cent",
             systemImage: "sportscourt",
-            description: Text("Vos matchs récents au club apparaîtront ici")
+            description: Text("Vos matchs r\u{00e9}cents au club appara\u{00ee}tront ici")
         )
     }
 
     private func initialLoad() async {
+        syncService = MatchSyncService(modelContext: modelContext)
         viewModel.initialize(modelContext: modelContext)
         viewModel.organizationId = organizationViewModel.activeMember?.organizationId
         async let matchesTask: () = viewModel.syncMatches()
@@ -175,5 +230,24 @@ struct HomeView: View {
         async let matchesTask: () = viewModel.syncMatches()
         async let levelTask: () = progressionViewModel.loadLevel()
         _ = await (matchesTask, levelTask)
+    }
+
+    private func startMatch(_ match: MatchModel) async {
+        guard !isStartingMatch else { return }
+        if syncService == nil {
+            syncService = MatchSyncService(modelContext: modelContext)
+        }
+        isStartingMatch = true
+        do {
+            _ = try await syncService?.updateMatch(
+                id: match.id,
+                status: .ongoing,
+                startedAt: Date()
+            )
+            try? await MatchLiveActivityManager.shared.startActivity(for: match)
+        } catch {
+            // Error handled silently - match detail view has full error handling
+        }
+        isStartingMatch = false
     }
 }
