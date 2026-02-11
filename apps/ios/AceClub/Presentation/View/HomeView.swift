@@ -35,10 +35,16 @@ struct HomeView: View {
                     if progressionViewModel.isLoadingLevel {
                         SkeletonRow(showAvatar: false, lineCount: 2, titleWidth: 150)
                     } else {
-                        LevelProgressCard(userLevel: progressionViewModel.userLevel)
-                            .onTapGesture {
-                                showProgression = true
-                            }
+                        Button {
+                            showProgression = true
+                        } label: {
+                            LevelProgressCard(
+                                userLevel: progressionViewModel.userLevel,
+                                showDetailIndicator: true
+                            )
+                        }
+                        .buttonStyle(CardPressButtonStyle())
+                        .sensoryFeedback(.impact(flexibility: .soft), trigger: showProgression)
                     }
                 }
                 .listRowSeparator(.hidden)
@@ -121,17 +127,24 @@ struct HomeView: View {
                     }
                 }
             }
-            .fullScreenCover(isPresented: $showProgression) {
+            .sheet(isPresented: $showProgression) {
                 NavigationStack {
                     ProgressionView(viewModel: progressionViewModel)
                         .toolbar {
-                            ToolbarItem(placement: .topBarLeading) {
-                                Button("Fermer") {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button {
                                     showProgression = false
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.title3)
+                                        .symbolRenderingMode(.hierarchical)
+                                        .foregroundStyle(.secondary)
                                 }
                             }
                         }
                 }
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
             }
             .fullScreenCover(isPresented: $showLeaderboard) {
                 NavigationStack {
@@ -175,5 +188,16 @@ struct HomeView: View {
         async let matchesTask: () = viewModel.syncMatches()
         async let levelTask: () = progressionViewModel.loadLevel()
         _ = await (matchesTask, levelTask)
+    }
+}
+
+// MARK: - Card Press Button Style
+
+private struct CardPressButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .opacity(configuration.isPressed ? 0.85 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
 }

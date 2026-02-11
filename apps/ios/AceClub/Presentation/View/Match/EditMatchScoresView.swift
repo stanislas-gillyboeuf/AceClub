@@ -22,7 +22,6 @@ struct EditMatchScoresView: View {
     let matchDetail: MatchDetail
 
     @State private var editableSets: [EditableSet] = []
-    @State private var showingConfirmation = false
 
     var body: some View {
         NavigationStack {
@@ -80,7 +79,7 @@ struct EditMatchScoresView: View {
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Sauvegarder") {
-                        showingConfirmation = true
+                        Task { await saveScores() }
                     }
                     .disabled(viewModel.isUpdatingScores || editableSets.isEmpty)
                 }
@@ -96,16 +95,6 @@ struct EditMatchScoresView: View {
                             .cardStyle()
                     }
                 }
-            }
-            .alert("Confirmer la modification", isPresented: $showingConfirmation) {
-                Button("Annuler", role: .cancel) { }
-                Button("Confirmer") {
-                    Task {
-                        await saveScores()
-                    }
-                }
-            } message: {
-                Text("Voulez-vous vraiment mettre à jour les scores de ce match ?")
             }
             .onAppear {
                 initializeEditableSets()

@@ -761,7 +761,7 @@ struct MatchCommentSheet: View {
                 if isEditing {
                     Section {
                         Button(role: .destructive) {
-                            showingDeleteConfirmation = true
+                           Task { await deleteComment() }
                         } label: {
                             HStack {
                                 Spacer()
