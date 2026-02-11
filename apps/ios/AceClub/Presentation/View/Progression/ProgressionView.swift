@@ -88,10 +88,6 @@ struct ProgressionView: View {
                 .frame(maxWidth: .infinity)
                 .background(Theme.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
-                        .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
-                }
                 .listRowSeparator(.hidden)
                 .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
                 .listRowBackground(Color.clear)
@@ -135,10 +131,6 @@ struct ProgressionView: View {
                 .frame(maxWidth: .infinity)
                 .background(Theme.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
-                        .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
-                }
                 .listRowSeparator(.hidden)
                 .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
                 .listRowBackground(Color.clear)
@@ -147,10 +139,6 @@ struct ProgressionView: View {
                     .padding(Theme.paddingCard)
                     .background(Theme.cardBackground)
                     .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
-                            .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
-                    }
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16))
                     .listRowBackground(Color.clear)
