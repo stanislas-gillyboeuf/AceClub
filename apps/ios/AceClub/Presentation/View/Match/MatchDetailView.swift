@@ -438,7 +438,6 @@ struct EditMatchScoresViewSwiftData: View {
     @State private var editedSets: [EditableSetData] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @State private var showConfirmation = false
 
     // Données d'un set éditable
     private struct EditableSetData: Identifiable {
@@ -495,7 +494,7 @@ struct EditMatchScoresViewSwiftData: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Enregistrer") {
-                        showConfirmation = true
+                        Task { await saveScores() }
                     }
                     .fontWeight(.semibold)
                     .disabled(isLoading || editedSets.isEmpty)
@@ -505,14 +504,6 @@ struct EditMatchScoresViewSwiftData: View {
                 if isLoading {
                     loadingOverlay
                 }
-            }
-            .alert("Confirmer les modifications", isPresented: $showConfirmation) {
-                Button("Annuler", role: .cancel) { }
-                Button("Enregistrer") {
-                    Task { await saveScores() }
-                }
-            } message: {
-                Text("Les scores du match seront mis à jour.")
             }
             .alert("Erreur", isPresented: .constant(errorMessage != nil)) {
                 Button("OK") { errorMessage = nil }
