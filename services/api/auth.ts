@@ -4,6 +4,7 @@ import { db } from "./db";
 import { bearer, organization } from "better-auth/plugins";
 import { admin } from "better-auth/plugins/admin";
 import { phoneNumber } from "better-auth/plugins";
+import { expo } from "@better-auth/expo";
 import { user as userTable, member as memberTable } from "./db/schema/auth/schema";
 import { eq } from "drizzle-orm";
 import { awardPremiersPasBadge } from "./server/reward/services/badge-service";
@@ -114,14 +115,18 @@ export const auth = betterAuth({
     "http://127.0.0.1:3000",
     "http://127.0.0.1:3001",
     "aceclub://",
+    "aceclub://*",
     "https://ace-club-production.up.railway.app",
     "https://ace-club.app",
     "https://appleid.apple.com",
     process.env.NGROK_URL || "",
+    "exp://",
+    "exp://**",
   ].filter(Boolean),
 
   plugins: [
     bearer(),
+    expo(),
     admin(),
     organization({
       schema: {

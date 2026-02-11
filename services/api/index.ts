@@ -25,7 +25,7 @@ app.use(
         return origin;
       }
 
-      if (origin.startsWith("apply://")) {
+      if (origin.startsWith("aceclub://")) {
         return origin;
       }
 
