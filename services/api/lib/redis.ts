@@ -7,11 +7,17 @@ if (!redisUrl) {
   console.warn("[Redis] No REDIS_URL or REDIS_PUBLIC_URL found. Redis features will be disabled.");
 }
 
+// ioredis options: null = retry indefinitely (avoids MaxRetriesPerRequestError when Redis is temporarily unreachable)
+const redisOptions = {
+  maxRetriesPerRequest: null as const,
+  retryStrategy: (times: number) => Math.min(times * 100, 3000),
+};
+
 // Main Redis client for publishing
-export const redis = redisUrl ? new Redis(redisUrl) : null;
+export const redis = redisUrl ? new Redis(redisUrl, redisOptions) : null;
 
 // Separate client for subscribing (Redis requires separate connections for pub/sub)
-export const redisSub = redisUrl ? new Redis(redisUrl) : null;
+export const redisSub = redisUrl ? new Redis(redisUrl, redisOptions) : null;
 
 // Channels
 export const CHAT_CHANNEL = "chat:messages";

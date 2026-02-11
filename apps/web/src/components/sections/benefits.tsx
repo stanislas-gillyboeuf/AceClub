@@ -14,7 +14,7 @@ export function Benefits() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
         <div className="relative">
           <img
-            src="/Device.png"
+            src="/Device-8.png"
             alt="Ace Club application"
             className="w-full max-w-md mx-auto rounded-3xl object-cover"
           />

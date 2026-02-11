@@ -11,9 +11,9 @@ import {
 export const BLUR_FADE_DELAY = 0.15;
 
 export const siteConfig = {
-  name: "AceClub",
+  name: "Ace Club",
   description: "L'app qui fait bourger votre club",
-  cta: "Contacter AceClub",
+  cta: "Contacter Ace Club",
   url: process.env.NEXT_PUBLIC_APP_URL || "https://aceclub.app",
   navigation: {
     features: [
@@ -162,7 +162,7 @@ export const siteConfig = {
       title: "Messagerie instantanée",
       content:
         "Discutez avec vos partenaires, coordonnez les détails du match, partagez des photos et restez connectés.",
-      imageSrc: "/Device-3.png",
+      imageSrc: "/Device-9.png",
       imageAlt: "Messagerie",
       fullWidth: false,
     },
