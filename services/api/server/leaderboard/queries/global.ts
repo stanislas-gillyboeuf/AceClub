@@ -5,11 +5,16 @@ import { db } from "../../../db";
 import { user } from "../../../db/schema/auth/schema";
 import { userLevel } from "../../../db/schema/level/schema";
 import { userStreak } from "../../../db/schema/streak/schema";
+import { cacheGet, cacheSet, CacheKeys, CacheTTL } from "../../../lib/cache";
 
 export const getGlobalLeaderboard = async (c: Context<HonoContext>) => {
   const page = Number(c.req.query("page") ?? "1");
   const limit = Math.min(Number(c.req.query("limit") ?? "20"), 100);
   const offset = (page - 1) * limit;
+
+  const cacheKey = CacheKeys.leaderboardGlobal(page, limit);
+  const cached = await cacheGet(cacheKey);
+  if (cached) return c.json(cached);
 
   const results = await db
     .select({
@@ -29,7 +34,7 @@ export const getGlobalLeaderboard = async (c: Context<HonoContext>) => {
 
   const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(user);
 
-  return c.json({
+  const response = {
     leaderboard: results.map((r, index) => ({
       rank: offset + index + 1,
       user: {
@@ -47,5 +52,8 @@ export const getGlobalLeaderboard = async (c: Context<HonoContext>) => {
       total: Number(count),
       totalPages: Math.ceil(Number(count) / limit),
     },
-  });
+  };
+
+  await cacheSet(cacheKey, response, CacheTTL.MEDIUM);
+  return c.json(response);
 };

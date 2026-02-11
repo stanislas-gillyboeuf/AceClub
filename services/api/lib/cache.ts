@@ -1,0 +1,73 @@
+import { redis } from "./redis";
+
+// TTL constants (seconds)
+export const CacheTTL = {
+  SHORT: 60, // 1 min — user profile
+  MEDIUM: 300, // 5 min — leaderboards
+  LONG: 900, // 15 min — org stats
+} as const;
+
+// Cache key builders
+export const CacheKeys = {
+  userMe: (userId: string) => `user:me:${userId}`,
+  leaderboardGlobal: (page: number, limit: number) => `leaderboard:global:${page}:${limit}`,
+  leaderboardWeekly: (page: number, limit: number) => `leaderboard:weekly:${page}:${limit}`,
+  leaderboardOrg: (orgId: string, page: number, limit: number) =>
+    `leaderboard:org:${orgId}:${page}:${limit}`,
+  orgStats: (orgId: string) => `org:stats:${orgId}`,
+
+  // Prefixes for bulk invalidation
+  PREFIX_LEADERBOARD_GLOBAL: "leaderboard:global:",
+  PREFIX_LEADERBOARD_WEEKLY: "leaderboard:weekly:",
+  prefixLeaderboardOrg: (orgId: string) => `leaderboard:org:${orgId}:`,
+} as const;
+
+export async function cacheGet<T>(key: string): Promise<T | null> {
+  if (!redis) return null;
+  try {
+    const raw = await redis.get(key);
+    if (!raw) return null;
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
+export async function cacheSet(key: string, value: unknown, ttlSeconds: number): Promise<void> {
+  if (!redis) return;
+  try {
+    await redis.set(key, JSON.stringify(value));
+    await redis.expire(key, ttlSeconds);
+  } catch {
+    // Silently fail — cache is best-effort
+  }
+}
+
+export async function cacheDel(key: string): Promise<void> {
+  if (!redis) return;
+  try {
+    await redis.del(key);
+  } catch {
+    // Silently fail
+  }
+}
+
+export async function cacheInvalidatePrefix(prefix: string): Promise<void> {
+  if (!redis) return;
+  try {
+    let cursor = "0";
+    do {
+      const result = (await redis.send("SCAN", [cursor, "MATCH", `${prefix}*`, "COUNT", "100"])) as
+        | [string, string[]]
+        | null;
+      if (!result) break;
+      const [nextCursor, keys] = result;
+      cursor = nextCursor;
+      if (keys.length > 0) {
+        await redis.send("DEL", keys);
+      }
+    } while (cursor !== "0");
+  } catch {
+    // Silently fail
+  }
+}

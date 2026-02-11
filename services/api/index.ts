@@ -71,7 +71,7 @@ app.get("/", (c) => c.json({ message: "AceClub API", status: "ok" }));
 app.get("/health", (c) => c.json({ status: "ok" }));
 
 // Initialize Redis subscriber for cross-pod messaging
-initializeRedisSubscriber();
+initializeRedisSubscriber().catch((err) => console.error("[Redis] Failed to initialize subscriber:", err));
 
 // Start server
 const port = Number(process.env.PORT) || 3000;

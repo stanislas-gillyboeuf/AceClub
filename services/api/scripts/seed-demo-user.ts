@@ -54,7 +54,6 @@ const MATCH_HISTORY: Array<{
     isWinner: true,
     daysAgo: 2,
     status: "finished",
-    type: "match",
   },
   {
     sets: [

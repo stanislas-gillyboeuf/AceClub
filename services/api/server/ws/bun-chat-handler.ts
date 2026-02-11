@@ -54,12 +54,9 @@ function broadcastToLocalUser(userId: string, payload: object): boolean {
 }
 
 // Initialize Redis subscriber
-export function initializeRedisSubscriber(): void {
+export async function initializeRedisSubscriber(): Promise<void> {
   if (redisSub) {
-    redisSub.subscribe(CHAT_CHANNEL);
-    console.log(`[WS] Subscribed to Redis channel: ${CHAT_CHANNEL}`);
-
-    redisSub.on("message", (channel, message) => {
+    await redisSub.subscribe(CHAT_CHANNEL, (message, channel) => {
       if (channel === CHAT_CHANNEL) {
         try {
           const { userId, payload } = JSON.parse(message);
@@ -69,6 +66,7 @@ export function initializeRedisSubscriber(): void {
         }
       }
     });
+    console.log(`[WS] Subscribed to Redis channel: ${CHAT_CHANNEL}`);
   }
 }
 

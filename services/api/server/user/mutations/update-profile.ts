@@ -8,6 +8,7 @@ import { z } from "zod";
 import { updateProfileValidator } from "../validators";
 import { ulid } from "ulid";
 import { auth } from "../../../auth";
+import { cacheDel, CacheKeys } from "../../../lib/cache";
 
 const normalizePhoneNumber = (raw: string) => {
   const trimmed = raw.trim();
@@ -166,6 +167,8 @@ export const updateProfile = async (c: Context<HonoContext>) => {
     }
     throw error;
   }
+
+  await cacheDel(CacheKeys.userMe(authUser!.id));
 
   return c.json({
     id: updatedUserRow.id,
