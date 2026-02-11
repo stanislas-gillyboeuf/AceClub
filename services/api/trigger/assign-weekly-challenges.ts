@@ -3,12 +3,12 @@ import { assignWeeklyChallenges } from "../server/challenge/services/challenge-s
 
 /**
  * Assign weekly challenges to all users
- * Runs every Monday at 00:00 UTC
+ * Runs every Monday at 09:00 UTC
  */
 export const assignWeeklyChallengesTask = schedules.task({
   id: "assign-weekly-challenges",
   cron: {
-    pattern: "0 0 * * 1", // Monday 00:00 UTC
+    pattern: "0 9 * * 1", // Monday 09:00 UTC
     timezone: "UTC",
   },
   run: async (payload) => {

@@ -8,14 +8,36 @@
 import SwiftUI
 
 struct MatchElapsedTimeView: View {
+    enum Style {
+        case card
+        case inline
+    }
+
     let startedAt: Date
+    var style: Style = .card
 
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
 
     var body: some View {
+        Group {
+            switch style {
+            case .card:
+                cardContent
+            case .inline:
+                inlineContent
+            }
+        }
+        .onAppear {
+            startTimer()
+        }
+        .onDisappear {
+            stopTimer()
+        }
+    }
+
+    private var cardContent: some View {
         VStack(spacing: 12) {
-            // Header
             HStack(spacing: 6) {
                 Circle()
                     .fill(.red)
@@ -27,7 +49,6 @@ struct MatchElapsedTimeView: View {
                     .foregroundStyle(.red)
             }
 
-            // Chrono principal
             HStack(spacing: 4) {
                 Image(systemName: "timer")
                     .font(.system(size: 18, weight: .semibold))
@@ -39,7 +60,6 @@ struct MatchElapsedTimeView: View {
                     .contentTransition(.numericText(value: elapsedTime))
             }
 
-            // Label
             Text("Temps de jeu")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
@@ -48,11 +68,18 @@ struct MatchElapsedTimeView: View {
         .frame(maxWidth: .infinity)
         .background(Theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
-        .onAppear {
-            startTimer()
-        }
-        .onDisappear {
-            stopTimer()
+    }
+
+    private var inlineContent: some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(.red)
+                .frame(width: 6, height: 6)
+                .modifier(PulseAnimation())
+
+            Text(formattedElapsedTime)
+                .font(.title3.weight(.bold).monospacedDigit())
+                .contentTransition(.numericText(value: elapsedTime))
         }
     }
 
@@ -112,14 +139,9 @@ private struct PulseAnimation: ViewModifier {
 
 #Preview {
     VStack(spacing: 16) {
-        // Chrono à 5 minutes
         MatchElapsedTimeView(startedAt: Date().addingTimeInterval(-300))
-
-        // Chrono à 1h30
         MatchElapsedTimeView(startedAt: Date().addingTimeInterval(-5400))
-
-        // Chrono à 2h15m30s
-        MatchElapsedTimeView(startedAt: Date().addingTimeInterval(-8130))
+        MatchElapsedTimeView(startedAt: Date().addingTimeInterval(-300), style: .inline)
     }
     .padding()
     .background(Theme.primaryBackground)

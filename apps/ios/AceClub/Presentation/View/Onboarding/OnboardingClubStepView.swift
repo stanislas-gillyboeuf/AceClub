@@ -112,26 +112,22 @@ struct OnboardingClubStepView: View {
     }
 
     private var organizationsList: some View {
-        ScrollView {
-            LazyVStack(spacing: 8) {
-                ForEach(viewModel.organizations) { org in
-                    OnboardingOrganizationRow(
-                        name: org.name,
-                        isSelected: viewModel.selectedOrganization?.id == org.id,
-                        pinEnabled: org.pinEnabled,
-                        pinValidated: viewModel.selectedOrganization?.id == org.id && viewModel.isPinVerified
-                    ) {
-                        withAnimation(.easeOut(duration: 0.25)) {
-                            viewModel.selectOrganization(org)
-                        }
-                        triggerHaptic()
+        List {
+            ForEach(viewModel.organizations) { org in
+                OnboardingOrganizationRow(
+                    name: org.name,
+                    isSelected: viewModel.selectedOrganization?.id == org.id,
+                    pinEnabled: org.pinEnabled,
+                    pinValidated: viewModel.selectedOrganization?.id == org.id && viewModel.isPinVerified
+                ) {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        viewModel.selectOrganization(org)
                     }
+                    triggerHaptic()
                 }
             }
-            .padding(.horizontal, Theme.paddingHorizontal)
-            .padding(.top, 14)
-            .padding(.bottom, 8)
         }
+        .listStyle(.insetGrouped)
         .scrollDismissesKeyboard(.interactively)
     }
 
@@ -153,7 +149,6 @@ private struct OnboardingOrganizationRow: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                // Avatar
                 ZStack {
                     Circle()
                         .fill(isSelected ? Theme.tintColor.opacity(0.15) : Theme.borderColor.opacity(0.3))
@@ -188,16 +183,6 @@ private struct OnboardingOrganizationRow: View {
                         .foregroundStyle(Theme.tintColor)
                 }
             }
-            .padding(.horizontal, Theme.paddingCard)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
-                    .fill(isSelected ? Theme.tintColor.opacity(0.06) : Theme.cardBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
-                    .stroke(isSelected ? Theme.tintColor.opacity(0.25) : .clear, lineWidth: Theme.borderWidth)
-            )
         }
         .buttonStyle(.plain)
     }

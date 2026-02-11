@@ -91,23 +91,18 @@ struct NewConversationView: View {
     }
 
     private var memberList: some View {
-        ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(filteredMembers) { member in
-                    Button {
-                        Task {
-                            await startConversation(with: member)
-                        }
-                    } label: {
-                        ConversationMemberRow(member: member)
+        List {
+            ForEach(filteredMembers) { member in
+                Button {
+                    Task {
+                        await startConversation(with: member)
                     }
-                    .buttonStyle(.plain)
+                } label: {
+                    ConversationMemberRow(member: member)
                 }
             }
-            .padding(.horizontal, Theme.paddingHorizontal)
-            .padding(.top, 8)
         }
-        .background(Theme.primaryBackground)
+        .listStyle(.insetGrouped)
     }
 
     private func startConversation(with member: Member) async {
@@ -149,13 +144,6 @@ private struct ConversationMemberRow: View {
             Image(systemName: "chevron.right")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Theme.labelSecondary)
-        }
-        .padding(Theme.paddingCard)
-        .background(Theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
-                .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
         }
     }
 

@@ -544,50 +544,37 @@ struct ClubSelectionView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: 0) {
-                            ForEach(Array(viewModel.organizations.enumerated()), id: \.element.id) { index, org in
-                                Button {
-                                    if org.pinEnabled {
-                                        viewModel.selectOrganization(org)
-                                    } else {
-                                        viewModel.selectedOrganization = org
-                                        dismiss()
-                                    }
-                                } label: {
-                                    HStack {
-                                        Text(org.name)
-                                            .foregroundStyle(.primary)
-
-                                        if org.pinEnabled {
-                                            Image(systemName: "lock.fill")
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                        }
-
-                                        Spacer()
-
-                                        if viewModel.selectedOrganization?.id == org.id {
-                                            Image(systemName: "checkmark.circle.fill")
-                                                .foregroundStyle(Theme.tintColor)
-                                        }
-                                    }
-                                    .padding(16)
-                                    .contentShape(Rectangle())
+                    List {
+                        ForEach(viewModel.organizations) { org in
+                            Button {
+                                if org.pinEnabled {
+                                    viewModel.selectOrganization(org)
+                                } else {
+                                    viewModel.selectedOrganization = org
+                                    dismiss()
                                 }
-                                .buttonStyle(.plain)
+                            } label: {
+                                HStack {
+                                    Text(org.name)
+                                        .foregroundStyle(.primary)
 
-                                if index < viewModel.organizations.count - 1 {
-                                    Divider()
-                                        .padding(.leading, 16)
+                                    if org.pinEnabled {
+                                        Image(systemName: "lock.fill")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+
+                                    Spacer()
+
+                                    if viewModel.selectedOrganization?.id == org.id {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundStyle(Theme.tintColor)
+                                    }
                                 }
                             }
                         }
-                        .background(Theme.cardBackground)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
-                        .padding(.horizontal, Theme.paddingHorizontal)
-                        .padding(.top, 4)
                     }
+                    .listStyle(.insetGrouped)
                 }
             }
             .navigationTitle("Choisir un club")

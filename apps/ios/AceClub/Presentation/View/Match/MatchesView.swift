@@ -12,7 +12,6 @@ struct MatchesView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(DeepLinkManager.self) private var deepLinkManager
 
-    // SwiftData query - auto-updates when data changes
     @Query(sort: \MatchModel.createdAt, order: .reverse)
     private var matches: [MatchModel]
 
@@ -62,13 +61,15 @@ struct MatchesView: View {
                 }
             }
             .sheet(isPresented: $showingCreateMatch) {
-                CreateMatchView(isPresented: $showingCreateMatch) {
-                    // No need to refresh - @Query auto-updates
+                CreateMatchSheet(isPresented: $showingCreateMatch) {
+                    Task {
+                        await loadMatches()
+                    }
                 }
+                .presentationDragIndicator(.visible)
             }
             .fullScreenCover(isPresented: $showingListRequestMatch) {
                 ListRequestMatch {
-                    // No need to refresh - @Query auto-updates
                 }
             }
             .task {

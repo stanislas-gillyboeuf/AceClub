@@ -77,30 +77,26 @@ struct OnboardingLevelStepView: View {
             .padding(.horizontal, Theme.paddingHorizontal)
 
         case .tennis:
-            // Scrollable list for tennis (22 levels)
-            ScrollView {
-                LazyVStack(spacing: 6) {
-                    ForEach(Array(levels.enumerated()), id: \.element.id) { index, level in
-                        TennisLevelRow(
-                            level: level,
-                            isSelected: viewModel.selectedSkillLevel == level
-                        ) {
-                            withAnimation(.easeOut(duration: 0.25)) {
-                                viewModel.selectedSkillLevel = level
-                            }
-                            triggerHaptic()
+            List {
+                ForEach(Array(levels.enumerated()), id: \.element.id) { index, level in
+                    TennisLevelRow(
+                        level: level,
+                        isSelected: viewModel.selectedSkillLevel == level
+                    ) {
+                        withAnimation(.easeOut(duration: 0.25)) {
+                            viewModel.selectedSkillLevel = level
                         }
-                        .opacity(appeared ? 1 : 0)
-                        .offset(y: appeared ? 0 : 15)
-                        .animation(
-                            .easeOut(duration: 0.3).delay(Double(index) * 0.02),
-                            value: appeared
-                        )
+                        triggerHaptic()
                     }
+                    .opacity(appeared ? 1 : 0)
+                    .offset(y: appeared ? 0 : 15)
+                    .animation(
+                        .easeOut(duration: 0.3).delay(Double(index) * 0.02),
+                        value: appeared
+                    )
                 }
-                .padding(.horizontal, Theme.paddingHorizontal)
-                .padding(.bottom, 8)
             }
+            .listStyle(.insetGrouped)
         }
     }
 
@@ -220,16 +216,6 @@ private struct TennisLevelRow: View {
                         .transition(.scale.combined(with: .opacity))
                 }
             }
-            .padding(.horizontal, Theme.paddingCard)
-            .padding(.vertical, 14)
-            .background(
-                RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous)
-                    .fill(isSelected ? Theme.tintColor.opacity(0.06) : Theme.cardBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.cornerRadiusSmall, style: .continuous)
-                    .stroke(isSelected ? Theme.tintColor.opacity(0.25) : .clear, lineWidth: Theme.borderWidth)
-            )
             .animation(.easeOut(duration: 0.25), value: isSelected)
         }
         .buttonStyle(.plain)
