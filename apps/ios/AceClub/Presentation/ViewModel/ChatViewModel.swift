@@ -2,8 +2,6 @@
 //  ChatViewModel.swift
 //  AceClub
 //
-//  Created by Nicolas Becharat on 01/02/2026.
-//
 
 import Foundation
 import Combine
@@ -30,8 +28,10 @@ class ChatViewModel: ObservableObject {
     private let sendMessageUseCase = SendMessageUseCase()
     private let deleteMessageUseCase = DeleteMessageUseCase()
     private let markReadUseCase = MarkConversationReadUseCase()
+    private let e2eeRepository = E2EERepository()
     private var cancellables = Set<AnyCancellable>()
     private var typingTimer: Timer?
+    private var participantPublicKey: String?
 
     // MARK: - Init
 
@@ -48,8 +48,11 @@ class ChatViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
+            // Pre-fetch the other participant's public key for decryption
+            await prefetchParticipantPublicKey()
+
             let loadedMessages = try await listMessagesUseCase.execute(conversationId: conversation.id)
-            messages = loadedMessages
+            messages = loadedMessages.map { decryptMessageIfNeeded($0) }
             // If we loaded fewer than the default limit, there are no more messages
             hasMoreMessages = loadedMessages.count >= 50
             // Mark as read when loading
@@ -75,7 +78,7 @@ class ChatViewModel: ObservableObject {
             if olderMessages.isEmpty {
                 hasMoreMessages = false
             } else {
-                messages.append(contentsOf: olderMessages)
+                messages.append(contentsOf: olderMessages.map { decryptMessageIfNeeded($0) })
             }
         } catch {
             errorMessage = error.localizedDescription
@@ -88,7 +91,7 @@ class ChatViewModel: ObservableObject {
 
         let clientMessageId = UUID().uuidString
 
-        // Optimistic update
+        // Optimistic update - show plaintext to sender
         let optimisticMessage = Message(
             id: clientMessageId,
             conversationId: conversation.id,
@@ -108,12 +111,30 @@ class ChatViewModel: ObservableObject {
             let sentMessage = try await sendMessageUseCase.execute(
                 conversationId: conversation.id,
                 content: trimmedContent,
-                clientMessageId: clientMessageId
+                clientMessageId: clientMessageId,
+                conversationType: conversation.type,
+                otherParticipantId: conversation.otherParticipants.first?.userId
             )
 
-            // Replace optimistic message with real one
+            // Replace optimistic message with real one (decrypt if needed for display)
             if let index = messages.firstIndex(where: { $0.clientMessageId == clientMessageId }) {
-                messages[index] = sentMessage
+                // The sent message content may be encrypted, but we already show the plaintext optimistically
+                // Replace but keep the original plaintext content for display
+                var displayMessage = sentMessage
+                if sentMessage.isEncrypted {
+                    displayMessage = Message(
+                        id: sentMessage.id,
+                        conversationId: sentMessage.conversationId,
+                        sender: sentMessage.sender,
+                        content: trimmedContent,
+                        createdAt: sentMessage.createdAt,
+                        clientMessageId: sentMessage.clientMessageId,
+                        isFromMe: sentMessage.isFromMe,
+                        isEncrypted: sentMessage.isEncrypted,
+                        sendStatus: .sent
+                    )
+                }
+                messages[index] = displayMessage
             }
         } catch {
             // Mark as failed
@@ -155,6 +176,62 @@ class ChatViewModel: ObservableObject {
         await sendMessage(message.content)
     }
 
+    // MARK: - E2EE Helpers
+
+    private func prefetchParticipantPublicKey() async {
+        guard participantPublicKey == nil,
+              (conversation.type == .direct || conversation.type == .match),
+              let otherUserId = conversation.otherParticipants.first?.userId else { return }
+
+        participantPublicKey = try? await e2eeRepository.getPublicKey(userId: otherUserId)
+    }
+
+    private func decryptMessageIfNeeded(_ message: Message) -> Message {
+        guard message.isEncrypted, !message.content.isEmpty else { return message }
+
+        do {
+            guard let theirPublicKey = message.isFromMe ? participantPublicKey : participantPublicKey else {
+                return makeUndecryptableMessage(message)
+            }
+
+            // For messages from me, we need the other participant's key
+            // For messages from them, we also need their key (ECDH is symmetric)
+            let key = try E2EEManager.shared.deriveConversationKey(
+                theirPublicKeyBase64: theirPublicKey,
+                conversationId: message.conversationId
+            )
+            let decrypted = try E2EEManager.shared.decryptMessage(message.content, withKey: key)
+
+            return Message(
+                id: message.id,
+                conversationId: message.conversationId,
+                sender: message.sender,
+                content: decrypted,
+                createdAt: message.createdAt,
+                clientMessageId: message.clientMessageId,
+                isFromMe: message.isFromMe,
+                isEncrypted: message.isEncrypted,
+                sendStatus: message.sendStatus
+            )
+        } catch {
+            return makeUndecryptableMessage(message)
+        }
+    }
+
+    private func makeUndecryptableMessage(_ message: Message) -> Message {
+        Message(
+            id: message.id,
+            conversationId: message.conversationId,
+            sender: message.sender,
+            content: String(localized: "[Message chiffré - impossible à déchiffrer]"),
+            createdAt: message.createdAt,
+            clientMessageId: message.clientMessageId,
+            isFromMe: message.isFromMe,
+            isEncrypted: message.isEncrypted,
+            sendStatus: message.sendStatus
+        )
+    }
+
     // MARK: - Private Methods
 
     private func setupWebSocketListener() {
@@ -177,7 +254,8 @@ class ChatViewModel: ObservableObject {
                 return
             }
 
-            let message = ConversationMapper.map(messageDTO: messageDTO)
+            var message = ConversationMapper.map(messageDTO: messageDTO)
+            message = decryptMessageIfNeeded(message)
             messages.insert(message, at: 0)
 
             // Mark as read immediately since we're viewing

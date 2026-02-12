@@ -131,5 +131,14 @@ struct RootView: View {
             await organizationViewModel.loadOrganizations()
             await organizationViewModel.loadActiveMember()
         }
+        .task {
+            // Setup E2EE keys silently at launch
+            do {
+                let setupUseCase = SetupE2EEKeysUseCase()
+                _ = try await setupUseCase.execute()
+            } catch {
+                print("[E2EE] Key setup failed: \(error.localizedDescription)")
+            }
+        }
     }
 }

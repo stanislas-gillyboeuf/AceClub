@@ -18,7 +18,6 @@ struct MatchesView: View {
     @State private var showingCreateMatch = false
     @State private var showingListRequestMatch = false
     @State private var isLoading = false
-    @State private var selectedStatus: MatchStatus?
     @State private var syncService: MatchSyncService?
     @State private var navigationPath = NavigationPath()
 
@@ -36,9 +35,10 @@ struct MatchesView: View {
                         .padding(.top, 16)
                     }
                 } else {
-                    MatchListContent(selectedStatus: $selectedStatus)
+                    MatchListContent()
                 }
             }
+            .background(Theme.primaryBackground)
             .navigationTitle("Matchs")
             .navigationDestination(for: String.self) { matchId in
                 MatchDetailView(matchId: matchId)

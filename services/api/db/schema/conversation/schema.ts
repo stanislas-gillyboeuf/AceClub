@@ -82,6 +82,8 @@ export const message = pgTable(
     deletedAt: timestamp("deleted_at"),
     // Client-generated ID for optimistic updates and deduplication
     clientMessageId: text("client_message_id"),
+    // E2EE: whether the message content is encrypted
+    isEncrypted: boolean("is_encrypted").notNull().default(false),
   },
   (table) => [
     index("message_conversationId_idx").on(table.conversationId),

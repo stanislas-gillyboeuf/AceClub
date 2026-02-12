@@ -45,12 +45,14 @@ class ConversationRepository {
     func sendMessage(
         conversationId: String,
         content: String,
-        clientMessageId: String = UUID().uuidString
+        clientMessageId: String = UUID().uuidString,
+        isEncrypted: Bool = false
     ) async throws -> Message {
         let messageDTO = try await conversationDataSource.sendMessage(
             conversationId: conversationId,
             content: content,
-            clientMessageId: clientMessageId
+            clientMessageId: clientMessageId,
+            isEncrypted: isEncrypted
         )
         return ConversationMapper.map(messageDTO: messageDTO)
     }

@@ -56,6 +56,7 @@ struct MessageDTO: Codable {
     let createdAt: String
     let clientMessageId: String?
     let isFromMe: Bool?  // Optional because WebSocket messages don't include this field
+    let isEncrypted: Bool?
 }
 
 // MARK: - Conversation DTO
@@ -76,6 +77,7 @@ struct ConversationDTO: Codable {
 struct SendMessageRequestDTO: Codable {
     let content: String
     let clientMessageId: String?
+    let isEncrypted: Bool?
 }
 
 // MARK: - Mark Read Response DTO

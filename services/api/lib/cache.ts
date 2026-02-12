@@ -5,6 +5,7 @@ export const CacheTTL = {
   SHORT: 60, // 1 min — user profile
   MEDIUM: 300, // 5 min — leaderboards
   LONG: 900, // 15 min — org stats
+  E2EE_KEY: 3600, // 1h — public keys change very rarely
 } as const;
 
 // Cache key builders
@@ -15,6 +16,9 @@ export const CacheKeys = {
   leaderboardOrg: (orgId: string, page: number, limit: number) =>
     `leaderboard:org:${orgId}:${page}:${limit}`,
   orgStats: (orgId: string) => `org:stats:${orgId}`,
+
+  // E2EE
+  e2eePublicKey: (userId: string) => `e2ee:pubkey:${userId}`,
 
   // Prefixes for bulk invalidation
   PREFIX_LEADERBOARD_GLOBAL: "leaderboard:global:",

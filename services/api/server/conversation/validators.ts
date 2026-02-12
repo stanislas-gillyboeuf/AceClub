@@ -1,8 +1,9 @@
 import { z } from "zod";
 
 export const sendMessageValidator = z.object({
-  content: z.string().min(1).max(2000),
+  content: z.string().min(1).max(4000),
   clientMessageId: z.string().optional(),
+  isEncrypted: z.boolean().optional().default(false),
 });
 
 export const listMessagesValidator = z.object({
