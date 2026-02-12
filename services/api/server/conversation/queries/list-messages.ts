@@ -53,6 +53,11 @@ export const listMessages = async (c: Context<HonoContext>) => {
       createdAt: message.createdAt,
       clientMessageId: message.clientMessageId,
       isEncrypted: message.isEncrypted,
+      messageType: message.type,
+      attachmentUrl: message.attachmentUrl,
+      attachmentDuration: message.attachmentDuration,
+      attachmentWidth: message.attachmentWidth,
+      attachmentHeight: message.attachmentHeight,
     })
     .from(message)
     .innerJoin(user, eq(message.senderId, user.id))
@@ -74,6 +79,11 @@ export const listMessages = async (c: Context<HonoContext>) => {
       clientMessageId: msg.clientMessageId,
       isFromMe: msg.senderId === currentUser.id,
       isEncrypted: msg.isEncrypted,
+      messageType: msg.messageType,
+      attachmentUrl: msg.attachmentUrl,
+      attachmentDuration: msg.attachmentDuration,
+      attachmentWidth: msg.attachmentWidth,
+      attachmentHeight: msg.attachmentHeight,
     })),
   );
 };

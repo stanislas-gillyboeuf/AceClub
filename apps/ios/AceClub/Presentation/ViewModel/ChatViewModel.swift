@@ -28,6 +28,9 @@ class ChatViewModel: ObservableObject {
     private let sendMessageUseCase = SendMessageUseCase()
     private let deleteMessageUseCase = DeleteMessageUseCase()
     private let markReadUseCase = MarkConversationReadUseCase()
+    private let deleteConversationUseCase = DeleteConversationUseCase()
+    private let uploadAttachmentUseCase = UploadChatAttachmentUseCase()
+    private let conversationRepository = ConversationRepository()
     private let e2eeRepository = E2EERepository()
     private var cancellables = Set<AnyCancellable>()
     private var typingTimer: Timer?
@@ -131,7 +134,12 @@ class ChatViewModel: ObservableObject {
                         clientMessageId: sentMessage.clientMessageId,
                         isFromMe: sentMessage.isFromMe,
                         isEncrypted: sentMessage.isEncrypted,
-                        sendStatus: .sent
+                        sendStatus: .sent,
+                        type: sentMessage.type,
+                        attachmentUrl: sentMessage.attachmentUrl,
+                        attachmentDuration: sentMessage.attachmentDuration,
+                        attachmentWidth: sentMessage.attachmentWidth,
+                        attachmentHeight: sentMessage.attachmentHeight
                     )
                 }
                 messages[index] = displayMessage
@@ -176,6 +184,136 @@ class ChatViewModel: ObservableObject {
         await sendMessage(message.content)
     }
 
+    // MARK: - Voice & Image Messages
+
+    func sendVoiceMessage(_ audioData: Data, duration: TimeInterval) async {
+        let clientMessageId = UUID().uuidString
+        let durationInt = Int(ceil(duration))
+
+        // Optimistic insert
+        let optimisticMessage = Message(
+            id: clientMessageId,
+            conversationId: conversation.id,
+            sender: MessageSender(id: "", name: "Moi", image: nil),
+            content: "",
+            createdAt: Date(),
+            clientMessageId: clientMessageId,
+            isFromMe: true,
+            sendStatus: .sending,
+            type: .voice,
+            attachmentDuration: durationInt
+        )
+        messages.insert(optimisticMessage, at: 0)
+
+        isSending = true
+        defer { isSending = false }
+
+        do {
+            let attachmentUrl = try await uploadAttachmentUseCase.execute(
+                conversationId: conversation.id,
+                fileData: audioData,
+                fileName: "\(clientMessageId).m4a",
+                mimeType: "audio/m4a"
+            )
+
+            let sentMessage = try await sendMessageUseCase.execute(
+                conversationId: conversation.id,
+                content: "",
+                clientMessageId: clientMessageId,
+                conversationType: conversation.type,
+                otherParticipantId: conversation.otherParticipants.first?.userId,
+                type: .voice,
+                attachmentUrl: attachmentUrl,
+                attachmentDuration: durationInt
+            )
+
+            if let index = messages.firstIndex(where: { $0.clientMessageId == clientMessageId }) {
+                messages[index] = sentMessage
+            }
+        } catch {
+            if let index = messages.firstIndex(where: { $0.clientMessageId == clientMessageId }) {
+                messages[index].sendStatus = .failed
+            }
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func sendImageMessage(_ imageData: Data, size: CGSize) async {
+        let clientMessageId = UUID().uuidString
+
+        // Optimistic insert
+        let optimisticMessage = Message(
+            id: clientMessageId,
+            conversationId: conversation.id,
+            sender: MessageSender(id: "", name: "Moi", image: nil),
+            content: "",
+            createdAt: Date(),
+            clientMessageId: clientMessageId,
+            isFromMe: true,
+            sendStatus: .sending,
+            type: .image,
+            attachmentWidth: Int(size.width),
+            attachmentHeight: Int(size.height)
+        )
+        messages.insert(optimisticMessage, at: 0)
+
+        isSending = true
+        defer { isSending = false }
+
+        do {
+            let attachmentUrl = try await uploadAttachmentUseCase.execute(
+                conversationId: conversation.id,
+                fileData: imageData,
+                fileName: "\(clientMessageId).jpg",
+                mimeType: "image/jpeg"
+            )
+
+            let sentMessage = try await sendMessageUseCase.execute(
+                conversationId: conversation.id,
+                content: "",
+                clientMessageId: clientMessageId,
+                conversationType: conversation.type,
+                otherParticipantId: conversation.otherParticipants.first?.userId,
+                type: .image,
+                attachmentUrl: attachmentUrl,
+                attachmentWidth: Int(size.width),
+                attachmentHeight: Int(size.height)
+            )
+
+            if let index = messages.firstIndex(where: { $0.clientMessageId == clientMessageId }) {
+                messages[index] = sentMessage
+            }
+        } catch {
+            if let index = messages.firstIndex(where: { $0.clientMessageId == clientMessageId }) {
+                messages[index].sendStatus = .failed
+            }
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    // MARK: - Conversation Actions
+
+    func toggleMute() {
+        Task {
+            do {
+                try await conversationRepository.muteConversation(
+                    conversationId: conversation.id,
+                    isMuted: !conversation.isMuted
+                )
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    func deleteConversation() async {
+        do {
+            try await deleteConversationUseCase.execute(conversationId: conversation.id)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     // MARK: - E2EE Helpers
 
     private func prefetchParticipantPublicKey() async {
@@ -211,7 +349,12 @@ class ChatViewModel: ObservableObject {
                 clientMessageId: message.clientMessageId,
                 isFromMe: message.isFromMe,
                 isEncrypted: message.isEncrypted,
-                sendStatus: message.sendStatus
+                sendStatus: message.sendStatus,
+                type: message.type,
+                attachmentUrl: message.attachmentUrl,
+                attachmentDuration: message.attachmentDuration,
+                attachmentWidth: message.attachmentWidth,
+                attachmentHeight: message.attachmentHeight
             )
         } catch {
             return makeUndecryptableMessage(message)
@@ -223,12 +366,17 @@ class ChatViewModel: ObservableObject {
             id: message.id,
             conversationId: message.conversationId,
             sender: message.sender,
-            content: String(localized: "[Message chiffré - impossible à déchiffrer]"),
+            content: String(localized: "[Message chiffre - impossible a dechiffrer]"),
             createdAt: message.createdAt,
             clientMessageId: message.clientMessageId,
             isFromMe: message.isFromMe,
             isEncrypted: message.isEncrypted,
-            sendStatus: message.sendStatus
+            sendStatus: message.sendStatus,
+            type: message.type,
+            attachmentUrl: message.attachmentUrl,
+            attachmentDuration: message.attachmentDuration,
+            attachmentWidth: message.attachmentWidth,
+            attachmentHeight: message.attachmentHeight
         )
     }
 

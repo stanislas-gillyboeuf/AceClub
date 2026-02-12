@@ -22,6 +22,13 @@ enum ConversationType: String, CaseIterable {
     }
 }
 
+// MARK: - Message Type
+enum MessageType: String, CaseIterable {
+    case text
+    case voice
+    case image
+}
+
 // MARK: - Message Send Status
 enum MessageSendStatus: String {
     case sending
@@ -92,6 +99,11 @@ struct Message: Identifiable, Equatable {
     let isFromMe: Bool
     let isEncrypted: Bool
     var sendStatus: MessageSendStatus
+    let type: MessageType
+    let attachmentUrl: String?
+    let attachmentDuration: Int?
+    let attachmentWidth: Int?
+    let attachmentHeight: Int?
 
     // MARK: - Convenience accessors (for backwards compatibility)
 
@@ -108,7 +120,12 @@ struct Message: Identifiable, Equatable {
         clientMessageId: String? = nil,
         isFromMe: Bool,
         isEncrypted: Bool = false,
-        sendStatus: MessageSendStatus = .sent
+        sendStatus: MessageSendStatus = .sent,
+        type: MessageType = .text,
+        attachmentUrl: String? = nil,
+        attachmentDuration: Int? = nil,
+        attachmentWidth: Int? = nil,
+        attachmentHeight: Int? = nil
     ) {
         self.id = id
         self.conversationId = conversationId
@@ -119,9 +136,29 @@ struct Message: Identifiable, Equatable {
         self.isFromMe = isFromMe
         self.isEncrypted = isEncrypted
         self.sendStatus = sendStatus
+        self.type = type
+        self.attachmentUrl = attachmentUrl
+        self.attachmentDuration = attachmentDuration
+        self.attachmentWidth = attachmentWidth
+        self.attachmentHeight = attachmentHeight
     }
 
     // MARK: - Computed Properties
+
+    var isVoiceMessage: Bool { type == .voice }
+    var isImageMessage: Bool { type == .image }
+
+    var attachmentURL: URL? {
+        guard let attachmentUrl, !attachmentUrl.isEmpty else { return nil }
+        return URL(string: attachmentUrl)
+    }
+
+    var formattedDuration: String {
+        let seconds = attachmentDuration ?? 0
+        let mins = seconds / 60
+        let secs = seconds % 60
+        return String(format: "%d:%02d", mins, secs)
+    }
 
     var formattedTime: String {
         let formatter = DateFormatter()

@@ -85,9 +85,15 @@ struct UserProfileSheet: View {
                     if !profile.profileBadges.isEmpty {
                         badgesSection
                     }
+
+                    // Action buttons (mute, delete, etc.)
+                    if let buttons = actionButtons {
+                        buttons()
+                            .padding(.top, 8)
+                    }
                 }
                 .padding(.horizontal, Theme.paddingHorizontal)
-                .padding(.bottom, actionButtons != nil ? 100 : 32)
+                .padding(.bottom, 32)
             }
             .navigationTitle("Profil")
             .navigationBarTitleDisplayMode(.inline)
@@ -99,11 +105,6 @@ struct UserProfileSheet: View {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundStyle(Theme.labelTertiary)
                     }
-                }
-            }
-            .safeAreaInset(edge: .bottom) {
-                if let buttons = actionButtons {
-                    buttons()
                 }
             }
         }

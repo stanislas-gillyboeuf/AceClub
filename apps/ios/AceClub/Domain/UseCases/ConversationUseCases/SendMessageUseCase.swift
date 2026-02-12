@@ -16,9 +16,16 @@ class SendMessageUseCase {
         content: String,
         clientMessageId: String = UUID().uuidString,
         conversationType: ConversationType? = nil,
-        otherParticipantId: String? = nil
+        otherParticipantId: String? = nil,
+        type: MessageType = .text,
+        attachmentUrl: String? = nil,
+        attachmentDuration: Int? = nil,
+        attachmentWidth: Int? = nil,
+        attachmentHeight: Int? = nil
     ) async throws -> Message {
-        let shouldEncrypt = (conversationType == .direct || conversationType == .match)
+        // Only encrypt text messages
+        let shouldEncrypt = type == .text
+            && (conversationType == .direct || conversationType == .match)
             && E2EEManager.shared.hasKeyPair
             && otherParticipantId != nil
 
@@ -34,7 +41,12 @@ class SendMessageUseCase {
                     conversationId: conversationId,
                     content: encrypted,
                     clientMessageId: clientMessageId,
-                    isEncrypted: true
+                    isEncrypted: true,
+                    type: type.rawValue,
+                    attachmentUrl: attachmentUrl,
+                    attachmentDuration: attachmentDuration,
+                    attachmentWidth: attachmentWidth,
+                    attachmentHeight: attachmentHeight
                 )
             } catch is E2EEAPIDataSourceError {
                 // Fallback: other user doesn't have E2EE keys (404), send in clear
@@ -42,7 +54,12 @@ class SendMessageUseCase {
                     conversationId: conversationId,
                     content: content,
                     clientMessageId: clientMessageId,
-                    isEncrypted: false
+                    isEncrypted: false,
+                    type: type.rawValue,
+                    attachmentUrl: attachmentUrl,
+                    attachmentDuration: attachmentDuration,
+                    attachmentWidth: attachmentWidth,
+                    attachmentHeight: attachmentHeight
                 )
             }
         }
@@ -51,7 +68,12 @@ class SendMessageUseCase {
             conversationId: conversationId,
             content: content,
             clientMessageId: clientMessageId,
-            isEncrypted: false
+            isEncrypted: false,
+            type: type.rawValue,
+            attachmentUrl: attachmentUrl,
+            attachmentDuration: attachmentDuration,
+            attachmentWidth: attachmentWidth,
+            attachmentHeight: attachmentHeight
         )
     }
 }

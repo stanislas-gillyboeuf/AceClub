@@ -1,9 +1,14 @@
 import { z } from "zod";
 
 export const sendMessageValidator = z.object({
-  content: z.string().min(1).max(4000),
+  content: z.string().max(4000).default(""),
   clientMessageId: z.string().optional(),
   isEncrypted: z.boolean().optional().default(false),
+  type: z.enum(["text", "voice", "image"]).optional().default("text"),
+  attachmentUrl: z.string().optional(),
+  attachmentDuration: z.number().int().optional(),
+  attachmentWidth: z.number().int().optional(),
+  attachmentHeight: z.number().int().optional(),
 });
 
 export const listMessagesValidator = z.object({
