@@ -245,12 +245,22 @@ class ChatViewModel: ObservableObject {
 
     private func handleWebSocketEvent(_ event: WebSocketEvent) {
         switch event {
+        case .reconnected:
+            // WebSocket reconnected after a drop — catch up on missed messages and retry failed sends
+            Task { [weak self] in
+                await self?.fetchMissedMessages()
+                await self?.retryPendingMessages()
+            }
+
         case .newMessage(let messageDTO):
             guard messageDTO.conversationId == conversation.id else { return }
 
-            // Check if we already have this message (via clientMessageId)
+            // Dedup by clientMessageId (optimistic update) or by message id (already loaded)
             if let clientId = messageDTO.clientMessageId,
                messages.contains(where: { $0.clientMessageId == clientId }) {
+                return
+            }
+            if messages.contains(where: { $0.id == messageDTO.id }) {
                 return
             }
 
@@ -266,13 +276,11 @@ class ChatViewModel: ObservableObject {
         case .typing(let conversationId, let userId):
             guard conversationId == self.conversation.id else { return }
 
-            // Check if it's from another user
             let isOtherUser = conversation.otherParticipants.contains { $0.userId == userId }
             guard isOtherUser else { return }
 
             isOtherUserTyping = true
 
-            // Reset after 3 seconds
             typingTimer?.invalidate()
             typingTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
                 Task { @MainActor in
@@ -280,8 +288,47 @@ class ChatViewModel: ObservableObject {
                 }
             }
 
+        case .messageRead(let conversationId, _):
+            guard conversationId == self.conversation.id else { return }
+
+            // Mark all my sent messages as read
+            for i in messages.indices where messages[i].isFromMe && messages[i].sendStatus == .sent {
+                messages[i].sendStatus = .read
+            }
+
         default:
             break
+        }
+    }
+
+    /// Silently fetches recent messages and merges any missed during a WebSocket disconnection.
+    private func fetchMissedMessages() async {
+        guard !messages.isEmpty else { return }
+
+        do {
+            let recentMessages = try await listMessagesUseCase.execute(conversationId: conversation.id)
+            let existingIds = Set(messages.map(\.id))
+
+            let newMessages = recentMessages
+                .filter { !existingIds.contains($0.id) }
+                .map { decryptMessageIfNeeded($0) }
+
+            guard !newMessages.isEmpty else { return }
+
+            messages.insert(contentsOf: newMessages, at: 0)
+            messages.sort { $0.createdAt > $1.createdAt }
+
+            try? await markReadUseCase.execute(conversationId: conversation.id)
+        } catch {
+            // Silent — not critical
+        }
+    }
+
+    /// Automatically retries all failed messages after reconnection.
+    private func retryPendingMessages() async {
+        let failedMessages = messages.filter { $0.sendStatus == .failed && $0.isFromMe }
+        for message in failedMessages {
+            await retryFailedMessage(message)
         }
     }
 }

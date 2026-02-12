@@ -258,14 +258,7 @@ struct CreateMatchSheet: View {
                 Button {
                     Task { await createMatch() }
                 } label: {
-                    Group {
-                        if isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        } else {
-                            Label("Planifier le match", systemImage: "calendar.badge.plus")
-                        }
-                    }
+                    Label("Planifier le match", systemImage: "calendar.badge.plus")
                 }
                 .buttonStyle(.appPrimary)
                 .disabledWithOpacity(!canContinue || isLoading)

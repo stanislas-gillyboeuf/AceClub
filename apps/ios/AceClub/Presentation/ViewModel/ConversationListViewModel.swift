@@ -125,23 +125,29 @@ class ConversationListViewModel: ObservableObject {
 
     private func handleWebSocketEvent(_ event: WebSocketEvent) {
         switch event {
+        case .reconnected:
+            // Refresh conversation list after reconnection to catch missed messages/conversations
+            Task { [weak self] in
+                await self?.loadConversations(force: true)
+            }
+
         case .newMessage(let messageDTO):
             // Update the conversation list when a new message arrives
             if let index = conversations.firstIndex(where: { $0.id == messageDTO.conversationId }) {
-                var updatedConversation = conversations[index]
+                let conv = conversations[index]
 
                 let isViewingConversation = activeConversationId == messageDTO.conversationId
                 conversations[index] = Conversation(
-                    id: updatedConversation.id,
-                    name: updatedConversation.name,
-                    type: updatedConversation.type,
+                    id: conv.id,
+                    name: conv.name,
+                    type: conv.type,
                     lastMessageAt: Date(),
                     lastMessagePreview: messageDTO.content,
                     lastMessageSenderId: messageDTO.sender.id,
-                    createdAt: updatedConversation.createdAt,
-                    unreadCount: (messageDTO.isFromMe ?? false || isViewingConversation) ? updatedConversation.unreadCount : updatedConversation.unreadCount + 1,
-                    isMuted: updatedConversation.isMuted,
-                    otherParticipants: updatedConversation.otherParticipants
+                    createdAt: conv.createdAt,
+                    unreadCount: (messageDTO.isFromMe ?? false || isViewingConversation) ? conv.unreadCount : conv.unreadCount + 1,
+                    isMuted: conv.isMuted,
+                    otherParticipants: conv.otherParticipants
                 )
 
                 // Move to top

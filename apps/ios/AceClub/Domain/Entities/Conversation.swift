@@ -26,6 +26,7 @@ enum ConversationType: String, CaseIterable {
 enum MessageSendStatus: String {
     case sending
     case sent
+    case read
     case failed
 }
 

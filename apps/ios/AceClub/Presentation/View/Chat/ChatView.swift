@@ -10,6 +10,7 @@ import SwiftUI
 struct ChatView: View {
 
     @StateObject private var viewModel: ChatViewModel
+    @ObservedObject private var wsManager = WebSocketManager.shared
     @State private var messageText = ""
     @FocusState private var isInputFocused: Bool
 
@@ -69,9 +70,31 @@ struct ChatView: View {
                                 }
                         }
 
-                        Text(viewModel.conversation.displayName)
-                            .font(.headline)
-                            .foregroundStyle(Theme.labelPrimary)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(viewModel.conversation.displayName)
+                                .font(.headline)
+                                .foregroundStyle(Theme.labelPrimary)
+
+                            if !wsManager.isConnected {
+                                HStack(spacing: 4) {
+                                    if wsManager.connectionState == .reconnecting || wsManager.connectionState == .connecting {
+                                        ProgressView()
+                                            .controlSize(.mini)
+                                            .tint(Theme.labelTertiary)
+                                    } else {
+                                        Circle()
+                                            .fill(Theme.labelTertiary)
+                                            .frame(width: 6, height: 6)
+                                    }
+
+                                    Text(wsManager.connectionState == .reconnecting || wsManager.connectionState == .connecting
+                                         ? "Reconnexion..."
+                                         : "Vous êtes hors ligne")
+                                        .font(.caption2)
+                                        .foregroundStyle(Theme.labelTertiary)
+                                }
+                            }
+                        }
 
                         Image(systemName: "chevron.right")
                             .font(.caption.weight(.semibold))
@@ -90,6 +113,7 @@ struct ChatView: View {
         }
         .task {
             await viewModel.loadMessages()
+            await WebSocketManager.shared.connect()
         }
         .alert("Erreur", isPresented: .constant(viewModel.errorMessage != nil)) {
             Button("OK") {
@@ -130,6 +154,9 @@ struct ChatView: View {
                             }
                             .rotationEffect(.degrees(180))
                     }
+
+                    Spacer(minLength: 0)
+                        .rotationEffect(.degrees(180))
                 }
                 .padding(.horizontal, Theme.paddingHorizontal)
                 .padding(.vertical, 12)
@@ -163,7 +190,7 @@ struct ChatView: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .foregroundStyle(Theme.labelPrimary)
-                    .glassEffect(.regular, in: .capsule)
+                    .glassEffect(.regular, in: .rect(cornerRadius: Theme.cornerRadiusMedium))
                     .focused($isInputFocused)
                     .lineLimit(1...5)
                     .onChange(of: messageText) { _, _ in
@@ -264,6 +291,13 @@ struct MessageBubble: View {
             Image(systemName: "checkmark")
                 .font(.caption2)
                 .foregroundStyle(Theme.labelSecondary)
+        case .read:
+            HStack(spacing: -3) {
+                Image(systemName: "checkmark")
+                Image(systemName: "checkmark")
+            }
+            .font(.caption2)
+            .foregroundStyle(Theme.accentGreen)
         case .failed:
             Button {
                 onRetry()
