@@ -46,9 +46,12 @@ struct TermsOfServiceView: View {
             .navigationTitle("CGU")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Fermer") {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(Theme.labelTertiary)
                     }
                 }
             }
@@ -297,9 +300,12 @@ struct PrivacyPolicyView: View {
             .navigationTitle("Confidentialité")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Fermer") {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(Theme.labelTertiary)
                     }
                 }
             }

@@ -40,8 +40,13 @@ struct ListRequestMatch: View {
             }
             .navigationTitle("Demandes de match")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Fermer") { dismiss() }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(Theme.labelTertiary)
+                    }
                 }
             }
             .task {

@@ -57,6 +57,35 @@
       "when": 1770738594461,
       "tag": "0008_sticky_shaman",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1770844408616,
+      "tag": "0009_soft_ego",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1770904907981,
+      "tag": "0010_wooden_invisible_woman",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1770921848101,
+      "tag": "0011_fluffy_marvex",
+      "breakpoints": true
+    },
+
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1770929190598,
+      "tag": "0012_complex_dormammu",
+      "breakpoints": true
     }
   ]
 }

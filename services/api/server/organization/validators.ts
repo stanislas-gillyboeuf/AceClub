@@ -118,3 +118,7 @@ export const verifyPinValidator = z.object({
   organizationId: z.string(),
   pin: z.string().length(4, "PIN must be 4 digits"),
 });
+
+export const listUserOrganizationsValidator = z.object({
+  userId: z.string(),
+});

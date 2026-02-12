@@ -30,7 +30,8 @@ struct AceClubApp: App {
             MatchRequestModel.self,
             OrganizationModel.self,
             MemberModel.self,
-            UserPreferencesModel.self
+            UserPreferencesModel.self,
+            MatchFeedbackModel.self
         ])
 
         let modelConfiguration = ModelConfiguration(

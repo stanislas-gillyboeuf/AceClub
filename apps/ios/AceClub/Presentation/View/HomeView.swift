@@ -29,35 +29,97 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    if let stats = viewModel.stats {
-                        StatsCardView(stats: stats)
-                            .padding(.horizontal, Theme.paddingHorizontal)
-                    } else if viewModel.isLoading {
-                        StatsCardSkeleton()
-                            .padding(.horizontal, Theme.paddingHorizontal)
+            List {
+                // Level progress card
+                Section {
+                    if progressionViewModel.isLoadingLevel {
+                        SkeletonRow(showAvatar: false, lineCount: 2, titleWidth: 150)
+                    } else {
+                        Button {
+                            showProgression = true
+                        } label: {
+                            LevelProgressCard(
+                                userLevel: progressionViewModel.userLevel,
+                                showDetailIndicator: true
+                            )
+                        }
+                        .buttonStyle(CardPressButtonStyle())
+                        .sensoryFeedback(.impact(flexibility: .soft), trigger: showProgression)
                     }
-
-                    if !ongoingMatches.isEmpty {
-                        ongoingMatchesSection
-                    }
-
-                    matchHistorySection
                 }
-                .padding(.top, 16)
-                .padding(.bottom, 32)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 8, leading: Theme.paddingHorizontal, bottom: 8, trailing: Theme.paddingHorizontal))
+                .listRowBackground(Color.clear)
+
+                // Ongoing matches
+                if !ongoingMatches.isEmpty {
+                    Section {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 12) {
+                                ForEach(ongoingMatches) { match in
+                                    NavigationLink {
+                                        MatchDetailView(matchId: match.id)
+                                    } label: {
+                                        OngoingMatchCardView(
+                                            match: match,
+                                            currentUserId: currentUserId
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                    .id(match.participantsImageHash)
+                                }
+                            }
+                        }
+                    } header: {
+                        Text("En cours")
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 4, leading: Theme.paddingHorizontal, bottom: 4, trailing: Theme.paddingHorizontal))
+                    .listRowBackground(Color.clear)
+                }
+
+                // Match history
+                Section {
+                    if finishedMatches.isEmpty && !viewModel.isLoading {
+                        emptyFeedView
+                    } else {
+                        ForEach(finishedMatches) { match in
+                            FeedMatchRowView(
+                                match: match,
+                                currentUserId: currentUserId
+                            )
+                            .background(
+                                NavigationLink("", destination: MatchDetailView(matchId: match.id))
+                                    .opacity(0)
+                            )
+                            .id(match.participantsImageHash)
+                            .onAppear {
+                                if match.id == finishedMatches.suffix(3).first?.id {
+                                    Task {
+                                        await viewModel.loadMoreMatches()
+                                    }
+                                }
+                            }
+
+                            if viewModel.isLoadingMore && match.id == finishedMatches.last?.id {
+                                ProgressView()
+                                    .frame(maxWidth: .infinity)
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Matchs récents au club")
+                }
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 6, leading: Theme.paddingHorizontal, bottom: 6, trailing: Theme.paddingHorizontal))
+                .listRowBackground(Color.clear)
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .background(Theme.primaryBackground)
             .navigationTitle("Activité")
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button {
-                        showProgression = true
-                    } label: {
-                        Image(systemName: "chart.line.uptrend.xyaxis")
-                    }
-
                     Button {
                         showLeaderboard = true
                     } label: {
@@ -65,25 +127,33 @@ struct HomeView: View {
                     }
                 }
             }
-            .fullScreenCover(isPresented: $showProgression) {
+            .sheet(isPresented: $showProgression) {
                 NavigationStack {
                     ProgressionView(viewModel: progressionViewModel)
                         .toolbar {
-                            ToolbarItem(placement: .topBarLeading) {
-                                Button("Fermer") {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button {
                                     showProgression = false
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(Theme.labelTertiary)
                                 }
                             }
                         }
                 }
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
             }
             .fullScreenCover(isPresented: $showLeaderboard) {
                 NavigationStack {
                     LeaderboardView(viewModel: leaderboardViewModel)
                         .toolbar {
-                            ToolbarItem(placement: .topBarLeading) {
-                                Button("Fermer") {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button {
                                     showLeaderboard = false
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(Theme.labelTertiary)
                                 }
                             }
                         }
@@ -98,114 +168,37 @@ struct HomeView: View {
         }
     }
 
-    @ViewBuilder
-    private var ongoingMatchesSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("En cours")
-                .font(.title2.weight(.bold))
-                .padding(.horizontal, Theme.paddingHorizontal)
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(ongoingMatches) { match in
-                        NavigationLink {
-                            MatchDetailView(matchId: match.id)
-                        } label: {
-                            OngoingMatchCardView(
-                                match: match,
-                                currentUserId: currentUserId
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .id(match.participantsImageHash)
-                    }
-                }
-                .padding(.horizontal, Theme.paddingHorizontal)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var matchHistorySection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Matchs récents au club")
-                .font(.title2.weight(.bold))
-                .padding(.horizontal, Theme.paddingHorizontal)
-
-            if finishedMatches.isEmpty && !viewModel.isLoading {
-                emptyFeedView
-            } else {
-                LazyVStack(spacing: 12) {
-                    ForEach(finishedMatches) { match in
-                        NavigationLink {
-                            MatchDetailView(matchId: match.id)
-                        } label: {
-                            FeedMatchRowView(
-                                match: match,
-                                currentUserId: currentUserId
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .id(match.participantsImageHash)
-                        .onAppear {
-                            if match.id == finishedMatches.suffix(3).first?.id {
-                                Task {
-                                    await viewModel.loadMoreMatches()
-                                }
-                            }
-                        }
-                    }
-
-                    if viewModel.isLoadingMore {
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    }
-                }
-                .padding(.horizontal, Theme.paddingHorizontal)
-            }
-        }
-    }
-
     private var emptyFeedView: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "sportscourt")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondary)
-
-            Text("Aucun match récent au club")
-                .font(.headline)
-
-            Text("Vos matchs récents au club apparaîtront ici")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 40)
-        .background(Theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous)
-                .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
-        }
-        .padding(.horizontal, Theme.paddingHorizontal)
+        ContentUnavailableView(
+            "Aucun match récent",
+            systemImage: "sportscourt",
+            description: Text("Vos matchs récents au club apparaîtront ici")
+        )
     }
 
     private func initialLoad() async {
         viewModel.initialize(modelContext: modelContext)
         viewModel.organizationId = organizationViewModel.activeMember?.organizationId
-        await viewModel.syncMatches()
-        recalculateStats()
+        async let matchesTask: () = viewModel.syncMatches()
+        async let levelTask: () = progressionViewModel.loadLevel()
+        _ = await (matchesTask, levelTask)
     }
 
     private func refresh() async {
         viewModel.organizationId = organizationViewModel.activeMember?.organizationId
-        await viewModel.syncMatches()
-        recalculateStats()
+        async let matchesTask: () = viewModel.syncMatches()
+        async let levelTask: () = progressionViewModel.loadLevel()
+        _ = await (matchesTask, levelTask)
     }
+}
 
-    private func recalculateStats() {
-        guard !currentUserId.isEmpty else { return }
-        viewModel.calculateStats(from: allMatches, userId: currentUserId)
+// MARK: - Card Press Button Style
+
+private struct CardPressButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .opacity(configuration.isPressed ? 0.85 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
 }

@@ -45,6 +45,30 @@ class OrganizationAPIDataSource {
         }
     }
 
+    func listUserOrganizations(userId: String) async throws -> [OrganizationDTO] {
+        guard var components = URLComponents(string: "\(Config.apiBaseURL)/organization/list-user-organizations") else {
+            throw OrganizationError.invalidURL
+        }
+
+        components.queryItems = [URLQueryItem(name: "userId", value: userId)]
+
+        guard let url = components.url else {
+            throw OrganizationError.invalidURL
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedRequest(url: url)
+
+        guard response.statusCode == 200 else {
+            throw OrganizationError.serverError("List user organizations failed: \(response.statusCode)")
+        }
+
+        do {
+            return try JSONDecoder().decode([OrganizationDTO].self, from: data)
+        } catch {
+            throw OrganizationError.decodingError
+        }
+    }
+
     func searchOrganizations(query: String? = nil, limit: Int = 20, offset: Int = 0) async throws -> SearchOrganizationsResponseDTO {
         guard var components = URLComponents(string: "\(Config.apiBaseURL)/organization/search") else {
             throw OrganizationError.invalidURL

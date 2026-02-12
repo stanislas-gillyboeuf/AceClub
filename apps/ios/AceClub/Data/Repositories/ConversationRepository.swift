@@ -45,14 +45,43 @@ class ConversationRepository {
     func sendMessage(
         conversationId: String,
         content: String,
-        clientMessageId: String = UUID().uuidString
+        clientMessageId: String = UUID().uuidString,
+        isEncrypted: Bool = false,
+        type: String = "text",
+        attachmentUrl: String? = nil,
+        attachmentDuration: Int? = nil,
+        attachmentWidth: Int? = nil,
+        attachmentHeight: Int? = nil
     ) async throws -> Message {
         let messageDTO = try await conversationDataSource.sendMessage(
             conversationId: conversationId,
             content: content,
-            clientMessageId: clientMessageId
+            clientMessageId: clientMessageId,
+            isEncrypted: isEncrypted,
+            type: type,
+            attachmentUrl: attachmentUrl,
+            attachmentDuration: attachmentDuration,
+            attachmentWidth: attachmentWidth,
+            attachmentHeight: attachmentHeight
         )
         return ConversationMapper.map(messageDTO: messageDTO)
+    }
+
+    // MARK: - Upload Attachment
+
+    func uploadAttachment(
+        conversationId: String,
+        fileData: Data,
+        fileName: String,
+        mimeType: String
+    ) async throws -> String {
+        let response = try await conversationDataSource.uploadAttachment(
+            conversationId: conversationId,
+            fileData: fileData,
+            fileName: fileName,
+            mimeType: mimeType
+        )
+        return response.attachmentUrl
     }
 
     // MARK: - Mark Read

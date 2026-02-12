@@ -7,7 +7,6 @@
 
 import SwiftUI
 import SwiftData
-import MapKit
 
 struct MatchDetailView: View {
     @Environment(\.modelContext) private var modelContext
@@ -28,10 +27,12 @@ struct MatchDetailView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var successMessage: String?
-    @State private var showingDeleteAlert = false
     @State private var showingEditScores = false
     @State private var showingCommentSheet = false
     @State private var showingVenueSheet = false
+    @State private var showingFeedbackSheet = false
+    @State private var showingCongratulationsSheet = false
+    @State private var justFinished = false
     @State private var isUpdatingVenue = false
 
     private var currentUserId: String {
@@ -57,72 +58,47 @@ struct MatchDetailView: View {
                 ContentUnavailableView(
                     "Match introuvable",
                     systemImage: "exclamationmark.triangle",
-                    description: Text("Ce match n'existe pas ou a été supprimé")
+                    description: Text("Ce match n'existe pas ou a \u{00e9}t\u{00e9} supprim\u{00e9}")
                 )
             }
         }
-        .navigationTitle("Détails du match")
-        .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            // Only participants can manage the match
-            if isParticipant {
-                ToolbarItemGroup(placement: .primaryAction) {
-                    if canEditScores {
-                        Button {
-                            showingEditScores = true
-                        } label: {
-                            Image(systemName: "pencil")
-                        }
-                    }
-
-                    Menu {
-                        if canStartMatch {
-                            Button {
-                                Task { await startMatch() }
-                            } label: {
-                                Label("Démarrer le match", systemImage: "play.circle")
-                            }
-                        }
-
-                        if canFinishMatch {
-                            Button {
-                                Task { await finishMatch() }
-                            } label: {
-                                Label("Terminer le match", systemImage: "checkmark.circle")
-                            }
-                        }
-
-                        Divider()
-
-                        Button(role: .destructive) {
-                            showingDeleteAlert = true
-                        } label: {
-                            Label("Supprimer le match", systemImage: "trash")
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                    }
-                }
-            }
-        }
+        .navigationTitle("D\u{00e9}tails du match")
+        .navigationBarTitleDisplayMode(.inline)
         .refreshable {
             await refresh()
         }
-        .alert("Supprimer le match", isPresented: $showingDeleteAlert) {
-            Button("Annuler", role: .cancel) { }
-            Button("Supprimer", role: .destructive) {
-                Task {
-                    await deleteMatch()
-                }
+        .sheet(isPresented: $showingEditScores, onDismiss: {
+            if justFinished {
+                showingFeedbackSheet = true
             }
-        } message: {
-            Text("Cette action est irréversible. Toutes les données du match seront supprimées.")
-        }
-        .sheet(isPresented: $showingEditScores) {
+        }) {
             if let match {
                 EditMatchScoresViewSwiftData(
                     match: match,
                     isPresented: $showingEditScores
+                )
+            }
+        }
+        .sheet(isPresented: $showingFeedbackSheet, onDismiss: {
+            if justFinished {
+                showingCongratulationsSheet = true
+                justFinished = false
+            }
+        }) {
+            if let match {
+                MatchFeedbackSheet(
+                    match: match,
+                    existingFeedback: userFeedback,
+                    isPresented: $showingFeedbackSheet,
+                    onComplete: { }
+                )
+            }
+        }
+        .sheet(isPresented: $showingCongratulationsSheet) {
+            if let match {
+                MatchCongratulationsSheet(
+                    match: match,
+                    isPresented: $showingCongratulationsSheet
                 )
             }
         }
@@ -145,7 +121,6 @@ struct MatchDetailView: View {
             await loadMatch()
         }
         .onChange(of: match?.id) { _, _ in
-            // Open score editor if requested via deep link (after match loads)
             if deepLinkManager.shouldOpenScoreEditor && canEditScores {
                 showingEditScores = true
                 deepLinkManager.clearPendingNavigation()
@@ -212,10 +187,14 @@ struct MatchDetailView: View {
                 finishedAt: Date(),
                 winnerId: winnerId
             )
-            successMessage = "Match terminé"
+            successMessage = "Match termin\u{00E9}"
 
             // End Live Activity
             await MatchLiveActivityManager.shared.endActivity(withFinalState: match)
+
+            // Trigger post-match flow: scores → feedback → congratulations
+            justFinished = true
+            showingEditScores = true
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -282,175 +261,197 @@ struct MatchDetailView: View {
     }
 
     private var canEditScores: Bool {
-        match?.isOngoing ?? false
+        guard let match else { return false }
+        return match.isOngoing || match.isFinished
     }
 
     // MARK: - Content
 
     private func matchDetailContent(match: MatchModel) -> some View {
-        Form {
-            // Section 1: Résultat principal (score global proéminent)
-            Section {
-                HStack {
-                    Spacer()
-                    VStack(spacing: 8) {
-                        // Score global en grand
-                        Text(match.formattedMatchScore)
-                            .font(.system(size: 48, weight: .bold, design: .rounded))
-                            .contentTransition(.numericText())
-
-                        // Badge statut
-                        Text(match.matchStatus.displayName)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(statusColor(for: match.matchStatus))
-                            .clipShape(Capsule())
-                    }
-                    Spacer()
-                }
-                .listRowBackground(Color.clear)
-            }
-
-            // Section Chrono (seulement pour les matchs en cours)
-            if match.isOngoing, let startedAt = match.startedAt {
-                Section {
-                    MatchElapsedTimeView(startedAt: startedAt)
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
-                }
-            }
-
-            // Section: Lieu du match
-            if match.hasDifferentOrganizations || match.hasVenue {
-                Section("Lieu") {
-                    VenueSelectionView(
+        ZStack(alignment: .bottom) {
+            ScrollView {
+                VStack(spacing: 12) {
+                    // Hero Score Card
+                    MatchScoreCard(
                         match: match,
+                        currentUserId: currentUserId
+                    )
+
+                    // Live Timer Card (ongoing only)
+                    if match.isOngoing, let startedAt = match.startedAt {
+                        MatchLiveTimerCard(startedAt: startedAt)
+                    }
+
+                    // Sets Card (only if sets exist)
+                    if !match.sets.isEmpty {
+                        MatchSetsCard(match: match)
+                    }
+
+                    // Info Card
+                    MatchInfoCard(match: match)
+
+                    // Venue Card
+                    MatchVenueCard(
+                        match: match,
+                        isParticipant: isParticipant,
+                        isUpdatingVenue: isUpdatingVenue,
+                        onTapVenue: { showingVenueSheet = true },
                         onSelectVenue: { orgId in
                             Task { await updateVenue(to: orgId) }
-                        },
-                        onTapVenue: {
-                            showingVenueSheet = true
                         }
                     )
-                    .disabled(isUpdatingVenue || !isParticipant)
 
-                    // Mini map preview
-                    if match.hasVenue,
-                       let lat = match.venueOrganizationLatitude,
-                       let lon = match.venueOrganizationLongitude {
-                        Button {
-                            showingVenueSheet = true
-                        } label: {
-                            VStack(spacing: 0) {
-                                Map {
-                                    Marker(
-                                        match.venueOrganizationName ?? "Lieu",
-                                        coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon)
-                                    )
-                                }
-                                .frame(height: 150)
-                                .allowsHitTesting(false)
-
-                                HStack {
-                                    Image(systemName: "map.fill")
-                                        .foregroundStyle(Theme.tintColor)
-                                    Text(match.venueOrganizationName ?? "Voir le lieu")
-                                        .font(.subheadline.weight(.medium))
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .font(.caption)
-                                        .foregroundStyle(Theme.labelTertiary)
-                                }
-                                .padding(Theme.paddingCard)
-                            }
-                            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
-                            .cardStyle()
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-
-            // Section 2: Participants
-            Section("Participants") {
-                if let home = match.homeParticipant {
-                    participantRow(participant: home)
-                }
-                if let away = match.awayParticipant {
-                    participantRow(participant: away)
-                }
-            }
-
-            // Section 3: Sets (si présents)
-            if !match.sets.isEmpty {
-                Section("Sets (\(match.sets.count))") {
-                    ForEach(match.sets.sorted { $0.setNumber < $1.setNumber }) { set in
-                        LabeledContent(set.displayName) {
-                            Text(set.formattedScore)
-                                .font(.headline)
-                                .contentTransition(.numericText())
+                    // Feedback Card (finished + has feedback)
+                    if match.isFinished, let feedback = userFeedback {
+                        MatchFeedbackCard(feedback: feedback) {
+                            showingFeedbackSheet = true
                         }
                     }
-                }
-            }
 
-            // Section 4: Informations
-            Section("Informations") {
-                LabeledContent("Type") {
-                    HStack(spacing: 6) {
-                        Image(systemName: match.matchType.icon)
-                        Text(match.matchType.displayName)
-                    }
-                    .foregroundStyle(match.matchType == .match ? .blue : Theme.accentOrange)
-                }
-
-                if let scheduledAt = match.formattedScheduledAt {
-                    LabeledContent("Date prévue", value: scheduledAt)
-                }
-
-                if let startedAt = match.formattedStartedAt {
-                    LabeledContent("Démarré le", value: startedAt)
-                }
-
-                if let finishedAt = match.formattedFinishedAt {
-                    LabeledContent("Terminé le", value: finishedAt)
-                }
-
-                if let duration = match.formattedDuration {
-                    LabeledContent("Durée", value: duration)
-                }
-
-                LabeledContent("Créé le", value: match.formattedCreatedAt)
-            }
-
-            // Section 5: Commentaires (seulement pour les matchs terminés)
-            if match.isFinished {
-                Section("Commentaires") {
-                    ForEach(match.comments.sorted { $0.createdAt < $1.createdAt }) { comment in
-                        commentRow(comment: comment)
-                    }
-
-                    if !hasUserCommented && isParticipant {
-                        Button {
-                            showingCommentSheet = true
-                        } label: {
-                            Label("Ajouter un commentaire", systemImage: "plus.bubble")
-                        }
+                    // Comments Card (finished only)
+                    if match.isFinished {
+                        MatchCommentsCard(
+                            match: match,
+                            currentUserId: currentUserId,
+                            isParticipant: isParticipant,
+                            onAddComment: { showingCommentSheet = true },
+                            onEditComment: { showingCommentSheet = true }
+                        )
                     }
                 }
+                .padding(.horizontal, Theme.paddingHorizontal)
+                .padding(.bottom, isParticipant ? 100 : 20)
             }
+            .animation(.smooth, value: match.formattedMatchScore)
 
+            // Floating action bar
+            if isParticipant {
+                floatingActionBar(match: match)
+            }
         }
-        .animation(.smooth, value: match.formattedMatchScore)
+        .background(Theme.primaryBackground)
     }
 
-    // MARK: - Comment Helpers
+    // MARK: - Floating Action Bar
+
+    private func floatingActionBar(match: MatchModel) -> some View {
+        GlassEffectContainer {
+            HStack(spacing: 16) {
+                // Scheduled: Start button
+                if canStartMatch {
+                    Button {
+                        Task { await startMatch() }
+                    } label: {
+                        Label("D\u{00e9}marrer", systemImage: "play.fill")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(Theme.accentGreen)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                    }
+                    .glassEffect(.regular.interactive(), in: .capsule)
+                }
+
+                // Ongoing: Edit scores only
+                if canEditScores && !match.isFinished {
+                    Button {
+                        showingEditScores = true
+                    } label: {
+                        Label("Scores", systemImage: "pencil")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(Theme.accentGreen)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                    }
+                    .glassEffect(.regular.interactive(), in: .capsule)
+                }
+
+                if canFinishMatch {
+                    Button {
+                        Task { await finishMatch() }
+                    } label: {
+                        Label("Terminer", systemImage: "checkmark")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(Theme.accentOrange)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                    }
+                    .glassEffect(.regular.interactive(), in: .capsule)
+                }
+
+                // Finished: Modifier menu (scores + feedback)
+                if match.isFinished {
+                    Menu {
+                        Button {
+                            showingEditScores = true
+                        } label: {
+                            Label("Scores", systemImage: "sportscourt")
+                        }
+
+                        Button {
+                            showingFeedbackSheet = true
+                        } label: {
+                            Label(
+                                hasUserFeedback ? "Sensations" : "Ajouter mes sensations",
+                                systemImage: "face.smiling"
+                            )
+                        }
+                    } label: {
+                        Label("Modifier", systemImage: "pencil")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(Theme.accentOrange)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                    }
+                    .glassEffect(.regular.interactive(), in: .capsule)
+                }
+
+                // Finished: Comment button
+                if match.isFinished && !hasUserCommented {
+                    Button {
+                        showingCommentSheet = true
+                    } label: {
+                        Label("Commenter", systemImage: "bubble.left")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(Theme.accentGreen)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                    }
+                    .glassEffect(.regular.interactive(), in: .capsule)
+                }
+
+                // Menu (always)
+                Menu {
+                    Button(role: .destructive) {
+                        Task { await deleteMatch() }
+                    } label: {
+                        Label("Supprimer", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.body.weight(.medium))
+                        .padding(12)
+                }
+                .glassEffect(.regular.interactive(), in: .circle)
+            }
+            .padding(.horizontal, Theme.paddingHorizontal)
+            .padding(.vertical, 12)
+        }
+    }
+
+    // MARK: - Comment & Feedback Helpers
 
     private var hasUserCommented: Bool {
         guard let match else { return false }
         return match.comments.contains { $0.userId == currentUserId }
+    }
+
+    private var userFeedback: MatchFeedbackModel? {
+        guard let match else { return nil }
+        return match.myFeedback(userId: currentUserId)
+    }
+
+    private var hasUserFeedback: Bool {
+        userFeedback != nil
     }
 
     private var isParticipant: Bool {
@@ -463,137 +464,13 @@ struct MatchDetailView: View {
         return match.comments.first { $0.userId == currentUserId }
     }
 
-    private func commentRow(comment: MatchCommentModel) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            commentAvatar(comment: comment)
-
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(comment.userName)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-
-                    if comment.wasEdited {
-                        Text("(modifié)")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer()
-
-                    Text(comment.formattedDate)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                Text(comment.content)
-                    .font(.body)
-                    .foregroundStyle(.primary)
-            }
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            if comment.userId == currentUserId {
-                showingCommentSheet = true
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func commentAvatar(comment: MatchCommentModel) -> some View {
-        if let imageURL = comment.cacheBustedImageURL() {
-            AsyncImage(url: imageURL) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 36, height: 36)
-                        .clipShape(Circle())
-                case .failure, .empty:
-                    avatarPlaceholder(initials: comment.userInitials)
-                @unknown default:
-                    avatarPlaceholder(initials: comment.userInitials)
-                }
-            }
-        } else {
-            Circle()
-                .fill(Theme.tintColor.opacity(0.2))
-                .frame(width: 36, height: 36)
-                .overlay {
-                    Text(comment.userInitials)
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(Theme.tintColor)
-                }
-        }
-    }
-
-    // MARK: - Row Components
-
-    private func participantRow(participant: MatchParticipantModel) -> some View {
-        HStack(spacing: 12) {
-            // Avatar avec image de profil ou initiales
-            participantAvatar(participant: participant)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(participant.matchSide.displayName)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(participant.userName ?? "N/A")
-                    .font(.body)
-                    .fontWeight(participant.isWinner ? .bold : .regular)
-            }
-            Spacer()
-            if participant.isWinner {
-                Label("Vainqueur", systemImage: "crown.fill")
-                    .font(.caption)
-                    .foregroundStyle(.yellow)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func participantAvatar(participant: MatchParticipantModel) -> some View {
-        if let imageURL = participant.cacheBustedImageURL() {
-            AsyncImage(url: imageURL) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 44, height: 44)
-                        .clipShape(Circle())
-                case .failure, .empty:
-                    avatarPlaceholder(initials: participant.userInitials)
-                @unknown default:
-                    avatarPlaceholder(initials: participant.userInitials)
-                }
-            }
-        } else {
-            avatarPlaceholder(initials: participant.userInitials)
-        }
-    }
-
-    private func avatarPlaceholder(initials: String) -> some View {
-        Circle()
-            .fill(Theme.tintColor.opacity(0.2))
-            .frame(width: 44, height: 44)
-            .overlay {
-                Text(initials)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Theme.tintColor)
-            }
-    }
-
     // MARK: - Error View
 
     private var errorView: some View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 60))
-                .foregroundStyle(.red)
+                .foregroundStyle(Theme.destructiveColor)
 
             Text("Erreur")
                 .font(.title2)
@@ -601,10 +478,10 @@ struct MatchDetailView: View {
 
             Text(errorMessage ?? "Une erreur est survenue")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Theme.labelSecondary)
                 .multilineTextAlignment(.center)
 
-            Button("Réessayer") {
+            Button("R\u{00e9}essayer") {
                 Task {
                     await loadMatch()
                 }
@@ -612,19 +489,6 @@ struct MatchDetailView: View {
             .buttonStyle(.appPrimary)
         }
         .padding()
-    }
-
-    // MARK: - Helpers
-
-    private func statusColor(for status: MatchStatus) -> Color {
-        switch status {
-        case .scheduled:
-            return .blue
-        case .ongoing:
-            return Theme.accentOrange
-        case .finished:
-            return .green
-        }
     }
 }
 
@@ -640,7 +504,6 @@ struct EditMatchScoresViewSwiftData: View {
     @State private var editedSets: [EditableSetData] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @State private var showConfirmation = false
 
     // Données d'un set éditable
     private struct EditableSetData: Identifiable {
@@ -658,8 +521,8 @@ struct EditMatchScoresViewSwiftData: View {
                     matchHeader
                         .padding(.bottom, 8)
 
-                    // Chrono temps de jeu
-                    if let startedAt = match.startedAt {
+                    // Chrono temps de jeu (ongoing only)
+                    if match.isOngoing, let startedAt = match.startedAt {
                         MatchElapsedTimeView(startedAt: startedAt)
                     }
 
@@ -697,7 +560,7 @@ struct EditMatchScoresViewSwiftData: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Enregistrer") {
-                        showConfirmation = true
+                        Task { await saveScores() }
                     }
                     .fontWeight(.semibold)
                     .disabled(isLoading || editedSets.isEmpty)
@@ -707,14 +570,6 @@ struct EditMatchScoresViewSwiftData: View {
                 if isLoading {
                     loadingOverlay
                 }
-            }
-            .alert("Confirmer les modifications", isPresented: $showConfirmation) {
-                Button("Annuler", role: .cancel) { }
-                Button("Enregistrer") {
-                    Task { await saveScores() }
-                }
-            } message: {
-                Text("Les scores du match seront mis à jour.")
             }
             .alert("Erreur", isPresented: .constant(errorMessage != nil)) {
                 Button("OK") { errorMessage = nil }
@@ -936,7 +791,6 @@ struct MatchCommentSheet: View {
     @State private var content: String = ""
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @State private var showingDeleteConfirmation = false
 
     private var isEditing: Bool {
         existingComment != nil
@@ -963,7 +817,7 @@ struct MatchCommentSheet: View {
                 if isEditing {
                     Section {
                         Button(role: .destructive) {
-                            showingDeleteConfirmation = true
+                           Task { await deleteComment() }
                         } label: {
                             HStack {
                                 Spacer()
@@ -1009,14 +863,6 @@ struct MatchCommentSheet: View {
                         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
                     }
                 }
-            }
-            .alert("Supprimer le commentaire", isPresented: $showingDeleteConfirmation) {
-                Button("Annuler", role: .cancel) { }
-                Button("Supprimer", role: .destructive) {
-                    Task { await deleteComment() }
-                }
-            } message: {
-                Text("Cette action est irréversible.")
             }
             .alert("Erreur", isPresented: .constant(errorMessage != nil)) {
                 Button("OK") { errorMessage = nil }

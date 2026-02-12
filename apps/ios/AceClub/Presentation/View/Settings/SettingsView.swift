@@ -11,6 +11,8 @@ struct SettingsView: View {
     @StateObject private var locationManager = LocationManager()
     @State private var showDeleteAccountConfirmation = false
     @State private var isDeletingAccount = false
+    @State private var showE2EEBackup = false
+    @State private var showE2EERecovery = false
     var onProfileUpdated: ((User) -> Void)?
 
     var body: some View {
@@ -32,6 +34,8 @@ struct SettingsView: View {
                         notificationsSection
                         locationSection
 
+                        e2eeSection
+
                         LegalLinksSection()
 
                         dangerZoneSection
@@ -52,8 +56,11 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Fermer") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(Theme.labelTertiary)
                     }
                 }
 
@@ -376,6 +383,83 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - E2EE Section
+
+    private var e2eeSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: "Chiffrement", icon: "lock.shield.fill")
+
+            VStack(spacing: 0) {
+                Button {
+                    showE2EEBackup = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "key.fill")
+                            .font(.body)
+                            .foregroundStyle(Theme.tintColor)
+                            .frame(width: 24)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Sauvegarder ma clé")
+                                .foregroundStyle(.primary)
+
+                            Text("Protégez vos messages chiffrés avec une phrase secrète")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .padding(16)
+                }
+                .buttonStyle(.plain)
+
+                Divider()
+                    .padding(.leading, 52)
+
+                Button {
+                    showE2EERecovery = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "arrow.counterclockwise")
+                            .font(.body)
+                            .foregroundStyle(Theme.tintColor)
+                            .frame(width: 24)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Récupérer ma clé")
+                                .foregroundStyle(.primary)
+
+                            Text("Restaurez vos messages sur un nouvel appareil")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .padding(16)
+                }
+                .buttonStyle(.plain)
+            }
+            .background(Theme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+        }
+        .sheet(isPresented: $showE2EEBackup) {
+            E2EEBackupView()
+        }
+        .sheet(isPresented: $showE2EERecovery) {
+            E2EERecoveryView()
+        }
+    }
+
     // MARK: - Danger Zone Section
 
     private var dangerZoneSection: some View {
@@ -544,58 +628,48 @@ struct ClubSelectionView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: 0) {
-                            ForEach(Array(viewModel.organizations.enumerated()), id: \.element.id) { index, org in
-                                Button {
-                                    if org.pinEnabled {
-                                        viewModel.selectOrganization(org)
-                                    } else {
-                                        viewModel.selectedOrganization = org
-                                        dismiss()
-                                    }
-                                } label: {
-                                    HStack {
-                                        Text(org.name)
-                                            .foregroundStyle(.primary)
-
-                                        if org.pinEnabled {
-                                            Image(systemName: "lock.fill")
-                                                .font(.caption)
-                                                .foregroundStyle(.secondary)
-                                        }
-
-                                        Spacer()
-
-                                        if viewModel.selectedOrganization?.id == org.id {
-                                            Image(systemName: "checkmark.circle.fill")
-                                                .foregroundStyle(Theme.tintColor)
-                                        }
-                                    }
-                                    .padding(16)
-                                    .contentShape(Rectangle())
+                    List {
+                        ForEach(viewModel.organizations) { org in
+                            Button {
+                                if org.pinEnabled {
+                                    viewModel.selectOrganization(org)
+                                } else {
+                                    viewModel.selectedOrganization = org
+                                    dismiss()
                                 }
-                                .buttonStyle(.plain)
+                            } label: {
+                                HStack {
+                                    Text(org.name)
+                                        .foregroundStyle(.primary)
 
-                                if index < viewModel.organizations.count - 1 {
-                                    Divider()
-                                        .padding(.leading, 16)
+                                    if org.pinEnabled {
+                                        Image(systemName: "lock.fill")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+
+                                    Spacer()
+
+                                    if viewModel.selectedOrganization?.id == org.id {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundStyle(Theme.tintColor)
+                                    }
                                 }
                             }
                         }
-                        .background(Theme.cardBackground)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
-                        .padding(.horizontal, Theme.paddingHorizontal)
-                        .padding(.top, 4)
                     }
+                    .listStyle(.insetGrouped)
                 }
             }
             .navigationTitle("Choisir un club")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Fermer") {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(Theme.labelTertiary)
                     }
                 }
             }
@@ -643,10 +717,13 @@ struct SettingsRequestClubSheet: View {
             .navigationTitle("Proposer un club")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Fermer") {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
                         viewModel.resetClubRequest()
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(Theme.labelTertiary)
                     }
                 }
             }

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LevelProgressCard: View {
     let userLevel: UserLevel
+    var showDetailIndicator: Bool = false
 
     var body: some View {
         VStack(spacing: 16) {
@@ -55,15 +56,37 @@ struct LevelProgressCard: View {
                     }
                 }
             }
+
+            if showDetailIndicator {
+                detailIndicator
+            }
         }
         .padding(Theme.paddingCard)
         .background(Theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous)
-                .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
+    }
+
+    // MARK: - Detail Indicator
+
+    private var detailIndicator: some View {
+        VStack(spacing: 12) {
+            Divider()
+
+            HStack {
+                Text("Voir ma progression")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(Theme.tintColor)
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Theme.tintColor.opacity(0.6))
+            }
         }
     }
+
+    // MARK: - Level Badge
 
     private var levelBadge: some View {
         ZStack {
@@ -83,13 +106,28 @@ struct LevelProgressCard: View {
 }
 
 #Preview {
-    LevelProgressCard(userLevel: UserLevel(
-        totalAces: 1250,
-        level: 8,
-        currentLevelAces: 150,
-        acesToNextLevel: 150,
-        progressPercent: 0.5
-    ))
+    VStack(spacing: 16) {
+        LevelProgressCard(
+            userLevel: UserLevel(
+                totalAces: 1250,
+                level: 8,
+                currentLevelAces: 150,
+                acesToNextLevel: 150,
+                progressPercent: 0.5
+            ),
+            showDetailIndicator: true
+        )
+
+        LevelProgressCard(
+            userLevel: UserLevel(
+                totalAces: 1250,
+                level: 8,
+                currentLevelAces: 150,
+                acesToNextLevel: 150,
+                progressPercent: 0.5
+            )
+        )
+    }
     .padding()
     .background(Theme.primaryBackground)
 }

@@ -12,14 +12,12 @@ struct MatchesView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(DeepLinkManager.self) private var deepLinkManager
 
-    // SwiftData query - auto-updates when data changes
     @Query(sort: \MatchModel.createdAt, order: .reverse)
     private var matches: [MatchModel]
 
     @State private var showingCreateMatch = false
     @State private var showingListRequestMatch = false
     @State private var isLoading = false
-    @State private var selectedStatus: MatchStatus?
     @State private var syncService: MatchSyncService?
     @State private var navigationPath = NavigationPath()
 
@@ -37,9 +35,10 @@ struct MatchesView: View {
                         .padding(.top, 16)
                     }
                 } else {
-                    MatchListContent(selectedStatus: $selectedStatus)
+                    MatchListContent()
                 }
             }
+            .background(Theme.primaryBackground)
             .navigationTitle("Matchs")
             .navigationDestination(for: String.self) { matchId in
                 MatchDetailView(matchId: matchId)
@@ -62,13 +61,15 @@ struct MatchesView: View {
                 }
             }
             .sheet(isPresented: $showingCreateMatch) {
-                CreateMatchView(isPresented: $showingCreateMatch) {
-                    // No need to refresh - @Query auto-updates
+                CreateMatchSheet(isPresented: $showingCreateMatch) {
+                    Task {
+                        await loadMatches()
+                    }
                 }
+                .presentationDragIndicator(.visible)
             }
             .fullScreenCover(isPresented: $showingListRequestMatch) {
                 ListRequestMatch {
-                    // No need to refresh - @Query auto-updates
                 }
             }
             .task {

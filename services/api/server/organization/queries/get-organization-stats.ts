@@ -6,9 +6,15 @@ import { match, matchParticipant } from "../../../db/schema/match/schema";
 import { eq, and, gte, inArray, sql, count, countDistinct } from "drizzle-orm";
 import type { z } from "zod";
 import type { getOrganizationStatsValidator } from "../validators";
+import { cacheGet, cacheSet, CacheKeys, CacheTTL } from "../../../lib/cache";
 
 export const getOrganizationStats = async (c: Context<HonoContext>) => {
+  // @ts-ignore
   const { organizationId } = c.req.valid("query") as z.infer<typeof getOrganizationStatsValidator>;
+
+  const cacheKey = CacheKeys.orgStats(organizationId);
+  const cached = await cacheGet(cacheKey);
+  if (cached) return c.json(cached);
 
   // Get members of the organization
   const members = await db
@@ -64,10 +70,13 @@ export const getOrganizationStats = async (c: Context<HonoContext>) => {
   // Calculate activity rate (percentage of members who played this month)
   const activityRate = members.length > 0 ? Math.round((activeMembers / members.length) * 100) : 0;
 
-  return c.json({
+  const response = {
     totalMembers: members.length,
     matchesThisMonth,
     activeMembers,
     activityRate,
-  });
+  };
+
+  await cacheSet(cacheKey, response, CacheTTL.LONG);
+  return c.json(response);
 };

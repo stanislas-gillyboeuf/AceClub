@@ -60,6 +60,38 @@ struct MatchCommentDTO: Codable {
     let user: MessageSenderDTO?
 }
 
+// MARK: - Match Feedback DTO
+struct MatchFeedbackDTO: Codable {
+    let id: String
+    let matchId: String
+    let userId: String
+    let sensation: String
+    let comment: String?
+    let visibleToClub: Bool
+    let createdAt: String
+    let updatedAt: String
+}
+
+// MARK: - Create Feedback Request DTO
+struct CreateFeedbackRequestDTO: Codable {
+    let sensation: String
+    let comment: String?
+    let visibleToClub: Bool
+}
+
+// MARK: - Update Feedback Request DTO
+struct UpdateFeedbackRequestDTO: Codable {
+    let sensation: String?
+    let comment: String?
+    let visibleToClub: Bool?
+}
+
+// MARK: - Delete Feedback Response DTO
+struct DeleteFeedbackResponseDTO: Codable {
+    let success: Bool
+    let message: String
+}
+
 // MARK: - Participant Organization DTO
 struct ParticipantOrganizationDTO: Codable {
     let userId: String
@@ -72,6 +104,7 @@ struct MatchDetailResponseDTO: Codable {
     let participants: [MatchParticipantDTO]
     let sets: [SetDTO]
     let comments: [MatchCommentDTO]?
+    let myFeedback: MatchFeedbackDTO?
     let venueOrganization: OrganizationDTO?
     let participantOrganizations: [ParticipantOrganizationDTO]?
 }

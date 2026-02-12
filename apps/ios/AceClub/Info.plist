@@ -79,6 +79,8 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Ace Club utilise ta position pour te montrer les joueurs proches de toi.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>AceClub a besoin d'acceder a votre micro pour envoyer des messages vocaux.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

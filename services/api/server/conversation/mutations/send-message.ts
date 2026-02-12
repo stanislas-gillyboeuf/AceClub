@@ -21,7 +21,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
 
   const conversationId = c.req.param("id");
   const body = await c.req.json();
-  const { content, clientMessageId } = body;
+  const { content, clientMessageId, isEncrypted, type: messageType, attachmentUrl, attachmentDuration, attachmentWidth, attachmentHeight } = body;
 
   // Verify user is a participant
   const [myParticipation] = await db
@@ -58,25 +58,45 @@ export const sendMessage = async (c: Context<HonoContext>) => {
   const messageId = ulid();
   const now = new Date();
 
+  const msgType = messageType || "text";
+
   const [newMessage] = await db
     .insert(message)
     .values({
       id: messageId,
       conversationId,
       senderId: currentUser.id,
-      content,
+      content: content || "",
+      type: msgType,
+      attachmentUrl: attachmentUrl || null,
+      attachmentDuration: attachmentDuration || null,
+      attachmentWidth: attachmentWidth || null,
+      attachmentHeight: attachmentHeight || null,
       clientMessageId,
+      isEncrypted: isEncrypted ?? false,
       createdAt: now,
       updatedAt: now,
     })
     .returning();
+
+  // Compute last message preview based on type
+  let lastMessagePreview: string | null;
+  if (isEncrypted) {
+    lastMessagePreview = null;
+  } else if (msgType === "voice") {
+    lastMessagePreview = "Message vocal";
+  } else if (msgType === "image") {
+    lastMessagePreview = "Photo";
+  } else {
+    lastMessagePreview = (content || "").substring(0, 100);
+  }
 
   // Update conversation with last message info
   await db
     .update(conversation)
     .set({
       lastMessageAt: now,
-      lastMessagePreview: content.substring(0, 100),
+      lastMessagePreview,
       lastMessageSenderId: currentUser.id,
       updatedAt: now,
     })
@@ -122,9 +142,15 @@ export const sendMessage = async (c: Context<HonoContext>) => {
         name: sender?.name || "Unknown",
         image: sender?.image || null,
       },
-      content,
+      content: content || "",
       createdAt: newMessage.createdAt.toISOString(),
       clientMessageId,
+      isEncrypted: newMessage.isEncrypted,
+      messageType: msgType,
+      attachmentUrl: attachmentUrl || null,
+      attachmentDuration: attachmentDuration || null,
+      attachmentWidth: attachmentWidth || null,
+      attachmentHeight: attachmentHeight || null,
     },
   };
 
@@ -152,7 +178,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
           userId: participant.userId,
           type: "new_message",
           title: sender?.name || "Nouveau message",
-          body: content.substring(0, 100),
+          body: isEncrypted ? "Nouveau message" : (msgType === "voice" ? "Message vocal" : msgType === "image" ? "Photo" : (content || "").substring(0, 100)),
           referenceId: conversationId,
           referenceType: "conversation",
           data: {
@@ -178,10 +204,16 @@ export const sendMessage = async (c: Context<HonoContext>) => {
         name: sender?.name || "Unknown",
         image: sender?.image || null,
       },
-      content,
+      content: content || "",
       createdAt: newMessage.createdAt.toISOString(),
       clientMessageId,
       isFromMe: true,
+      isEncrypted: newMessage.isEncrypted,
+      messageType: msgType,
+      attachmentUrl: attachmentUrl || null,
+      attachmentDuration: attachmentDuration || null,
+      attachmentWidth: attachmentWidth || null,
+      attachmentHeight: attachmentHeight || null,
     },
     201,
   );

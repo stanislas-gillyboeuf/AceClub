@@ -26,6 +26,11 @@ class OrganizationRepository: OrganizationRepositoryProtocol {
         return OrganizationMapper.map(organizationDTOs: organizationsDTO)
     }
 
+    func listUserOrganizations(userId: String) async throws -> [Organization] {
+        let organizationsDTO = try await dataSource.listUserOrganizations(userId: userId)
+        return OrganizationMapper.map(organizationDTOs: organizationsDTO)
+    }
+
     func searchOrganizations(query: String? = nil, limit: Int = 20, offset: Int = 0) async throws -> (organizations: [Organization], total: Int, hasMore: Bool) {
         let response = try await dataSource.searchOrganizations(query: query, limit: limit, offset: offset)
         let organizations = OrganizationMapper.map(organizationDTOs: response.organizations)

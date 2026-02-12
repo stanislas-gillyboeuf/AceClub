@@ -52,6 +52,9 @@ final class MatchModel {
     @Relationship(deleteRule: .cascade, inverse: \MatchCommentModel.match)
     var comments: [MatchCommentModel] = []
 
+    @Relationship(deleteRule: .cascade, inverse: \MatchFeedbackModel.match)
+    var feedbacks: [MatchFeedbackModel] = []
+
     // Cache metadata
     var lastSyncedAt: Date?
 
@@ -192,5 +195,9 @@ final class MatchModel {
             .map { $0.userImage ?? "" }
             .joined(separator: "|")
         return "\(id)_\(imageHashes)"
+    }
+
+    func myFeedback(userId: String) -> MatchFeedbackModel? {
+        feedbacks.first { $0.userId == userId }
     }
 }

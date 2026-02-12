@@ -2,8 +2,6 @@
 //  ChatViewModel.swift
 //  AceClub
 //
-//  Created by Nicolas Becharat on 01/02/2026.
-//
 
 import Foundation
 import Combine
@@ -30,8 +28,13 @@ class ChatViewModel: ObservableObject {
     private let sendMessageUseCase = SendMessageUseCase()
     private let deleteMessageUseCase = DeleteMessageUseCase()
     private let markReadUseCase = MarkConversationReadUseCase()
+    private let deleteConversationUseCase = DeleteConversationUseCase()
+    private let uploadAttachmentUseCase = UploadChatAttachmentUseCase()
+    private let conversationRepository = ConversationRepository()
+    private let e2eeRepository = E2EERepository()
     private var cancellables = Set<AnyCancellable>()
     private var typingTimer: Timer?
+    private var participantPublicKey: String?
 
     // MARK: - Init
 
@@ -48,8 +51,11 @@ class ChatViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
+            // Pre-fetch the other participant's public key for decryption
+            await prefetchParticipantPublicKey()
+
             let loadedMessages = try await listMessagesUseCase.execute(conversationId: conversation.id)
-            messages = loadedMessages
+            messages = loadedMessages.map { decryptMessageIfNeeded($0) }
             // If we loaded fewer than the default limit, there are no more messages
             hasMoreMessages = loadedMessages.count >= 50
             // Mark as read when loading
@@ -75,7 +81,7 @@ class ChatViewModel: ObservableObject {
             if olderMessages.isEmpty {
                 hasMoreMessages = false
             } else {
-                messages.append(contentsOf: olderMessages)
+                messages.append(contentsOf: olderMessages.map { decryptMessageIfNeeded($0) })
             }
         } catch {
             errorMessage = error.localizedDescription
@@ -88,7 +94,7 @@ class ChatViewModel: ObservableObject {
 
         let clientMessageId = UUID().uuidString
 
-        // Optimistic update
+        // Optimistic update - show plaintext to sender
         let optimisticMessage = Message(
             id: clientMessageId,
             conversationId: conversation.id,
@@ -108,12 +114,35 @@ class ChatViewModel: ObservableObject {
             let sentMessage = try await sendMessageUseCase.execute(
                 conversationId: conversation.id,
                 content: trimmedContent,
-                clientMessageId: clientMessageId
+                clientMessageId: clientMessageId,
+                conversationType: conversation.type,
+                otherParticipantId: conversation.otherParticipants.first?.userId
             )
 
-            // Replace optimistic message with real one
+            // Replace optimistic message with real one (decrypt if needed for display)
             if let index = messages.firstIndex(where: { $0.clientMessageId == clientMessageId }) {
-                messages[index] = sentMessage
+                // The sent message content may be encrypted, but we already show the plaintext optimistically
+                // Replace but keep the original plaintext content for display
+                var displayMessage = sentMessage
+                if sentMessage.isEncrypted {
+                    displayMessage = Message(
+                        id: sentMessage.id,
+                        conversationId: sentMessage.conversationId,
+                        sender: sentMessage.sender,
+                        content: trimmedContent,
+                        createdAt: sentMessage.createdAt,
+                        clientMessageId: sentMessage.clientMessageId,
+                        isFromMe: sentMessage.isFromMe,
+                        isEncrypted: sentMessage.isEncrypted,
+                        sendStatus: .sent,
+                        type: sentMessage.type,
+                        attachmentUrl: sentMessage.attachmentUrl,
+                        attachmentDuration: sentMessage.attachmentDuration,
+                        attachmentWidth: sentMessage.attachmentWidth,
+                        attachmentHeight: sentMessage.attachmentHeight
+                    )
+                }
+                messages[index] = displayMessage
             }
         } catch {
             // Mark as failed
@@ -155,6 +184,202 @@ class ChatViewModel: ObservableObject {
         await sendMessage(message.content)
     }
 
+    // MARK: - Voice & Image Messages
+
+    func sendVoiceMessage(_ audioData: Data, duration: TimeInterval) async {
+        let clientMessageId = UUID().uuidString
+        let durationInt = Int(ceil(duration))
+
+        // Optimistic insert
+        let optimisticMessage = Message(
+            id: clientMessageId,
+            conversationId: conversation.id,
+            sender: MessageSender(id: "", name: "Moi", image: nil),
+            content: "",
+            createdAt: Date(),
+            clientMessageId: clientMessageId,
+            isFromMe: true,
+            sendStatus: .sending,
+            type: .voice,
+            attachmentDuration: durationInt
+        )
+        messages.insert(optimisticMessage, at: 0)
+
+        isSending = true
+        defer { isSending = false }
+
+        do {
+            let attachmentUrl = try await uploadAttachmentUseCase.execute(
+                conversationId: conversation.id,
+                fileData: audioData,
+                fileName: "\(clientMessageId).m4a",
+                mimeType: "audio/m4a"
+            )
+
+            let sentMessage = try await sendMessageUseCase.execute(
+                conversationId: conversation.id,
+                content: "",
+                clientMessageId: clientMessageId,
+                conversationType: conversation.type,
+                otherParticipantId: conversation.otherParticipants.first?.userId,
+                type: .voice,
+                attachmentUrl: attachmentUrl,
+                attachmentDuration: durationInt
+            )
+
+            if let index = messages.firstIndex(where: { $0.clientMessageId == clientMessageId }) {
+                messages[index] = sentMessage
+            }
+        } catch {
+            if let index = messages.firstIndex(where: { $0.clientMessageId == clientMessageId }) {
+                messages[index].sendStatus = .failed
+            }
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func sendImageMessage(_ imageData: Data, size: CGSize) async {
+        let clientMessageId = UUID().uuidString
+
+        // Optimistic insert
+        let optimisticMessage = Message(
+            id: clientMessageId,
+            conversationId: conversation.id,
+            sender: MessageSender(id: "", name: "Moi", image: nil),
+            content: "",
+            createdAt: Date(),
+            clientMessageId: clientMessageId,
+            isFromMe: true,
+            sendStatus: .sending,
+            type: .image,
+            attachmentWidth: Int(size.width),
+            attachmentHeight: Int(size.height)
+        )
+        messages.insert(optimisticMessage, at: 0)
+
+        isSending = true
+        defer { isSending = false }
+
+        do {
+            let attachmentUrl = try await uploadAttachmentUseCase.execute(
+                conversationId: conversation.id,
+                fileData: imageData,
+                fileName: "\(clientMessageId).jpg",
+                mimeType: "image/jpeg"
+            )
+
+            let sentMessage = try await sendMessageUseCase.execute(
+                conversationId: conversation.id,
+                content: "",
+                clientMessageId: clientMessageId,
+                conversationType: conversation.type,
+                otherParticipantId: conversation.otherParticipants.first?.userId,
+                type: .image,
+                attachmentUrl: attachmentUrl,
+                attachmentWidth: Int(size.width),
+                attachmentHeight: Int(size.height)
+            )
+
+            if let index = messages.firstIndex(where: { $0.clientMessageId == clientMessageId }) {
+                messages[index] = sentMessage
+            }
+        } catch {
+            if let index = messages.firstIndex(where: { $0.clientMessageId == clientMessageId }) {
+                messages[index].sendStatus = .failed
+            }
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    // MARK: - Conversation Actions
+
+    func toggleMute() {
+        Task {
+            do {
+                try await conversationRepository.muteConversation(
+                    conversationId: conversation.id,
+                    isMuted: !conversation.isMuted
+                )
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    func deleteConversation() async {
+        do {
+            try await deleteConversationUseCase.execute(conversationId: conversation.id)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    // MARK: - E2EE Helpers
+
+    private func prefetchParticipantPublicKey() async {
+        guard participantPublicKey == nil,
+              (conversation.type == .direct || conversation.type == .match),
+              let otherUserId = conversation.otherParticipants.first?.userId else { return }
+
+        participantPublicKey = try? await e2eeRepository.getPublicKey(userId: otherUserId)
+    }
+
+    private func decryptMessageIfNeeded(_ message: Message) -> Message {
+        guard message.isEncrypted, !message.content.isEmpty else { return message }
+
+        do {
+            guard let theirPublicKey = message.isFromMe ? participantPublicKey : participantPublicKey else {
+                return makeUndecryptableMessage(message)
+            }
+
+            // For messages from me, we need the other participant's key
+            // For messages from them, we also need their key (ECDH is symmetric)
+            let key = try E2EEManager.shared.deriveConversationKey(
+                theirPublicKeyBase64: theirPublicKey,
+                conversationId: message.conversationId
+            )
+            let decrypted = try E2EEManager.shared.decryptMessage(message.content, withKey: key)
+
+            return Message(
+                id: message.id,
+                conversationId: message.conversationId,
+                sender: message.sender,
+                content: decrypted,
+                createdAt: message.createdAt,
+                clientMessageId: message.clientMessageId,
+                isFromMe: message.isFromMe,
+                isEncrypted: message.isEncrypted,
+                sendStatus: message.sendStatus,
+                type: message.type,
+                attachmentUrl: message.attachmentUrl,
+                attachmentDuration: message.attachmentDuration,
+                attachmentWidth: message.attachmentWidth,
+                attachmentHeight: message.attachmentHeight
+            )
+        } catch {
+            return makeUndecryptableMessage(message)
+        }
+    }
+
+    private func makeUndecryptableMessage(_ message: Message) -> Message {
+        Message(
+            id: message.id,
+            conversationId: message.conversationId,
+            sender: message.sender,
+            content: String(localized: "[Message chiffre - impossible a dechiffrer]"),
+            createdAt: message.createdAt,
+            clientMessageId: message.clientMessageId,
+            isFromMe: message.isFromMe,
+            isEncrypted: message.isEncrypted,
+            sendStatus: message.sendStatus,
+            type: message.type,
+            attachmentUrl: message.attachmentUrl,
+            attachmentDuration: message.attachmentDuration,
+            attachmentWidth: message.attachmentWidth,
+            attachmentHeight: message.attachmentHeight
+        )
+    }
+
     // MARK: - Private Methods
 
     private func setupWebSocketListener() {
@@ -168,16 +393,27 @@ class ChatViewModel: ObservableObject {
 
     private func handleWebSocketEvent(_ event: WebSocketEvent) {
         switch event {
+        case .reconnected:
+            // WebSocket reconnected after a drop — catch up on missed messages and retry failed sends
+            Task { [weak self] in
+                await self?.fetchMissedMessages()
+                await self?.retryPendingMessages()
+            }
+
         case .newMessage(let messageDTO):
             guard messageDTO.conversationId == conversation.id else { return }
 
-            // Check if we already have this message (via clientMessageId)
+            // Dedup by clientMessageId (optimistic update) or by message id (already loaded)
             if let clientId = messageDTO.clientMessageId,
                messages.contains(where: { $0.clientMessageId == clientId }) {
                 return
             }
+            if messages.contains(where: { $0.id == messageDTO.id }) {
+                return
+            }
 
-            let message = ConversationMapper.map(messageDTO: messageDTO)
+            var message = ConversationMapper.map(messageDTO: messageDTO)
+            message = decryptMessageIfNeeded(message)
             messages.insert(message, at: 0)
 
             // Mark as read immediately since we're viewing
@@ -188,13 +424,11 @@ class ChatViewModel: ObservableObject {
         case .typing(let conversationId, let userId):
             guard conversationId == self.conversation.id else { return }
 
-            // Check if it's from another user
             let isOtherUser = conversation.otherParticipants.contains { $0.userId == userId }
             guard isOtherUser else { return }
 
             isOtherUserTyping = true
 
-            // Reset after 3 seconds
             typingTimer?.invalidate()
             typingTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { [weak self] _ in
                 Task { @MainActor in
@@ -202,8 +436,47 @@ class ChatViewModel: ObservableObject {
                 }
             }
 
+        case .messageRead(let conversationId, _):
+            guard conversationId == self.conversation.id else { return }
+
+            // Mark all my sent messages as read
+            for i in messages.indices where messages[i].isFromMe && messages[i].sendStatus == .sent {
+                messages[i].sendStatus = .read
+            }
+
         default:
             break
+        }
+    }
+
+    /// Silently fetches recent messages and merges any missed during a WebSocket disconnection.
+    private func fetchMissedMessages() async {
+        guard !messages.isEmpty else { return }
+
+        do {
+            let recentMessages = try await listMessagesUseCase.execute(conversationId: conversation.id)
+            let existingIds = Set(messages.map(\.id))
+
+            let newMessages = recentMessages
+                .filter { !existingIds.contains($0.id) }
+                .map { decryptMessageIfNeeded($0) }
+
+            guard !newMessages.isEmpty else { return }
+
+            messages.insert(contentsOf: newMessages, at: 0)
+            messages.sort { $0.createdAt > $1.createdAt }
+
+            try? await markReadUseCase.execute(conversationId: conversation.id)
+        } catch {
+            // Silent — not critical
+        }
+    }
+
+    /// Automatically retries all failed messages after reconnection.
+    private func retryPendingMessages() async {
+        let failedMessages = messages.filter { $0.sendStatus == .failed && $0.isFromMe }
+        for message in failedMessages {
+            await retryFailedMessage(message)
         }
     }
 }

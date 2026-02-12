@@ -16,10 +16,13 @@ struct RequestClubSheet: View {
             .navigationTitle("Proposer un club")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Fermer") {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
                         viewModel.resetClubRequest()
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(Theme.labelTertiary)
                     }
                 }
             }

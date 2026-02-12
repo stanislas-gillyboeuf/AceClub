@@ -4,11 +4,13 @@ import { z } from "zod";
 import { updateMatchValidator } from "../validators";
 import { db } from "../../../db";
 import { match, matchParticipant } from "../../../db/schema/match/schema";
-import { eq, and, ne } from "drizzle-orm";
+import { member } from "../../../db/schema/auth/schema";
+import { eq, and, ne, inArray } from "drizzle-orm";
 import { attributeMatchAces } from "../../level/services/xp-attribution";
 import { updateUserStreak } from "../../streak/services/streak-manager";
 import { updateChallengeProgress } from "../../challenge/services/progress-tracker";
 import { checkBadges } from "../../reward/services/badge-checker";
+import { cacheDel, cacheInvalidatePrefix, CacheKeys } from "../../../lib/cache";
 
 export const updateMatch = async (c: Context<HonoContext>) => {
   try {
@@ -181,6 +183,30 @@ export const updateMatch = async (c: Context<HonoContext>) => {
           await attributeMatchAces(matchId, [participant], multiplier);
           await updateChallengeProgress(participant.userId, matchId, participant.isWinner);
           await checkBadges(participant.userId);
+        }
+
+        // Invalidate caches after match completion
+        const participantUserIds = participants.map((p) => p.userId);
+        await Promise.all([
+          cacheInvalidatePrefix(CacheKeys.PREFIX_LEADERBOARD_GLOBAL),
+          cacheInvalidatePrefix(CacheKeys.PREFIX_LEADERBOARD_WEEKLY),
+          ...participantUserIds.map((uid) => cacheDel(CacheKeys.userMe(uid))),
+        ]);
+
+        // Invalidate org-specific caches for participants' organizations
+        if (participantUserIds.length > 0) {
+          const orgMemberships = await db
+            .select({ organizationId: member.organizationId })
+            .from(member)
+            .where(inArray(member.userId, participantUserIds));
+
+          const orgIds = [...new Set(orgMemberships.map((m) => m.organizationId))];
+          await Promise.all(
+            orgIds.flatMap((orgId) => [
+              cacheDel(CacheKeys.orgStats(orgId)),
+              cacheInvalidatePrefix(CacheKeys.prefixLeaderboardOrg(orgId)),
+            ]),
+          );
         }
       } catch (acesError) {
         console.error("Error attributing Aces:", acesError);

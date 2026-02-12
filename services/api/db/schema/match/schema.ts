@@ -98,6 +98,37 @@ export const setScore = pgTable(
   ],
 );
 
+export const MatchSensation = pgEnum("match_sensation", [
+  "bad",
+  "average",
+  "good",
+  "great",
+]);
+
+export const matchFeedback = pgTable(
+  "match_feedback",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    matchId: text("match_id")
+      .notNull()
+      .references(() => match.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id),
+    sensation: MatchSensation("sensation").notNull(),
+    comment: text("comment"),
+    visibleToClub: boolean("visible_to_club").default(true).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("match_feedback_matchId_idx").on(table.matchId),
+    uniqueIndex("match_feedback_matchId_userId_unique").on(table.matchId, table.userId),
+  ],
+);
+
 export const matchComment = pgTable(
   "match_comment",
   {

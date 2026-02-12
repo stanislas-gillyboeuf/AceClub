@@ -56,6 +56,12 @@ struct MessageDTO: Codable {
     let createdAt: String
     let clientMessageId: String?
     let isFromMe: Bool?  // Optional because WebSocket messages don't include this field
+    let isEncrypted: Bool?
+    let messageType: String?
+    let attachmentUrl: String?
+    let attachmentDuration: Int?
+    let attachmentWidth: Int?
+    let attachmentHeight: Int?
 }
 
 // MARK: - Conversation DTO
@@ -76,6 +82,17 @@ struct ConversationDTO: Codable {
 struct SendMessageRequestDTO: Codable {
     let content: String
     let clientMessageId: String?
+    let isEncrypted: Bool?
+    let type: String?
+    let attachmentUrl: String?
+    let attachmentDuration: Int?
+    let attachmentWidth: Int?
+    let attachmentHeight: Int?
+}
+
+// MARK: - Upload Attachment Response DTO
+struct UploadAttachmentResponseDTO: Codable {
+    let attachmentUrl: String
 }
 
 // MARK: - Mark Read Response DTO

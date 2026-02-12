@@ -38,6 +38,7 @@ import { requireAuth } from "../../middleware/auth";
 import { isAdmin } from "../../middleware/admin";
 import {
   listOrganizationsUser,
+  listUserOrganizations,
   getFullOrganization,
   listMembers,
   getActiveMember,
@@ -57,6 +58,7 @@ import {
   regeneratePinValidator,
   getPinValidator,
   verifyPinValidator,
+  listUserOrganizationsValidator,
 } from "./validators";
 
 export const organizationRouter = new Hono<HonoContext>();
@@ -71,6 +73,11 @@ organizationRouter.get(
   searchOrganizations,
 );
 organizationRouter.get("/list-organizations-user", listOrganizationsUser);
+organizationRouter.get(
+  "/list-user-organizations",
+  zValidator("query", listUserOrganizationsValidator),
+  listUserOrganizations,
+);
 organizationRouter.get(
   "/get-full-organization",
   zValidator("query", getFullOrganizationValidator),
