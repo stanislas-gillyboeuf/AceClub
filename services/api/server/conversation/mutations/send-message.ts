@@ -21,7 +21,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
 
   const conversationId = c.req.param("id");
   const body = await c.req.json();
-  const { content, clientMessageId } = body;
+  const { content, clientMessageId, isEncrypted } = body;
 
   // Verify user is a participant
   const [myParticipation] = await db
@@ -66,6 +66,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
       senderId: currentUser.id,
       content,
       clientMessageId,
+      isEncrypted: isEncrypted ?? false,
       createdAt: now,
       updatedAt: now,
     })
@@ -76,7 +77,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
     .update(conversation)
     .set({
       lastMessageAt: now,
-      lastMessagePreview: content.substring(0, 100),
+      lastMessagePreview: isEncrypted ? null : content.substring(0, 100),
       lastMessageSenderId: currentUser.id,
       updatedAt: now,
     })
@@ -125,6 +126,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
       content,
       createdAt: newMessage.createdAt.toISOString(),
       clientMessageId,
+      isEncrypted: newMessage.isEncrypted,
     },
   };
 
@@ -152,7 +154,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
           userId: participant.userId,
           type: "new_message",
           title: sender?.name || "Nouveau message",
-          body: content.substring(0, 100),
+          body: isEncrypted ? "Nouveau message" : content.substring(0, 100),
           referenceId: conversationId,
           referenceType: "conversation",
           data: {
@@ -182,6 +184,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
       createdAt: newMessage.createdAt.toISOString(),
       clientMessageId,
       isFromMe: true,
+      isEncrypted: newMessage.isEncrypted,
     },
     201,
   );

@@ -147,13 +147,14 @@ class ConversationAPIDataSource {
     func sendMessage(
         conversationId: String,
         content: String,
-        clientMessageId: String
+        clientMessageId: String,
+        isEncrypted: Bool = false
     ) async throws -> MessageDTO {
         guard let url = URL(string: "\(Config.apiBaseURL)/conversation/\(conversationId)/message") else {
             throw ConversationAPIDataSourceError.invalidURL
         }
 
-        let requestDTO = SendMessageRequestDTO(content: content, clientMessageId: clientMessageId)
+        let requestDTO = SendMessageRequestDTO(content: content, clientMessageId: clientMessageId, isEncrypted: isEncrypted ? true : nil)
 
         let jsonData: Data
         do {

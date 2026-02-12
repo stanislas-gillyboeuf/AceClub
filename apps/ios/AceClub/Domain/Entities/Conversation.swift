@@ -89,6 +89,7 @@ struct Message: Identifiable, Equatable {
     let createdAt: Date
     let clientMessageId: String?
     let isFromMe: Bool
+    let isEncrypted: Bool
     var sendStatus: MessageSendStatus
 
     // MARK: - Convenience accessors (for backwards compatibility)
@@ -105,6 +106,7 @@ struct Message: Identifiable, Equatable {
         createdAt: Date,
         clientMessageId: String? = nil,
         isFromMe: Bool,
+        isEncrypted: Bool = false,
         sendStatus: MessageSendStatus = .sent
     ) {
         self.id = id
@@ -114,6 +116,7 @@ struct Message: Identifiable, Equatable {
         self.createdAt = createdAt
         self.clientMessageId = clientMessageId
         self.isFromMe = isFromMe
+        self.isEncrypted = isEncrypted
         self.sendStatus = sendStatus
     }
 

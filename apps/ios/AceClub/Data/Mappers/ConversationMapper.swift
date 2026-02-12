@@ -93,6 +93,7 @@ class ConversationMapper {
             createdAt: parseDate(messageDTO.createdAt) ?? Date(),
             clientMessageId: messageDTO.clientMessageId,
             isFromMe: isFromMe,
+            isEncrypted: messageDTO.isEncrypted ?? false,
             sendStatus: .sent
         )
     }

@@ -11,6 +11,8 @@ struct SettingsView: View {
     @StateObject private var locationManager = LocationManager()
     @State private var showDeleteAccountConfirmation = false
     @State private var isDeletingAccount = false
+    @State private var showE2EEBackup = false
+    @State private var showE2EERecovery = false
     var onProfileUpdated: ((User) -> Void)?
 
     var body: some View {
@@ -31,6 +33,8 @@ struct SettingsView: View {
 
                         notificationsSection
                         locationSection
+
+                        e2eeSection
 
                         LegalLinksSection()
 
@@ -376,6 +380,83 @@ struct SettingsView: View {
                 .background(Theme.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
             }
+        }
+    }
+
+    // MARK: - E2EE Section
+
+    private var e2eeSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(title: "Chiffrement", icon: "lock.shield.fill")
+
+            VStack(spacing: 0) {
+                Button {
+                    showE2EEBackup = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "key.fill")
+                            .font(.body)
+                            .foregroundStyle(Theme.tintColor)
+                            .frame(width: 24)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Sauvegarder ma clé")
+                                .foregroundStyle(.primary)
+
+                            Text("Protégez vos messages chiffrés avec une phrase secrète")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .padding(16)
+                }
+                .buttonStyle(.plain)
+
+                Divider()
+                    .padding(.leading, 52)
+
+                Button {
+                    showE2EERecovery = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "arrow.counterclockwise")
+                            .font(.body)
+                            .foregroundStyle(Theme.tintColor)
+                            .frame(width: 24)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Récupérer ma clé")
+                                .foregroundStyle(.primary)
+
+                            Text("Restaurez vos messages sur un nouvel appareil")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .padding(16)
+                }
+                .buttonStyle(.plain)
+            }
+            .background(Theme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+        }
+        .sheet(isPresented: $showE2EEBackup) {
+            E2EEBackupView()
+        }
+        .sheet(isPresented: $showE2EERecovery) {
+            E2EERecoveryView()
         }
     }
 
