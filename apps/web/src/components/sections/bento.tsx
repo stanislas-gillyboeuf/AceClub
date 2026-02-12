@@ -51,7 +51,7 @@ export function BentoGrid() {
     <Section
       id="bento"
       title="Avantages"
-      subtitle="Tout ce que l'app peut faire"
+      subtitle="Et ce n'est pas tout !"
       className="mx-auto max-w-screen-md px-10"
       ref={ref}
     >
