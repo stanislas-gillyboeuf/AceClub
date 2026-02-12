@@ -50,10 +50,6 @@ struct StreakCard: View {
         .padding(Theme.paddingCard)
         .background(Theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
-                .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
-        }
     }
 
     private var streakColor: Color {

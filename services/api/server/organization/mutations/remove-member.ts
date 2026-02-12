@@ -3,6 +3,7 @@ import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { removeMemberValidator } from "../validators";
 import { auth } from "../../../auth";
+import { cacheDel, cacheInvalidatePrefix, CacheKeys } from "../../../lib/cache";
 
 export const removeMember = async (c: Context<HonoContext>) => {
   try {
@@ -16,6 +17,13 @@ export const removeMember = async (c: Context<HonoContext>) => {
       },
       headers: c.req.raw.headers,
     });
+
+    if (validated.organizationId) {
+      await Promise.all([
+        cacheDel(CacheKeys.orgStats(validated.organizationId)),
+        cacheInvalidatePrefix(CacheKeys.prefixLeaderboardOrg(validated.organizationId)),
+      ]);
+    }
 
     return c.json(result);
   } catch (error) {

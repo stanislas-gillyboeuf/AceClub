@@ -26,7 +26,7 @@ export const createOrganization = async (c: Context<HonoContext>) => {
       headers: c.req.raw.headers,
     });
 
-    if (createdOrganization.id) {
+    if (createdOrganization && createdOrganization.id) {
       const updateData: Record<string, unknown> = {
         pin: generatePin(),
       };

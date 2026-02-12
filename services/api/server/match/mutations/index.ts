@@ -6,3 +6,6 @@ export { createComment } from "./create-comment";
 export { updateComment } from "./update-comment";
 export { deleteComment } from "./delete-comment";
 export { updateVenue } from "./update-venue";
+export { createFeedback } from "./create-feedback";
+export { updateFeedback } from "./update-feedback";
+export { deleteFeedback } from "./delete-feedback";

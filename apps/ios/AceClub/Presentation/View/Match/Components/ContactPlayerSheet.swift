@@ -130,10 +130,12 @@ struct ContactPlayerSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Fermer") {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(Theme.labelTertiary)
                     }
-                    .fontWeight(.medium)
                 }
             }
         }

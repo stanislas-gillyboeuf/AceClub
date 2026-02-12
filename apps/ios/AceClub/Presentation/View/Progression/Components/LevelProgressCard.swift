@@ -64,13 +64,6 @@ struct LevelProgressCard: View {
         .padding(Theme.paddingCard)
         .background(Theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: Theme.cornerRadiusLarge, style: .continuous)
-                .strokeBorder(
-                    showDetailIndicator ? Theme.tintColor.opacity(0.3) : Theme.borderColor,
-                    lineWidth: showDetailIndicator ? 1 : Theme.borderWidthSubtle
-                )
-        }
     }
 
     // MARK: - Detail Indicator

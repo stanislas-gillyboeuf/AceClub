@@ -4,11 +4,16 @@ import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { user } from "../../../db/schema/auth/schema";
 import { acesTransaction } from "../../../db/schema/level/schema";
+import { cacheGet, cacheSet, CacheKeys, CacheTTL } from "../../../lib/cache";
 
 export const getWeeklyLeaderboard = async (c: Context<HonoContext>) => {
   const page = Number(c.req.query("page") ?? "1");
   const limit = Math.min(Number(c.req.query("limit") ?? "20"), 100);
   const offset = (page - 1) * limit;
+
+  const cacheKey = CacheKeys.leaderboardWeekly(page, limit);
+  const cached = await cacheGet(cacheKey);
+  if (cached) return c.json(cached);
 
   const now = new Date();
   const startOfWeek = new Date(now);
@@ -42,7 +47,7 @@ export const getWeeklyLeaderboard = async (c: Context<HonoContext>) => {
       and(eq(user.id, acesTransaction.userId), gte(acesTransaction.createdAt, startOfWeek)),
     );
 
-  return c.json({
+  const response = {
     leaderboard: results.map((r, index) => ({
       rank: offset + index + 1,
       user: {
@@ -59,5 +64,8 @@ export const getWeeklyLeaderboard = async (c: Context<HonoContext>) => {
       totalPages: Math.ceil(Number(count) / limit),
     },
     weekStartDate: startOfWeek.toISOString(),
-  });
+  };
+
+  await cacheSet(cacheKey, response, CacheTTL.MEDIUM);
+  return c.json(response);
 };

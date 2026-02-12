@@ -9,6 +9,8 @@ import {
   updateVenueValidator,
   createCommentValidator,
   updateCommentValidator,
+  createFeedbackValidator,
+  updateFeedbackValidator,
 } from "./validators";
 import {
   createMatch,
@@ -19,6 +21,9 @@ import {
   createComment,
   updateComment,
   deleteComment,
+  createFeedback,
+  updateFeedback,
+  deleteFeedback,
 } from "./mutations";
 import { getMatch, listMatches } from "./queries";
 
@@ -53,3 +58,8 @@ matchRouter.delete("/:id", deleteMatch);
 matchRouter.post("/:id/comment", zValidator("json", createCommentValidator), createComment);
 matchRouter.put("/:id/comment", zValidator("json", updateCommentValidator), updateComment);
 matchRouter.delete("/:id/comment", deleteComment);
+
+// Feedback endpoints
+matchRouter.post("/:id/feedback", zValidator("json", createFeedbackValidator), createFeedback);
+matchRouter.put("/:id/feedback", zValidator("json", updateFeedbackValidator), updateFeedback);
+matchRouter.delete("/:id/feedback", deleteFeedback);

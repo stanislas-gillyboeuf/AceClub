@@ -7,13 +7,15 @@ import {
   set,
   setScore,
   matchComment,
+  matchFeedback,
 } from "../../../db/schema/match/schema";
 import { user, organization, member } from "../../../db/schema/auth/schema";
-import { eq, inArray } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 
 export const getMatch = async (c: Context<HonoContext>) => {
   try {
     const matchId = c.req.param("id");
+    const currentUser = c.get("user");
 
     if (!matchId) {
       return c.json({ error: "Match ID is required" }, 400);
@@ -137,6 +139,17 @@ export const getMatch = async (c: Context<HonoContext>) => {
 
     const setsWithScores = Array.from(setsMap.values());
 
+    // Fetch current user's feedback
+    let myFeedback = null;
+    if (currentUser) {
+      const [feedback] = await db
+        .select()
+        .from(matchFeedback)
+        .where(and(eq(matchFeedback.matchId, matchId), eq(matchFeedback.userId, currentUser.id)))
+        .limit(1);
+      myFeedback = feedback || null;
+    }
+
     // Fetch venue organization if set
     let venueOrganization = null;
     if (foundMatch.venueOrganizationId) {
@@ -193,6 +206,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
       participants,
       sets: setsWithScores,
       comments,
+      myFeedback,
       venueOrganization,
       participantOrganizations,
     });

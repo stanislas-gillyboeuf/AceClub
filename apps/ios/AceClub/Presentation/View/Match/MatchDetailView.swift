@@ -27,10 +27,12 @@ struct MatchDetailView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var successMessage: String?
-    @State private var showingDeleteAlert = false
     @State private var showingEditScores = false
     @State private var showingCommentSheet = false
     @State private var showingVenueSheet = false
+    @State private var showingFeedbackSheet = false
+    @State private var showingCongratulationsSheet = false
+    @State private var justFinished = false
     @State private var isUpdatingVenue = false
 
     private var currentUserId: String {
@@ -65,21 +67,38 @@ struct MatchDetailView: View {
         .refreshable {
             await refresh()
         }
-        .alert("Supprimer le match", isPresented: $showingDeleteAlert) {
-            Button("Annuler", role: .cancel) { }
-            Button("Supprimer", role: .destructive) {
-                Task {
-                    await deleteMatch()
-                }
+        .sheet(isPresented: $showingEditScores, onDismiss: {
+            if justFinished {
+                showingFeedbackSheet = true
             }
-        } message: {
-            Text("Cette action est irr\u{00e9}versible. Toutes les donn\u{00e9}es du match seront supprim\u{00e9}es.")
-        }
-        .sheet(isPresented: $showingEditScores) {
+        }) {
             if let match {
                 EditMatchScoresViewSwiftData(
                     match: match,
                     isPresented: $showingEditScores
+                )
+            }
+        }
+        .sheet(isPresented: $showingFeedbackSheet, onDismiss: {
+            if justFinished {
+                showingCongratulationsSheet = true
+                justFinished = false
+            }
+        }) {
+            if let match {
+                MatchFeedbackSheet(
+                    match: match,
+                    existingFeedback: userFeedback,
+                    isPresented: $showingFeedbackSheet,
+                    onComplete: { }
+                )
+            }
+        }
+        .sheet(isPresented: $showingCongratulationsSheet) {
+            if let match {
+                MatchCongratulationsSheet(
+                    match: match,
+                    isPresented: $showingCongratulationsSheet
                 )
             }
         }
@@ -168,10 +187,14 @@ struct MatchDetailView: View {
                 finishedAt: Date(),
                 winnerId: winnerId
             )
-            successMessage = "Match terminé"
+            successMessage = "Match termin\u{00E9}"
 
             // End Live Activity
             await MatchLiveActivityManager.shared.endActivity(withFinalState: match)
+
+            // Trigger post-match flow: scores → feedback → congratulations
+            justFinished = true
+            showingEditScores = true
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -278,6 +301,13 @@ struct MatchDetailView: View {
                         }
                     )
 
+                    // Feedback Card (finished + has feedback)
+                    if match.isFinished, let feedback = userFeedback {
+                        MatchFeedbackCard(feedback: feedback) {
+                            showingFeedbackSheet = true
+                        }
+                    }
+
                     // Comments Card (finished only)
                     if match.isFinished {
                         MatchCommentsCard(
@@ -321,8 +351,8 @@ struct MatchDetailView: View {
                     .glassEffect(.regular.interactive(), in: .capsule)
                 }
 
-                // Ongoing: Edit scores + Finish
-                if canEditScores {
+                // Ongoing: Edit scores only
+                if canEditScores && !match.isFinished {
                     Button {
                         showingEditScores = true
                     } label: {
@@ -348,6 +378,33 @@ struct MatchDetailView: View {
                     .glassEffect(.regular.interactive(), in: .capsule)
                 }
 
+                // Finished: Modifier menu (scores + feedback)
+                if match.isFinished {
+                    Menu {
+                        Button {
+                            showingEditScores = true
+                        } label: {
+                            Label("Scores", systemImage: "sportscourt")
+                        }
+
+                        Button {
+                            showingFeedbackSheet = true
+                        } label: {
+                            Label(
+                                hasUserFeedback ? "Sensations" : "Ajouter mes sensations",
+                                systemImage: "face.smiling"
+                            )
+                        }
+                    } label: {
+                        Label("Modifier", systemImage: "pencil")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(Theme.accentOrange)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                    }
+                    .glassEffect(.regular.interactive(), in: .capsule)
+                }
+
                 // Finished: Comment button
                 if match.isFinished && !hasUserCommented {
                     Button {
@@ -365,7 +422,7 @@ struct MatchDetailView: View {
                 // Menu (always)
                 Menu {
                     Button(role: .destructive) {
-                        showingDeleteAlert = true
+                        Task { await deleteMatch() }
                     } label: {
                         Label("Supprimer", systemImage: "trash")
                     }
@@ -381,11 +438,20 @@ struct MatchDetailView: View {
         }
     }
 
-    // MARK: - Comment Helpers
+    // MARK: - Comment & Feedback Helpers
 
     private var hasUserCommented: Bool {
         guard let match else { return false }
         return match.comments.contains { $0.userId == currentUserId }
+    }
+
+    private var userFeedback: MatchFeedbackModel? {
+        guard let match else { return nil }
+        return match.myFeedback(userId: currentUserId)
+    }
+
+    private var hasUserFeedback: Bool {
+        userFeedback != nil
     }
 
     private var isParticipant: Bool {
@@ -438,7 +504,6 @@ struct EditMatchScoresViewSwiftData: View {
     @State private var editedSets: [EditableSetData] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @State private var showConfirmation = false
 
     // Données d'un set éditable
     private struct EditableSetData: Identifiable {
@@ -495,7 +560,7 @@ struct EditMatchScoresViewSwiftData: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Enregistrer") {
-                        showConfirmation = true
+                        Task { await saveScores() }
                     }
                     .fontWeight(.semibold)
                     .disabled(isLoading || editedSets.isEmpty)
@@ -505,14 +570,6 @@ struct EditMatchScoresViewSwiftData: View {
                 if isLoading {
                     loadingOverlay
                 }
-            }
-            .alert("Confirmer les modifications", isPresented: $showConfirmation) {
-                Button("Annuler", role: .cancel) { }
-                Button("Enregistrer") {
-                    Task { await saveScores() }
-                }
-            } message: {
-                Text("Les scores du match seront mis à jour.")
             }
             .alert("Erreur", isPresented: .constant(errorMessage != nil)) {
                 Button("OK") { errorMessage = nil }
@@ -734,7 +791,6 @@ struct MatchCommentSheet: View {
     @State private var content: String = ""
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @State private var showingDeleteConfirmation = false
 
     private var isEditing: Bool {
         existingComment != nil
@@ -807,14 +863,6 @@ struct MatchCommentSheet: View {
                         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
                     }
                 }
-            }
-            .alert("Supprimer le commentaire", isPresented: $showingDeleteConfirmation) {
-                Button("Annuler", role: .cancel) { }
-                Button("Supprimer", role: .destructive) {
-                    Task { await deleteComment() }
-                }
-            } message: {
-                Text("Cette action est irréversible.")
             }
             .alert("Erreur", isPresented: .constant(errorMessage != nil)) {
                 Button("OK") { errorMessage = nil }

@@ -92,11 +92,13 @@ struct UserProfileSheet: View {
             .navigationTitle("Profil")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Fermer") {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(Theme.labelTertiary)
                     }
-                    .foregroundStyle(Theme.tintColor)
                 }
             }
             .safeAreaInset(edge: .bottom) {

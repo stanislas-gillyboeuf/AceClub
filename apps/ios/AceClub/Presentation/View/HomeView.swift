@@ -131,14 +131,12 @@ struct HomeView: View {
                 NavigationStack {
                     ProgressionView(viewModel: progressionViewModel)
                         .toolbar {
-                            ToolbarItem(placement: .topBarTrailing) {
+                            ToolbarItem(placement: .confirmationAction) {
                                 Button {
                                     showProgression = false
                                 } label: {
                                     Image(systemName: "xmark.circle.fill")
-                                        .font(.title3)
-                                        .symbolRenderingMode(.hierarchical)
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(Theme.labelTertiary)
                                 }
                             }
                         }
@@ -150,9 +148,12 @@ struct HomeView: View {
                 NavigationStack {
                     LeaderboardView(viewModel: leaderboardViewModel)
                         .toolbar {
-                            ToolbarItem(placement: .topBarLeading) {
-                                Button("Fermer") {
+                            ToolbarItem(placement: .confirmationAction) {
+                                Button {
                                     showLeaderboard = false
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(Theme.labelTertiary)
                                 }
                             }
                         }

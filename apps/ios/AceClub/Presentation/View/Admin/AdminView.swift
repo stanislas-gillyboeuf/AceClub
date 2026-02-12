@@ -241,16 +241,12 @@ struct AdminUserDetailView: View {
             .scrollContentBackground(.hidden)
             .navigationTitle("Gérer l'utilisateur")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .confirmationAction) {
                     Button {
                         dismiss()
                     } label: {
-                        Label("Fermer", systemImage: "xmark")
-                    }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Terminé") {
-                        dismiss()
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(Theme.labelTertiary)
                     }
                 }
             }
