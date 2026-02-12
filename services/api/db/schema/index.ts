@@ -9,5 +9,6 @@ export * from "./streak";
 export * from "./reward";
 export * from "./conversation";
 export * from "./club-request";
+export * from "./event";
 export * from "./feature-flag";
 export * from "./e2ee";
