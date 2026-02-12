@@ -7,6 +7,7 @@ import { phoneNumber } from "better-auth/plugins";
 import { user as userTable, member as memberTable } from "./db/schema/auth/schema";
 import { eq } from "drizzle-orm";
 import { awardPremiersPasBadge } from "./server/reward/services/badge-service";
+import { Resend } from "resend";
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -94,6 +95,23 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      void resend.emails.send({
+        from: "AceClub <noreply@aceclub.app>",
+        to: [user.email],
+        subject: "Réinitialisez votre mot de passe - AceClub",
+        html: `
+          <h2>Bonjour ${user.name || ""},</h2>
+          <p>Vous avez demandé la réinitialisation de votre mot de passe AceClub.</p>
+          <p><a href="${url}" style="display:inline-block;padding:12px 24px;background-color:#16a34a;color:white;text-decoration:none;border-radius:8px;font-weight:bold;">Réinitialiser mon mot de passe</a></p>
+          <p>Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
+          <p>Ce lien expire dans 1 heure.</p>
+          <p>L'équipe AceClub</p>
+        `,
+        text: `Bonjour ${user.name || ""},\n\nVous avez demandé la réinitialisation de votre mot de passe AceClub.\n\nCliquez sur ce lien pour réinitialiser : ${url}\n\nSi vous n'avez pas demandé cette réinitialisation, ignorez cet email.\nCe lien expire dans 1 heure.\n\nL'équipe AceClub`,
+      });
+    },
   },
   socialProviders: {
     google: {
