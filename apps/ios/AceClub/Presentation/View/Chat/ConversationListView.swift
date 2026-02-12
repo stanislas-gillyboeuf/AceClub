@@ -153,20 +153,21 @@ struct ConversationRow: View {
 
                 HStack {
                     if let preview = conversation.lastMessagePreview {
-                        Text(preview)
-                            .font(.subheadline)
-                            .foregroundStyle(Theme.labelSecondary)
-                            .lineLimit(2)
-                    } else if conversation.lastMessageAt != nil && (conversation.type == .direct || conversation.type == .match) {
                         HStack(spacing: 4) {
-                            Image(systemName: "lock.fill")
-                                .font(.caption2)
-                            Text("Message chiffré")
-                                .italic()
+                            if preview == "Message vocal" {
+                                Image(systemName: "mic.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(Theme.labelSecondary)
+                            } else if preview == "Photo" {
+                                Image(systemName: "photo.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(Theme.labelSecondary)
+                            }
+                            Text(preview)
+                                .font(.subheadline)
+                                .foregroundStyle(Theme.labelSecondary)
+                                .lineLimit(2)
                         }
-                        .font(.subheadline)
-                        .foregroundStyle(Theme.labelTertiary)
-                        .lineLimit(1)
                     }
 
                     Spacer()

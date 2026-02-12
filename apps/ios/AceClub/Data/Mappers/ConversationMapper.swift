@@ -80,6 +80,16 @@ class ConversationMapper {
         )
     }
 
+    // MARK: - Message Type Mapping
+
+    private static func mapMessageType(_ typeString: String?) -> MessageType {
+        switch typeString?.lowercased() {
+        case "voice": return .voice
+        case "image": return .image
+        default: return .text
+        }
+    }
+
     // MARK: - Message Mapping
 
     static func map(messageDTO: MessageDTO) -> Message {
@@ -94,7 +104,12 @@ class ConversationMapper {
             clientMessageId: messageDTO.clientMessageId,
             isFromMe: isFromMe,
             isEncrypted: messageDTO.isEncrypted ?? false,
-            sendStatus: .sent
+            sendStatus: .sent,
+            type: mapMessageType(messageDTO.messageType),
+            attachmentUrl: messageDTO.attachmentUrl,
+            attachmentDuration: messageDTO.attachmentDuration,
+            attachmentWidth: messageDTO.attachmentWidth,
+            attachmentHeight: messageDTO.attachmentHeight
         )
     }
 

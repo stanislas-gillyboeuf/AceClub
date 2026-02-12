@@ -4,3 +4,4 @@ export { muteConversation } from "./mute-conversation";
 export { deleteConversation } from "./delete-conversation";
 export { deleteMessage } from "./delete-message";
 export { findOrCreateConversation } from "./find-or-create";
+export { uploadAttachment } from "./upload-attachment";

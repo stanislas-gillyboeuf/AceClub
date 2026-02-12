@@ -12,6 +12,7 @@ import { user } from "../auth/schema";
 import { ulid } from "ulid";
 
 export const ConversationType = pgEnum("conversation_type", ["match", "group", "direct"]);
+export const MessageType = pgEnum("message_type", ["text", "voice", "image"]);
 
 export const conversation = pgTable(
   "conversation",
@@ -74,7 +75,13 @@ export const message = pgTable(
     senderId: text("sender_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    content: text("content").notNull(),
+    content: text("content").notNull().default(""),
+    // Message type and attachment fields
+    type: MessageType("type").notNull().default("text"),
+    attachmentUrl: text("attachment_url"),
+    attachmentDuration: integer("attachment_duration"),
+    attachmentWidth: integer("attachment_width"),
+    attachmentHeight: integer("attachment_height"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
     // Soft delete

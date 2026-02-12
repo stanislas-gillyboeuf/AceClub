@@ -148,13 +148,27 @@ class ConversationAPIDataSource {
         conversationId: String,
         content: String,
         clientMessageId: String,
-        isEncrypted: Bool = false
+        isEncrypted: Bool = false,
+        type: String = "text",
+        attachmentUrl: String? = nil,
+        attachmentDuration: Int? = nil,
+        attachmentWidth: Int? = nil,
+        attachmentHeight: Int? = nil
     ) async throws -> MessageDTO {
         guard let url = URL(string: "\(Config.apiBaseURL)/conversation/\(conversationId)/message") else {
             throw ConversationAPIDataSourceError.invalidURL
         }
 
-        let requestDTO = SendMessageRequestDTO(content: content, clientMessageId: clientMessageId, isEncrypted: isEncrypted ? true : nil)
+        let requestDTO = SendMessageRequestDTO(
+            content: content,
+            clientMessageId: clientMessageId,
+            isEncrypted: isEncrypted ? true : nil,
+            type: type != "text" ? type : nil,
+            attachmentUrl: attachmentUrl,
+            attachmentDuration: attachmentDuration,
+            attachmentWidth: attachmentWidth,
+            attachmentHeight: attachmentHeight
+        )
 
         let jsonData: Data
         do {
@@ -177,6 +191,44 @@ class ConversationAPIDataSource {
             } catch {
                 throw ConversationAPIDataSourceError.decodingFailed(error)
             }
+        case 401:
+            throw ConversationAPIDataSourceError.unauthorized
+        case 403:
+            throw ConversationAPIDataSourceError.forbidden
+        default:
+            throw ConversationAPIDataSourceError.requestFailed(statusCode: response.statusCode)
+        }
+    }
+
+    // MARK: - Upload Attachment
+
+    func uploadAttachment(
+        conversationId: String,
+        fileData: Data,
+        fileName: String,
+        mimeType: String
+    ) async throws -> UploadAttachmentResponseDTO {
+        guard let url = URL(string: "\(Config.apiBaseURL)/conversation/\(conversationId)/upload-attachment") else {
+            throw ConversationAPIDataSourceError.invalidURL
+        }
+
+        let (data, response) = try await APIClient.shared.authenticatedMultipartRequest(
+            url: url,
+            fileField: "file",
+            fileData: fileData,
+            fileName: fileName,
+            mimeType: mimeType
+        )
+
+        switch response.statusCode {
+        case 201:
+            do {
+                return try JSONDecoder().decode(UploadAttachmentResponseDTO.self, from: data)
+            } catch {
+                throw ConversationAPIDataSourceError.decodingFailed(error)
+            }
+        case 400:
+            throw ConversationAPIDataSourceError.badRequest("Invalid file")
         case 401:
             throw ConversationAPIDataSourceError.unauthorized
         case 403:
