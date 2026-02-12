@@ -7,6 +7,7 @@ import { userPreference } from "../../../db/schema/user-preference/schema";
 import { z } from "zod";
 import { completeOnboardingValidator } from "../validators";
 import { ulid } from "ulid";
+import { cacheDel, CacheKeys } from "../../../lib/cache";
 
 const normalizePhoneNumber = (raw: string) => {
   const trimmed = raw.trim();
@@ -122,6 +123,8 @@ export const completeOnboarding = async (c: Context<HonoContext>) => {
     }
     throw error;
   }
+
+  await cacheDel(CacheKeys.userMe(authUser!.id));
 
   return c.json({
     id: updatedUserRow.id,

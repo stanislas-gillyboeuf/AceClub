@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { conversationParticipant } from "../../../db/schema/conversation/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, ne } from "drizzle-orm";
 import { redis, CHAT_CHANNEL } from "../../../lib/redis";
 
 export const markRead = async (c: Context<HonoContext>) => {
@@ -48,7 +48,7 @@ export const markRead = async (c: Context<HonoContext>) => {
       .where(
         and(
           eq(conversationParticipant.conversationId, conversationId),
-          eq(conversationParticipant.userId, currentUser.id),
+          ne(conversationParticipant.userId, currentUser.id),
         ),
       );
 
@@ -60,15 +60,13 @@ export const markRead = async (c: Context<HonoContext>) => {
     };
 
     for (const participant of otherParticipants) {
-      if (participant.userId !== currentUser.id) {
-        await redis.publish(
-          CHAT_CHANNEL,
-          JSON.stringify({
-            userId: participant.userId,
-            payload: readPayload,
-          }),
-        );
-      }
+      await redis.publish(
+        CHAT_CHANNEL,
+        JSON.stringify({
+          userId: participant.userId,
+          payload: readPayload,
+        }),
+      );
     }
   }
 
