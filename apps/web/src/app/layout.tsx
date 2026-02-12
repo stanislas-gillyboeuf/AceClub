@@ -34,14 +34,10 @@ export default function RootLayout({
     >
       <body
         className={cn(
-          "min-h-screen bg-background antialiased w-full mx-auto scroll-smooth font-sans"
+          "min-h-screen bg-background antialiased w-full mx-auto scroll-smooth font-sans",
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-        >
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           {children}
           <ThemeToggle />
           <TailwindIndicator />

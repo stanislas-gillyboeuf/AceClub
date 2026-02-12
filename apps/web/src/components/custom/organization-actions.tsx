@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,34 +8,34 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   useCreateOrganization,
   useUpdateOrganization,
   useDeleteOrganization,
   useCreateInvitation,
   useUploadOrganizationLogo,
-} from "@/hooks/use-admin-mutations"
-import type { Organization } from "@/types/admin"
+} from "@/hooks/use-admin-mutations";
+import type { Organization } from "@/types/admin";
 
 function slugify(text: string) {
   return text
     .toLowerCase()
     .trim()
     .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
+    .replace(/[^a-z0-9-]/g, "");
 }
 
 function getInitials(name: string) {
@@ -44,16 +44,16 @@ function getInitials(name: string) {
     .map((n) => n[0])
     .join("")
     .toUpperCase()
-    .slice(0, 2)
+    .slice(0, 2);
 }
 
 function isValidJson(str: string): boolean {
-  if (!str.trim()) return true
+  if (!str.trim()) return true;
   try {
-    JSON.parse(str)
-    return true
+    JSON.parse(str);
+    return true;
   } catch {
-    return false
+    return false;
   }
 }
 
@@ -62,87 +62,83 @@ export function CreateOrganizationDialog({
   open,
   onOpenChange,
 }: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [name, setName] = useState("")
-  const [slug, setSlug] = useState("")
-  const [slugManual, setSlugManual] = useState(false)
-  const [address, setAddress] = useState("")
-  const [metadata, setMetadata] = useState("")
-  const [logoFile, setLogoFile] = useState<File | null>(null)
-  const [logoPreview, setLogoPreview] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [slugManual, setSlugManual] = useState(false);
+  const [address, setAddress] = useState("");
+  const [metadata, setMetadata] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const createMutation = useCreateOrganization()
-  const uploadLogoMutation = useUploadOrganizationLogo()
-  const updateMutation = useUpdateOrganization()
+  const createMutation = useCreateOrganization();
+  const uploadLogoMutation = useUploadOrganizationLogo();
+  const updateMutation = useUpdateOrganization();
 
   useEffect(() => {
     if (!slugManual) {
-      setSlug(slugify(name))
+      setSlug(slugify(name));
     }
-  }, [name, slugManual])
+  }, [name, slugManual]);
 
   useEffect(() => {
     if (logoFile) {
-      const url = URL.createObjectURL(logoFile)
-      setLogoPreview(url)
-      return () => URL.revokeObjectURL(url)
+      const url = URL.createObjectURL(logoFile);
+      setLogoPreview(url);
+      return () => URL.revokeObjectURL(url);
     }
-    setLogoPreview(null)
-  }, [logoFile])
+    setLogoPreview(null);
+  }, [logoFile]);
 
   const resetForm = () => {
-    setName("")
-    setSlug("")
-    setSlugManual(false)
-    setAddress("")
-    setMetadata("")
-    setLogoFile(null)
-    setLogoPreview(null)
-  }
+    setName("");
+    setSlug("");
+    setSlugManual(false);
+    setAddress("");
+    setMetadata("");
+    setLogoFile(null);
+    setLogoPreview(null);
+  };
 
   const handleSubmit = async () => {
-    const parsedMetadata = metadata.trim()
-      ? JSON.parse(metadata)
-      : undefined
+    const parsedMetadata = metadata.trim() ? JSON.parse(metadata) : undefined;
 
     const result = await createMutation.mutateAsync({
       name,
       slug,
       metadata: parsedMetadata,
       ...(address.trim() && { address: address.trim() }),
-    })
+    });
 
-    const orgId = (result as { id?: string })?.id
+    const orgId = (result as { id?: string })?.id;
     if (logoFile && orgId) {
       const uploadResult = await uploadLogoMutation.mutateAsync({
         image: logoFile,
         organizationId: orgId,
-      })
+      });
       await updateMutation.mutateAsync({
         organizationId: orgId,
         data: { logo: uploadResult.logoUrl },
-      })
+      });
     }
 
-    resetForm()
-    onOpenChange(false)
-  }
+    resetForm();
+    onOpenChange(false);
+  };
 
   const isPending =
-    createMutation.isPending ||
-    uploadLogoMutation.isPending ||
-    updateMutation.isPending
-  const canSubmit = name.trim() && slug.trim() && isValidJson(metadata)
+    createMutation.isPending || uploadLogoMutation.isPending || updateMutation.isPending;
+  const canSubmit = name.trim() && slug.trim() && isValidJson(metadata);
 
   return (
     <Dialog
       open={open}
       onOpenChange={(v) => {
-        if (!v) resetForm()
-        onOpenChange(v)
+        if (!v) resetForm();
+        onOpenChange(v);
       }}
     >
       <DialogContent className="max-w-md">
@@ -168,8 +164,8 @@ export function CreateOrganizationDialog({
               id="org-slug"
               value={slug}
               onChange={(e) => {
-                setSlug(e.target.value)
-                setSlugManual(true)
+                setSlug(e.target.value);
+                setSlugManual(true);
               }}
               placeholder="mon-organisation"
             />
@@ -187,9 +183,7 @@ export function CreateOrganizationDialog({
             <Label>Logo</Label>
             <div className="flex items-center gap-3">
               <Avatar className="h-12 w-12">
-                {logoPreview ? (
-                  <AvatarImage src={logoPreview} alt="Preview" />
-                ) : null}
+                {logoPreview ? <AvatarImage src={logoPreview} alt="Preview" /> : null}
                 <AvatarFallback className="text-xs">
                   {name ? getInitials(name) : "?"}
                 </AvatarFallback>
@@ -235,8 +229,8 @@ export function CreateOrganizationDialog({
           <Button
             variant="outline"
             onClick={() => {
-              resetForm()
-              onOpenChange(false)
+              resetForm();
+              onOpenChange(false);
             }}
           >
             Annuler
@@ -247,7 +241,7 @@ export function CreateOrganizationDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // Edit Organization Dialog
@@ -256,69 +250,67 @@ export function EditOrganizationDialog({
   open,
   onOpenChange,
 }: {
-  organization: Organization
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  organization: Organization;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [name, setName] = useState(org.name)
-  const [slug, setSlug] = useState(org.slug)
-  const [address, setAddress] = useState(org.address ?? "")
+  const [name, setName] = useState(org.name);
+  const [slug, setSlug] = useState(org.slug);
+  const [address, setAddress] = useState(org.address ?? "");
   const [metadata, setMetadata] = useState(() => {
-    if (!org.metadata) return ""
+    if (!org.metadata) return "";
     try {
-      return JSON.stringify(JSON.parse(org.metadata), null, 2)
+      return JSON.stringify(JSON.parse(org.metadata), null, 2);
     } catch {
-      return org.metadata
+      return org.metadata;
     }
-  })
-  const [logoFile, setLogoFile] = useState<File | null>(null)
-  const [logoPreview, setLogoPreview] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  });
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const updateMutation = useUpdateOrganization()
-  const uploadLogoMutation = useUploadOrganizationLogo()
+  const updateMutation = useUpdateOrganization();
+  const uploadLogoMutation = useUploadOrganizationLogo();
 
   useEffect(() => {
     if (open) {
-      setName(org.name)
-      setSlug(org.slug)
-      setAddress(org.address ?? "")
+      setName(org.name);
+      setSlug(org.slug);
+      setAddress(org.address ?? "");
       setMetadata(() => {
-        if (!org.metadata) return ""
+        if (!org.metadata) return "";
         try {
-          return JSON.stringify(JSON.parse(org.metadata), null, 2)
+          return JSON.stringify(JSON.parse(org.metadata), null, 2);
         } catch {
-          return org.metadata
+          return org.metadata;
         }
-      })
-      setLogoFile(null)
-      setLogoPreview(null)
+      });
+      setLogoFile(null);
+      setLogoPreview(null);
     }
-  }, [open, org])
+  }, [open, org]);
 
   useEffect(() => {
     if (logoFile) {
-      const url = URL.createObjectURL(logoFile)
-      setLogoPreview(url)
-      return () => URL.revokeObjectURL(url)
+      const url = URL.createObjectURL(logoFile);
+      setLogoPreview(url);
+      return () => URL.revokeObjectURL(url);
     }
-    setLogoPreview(null)
-  }, [logoFile])
+    setLogoPreview(null);
+  }, [logoFile]);
 
   const handleSubmit = async () => {
-    let logoUrl: string | undefined
+    let logoUrl: string | undefined;
 
     if (logoFile) {
       const uploadResult = await uploadLogoMutation.mutateAsync({
         image: logoFile,
         organizationId: org.id,
-      })
-      logoUrl = uploadResult.logoUrl
+      });
+      logoUrl = uploadResult.logoUrl;
     }
 
-    const parsedMetadata = metadata.trim()
-      ? JSON.parse(metadata)
-      : undefined
+    const parsedMetadata = metadata.trim() ? JSON.parse(metadata) : undefined;
 
     await updateMutation.mutateAsync({
       organizationId: org.id,
@@ -329,39 +321,29 @@ export function EditOrganizationDialog({
         ...(parsedMetadata !== undefined && { metadata: parsedMetadata }),
         address: address.trim() || undefined,
       },
-    })
+    });
 
-    onOpenChange(false)
-  }
+    onOpenChange(false);
+  };
 
-  const isPending = updateMutation.isPending || uploadLogoMutation.isPending
-  const canSubmit = name.trim() && slug.trim() && isValidJson(metadata)
+  const isPending = updateMutation.isPending || uploadLogoMutation.isPending;
+  const canSubmit = name.trim() && slug.trim() && isValidJson(metadata);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Modifier l&apos;organisation</DialogTitle>
-          <DialogDescription>
-            Modifier les informations de {org.name}
-          </DialogDescription>
+          <DialogDescription>Modifier les informations de {org.name}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="edit-org-name">Nom</Label>
-            <Input
-              id="edit-org-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <Input id="edit-org-name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="edit-org-slug">Slug</Label>
-            <Input
-              id="edit-org-slug"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-            />
+            <Input id="edit-org-slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="edit-org-address">Adresse</Label>
@@ -376,13 +358,8 @@ export function EditOrganizationDialog({
             <Label>Logo</Label>
             <div className="flex items-center gap-3">
               <Avatar className="h-12 w-12">
-                <AvatarImage
-                  src={logoPreview ?? org.logo ?? undefined}
-                  alt={org.name}
-                />
-                <AvatarFallback className="text-xs">
-                  {getInitials(org.name)}
-                </AvatarFallback>
+                <AvatarImage src={logoPreview ?? org.logo ?? undefined} alt={org.name} />
+                <AvatarFallback className="text-xs">{getInitials(org.name)}</AvatarFallback>
               </Avatar>
               <Button
                 type="button"
@@ -431,7 +408,7 @@ export function EditOrganizationDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // Delete Organization Dialog
@@ -441,24 +418,24 @@ export function DeleteOrganizationDialog({
   onOpenChange,
   onDeleted,
 }: {
-  organization: Organization
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onDeleted?: () => void
+  organization: Organization;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDeleted?: () => void;
 }) {
-  const deleteMutation = useDeleteOrganization()
+  const deleteMutation = useDeleteOrganization();
 
   const handleSubmit = () => {
     deleteMutation.mutate(
       { organizationId: org.id },
       {
         onSuccess: () => {
-          onOpenChange(false)
-          onDeleted?.()
+          onOpenChange(false);
+          onDeleted?.();
         },
       },
-    )
-  }
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -466,25 +443,21 @@ export function DeleteOrganizationDialog({
         <DialogHeader>
           <DialogTitle>Supprimer l&apos;organisation</DialogTitle>
           <DialogDescription>
-            Supprimer d&eacute;finitivement &laquo; {org.name} &raquo; et tous
-            ses membres et invitations ? Cette action est irr&eacute;versible.
+            Supprimer d&eacute;finitivement &laquo; {org.name} &raquo; et tous ses membres et
+            invitations ? Cette action est irr&eacute;versible.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Annuler
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleSubmit}
-            disabled={deleteMutation.isPending}
-          >
+          <Button variant="destructive" onClick={handleSubmit} disabled={deleteMutation.isPending}>
             {deleteMutation.isPending ? "Suppression..." : "Supprimer"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // Create Invitation Dialog
@@ -493,44 +466,42 @@ export function CreateInvitationDialog({
   open,
   onOpenChange,
 }: {
-  organizationId: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  organizationId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [email, setEmail] = useState("")
-  const [role, setRole] = useState("member")
-  const createInvitationMutation = useCreateInvitation()
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("member");
+  const createInvitationMutation = useCreateInvitation();
 
   const handleSubmit = () => {
     createInvitationMutation.mutate(
       { organizationId, email, role },
       {
         onSuccess: () => {
-          setEmail("")
-          setRole("member")
-          onOpenChange(false)
+          setEmail("");
+          setRole("member");
+          onOpenChange(false);
         },
       },
-    )
-  }
+    );
+  };
 
   return (
     <Dialog
       open={open}
       onOpenChange={(v) => {
         if (!v) {
-          setEmail("")
-          setRole("member")
+          setEmail("");
+          setRole("member");
         }
-        onOpenChange(v)
+        onOpenChange(v);
       }}
     >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Inviter un membre</DialogTitle>
-          <DialogDescription>
-            Envoyer une invitation par email
-          </DialogDescription>
+          <DialogDescription>Envoyer une invitation par email</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
@@ -561,9 +532,9 @@ export function CreateInvitationDialog({
           <Button
             variant="outline"
             onClick={() => {
-              setEmail("")
-              setRole("member")
-              onOpenChange(false)
+              setEmail("");
+              setRole("member");
+              onOpenChange(false);
             }}
           >
             Annuler
@@ -577,5 +548,5 @@ export function CreateInvitationDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -1,14 +1,28 @@
-"use client"
+"use client";
 
-import { useState, useCallback } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Pencil, Trash2, Plus, X, Eye, EyeOff, MapPin, Lock, LockOpen, RefreshCw, Copy, Check } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  Pencil,
+  Trash2,
+  Plus,
+  X,
+  Eye,
+  EyeOff,
+  MapPin,
+  Lock,
+  LockOpen,
+  RefreshCw,
+  Copy,
+  Check,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -16,29 +30,34 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { DataTable } from "@/components/custom/data-table"
+} from "@/components/ui/table";
+import { DataTable } from "@/components/custom/data-table";
 import {
   EditOrganizationDialog,
   DeleteOrganizationDialog,
   CreateInvitationDialog,
-} from "@/components/custom/organization-actions"
+} from "@/components/custom/organization-actions";
 import {
   useAdminOrganizations,
   useOrganizationMembers,
   useOrganizationInvitations,
-} from "@/hooks/use-admin-queries"
-import { useCancelInvitation, useUpdateOrganization, useToggleOrganizationPin, useRegenerateOrganizationPin } from "@/hooks/use-admin-mutations"
-import type { ColumnDef } from "@tanstack/react-table"
-import type { OrganizationMember, Invitation } from "@/types/admin"
+} from "@/hooks/use-admin-queries";
+import {
+  useCancelInvitation,
+  useUpdateOrganization,
+  useToggleOrganizationPin,
+  useRegenerateOrganizationPin,
+} from "@/hooks/use-admin-mutations";
+import type { ColumnDef } from "@tanstack/react-table";
+import type { OrganizationMember, Invitation } from "@/types/admin";
 
 function formatDate(dateStr: string | null) {
-  if (!dateStr) return "-"
+  if (!dateStr) return "-";
   return new Date(dateStr).toLocaleDateString("fr-FR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  })
+  });
 }
 
 function getInitials(name: string) {
@@ -47,7 +66,7 @@ function getInitials(name: string) {
     .map((n) => n[0])
     .join("")
     .toUpperCase()
-    .slice(0, 2)
+    .slice(0, 2);
 }
 
 const membersColumns: ColumnDef<OrganizationMember>[] = [
@@ -55,45 +74,37 @@ const membersColumns: ColumnDef<OrganizationMember>[] = [
     accessorKey: "userName",
     header: "Membre",
     cell: ({ row }) => {
-      const m = row.original
+      const m = row.original;
       return (
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
             <AvatarImage src={m.userImage ?? undefined} alt={m.userName} />
-            <AvatarFallback className="text-xs">
-              {getInitials(m.userName)}
-            </AvatarFallback>
+            <AvatarFallback className="text-xs">{getInitials(m.userName)}</AvatarFallback>
           </Avatar>
           <div>
             <span className="font-medium">{m.userName}</span>
             <p className="text-xs text-muted-foreground">{m.userEmail}</p>
           </div>
         </div>
-      )
+      );
     },
   },
   {
     accessorKey: "role",
     header: "R\u00f4le",
     cell: ({ row }) => {
-      const role = row.original.role
-      return (
-        <Badge variant={role === "owner" ? "default" : "secondary"}>
-          {role}
-        </Badge>
-      )
+      const role = row.original.role;
+      return <Badge variant={role === "owner" ? "default" : "secondary"}>{role}</Badge>;
     },
   },
   {
     accessorKey: "userBanned",
     header: "Statut",
     cell: ({ row }) => {
-      const banned = row.original.userBanned
+      const banned = row.original.userBanned;
       return (
-        <Badge variant={banned ? "destructive" : "outline"}>
-          {banned ? "Banni" : "Actif"}
-        </Badge>
-      )
+        <Badge variant={banned ? "destructive" : "outline"}>{banned ? "Banni" : "Actif"}</Badge>
+      );
     },
   },
   {
@@ -101,109 +112,101 @@ const membersColumns: ColumnDef<OrganizationMember>[] = [
     header: "Date d'ajout",
     cell: ({ row }) => formatDate(row.original.createdAt),
   },
-]
+];
 
-function getStatusVariant(
-  status: string,
-): "default" | "secondary" | "destructive" | "outline" {
+function getStatusVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
   switch (status) {
     case "accepted":
-      return "default"
+      return "default";
     case "pending":
-      return "outline"
+      return "outline";
     case "rejected":
-      return "destructive"
+      return "destructive";
     case "canceled":
-      return "secondary"
+      return "secondary";
     default:
-      return "secondary"
+      return "secondary";
   }
 }
 
 function getStatusLabel(status: string): string {
   switch (status) {
     case "pending":
-      return "En attente"
+      return "En attente";
     case "accepted":
-      return "Accept\u00e9e"
+      return "Accept\u00e9e";
     case "rejected":
-      return "Refus\u00e9e"
+      return "Refus\u00e9e";
     case "canceled":
-      return "Annul\u00e9e"
+      return "Annul\u00e9e";
     default:
-      return status
+      return status;
   }
 }
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
 export default function OrganizationDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const organizationId = params.organizationId as string
-  const [membersPageIndex, setMembersPageIndex] = useState(0)
+  const params = useParams();
+  const router = useRouter();
+  const organizationId = params.organizationId as string;
+  const [membersPageIndex, setMembersPageIndex] = useState(0);
 
-  const [editDialogOpen, setEditDialogOpen] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
-  const [pinVisible, setPinVisible] = useState(false)
-  const [pinCopied, setPinCopied] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [pinVisible, setPinVisible] = useState(false);
+  const [pinCopied, setPinCopied] = useState(false);
 
   const { data: orgsData, isLoading: orgLoading } = useAdminOrganizations({
     searchValue: undefined,
     limit: 100,
     offset: 0,
-  })
+  });
 
-  const org = orgsData?.organizations?.find((o) => o.id === organizationId)
+  const org = orgsData?.organizations?.find((o) => o.id === organizationId);
 
-  const { data: membersData, isLoading: membersLoading } =
-    useOrganizationMembers({
-      organizationId,
-      limit: PAGE_SIZE,
-      offset: membersPageIndex * PAGE_SIZE,
-    })
+  const { data: membersData, isLoading: membersLoading } = useOrganizationMembers({
+    organizationId,
+    limit: PAGE_SIZE,
+    offset: membersPageIndex * PAGE_SIZE,
+  });
 
-  const { data: invitationsData, isLoading: invitationsLoading } =
-    useOrganizationInvitations({ organizationId })
+  const { data: invitationsData, isLoading: invitationsLoading } = useOrganizationInvitations({
+    organizationId,
+  });
 
-  const cancelInvitationMutation = useCancelInvitation()
-  const updateOrganizationMutation = useUpdateOrganization()
-  const togglePinMutation = useToggleOrganizationPin()
-  const regeneratePinMutation = useRegenerateOrganizationPin()
+  const cancelInvitationMutation = useCancelInvitation();
+  const updateOrganizationMutation = useUpdateOrganization();
+  const togglePinMutation = useToggleOrganizationPin();
+  const regeneratePinMutation = useRegenerateOrganizationPin();
 
   const handleCopyPin = useCallback(() => {
     if (org?.pin) {
-      navigator.clipboard.writeText(org.pin)
-      setPinCopied(true)
-      setTimeout(() => setPinCopied(false), 2000)
+      navigator.clipboard.writeText(org.pin);
+      setPinCopied(true);
+      setTimeout(() => setPinCopied(false), 2000);
     }
-  }, [org?.pin])
+  }, [org?.pin]);
 
   const isHidden = (() => {
-    if (!org?.metadata) return false
+    if (!org?.metadata) return false;
     try {
-      const meta =
-        typeof org.metadata === "string"
-          ? JSON.parse(org.metadata)
-          : org.metadata
-      return !!meta.hidden
+      const meta = typeof org.metadata === "string" ? JSON.parse(org.metadata) : org.metadata;
+      return !!meta.hidden;
     } catch {
-      return false
+      return false;
     }
-  })()
+  })();
 
   const handleToggleVisibility = useCallback(() => {
-    if (!org) return
-    let existingMeta: Record<string, unknown> = {}
+    if (!org) return;
+    let existingMeta: Record<string, unknown> = {};
     if (org.metadata) {
       try {
-        existingMeta =
-          typeof org.metadata === "string"
-            ? JSON.parse(org.metadata)
-            : org.metadata
+        existingMeta = typeof org.metadata === "string" ? JSON.parse(org.metadata) : org.metadata;
       } catch {
-        existingMeta = {}
+        existingMeta = {};
       }
     }
     updateOrganizationMutation.mutate({
@@ -211,19 +214,19 @@ export default function OrganizationDetailPage() {
       data: {
         metadata: { ...existingMeta, hidden: !isHidden },
       },
-    })
-  }, [org, isHidden, updateOrganizationMutation])
+    });
+  }, [org, isHidden, updateOrganizationMutation]);
 
   const handleMemberClick = useCallback(
     (member: OrganizationMember) => {
-      router.push(`/dashboard/users/${member.userId}`)
+      router.push(`/dashboard/users/${member.userId}`);
     },
     [router],
-  )
+  );
 
   const handleDeleted = useCallback(() => {
-    router.push("/dashboard/organizations")
-  }, [router])
+    router.push("/dashboard/organizations");
+  }, [router]);
 
   if (orgLoading) {
     return (
@@ -231,17 +234,13 @@ export default function OrganizationDetailPage() {
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-24 w-full" />
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.push("/dashboard/organizations")}
-        >
+        <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/organizations")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-bold">D&eacute;tail organisation</h1>
@@ -252,9 +251,7 @@ export default function OrganizationDetailPage() {
           <CardContent className="flex items-center gap-6 pt-6">
             <Avatar className="h-16 w-16">
               <AvatarImage src={org.logo ?? undefined} alt={org.name} />
-              <AvatarFallback className="text-lg">
-                {getInitials(org.name)}
-              </AvatarFallback>
+              <AvatarFallback className="text-lg">{getInitials(org.name)}</AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -305,19 +302,11 @@ export default function OrganizationDetailPage() {
                   </>
                 )}
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setEditDialogOpen(true)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setEditDialogOpen(true)}>
                 <Pencil className="mr-2 h-3 w-3" />
                 Modifier
               </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setDeleteDialogOpen(true)}
-              >
+              <Button variant="destructive" size="sm" onClick={() => setDeleteDialogOpen(true)}>
                 <Trash2 className="mr-2 h-3 w-3" />
                 Supprimer
               </Button>
@@ -362,13 +351,12 @@ export default function OrganizationDetailPage() {
                     >
                       {pinVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleCopyPin}
-                      title="Copier"
-                    >
-                      {pinCopied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                    <Button variant="ghost" size="icon" onClick={handleCopyPin} title="Copier">
+                      {pinCopied ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 )}
@@ -388,9 +376,7 @@ export default function OrganizationDetailPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    regeneratePinMutation.mutate({ organizationId: org.id })
-                  }
+                  onClick={() => regeneratePinMutation.mutate({ organizationId: org.id })}
                   disabled={regeneratePinMutation.isPending}
                 >
                   <RefreshCw className="mr-2 h-3 w-3" />
@@ -404,12 +390,8 @@ export default function OrganizationDetailPage() {
 
       <Tabs defaultValue="members">
         <TabsList>
-          <TabsTrigger value="members">
-            Membres ({membersData?.total ?? 0})
-          </TabsTrigger>
-          <TabsTrigger value="invitations">
-            Invitations ({invitationsData?.total ?? 0})
-          </TabsTrigger>
+          <TabsTrigger value="members">Membres ({membersData?.total ?? 0})</TabsTrigger>
+          <TabsTrigger value="invitations">Invitations ({invitationsData?.total ?? 0})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="members" className="mt-4">
@@ -442,9 +424,7 @@ export default function OrganizationDetailPage() {
               <Skeleton className="h-10 w-full" />
             </div>
           ) : !invitationsData?.invitations?.length ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
-              Aucune invitation
-            </p>
+            <p className="text-sm text-muted-foreground py-8 text-center">Aucune invitation</p>
           ) : (
             <div className="rounded-md border">
               <Table>
@@ -460,47 +440,41 @@ export default function OrganizationDetailPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {invitationsData.invitations.map(
-                    (inv: Invitation) => (
-                      <TableRow key={inv.id}>
-                        <TableCell className="font-medium">
-                          {inv.email}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">
-                            {inv.role ?? "member"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getStatusVariant(inv.status)}>
-                            {getStatusLabel(inv.status)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {inv.inviterName ?? inv.inviterEmail ?? "-"}
-                        </TableCell>
-                        <TableCell>{formatDate(inv.expiresAt)}</TableCell>
-                        <TableCell>{formatDate(inv.createdAt)}</TableCell>
-                        <TableCell>
-                          {inv.status === "pending" && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() =>
-                                cancelInvitationMutation.mutate({
-                                  invitationId: inv.id,
-                                })
-                              }
-                              disabled={cancelInvitationMutation.isPending}
-                              title="Annuler l'invitation"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ),
-                  )}
+                  {invitationsData.invitations.map((inv: Invitation) => (
+                    <TableRow key={inv.id}>
+                      <TableCell className="font-medium">{inv.email}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{inv.role ?? "member"}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusVariant(inv.status)}>
+                          {getStatusLabel(inv.status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {inv.inviterName ?? inv.inviterEmail ?? "-"}
+                      </TableCell>
+                      <TableCell>{formatDate(inv.expiresAt)}</TableCell>
+                      <TableCell>{formatDate(inv.createdAt)}</TableCell>
+                      <TableCell>
+                        {inv.status === "pending" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() =>
+                              cancelInvitationMutation.mutate({
+                                invitationId: inv.id,
+                              })
+                            }
+                            disabled={cancelInvitationMutation.isPending}
+                            title="Annuler l'invitation"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
@@ -529,5 +503,5 @@ export default function OrganizationDetailPage() {
         </>
       )}
     </div>
-  )
+  );
 }

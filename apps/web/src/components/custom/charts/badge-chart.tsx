@@ -1,23 +1,10 @@
-"use client"
+"use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 interface BadgeChartProps {
-  badges: { category: string }[]
+  badges: { category: string }[];
 }
 
 const COLORS = [
@@ -27,30 +14,30 @@ const COLORS = [
   "hsl(150, 60%, 50%)",
   "hsl(45, 90%, 55%)",
   "hsl(280, 60%, 55%)",
-]
+];
 
 export function BadgeChart({ badges }: BadgeChartProps) {
   const categoryMap = badges.reduce<Record<string, number>>((acc, b) => {
-    acc[b.category] = (acc[b.category] || 0) + 1
-    return acc
-  }, {})
+    acc[b.category] = (acc[b.category] || 0) + 1;
+    return acc;
+  }, {});
 
   const data = Object.entries(categoryMap).map(([name, value]) => ({
     name,
     value,
-  }))
+  }));
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Badges par catégorie</CardTitle>
-        <CardDescription>{badges.length} badge{badges.length > 1 ? "s" : ""} débloqué{badges.length > 1 ? "s" : ""}</CardDescription>
+        <CardDescription>
+          {badges.length} badge{badges.length > 1 ? "s" : ""} débloqué{badges.length > 1 ? "s" : ""}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            Aucun badge
-          </p>
+          <p className="py-8 text-center text-sm text-muted-foreground">Aucun badge</p>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -64,10 +51,7 @@ export function BadgeChart({ badges }: BadgeChartProps) {
                 label={({ name, value }) => `${name} (${value})`}
               >
                 {data.map((_, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip />
@@ -77,5 +61,5 @@ export function BadgeChart({ badges }: BadgeChartProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

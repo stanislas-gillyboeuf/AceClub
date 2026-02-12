@@ -1,32 +1,18 @@
-"use client"
+"use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 interface MatchChartProps {
-  wins: number
-  losses: number
+  wins: number;
+  losses: number;
 }
 
 export function MatchChart({ wins, losses }: MatchChartProps) {
   const data = [
     { name: "Victoires", count: wins, fill: "hsl(var(--primary))" },
     { name: "Défaites", count: losses, fill: "hsl(var(--destructive))" },
-  ]
+  ];
 
   return (
     <Card>
@@ -36,9 +22,7 @@ export function MatchChart({ wins, losses }: MatchChartProps) {
       </CardHeader>
       <CardContent>
         {wins === 0 && losses === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            Aucun match terminé
-          </p>
+          <p className="py-8 text-center text-sm text-muted-foreground">Aucun match terminé</p>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data}>
@@ -52,5 +36,5 @@ export function MatchChart({ wins, losses }: MatchChartProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,18 +1,11 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import {
-  Building2,
-  LayoutDashboard,
-  LifeBuoy,
-  Users,
-  Shield,
-  ToggleRight,
-} from "lucide-react"
+import * as React from "react";
+import { Building2, LayoutDashboard, LifeBuoy, Users, Shield, ToggleRight } from "lucide-react";
 
-import { NavMain } from "@/components/custom/nav-main"
-import { NavSecondary } from "@/components/custom/nav-secondary"
-import { NavUser } from "@/components/custom/nav-user"
+import { NavMain } from "@/components/custom/nav-main";
+import { NavSecondary } from "@/components/custom/nav-secondary";
+import { NavUser } from "@/components/custom/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -21,8 +14,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { useSession } from "@/lib/auth-client"
+} from "@/components/ui/sidebar";
+import { useSession } from "@/lib/auth-client";
 
 const navMain = [
   {
@@ -46,7 +39,7 @@ const navMain = [
     url: "/dashboard/feature-flags",
     icon: ToggleRight,
   },
-]
+];
 
 const navSecondary = [
   {
@@ -54,10 +47,10 @@ const navSecondary = [
     url: "#",
     icon: LifeBuoy,
   },
-]
+];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: session } = useSession()
+  const { data: session } = useSession();
 
   const user = session?.user
     ? {
@@ -69,7 +62,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         name: "Admin",
         email: "",
         avatar: "",
-      }
+      };
 
   return (
     <Sidebar variant="inset" collapsible="icon" {...props}>
@@ -98,5 +91,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

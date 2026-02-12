@@ -1,23 +1,11 @@
-"use client"
+"use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Trophy,
-  Flame,
-  Swords,
-  Target,
-  TrendingUp,
-  Medal,
-} from "lucide-react"
-import type { UserStats } from "@/types/admin"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Trophy, Flame, Swords, Target, TrendingUp, Medal } from "lucide-react";
+import type { UserStats } from "@/types/admin";
 
 interface StatsCardsProps {
-  stats: UserStats
+  stats: UserStats;
 }
 
 export function UserStatsCards({ stats }: StatsCardsProps) {
@@ -52,7 +40,7 @@ export function UserStatsCards({ stats }: StatsCardsProps) {
       value: `${stats.matches.winRate}%`,
       icon: Target,
     },
-  ]
+  ];
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
@@ -68,5 +56,5 @@ export function UserStatsCards({ stats }: StatsCardsProps) {
         </Card>
       ))}
     </div>
-  )
+  );
 }

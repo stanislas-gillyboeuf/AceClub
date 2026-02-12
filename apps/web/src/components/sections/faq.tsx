@@ -15,11 +15,7 @@ export function FAQ() {
       subtitle="Questions fréquentes"
       className="container px-10 mx-auto max-w-[var(--max-container-width)]"
     >
-      <Accordion
-        type="single"
-        collapsible
-        className="w-full max-w-2xl mx-auto py-10"
-      >
+      <Accordion type="single" collapsible className="w-full max-w-2xl mx-auto py-10">
         {siteConfig.faqs.map((faq, index) => (
           <AccordionItem key={index} value={`item-${index}`}>
             <AccordionTrigger className="text-left hover:no-underline">

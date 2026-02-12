@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,38 +8,38 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   useCreateFeatureFlag,
   useDeleteFeatureFlag,
   useSetFeatureFlagOverride,
   useRemoveFeatureFlagOverride,
-} from "@/hooks/use-admin-mutations"
-import type { FeatureFlag } from "@/types/admin"
+} from "@/hooks/use-admin-mutations";
+import type { FeatureFlag } from "@/types/admin";
 
 export function CreateFeatureFlagDialog({
   open,
   onOpenChange,
 }: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [key, setKey] = useState("")
-  const [enabled, setEnabled] = useState(false)
-  const [description, setDescription] = useState("")
+  const [key, setKey] = useState("");
+  const [enabled, setEnabled] = useState(false);
+  const [description, setDescription] = useState("");
 
-  const createMutation = useCreateFeatureFlag()
+  const createMutation = useCreateFeatureFlag();
 
   const resetForm = () => {
-    setKey("")
-    setEnabled(false)
-    setDescription("")
-  }
+    setKey("");
+    setEnabled(false);
+    setDescription("");
+  };
 
   const handleSubmit = () => {
     createMutation.mutate(
@@ -50,30 +50,28 @@ export function CreateFeatureFlagDialog({
       },
       {
         onSuccess: () => {
-          resetForm()
-          onOpenChange(false)
+          resetForm();
+          onOpenChange(false);
         },
       },
-    )
-  }
+    );
+  };
 
-  const isValidKey = /^[a-z][a-z0-9_]*$/.test(key)
-  const canSubmit = key.trim() && isValidKey
+  const isValidKey = /^[a-z][a-z0-9_]*$/.test(key);
+  const canSubmit = key.trim() && isValidKey;
 
   return (
     <Dialog
       open={open}
       onOpenChange={(v) => {
-        if (!v) resetForm()
-        onOpenChange(v)
+        if (!v) resetForm();
+        onOpenChange(v);
       }}
     >
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Nouveau feature flag</DialogTitle>
-          <DialogDescription>
-            Cr&eacute;er un nouveau flag de configuration
-          </DialogDescription>
+          <DialogDescription>Cr&eacute;er un nouveau flag de configuration</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
@@ -87,7 +85,8 @@ export function CreateFeatureFlagDialog({
             />
             {key && !isValidKey && (
               <p className="text-xs text-destructive">
-                La cl&eacute; doit &ecirc;tre en snake_case (lettres minuscules, chiffres, underscores)
+                La cl&eacute; doit &ecirc;tre en snake_case (lettres minuscules, chiffres,
+                underscores)
               </p>
             )}
           </div>
@@ -102,36 +101,27 @@ export function CreateFeatureFlagDialog({
             />
           </div>
           <div className="flex items-center gap-3">
-            <Switch
-              id="flag-enabled"
-              checked={enabled}
-              onCheckedChange={setEnabled}
-            />
-            <Label htmlFor="flag-enabled">
-              Activ&eacute; par d&eacute;faut
-            </Label>
+            <Switch id="flag-enabled" checked={enabled} onCheckedChange={setEnabled} />
+            <Label htmlFor="flag-enabled">Activ&eacute; par d&eacute;faut</Label>
           </div>
         </div>
         <DialogFooter>
           <Button
             variant="outline"
             onClick={() => {
-              resetForm()
-              onOpenChange(false)
+              resetForm();
+              onOpenChange(false);
             }}
           >
             Annuler
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={createMutation.isPending || !canSubmit}
-          >
+          <Button onClick={handleSubmit} disabled={createMutation.isPending || !canSubmit}>
             {createMutation.isPending ? "Cr\u00e9ation..." : "Cr\u00e9er"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 export function DeleteFeatureFlagDialog({
@@ -139,22 +129,22 @@ export function DeleteFeatureFlagDialog({
   open,
   onOpenChange,
 }: {
-  flag: FeatureFlag
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  flag: FeatureFlag;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const deleteMutation = useDeleteFeatureFlag()
+  const deleteMutation = useDeleteFeatureFlag();
 
   const handleSubmit = () => {
     deleteMutation.mutate(
       { id: flag.id },
       {
         onSuccess: () => {
-          onOpenChange(false)
+          onOpenChange(false);
         },
       },
-    )
-  }
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -163,25 +153,21 @@ export function DeleteFeatureFlagDialog({
           <DialogTitle>Supprimer le feature flag</DialogTitle>
           <DialogDescription>
             Supprimer d&eacute;finitivement le flag &laquo;{" "}
-            <span className="font-mono font-semibold">{flag.key}</span>{" "}
-            &raquo; et tous ses overrides ? Cette action est irr&eacute;versible.
+            <span className="font-mono font-semibold">{flag.key}</span> &raquo; et tous ses
+            overrides ? Cette action est irr&eacute;versible.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Annuler
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleSubmit}
-            disabled={deleteMutation.isPending}
-          >
+          <Button variant="destructive" onClick={handleSubmit} disabled={deleteMutation.isPending}>
             {deleteMutation.isPending ? "Suppression..." : "Supprimer"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 export function AddOverrideDialog({
@@ -189,46 +175,45 @@ export function AddOverrideDialog({
   open,
   onOpenChange,
 }: {
-  flag: FeatureFlag
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  flag: FeatureFlag;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [organizationId, setOrganizationId] = useState("")
-  const [enabled, setEnabled] = useState(false)
+  const [organizationId, setOrganizationId] = useState("");
+  const [enabled, setEnabled] = useState(false);
 
-  const setOverrideMutation = useSetFeatureFlagOverride()
+  const setOverrideMutation = useSetFeatureFlagOverride();
 
   const resetForm = () => {
-    setOrganizationId("")
-    setEnabled(false)
-  }
+    setOrganizationId("");
+    setEnabled(false);
+  };
 
   const handleSubmit = () => {
     setOverrideMutation.mutate(
       { flagId: flag.id, organizationId, enabled },
       {
         onSuccess: () => {
-          resetForm()
-          onOpenChange(false)
+          resetForm();
+          onOpenChange(false);
         },
       },
-    )
-  }
+    );
+  };
 
   return (
     <Dialog
       open={open}
       onOpenChange={(v) => {
-        if (!v) resetForm()
-        onOpenChange(v)
+        if (!v) resetForm();
+        onOpenChange(v);
       }}
     >
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Ajouter un override</DialogTitle>
           <DialogDescription>
-            Override pour le flag{" "}
-            <span className="font-mono font-semibold">{flag.key}</span>
+            Override pour le flag <span className="font-mono font-semibold">{flag.key}</span>
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -243,22 +228,16 @@ export function AddOverrideDialog({
             />
           </div>
           <div className="flex items-center gap-3">
-            <Switch
-              id="override-enabled"
-              checked={enabled}
-              onCheckedChange={setEnabled}
-            />
-            <Label htmlFor="override-enabled">
-              Activ&eacute; pour cette organisation
-            </Label>
+            <Switch id="override-enabled" checked={enabled} onCheckedChange={setEnabled} />
+            <Label htmlFor="override-enabled">Activ&eacute; pour cette organisation</Label>
           </div>
         </div>
         <DialogFooter>
           <Button
             variant="outline"
             onClick={() => {
-              resetForm()
-              onOpenChange(false)
+              resetForm();
+              onOpenChange(false);
             }}
           >
             Annuler
@@ -272,17 +251,11 @@ export function AddOverrideDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
-export function RemoveOverrideButton({
-  flagId,
-  orgId,
-}: {
-  flagId: string
-  orgId: string
-}) {
-  const removeMutation = useRemoveFeatureFlagOverride()
+export function RemoveOverrideButton({ flagId, orgId }: { flagId: string; orgId: string }) {
+  const removeMutation = useRemoveFeatureFlagOverride();
 
   return (
     <Button
@@ -294,5 +267,5 @@ export function RemoveOverrideButton({
     >
       {removeMutation.isPending ? "..." : "Retirer"}
     </Button>
-  )
+  );
 }

@@ -34,9 +34,7 @@ export const MotionHeader = motion.header as React.FC<
   HTMLMotionProps<"header"> & { className?: string; children?: React.ReactNode }
 >;
 
-export const MotionHr = motion.hr as React.FC<
-  HTMLMotionProps<"hr"> & { className?: string }
->;
+export const MotionHr = motion.hr as React.FC<HTMLMotionProps<"hr"> & { className?: string }>;
 
 export const MotionNav = motion.nav as React.FC<
   HTMLMotionProps<"nav"> & { className?: string; children?: React.ReactNode }
@@ -47,5 +45,9 @@ export const MotionA = motion.a as React.FC<
 >;
 
 export const MotionImg = motion.img as React.ForwardRefExoticComponent<
-  HTMLMotionProps<"img"> & { className?: string; src?: string; alt?: string } & React.RefAttributes<HTMLImageElement>
+  HTMLMotionProps<"img"> & {
+    className?: string;
+    src?: string;
+    alt?: string;
+  } & React.RefAttributes<HTMLImageElement>
 >;

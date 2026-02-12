@@ -78,11 +78,7 @@ export function MobileDrawer() {
       <DrawerContent>
         <DrawerHeader className="px-6">
           <div>
-            <Link
-              href="/"
-              title="brand-logo"
-              className="relative mr-6 flex items-center space-x-2"
-            >
+            <Link href="/" title="brand-logo" className="relative mr-6 flex items-center space-x-2">
               <Icons.logo className="h-10 w-10 rounded-lg" />
               <span className="font-bold text-xl">{siteConfig.name}</span>
             </Link>
@@ -139,7 +135,7 @@ export function MobileDrawer() {
               href="/contact"
               className={cn(
                 buttonVariants({ variant: "default", size: "lg" }),
-                "text-white rounded-full group w-full"
+                "text-white rounded-full group w-full",
               )}
             >
               {siteConfig.cta}

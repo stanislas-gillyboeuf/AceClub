@@ -1,12 +1,6 @@
-"use client"
+"use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   LineChart,
   Line,
@@ -15,10 +9,10 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-} from "recharts"
+} from "recharts";
 
 interface AcesChartProps {
-  data: { date: string; total: number }[]
+  data: { date: string; total: number }[];
 }
 
 export function AcesChart({ data }: AcesChartProps) {
@@ -28,7 +22,7 @@ export function AcesChart({ data }: AcesChartProps) {
       day: "2-digit",
       month: "2-digit",
     }),
-  }))
+  }));
 
   return (
     <Card>
@@ -38,9 +32,7 @@ export function AcesChart({ data }: AcesChartProps) {
       </CardHeader>
       <CardContent>
         {formatted.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            Aucune donnée
-          </p>
+          <p className="py-8 text-center text-sm text-muted-foreground">Aucune donnée</p>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={formatted}>
@@ -60,5 +52,5 @@ export function AcesChart({ data }: AcesChartProps) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -45,14 +45,10 @@ export function Pricing() {
             <div className="text-4xl font-bold text-primary mb-2">
               {plan.price}
               {plan.period && (
-                <span className="text-sm font-normal text-muted-foreground">
-                  /{plan.period}
-                </span>
+                <span className="text-sm font-normal text-muted-foreground">/{plan.period}</span>
               )}
             </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              {plan.description}
-            </p>
+            <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
 
             <div className="space-y-3 mb-6">
               {plan.features.map((feature, featureIndex) => (
@@ -62,12 +58,7 @@ export function Pricing() {
                 </div>
               ))}
             </div>
-            <Button
-              variant={"default"}
-              size="sm"
-              className="rounded-full text-white"
-              asChild
-            >
+            <Button variant={"default"} size="sm" className="rounded-full text-white" asChild>
               <a href={plan.href}>
                 {plan.buttonText}
                 <ChevronRightIcon className="w-4 h-4 ml-1" />

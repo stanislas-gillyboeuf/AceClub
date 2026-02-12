@@ -49,8 +49,7 @@
   --animate-border-beam: border-beam calc(var(--duration) * 1s) infinite linear;
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
-  --animate-ripple: ripple var(--duration, 2s) ease calc(var(--i, 0) * 0.2s)
-    infinite;
+  --animate-ripple: ripple var(--duration, 2s) ease calc(var(--i, 0) * 0.2s) infinite;
   @keyframes marquee {
     from {
       transform: translateX(0);
@@ -123,8 +122,8 @@
   --accent-foreground: oklch(0.25 0.03 145);
   --destructive: oklch(0.55 0.2 27); /* Rouge */
   --destructive-foreground: oklch(0.98 0.01 85);
-  --border: oklch(0.90 0.02 85); /* Bordure crème foncé */
-  --input: oklch(0.90 0.02 85);
+  --border: oklch(0.9 0.02 85); /* Bordure crème foncé */
+  --input: oklch(0.9 0.02 85);
   --ring: oklch(0.52 0.14 152); /* Vert AceClub */
   --radius: 0.5rem;
   --chart-1: oklch(0.52 0.14 152); /* Vert */
@@ -138,7 +137,7 @@
   --sidebar-primary-foreground: oklch(0.98 0.01 85);
   --sidebar-accent: oklch(0.94 0.01 85);
   --sidebar-accent-foreground: oklch(0.25 0.03 145);
-  --sidebar-border: oklch(0.90 0.02 85);
+  --sidebar-border: oklch(0.9 0.02 85);
   --sidebar-ring: oklch(0.52 0.14 152);
 }
 
@@ -155,10 +154,10 @@
   --secondary: oklch(0.62 0.18 35); /* #E86B3A - Orange clair AceClub */
   --secondary-foreground: oklch(0.15 0.02 145);
   --muted: oklch(0.22 0.02 145); /* Vert sombre */
-  --muted-foreground: oklch(0.70 0.02 85); /* Crème atténué */
+  --muted-foreground: oklch(0.7 0.02 85); /* Crème atténué */
   --accent: oklch(0.22 0.02 145);
   --accent-foreground: oklch(0.96 0.01 85);
-  --destructive: oklch(0.50 0.2 27); /* Rouge foncé */
+  --destructive: oklch(0.5 0.2 27); /* Rouge foncé */
   --destructive-foreground: oklch(0.96 0.01 85);
   --border: oklch(0.25 0.02 145);
   --input: oklch(0.25 0.02 145);
@@ -166,7 +165,7 @@
   --chart-1: oklch(0.58 0.14 152); /* Vert clair */
   --chart-2: oklch(0.62 0.18 35); /* Orange clair */
   --chart-3: oklch(0.45 0.08 145); /* Vert moyen */
-  --chart-4: oklch(0.80 0.02 85); /* Crème */
+  --chart-4: oklch(0.8 0.02 85); /* Crème */
   --chart-5: oklch(0.65 0.12 152); /* Vert pastel */
   --sidebar: oklch(0.18 0.02 145);
   --sidebar-foreground: oklch(0.96 0.01 85);

@@ -3,14 +3,7 @@ type LogoProps = React.ImgHTMLAttributes<HTMLImageElement>;
 
 export const Icons = {
   logo: ({ className, style, ...props }: LogoProps) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src="/logo.png"
-      alt="AceClub"
-      className={className}
-      style={{ ...style }}
-      {...props}
-    />
+    <img src="/logo.png" alt="AceClub" className={className} style={{ ...style }} {...props} />
   ),
   twitter: (props: IconProps) => (
     <svg

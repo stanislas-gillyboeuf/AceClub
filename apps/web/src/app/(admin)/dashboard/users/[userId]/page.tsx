@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -16,27 +16,27 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { UserStatsCards } from "@/components/custom/user-stats-cards"
-import { AcesChart } from "@/components/custom/charts/aces-chart"
-import { MatchChart } from "@/components/custom/charts/match-chart"
-import { BadgeChart } from "@/components/custom/charts/badge-chart"
+} from "@/components/ui/table";
+import { UserStatsCards } from "@/components/custom/user-stats-cards";
+import { AcesChart } from "@/components/custom/charts/aces-chart";
+import { MatchChart } from "@/components/custom/charts/match-chart";
+import { BadgeChart } from "@/components/custom/charts/badge-chart";
 import {
   SetRoleDialog,
   SetPasswordDialog,
   BanUserDialog,
   UnbanUserDialog,
-} from "@/components/custom/user-actions"
-import { useUserStats, useAdminUsers } from "@/hooks/use-admin-queries"
-import type { User } from "@/types/admin"
+} from "@/components/custom/user-actions";
+import { useUserStats, useAdminUsers } from "@/hooks/use-admin-queries";
+import type { User } from "@/types/admin";
 
 function formatDate(dateStr: string | null) {
-  if (!dateStr) return "-"
+  if (!dateStr) return "-";
   return new Date(dateStr).toLocaleDateString("fr-FR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  })
+  });
 }
 
 function getInitials(name: string) {
@@ -45,31 +45,31 @@ function getInitials(name: string) {
     .map((n) => n[0])
     .join("")
     .toUpperCase()
-    .slice(0, 2)
+    .slice(0, 2);
 }
 
 export default function UserDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const userId = params.userId as string
+  const params = useParams();
+  const router = useRouter();
+  const userId = params.userId as string;
 
-  const { data: stats, isLoading: statsLoading } = useUserStats(userId)
+  const { data: stats, isLoading: statsLoading } = useUserStats(userId);
 
   // Fetch the user data by ID using the filter approach
   const { data: usersData, isLoading: userLoading } = useAdminUsers({
     filterField: "id",
     filterValue: userId,
     limit: 1,
-  })
+  });
 
-  const [roleDialogOpen, setRoleDialogOpen] = useState(false)
-  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false)
-  const [banDialogOpen, setBanDialogOpen] = useState(false)
-  const [unbanDialogOpen, setUnbanDialogOpen] = useState(false)
+  const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [banDialogOpen, setBanDialogOpen] = useState(false);
+  const [unbanDialogOpen, setUnbanDialogOpen] = useState(false);
 
-  const user: User | null = usersData?.users?.[0] ?? null
+  const user: User | null = usersData?.users?.[0] ?? null;
 
-  const isLoading = statsLoading || userLoading
+  const isLoading = statsLoading || userLoading;
 
   if (isLoading) {
     return (
@@ -82,18 +82,14 @@ export default function UserDetailPage() {
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.push("/dashboard/users")}
-        >
+        <Button variant="ghost" size="icon" onClick={() => router.push("/dashboard/users")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-bold">Détail utilisateur</h1>
@@ -105,19 +101,13 @@ export default function UserDetailPage() {
           <CardContent className="flex items-center gap-6 pt-6">
             <Avatar className="h-16 w-16">
               <AvatarImage src={user.image ?? undefined} alt={user.name} />
-              <AvatarFallback className="text-lg">
-                {getInitials(user.name)}
-              </AvatarFallback>
+              <AvatarFallback className="text-lg">{getInitials(user.name)}</AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <h2 className="text-xl font-semibold">{user.name}</h2>
               <p className="text-sm text-muted-foreground">{user.email}</p>
               <div className="mt-1 flex items-center gap-2">
-                <Badge
-                  variant={user.role === "admin" ? "default" : "secondary"}
-                >
-                  {user.role}
-                </Badge>
+                <Badge variant={user.role === "admin" ? "default" : "secondary"}>{user.role}</Badge>
                 <Badge variant={user.banned ? "destructive" : "outline"}>
                   {user.banned ? "Banni" : "Actif"}
                 </Badge>
@@ -127,34 +117,18 @@ export default function UserDetailPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPasswordDialogOpen(true)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setPasswordDialogOpen(true)}>
                 Mot de passe
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setRoleDialogOpen(true)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setRoleDialogOpen(true)}>
                 Changer rôle
               </Button>
               {user.banned ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setUnbanDialogOpen(true)}
-                >
+                <Button variant="outline" size="sm" onClick={() => setUnbanDialogOpen(true)}>
                   Débannir
                 </Button>
               ) : (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setBanDialogOpen(true)}
-                >
+                <Button variant="destructive" size="sm" onClick={() => setBanDialogOpen(true)}>
                   Bannir
                 </Button>
               )}
@@ -188,9 +162,7 @@ export default function UserDetailPage() {
               </CardHeader>
               <CardContent>
                 {stats.matches.recent.length === 0 ? (
-                  <p className="py-4 text-center text-sm text-muted-foreground">
-                    Aucun match
-                  </p>
+                  <p className="py-4 text-center text-sm text-muted-foreground">Aucun match</p>
                 ) : (
                   <Table>
                     <TableHeader>
@@ -204,18 +176,14 @@ export default function UserDetailPage() {
                     <TableBody>
                       {stats.matches.recent.map((m) => (
                         <TableRow key={m.matchId}>
-                          <TableCell>
-                            {formatDate(m.finishedAt ?? m.scheduledAt)}
-                          </TableCell>
+                          <TableCell>{formatDate(m.finishedAt ?? m.scheduledAt)}</TableCell>
                           <TableCell>
                             <Badge variant="outline">{m.status}</Badge>
                           </TableCell>
                           <TableCell>{m.side}</TableCell>
                           <TableCell>
                             {m.status === "finished" ? (
-                              <Badge
-                                variant={m.isWinner ? "default" : "destructive"}
-                              >
+                              <Badge variant={m.isWinner ? "default" : "destructive"}>
                                 {m.isWinner ? "Victoire" : "Défaite"}
                               </Badge>
                             ) : (
@@ -236,15 +204,11 @@ export default function UserDetailPage() {
             <BadgeChart badges={stats.badges} />
             <Card>
               <CardHeader>
-                <CardTitle>
-                  Badges débloqués ({stats.badges.length})
-                </CardTitle>
+                <CardTitle>Badges débloqués ({stats.badges.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 {stats.badges.length === 0 ? (
-                  <p className="py-4 text-center text-sm text-muted-foreground">
-                    Aucun badge
-                  </p>
+                  <p className="py-4 text-center text-sm text-muted-foreground">Aucun badge</p>
                 ) : (
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {stats.badges.map((b) => (
@@ -253,11 +217,7 @@ export default function UserDetailPage() {
                         className="flex items-center gap-3 rounded-lg border p-3"
                       >
                         {b.imageUrl && (
-                          <img
-                            src={b.imageUrl}
-                            alt={b.nameFr}
-                            className="h-10 w-10 rounded"
-                          />
+                          <img src={b.imageUrl} alt={b.nameFr} className="h-10 w-10 rounded" />
                         )}
                         <div>
                           <p className="font-medium">{b.nameFr}</p>
@@ -278,9 +238,7 @@ export default function UserDetailPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>
-                    Challenges actifs ({stats.challenges.active.length})
-                  </CardTitle>
+                  <CardTitle>Challenges actifs ({stats.challenges.active.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {stats.challenges.active.length === 0 ? (
@@ -297,8 +255,7 @@ export default function UserDetailPage() {
                           <div>
                             <p className="font-medium">{ch.templateTitleFr}</p>
                             <p className="text-xs text-muted-foreground">
-                              {ch.templateDifficulty} &bull; S{ch.weekNumber}{" "}
-                              {ch.year}
+                              {ch.templateDifficulty} &bull; S{ch.weekNumber} {ch.year}
                             </p>
                           </div>
                           <div className="text-right">
@@ -323,9 +280,7 @@ export default function UserDetailPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>
-                    Challenges complétés ({stats.challenges.completed.length})
-                  </CardTitle>
+                  <CardTitle>Challenges complétés ({stats.challenges.completed.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {stats.challenges.completed.length === 0 ? (
@@ -342,14 +297,11 @@ export default function UserDetailPage() {
                           <div>
                             <p className="font-medium">{ch.templateTitleFr}</p>
                             <p className="text-xs text-muted-foreground">
-                              {ch.templateDifficulty} &bull;{" "}
-                              {formatDate(ch.completedAt)}
+                              {ch.templateDifficulty} &bull; {formatDate(ch.completedAt)}
                             </p>
                           </div>
                           {ch.acesAwarded && (
-                            <Badge variant="secondary">
-                              +{ch.acesAwarded} Aces
-                            </Badge>
+                            <Badge variant="secondary">+{ch.acesAwarded} Aces</Badge>
                           )}
                         </div>
                       ))}
@@ -370,23 +322,11 @@ export default function UserDetailPage() {
             open={passwordDialogOpen}
             onOpenChange={setPasswordDialogOpen}
           />
-          <SetRoleDialog
-            user={user}
-            open={roleDialogOpen}
-            onOpenChange={setRoleDialogOpen}
-          />
-          <BanUserDialog
-            user={user}
-            open={banDialogOpen}
-            onOpenChange={setBanDialogOpen}
-          />
-          <UnbanUserDialog
-            user={user}
-            open={unbanDialogOpen}
-            onOpenChange={setUnbanDialogOpen}
-          />
+          <SetRoleDialog user={user} open={roleDialogOpen} onOpenChange={setRoleDialogOpen} />
+          <BanUserDialog user={user} open={banDialogOpen} onOpenChange={setBanDialogOpen} />
+          <UnbanUserDialog user={user} open={unbanDialogOpen} onOpenChange={setUnbanDialogOpen} />
         </>
       )}
     </div>
-  )
+  );
 }

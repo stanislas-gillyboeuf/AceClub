@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 interface ContactFormData {
   clubName: string;
@@ -16,10 +14,7 @@ interface ContactFormData {
 export async function POST(request: NextRequest) {
   if (!resend) {
     console.error("RESEND_API_KEY is not configured");
-    return NextResponse.json(
-      { error: "Service de messagerie non configuré" },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: "Service de messagerie non configuré" }, { status: 503 });
   }
 
   try {
@@ -29,17 +24,14 @@ export async function POST(request: NextRequest) {
     if (!body.clubName || !body.email || !body.message) {
       return NextResponse.json(
         { error: "Veuillez remplir tous les champs obligatoires" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(body.email)) {
-      return NextResponse.json(
-        { error: "Format d'email invalide" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Format d'email invalide" }, { status: 400 });
     }
 
     // Send email via Resend
@@ -88,7 +80,7 @@ Ce message a été envoyé via le formulaire de contact du site aceclub.app
       console.error("Resend error:", error);
       return NextResponse.json(
         { error: "Erreur lors de l'envoi du message. Veuillez réessayer." },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -133,9 +125,6 @@ Ceci est un email automatique, merci de ne pas y répondre directement.
     return NextResponse.json({ success: true, id: data?.id });
   } catch (error) {
     console.error("Contact form error:", error);
-    return NextResponse.json(
-      { error: "Une erreur inattendue est survenue" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Une erreur inattendue est survenue" }, { status: 500 });
   }
 }

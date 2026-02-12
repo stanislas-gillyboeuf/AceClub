@@ -1,17 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Plus, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -19,28 +13,28 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useFeatureFlags } from "@/hooks/use-admin-queries"
-import { useUpdateFeatureFlag } from "@/hooks/use-admin-mutations"
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useFeatureFlags } from "@/hooks/use-admin-queries";
+import { useUpdateFeatureFlag } from "@/hooks/use-admin-mutations";
 import {
   CreateFeatureFlagDialog,
   DeleteFeatureFlagDialog,
   AddOverrideDialog,
   RemoveOverrideButton,
-} from "@/components/custom/feature-flag-actions"
-import type { FeatureFlag } from "@/types/admin"
+} from "@/components/custom/feature-flag-actions";
+import type { FeatureFlag } from "@/types/admin";
 
 export default function FeatureFlagsPage() {
-  const { data, isLoading } = useFeatureFlags()
-  const updateMutation = useUpdateFeatureFlag()
-  const [createDialogOpen, setCreateDialogOpen] = useState(false)
-  const [deleteFlag, setDeleteFlag] = useState<FeatureFlag | null>(null)
-  const [overrideFlag, setOverrideFlag] = useState<FeatureFlag | null>(null)
+  const { data, isLoading } = useFeatureFlags();
+  const updateMutation = useUpdateFeatureFlag();
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [deleteFlag, setDeleteFlag] = useState<FeatureFlag | null>(null);
+  const [overrideFlag, setOverrideFlag] = useState<FeatureFlag | null>(null);
 
   const handleToggle = (flag: FeatureFlag) => {
-    updateMutation.mutate({ id: flag.id, enabled: !flag.enabled })
-  }
+    updateMutation.mutate({ id: flag.id, enabled: !flag.enabled });
+  };
 
   return (
     <div className="space-y-6">
@@ -66,13 +60,8 @@ export default function FeatureFlagsPage() {
       ) : !data?.featureFlags?.length ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground mb-4">
-              Aucun feature flag configur&eacute;
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => setCreateDialogOpen(true)}
-            >
+            <p className="text-muted-foreground mb-4">Aucun feature flag configur&eacute;</p>
+            <Button variant="outline" onClick={() => setCreateDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Cr&eacute;er le premier flag
             </Button>
@@ -91,13 +80,9 @@ export default function FeatureFlagsPage() {
                       disabled={updateMutation.isPending}
                     />
                     <div>
-                      <CardTitle className="text-base font-mono">
-                        {flag.key}
-                      </CardTitle>
+                      <CardTitle className="text-base font-mono">{flag.key}</CardTitle>
                       {flag.description && (
-                        <CardDescription className="mt-0.5">
-                          {flag.description}
-                        </CardDescription>
+                        <CardDescription className="mt-0.5">{flag.description}</CardDescription>
                       )}
                     </div>
                   </div>
@@ -120,14 +105,8 @@ export default function FeatureFlagsPage() {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium">
-                      Overrides par organisation
-                    </h4>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setOverrideFlag(flag)}
-                    >
+                    <h4 className="text-sm font-medium">Overrides par organisation</h4>
+                    <Button variant="outline" size="sm" onClick={() => setOverrideFlag(flag)}>
                       <Plus className="mr-1 h-3 w-3" />
                       Ajouter
                     </Button>
@@ -149,11 +128,7 @@ export default function FeatureFlagsPage() {
                               {override.organizationName ?? override.organizationId}
                             </TableCell>
                             <TableCell>
-                              <Badge
-                                variant={
-                                  override.enabled ? "default" : "secondary"
-                                }
-                              >
+                              <Badge variant={override.enabled ? "default" : "secondary"}>
                                 {override.enabled ? "Actif" : "Inactif"}
                               </Badge>
                             </TableCell>
@@ -169,8 +144,7 @@ export default function FeatureFlagsPage() {
                     </Table>
                   ) : (
                     <p className="text-sm text-muted-foreground">
-                      Aucun override &mdash; la valeur globale s&apos;applique
-                      partout
+                      Aucun override &mdash; la valeur globale s&apos;applique partout
                     </p>
                   )}
                 </div>
@@ -180,17 +154,14 @@ export default function FeatureFlagsPage() {
         </div>
       )}
 
-      <CreateFeatureFlagDialog
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-      />
+      <CreateFeatureFlagDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
 
       {deleteFlag && (
         <DeleteFeatureFlagDialog
           flag={deleteFlag}
           open={!!deleteFlag}
           onOpenChange={(v) => {
-            if (!v) setDeleteFlag(null)
+            if (!v) setDeleteFlag(null);
           }}
         />
       )}
@@ -200,10 +171,10 @@ export default function FeatureFlagsPage() {
           flag={overrideFlag}
           open={!!overrideFlag}
           onOpenChange={(v) => {
-            if (!v) setOverrideFlag(null)
+            if (!v) setOverrideFlag(null);
           }}
         />
       )}
     </div>
-  )
+  );
 }

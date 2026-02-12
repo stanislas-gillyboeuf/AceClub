@@ -1,40 +1,40 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { useRouter } from "next/navigation"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { DataTable } from "@/components/custom/data-table"
-import { usersColumns } from "@/components/custom/users-columns"
-import { useAdminUsers } from "@/hooks/use-admin-queries"
-import type { User, ListUsersParams } from "@/types/admin"
+} from "@/components/ui/select";
+import { DataTable } from "@/components/custom/data-table";
+import { usersColumns } from "@/components/custom/users-columns";
+import { useAdminUsers } from "@/hooks/use-admin-queries";
+import type { User, ListUsersParams } from "@/types/admin";
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
 export default function UsersPage() {
-  const router = useRouter()
-  const [search, setSearch] = useState("")
-  const [debouncedSearch, setDebouncedSearch] = useState("")
-  const [roleFilter, setRoleFilter] = useState<string>("all")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [pageIndex, setPageIndex] = useState(0)
+  const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [pageIndex, setPageIndex] = useState(0);
 
   // Debounce search
   useEffect(() => {
-    const timeout = setTimeout(() => setDebouncedSearch(search), 300)
-    return () => clearTimeout(timeout)
-  }, [search])
+    const timeout = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timeout);
+  }, [search]);
 
   // Reset page on filter change
   useEffect(() => {
-    setPageIndex(0)
-  }, [debouncedSearch, roleFilter, statusFilter])
+    setPageIndex(0);
+  }, [debouncedSearch, roleFilter, statusFilter]);
 
   const params: ListUsersParams = {
     limit: PAGE_SIZE,
@@ -51,24 +51,22 @@ export default function UsersPage() {
       filterField: "banned",
       filterValue: statusFilter === "banned" ? "true" : "false",
     }),
-  }
+  };
 
-  const { data, isLoading } = useAdminUsers(params)
+  const { data, isLoading } = useAdminUsers(params);
 
   const handleRowClick = useCallback(
     (user: User) => {
-      router.push(`/dashboard/users/${user.id}`)
+      router.push(`/dashboard/users/${user.id}`);
     },
     [router],
-  )
+  );
 
   return (
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-bold">Utilisateurs</h1>
-        <p className="text-muted-foreground">
-          Gérer les utilisateurs de la plateforme
-        </p>
+        <p className="text-muted-foreground">Gérer les utilisateurs de la plateforme</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-4">
@@ -113,5 +111,5 @@ export default function UsersPage() {
         }}
       />
     </div>
-  )
+  );
 }

@@ -17,20 +17,13 @@ interface SectionProps {
 }
 
 const Section = forwardRef<HTMLElement, SectionProps>(
-  (
-    { id, title, subtitle, description, children, className, align },
-    forwardedRef
-  ) => {
+  ({ id, title, subtitle, description, children, className, align }, forwardedRef) => {
     const internalRef = useRef<HTMLElement>(null);
     const ref = forwardedRef || internalRef;
 
     const sectionId = title ? title.toLowerCase().replace(/\s+/g, "-") : id;
     const alignmentClass =
-      align === "left"
-        ? "text-left"
-        : align === "right"
-        ? "text-right"
-        : "text-center";
+      align === "left" ? "text-left" : align === "right" ? "text-right" : "text-center";
 
     const { scrollYProgress } = useScroll({
       target: ref as React.RefObject<HTMLElement>,
@@ -62,11 +55,7 @@ const Section = forwardRef<HTMLElement, SectionProps>(
                 <MotionH3
                   className={cn(
                     "mx-0 mt-4 max-w-lg text-5xl text-balance font-bold sm:max-w-none sm:text-4xl md:text-5xl lg:text-6xl leading-[1.2] tracking-tighter text-foreground",
-                    align === "center"
-                      ? "mx-auto"
-                      : align === "right"
-                      ? "ml-auto"
-                      : ""
+                    align === "center" ? "mx-auto" : align === "right" ? "ml-auto" : "",
                   )}
                   style={{ opacity, y }}
                 >
@@ -77,11 +66,7 @@ const Section = forwardRef<HTMLElement, SectionProps>(
                 <MotionP
                   className={cn(
                     "mt-6 text-lg leading-8 text-muted-foreground text-balance max-w-2xl",
-                    align === "center"
-                      ? "mx-auto"
-                      : align === "right"
-                      ? "ml-auto"
-                      : ""
+                    align === "center" ? "mx-auto" : align === "right" ? "ml-auto" : "",
                   )}
                   style={{ opacity, y }}
                 >
@@ -94,7 +79,7 @@ const Section = forwardRef<HTMLElement, SectionProps>(
         </div>
       </section>
     );
-  }
+  },
 );
 
 Section.displayName = "Section";

@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import Marquee from "@/components/ui/marquee";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -64,15 +63,13 @@ const ReviewCard = ({
         // light styles
         "border-gray-950/[.1] bg-gray-950/[.01] hover:bg-gray-950/[.05]",
         // dark styles
-        "dark:border-gray-50/[.1] dark:bg-gray-50/[.10] dark:hover:bg-gray-50/[.15]"
+        "dark:border-gray-50/[.1] dark:bg-gray-50/[.10] dark:hover:bg-gray-50/[.15]",
       )}
     >
       <div className="flex flex-row items-center gap-2">
         <img className="rounded-full" width="32" height="32" alt="" src={img} />
         <div className="flex flex-col">
-          <figcaption className="text-sm font-medium dark:text-white">
-            {name}
-          </figcaption>
+          <figcaption className="text-sm font-medium dark:text-white">{name}</figcaption>
           <p className="text-xs font-medium dark:text-white/40">{username}</p>
         </div>
       </div>
@@ -93,12 +90,7 @@ export function CTA() {
                   <ReviewCard key={review.username} {...review} />
                 ))}
               </Marquee>
-              <Marquee
-                reverse
-                pauseOnHover
-                className="[--duration:20s]"
-                repeat={3}
-              >
+              <Marquee reverse pauseOnHover className="[--duration:20s]" repeat={3}>
                 {secondRow.map((review) => (
                   <ReviewCard key={review.username} {...review} />
                 ))}
@@ -108,12 +100,7 @@ export function CTA() {
                   <ReviewCard key={review.username} {...review} />
                 ))}
               </Marquee>
-              <Marquee
-                reverse
-                pauseOnHover
-                className="[--duration:20s]"
-                repeat={3}
-              >
+              <Marquee reverse pauseOnHover className="[--duration:20s]" repeat={3}>
                 {secondRow.map((review) => (
                   <ReviewCard key={review.username} {...review} />
                 ))}
@@ -123,12 +110,7 @@ export function CTA() {
                   <ReviewCard key={review.username} {...review} />
                 ))}
               </Marquee>
-              <Marquee
-                reverse
-                pauseOnHover
-                className="[--duration:20s]"
-                repeat={3}
-              >
+              <Marquee reverse pauseOnHover className="[--duration:20s]" repeat={3}>
                 {secondRow.map((review) => (
                   <ReviewCard key={review.username} {...review} />
                 ))}
@@ -151,7 +133,7 @@ export function CTA() {
                     size: "lg",
                     variant: "outline",
                   }),
-                  "group mt-4 rounded-[2rem] px-6"
+                  "group mt-4 rounded-[2rem] px-6",
                 )}
               >
                 Nous contacter

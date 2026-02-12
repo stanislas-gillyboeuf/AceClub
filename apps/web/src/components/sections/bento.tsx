@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { Section } from "@/components/section";
@@ -62,23 +61,16 @@ export function BentoGrid() {
             style={{ opacity: opacities[index], y: yTransforms[index] }}
             className={cn(
               "bg-muted p-4 sm:p-6 !pb-0 rounded-3xl grid grid-rows-1",
-              bentoItem.fullWidth && "md:col-span-2"
+              bentoItem.fullWidth && "md:col-span-2",
             )}
           >
             <div className="flex flex-col">
               <h2 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
                 {bentoItem.title}
               </h2>
-              <p className="text-sm sm:text-base text-foreground mb-4">
-                {bentoItem.content}
-              </p>
+              <p className="text-sm sm:text-base text-foreground mb-4">{bentoItem.content}</p>
             </div>
-            <div
-              className={cn(
-                "flex justify-center",
-                bentoItem.fullWidth && "sm:space-x-4"
-              )}
-            >
+            <div className={cn("flex justify-center", bentoItem.fullWidth && "sm:space-x-4")}>
               <img
                 src={bentoItem.imageSrc}
                 alt={bentoItem.imageAlt}

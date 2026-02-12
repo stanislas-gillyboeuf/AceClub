@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Icons } from "@/components/icons"
-import { siteConfig } from "@/lib/config"
+import Link from "next/link";
+import { Icons } from "@/components/icons";
+import { siteConfig } from "@/lib/config";
 
-const currentYear = new Date().getFullYear()
+const currentYear = new Date().getFullYear();
 
 function Footerdemo() {
   return (
@@ -17,9 +17,7 @@ function Footerdemo() {
               <Icons.logo className="h-8 w-8 rounded-full" />
               <span className="text-xl font-bold">{siteConfig.name}</span>
             </Link>
-            <p className="max-w-md text-muted-foreground">
-              {siteConfig.description}
-            </p>
+            <p className="max-w-md text-muted-foreground">{siteConfig.description}</p>
           </div>
 
           {/* Navigation */}
@@ -58,7 +56,7 @@ function Footerdemo() {
         </div>
       </div>
     </footer>
-  )
+  );
 }
 
-export { Footerdemo }
+export { Footerdemo };

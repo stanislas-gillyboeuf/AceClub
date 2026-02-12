@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { Section } from "@/components/section";
 import { siteConfig } from "@/lib/config";
 
@@ -26,12 +25,8 @@ export function Testimonials() {
                   alt={testimonial.name}
                 />
                 <div className="ml-3">
-                  <h3 className="text-lg font-medium text-foreground">
-                    {testimonial.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {testimonial.role}
-                  </p>
+                  <h3 className="text-lg font-medium text-foreground">{testimonial.name}</h3>
+                  <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                 </div>
               </div>
               <p className="text-foreground">{testimonial.text}</p>

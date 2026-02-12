@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { Section } from "@/components/section";
@@ -18,13 +17,7 @@ interface FeatureProps {
   isActive: boolean;
 }
 
-function Feature({
-  title,
-  description,
-  imageSrc,
-  direction,
-  isActive,
-}: FeatureProps) {
+function Feature({ title, description, imageSrc, direction, isActive }: FeatureProps) {
   const isLTR = direction === "ltr";
   const textVariants = {
     hidden: { opacity: 0, x: isLTR ? -20 : 20 },
@@ -55,23 +48,17 @@ function Feature({
     <MotionDiv
       className={cn(
         "flex flex-col items-center justify-between pb-10 transition-all duration-500 ease-out",
-        isLTR ? "lg:flex-row" : "lg:flex-row-reverse"
+        isLTR ? "lg:flex-row" : "lg:flex-row-reverse",
       )}
     >
       <MotionDiv
-        className={cn(
-          "w-full lg:w-1/2 mb-10 lg:mb-0",
-          isLTR ? "lg:pr-8" : "lg:pl-8"
-        )}
+        className={cn("w-full lg:w-1/2 mb-10 lg:mb-0", isLTR ? "lg:pr-8" : "lg:pl-8")}
         initial="hidden"
         animate={isActive ? "visible" : "hidden"}
         variants={textVariants}
       >
         <div className="flex flex-col gap-4 max-w-sm text-center lg:text-left mx-auto">
-          <MotionH2
-            className="text-4xl md:text-5xl lg:text-6xl font-bold"
-            variants={itemVariants}
-          >
+          <MotionH2 className="text-4xl md:text-5xl lg:text-6xl font-bold" variants={itemVariants}>
             {title}
           </MotionH2>
           <MotionP className="text-xl md:text-2xl" variants={itemVariants}>
@@ -83,7 +70,7 @@ function Feature({
               className={cn(
                 buttonVariants({ variant: "default", size: "lg" }),
                 "text-white rounded-full group text-lg",
-                "mx-auto lg:mx-0"
+                "mx-auto lg:mx-0",
               )}
             >
               {siteConfig.cta}
@@ -92,11 +79,7 @@ function Feature({
         </div>
       </MotionDiv>
       <div className="w-full lg:w-1/2">
-        <img
-          src={imageSrc}
-          alt={title}
-          className="w-full max-w-[300px] mx-auto"
-        />
+        <img src={imageSrc} alt={title} className="w-full max-w-[300px] mx-auto" />
       </div>
     </MotionDiv>
   );
@@ -117,9 +100,7 @@ export function FeatureHighlight() {
         const featureHeight = (bottom - top) / features.length;
 
         const activeIndex = Math.floor((middleOfScreen - top) / featureHeight);
-        setActiveFeature(
-          Math.max(-1, Math.min(features.length - 1, activeIndex))
-        );
+        setActiveFeature(Math.max(-1, Math.min(features.length - 1, activeIndex)));
       }
     };
 

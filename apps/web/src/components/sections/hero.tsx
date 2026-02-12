@@ -52,8 +52,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.8, ease: easeInOutCubic }}
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter leading-[1.1] mb-6"
           >
-            L'app qui{" "}
-            <span className="text-primary">connecte</span>
+            L'app qui <span className="text-primary">connecte</span>
             <br />
             les joueurs de votre club
           </MotionH1>
@@ -64,8 +63,8 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 1, ease: easeInOutCubic }}
             className="max-w-2xl mx-auto text-lg sm:text-xl mb-10 text-muted-foreground text-balance"
           >
-            Fini les groupes WhatsApp surchargés. Trouvez des partenaires,
-            organisez des matchs et vivez pleinement votre club.
+            Fini les groupes WhatsApp surchargés. Trouvez des partenaires, organisez des matchs et
+            vivez pleinement votre club.
           </MotionP>
 
           <MotionDiv

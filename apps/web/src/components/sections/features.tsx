@@ -21,9 +21,7 @@ export function Features() {
               <div className="bg-gradient-to-b from-primary to-primary/80 p-2 rounded-lg text-white">
                 {Icon}
               </div>
-              <h2 className="text-xl font-semibold text-card-foreground">
-                {name}
-              </h2>
+              <h2 className="text-xl font-semibold text-card-foreground">{name}</h2>
             </div>
             <p className="text-sm text-muted-foreground mb-4">{description}</p>
             <Link href="#feature-highlight" className="text-sm text-primary hover:underline">

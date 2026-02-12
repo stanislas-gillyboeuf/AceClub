@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,19 +8,24 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { useBanUser, useUnbanUser, useSetRole, useSetUserPassword } from "@/hooks/use-admin-mutations"
-import type { User } from "@/types/admin"
+} from "@/components/ui/select";
+import {
+  useBanUser,
+  useUnbanUser,
+  useSetRole,
+  useSetUserPassword,
+} from "@/hooks/use-admin-mutations";
+import type { User } from "@/types/admin";
 
 // Set Role Dialog
 export function SetRoleDialog({
@@ -28,28 +33,23 @@ export function SetRoleDialog({
   open,
   onOpenChange,
 }: {
-  user: User
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  user: User;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [role, setRole] = useState(user.role)
-  const setRoleMutation = useSetRole()
+  const [role, setRole] = useState(user.role);
+  const setRoleMutation = useSetRole();
 
   const handleSubmit = () => {
-    setRoleMutation.mutate(
-      { userId: user.id, role },
-      { onSuccess: () => onOpenChange(false) },
-    )
-  }
+    setRoleMutation.mutate({ userId: user.id, role }, { onSuccess: () => onOpenChange(false) });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Changer le rôle</DialogTitle>
-          <DialogDescription>
-            Modifier le rôle de {user.name}
-          </DialogDescription>
+          <DialogDescription>Modifier le rôle de {user.name}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
@@ -69,16 +69,13 @@ export function SetRoleDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Annuler
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={setRoleMutation.isPending || role === user.role}
-          >
+          <Button onClick={handleSubmit} disabled={setRoleMutation.isPending || role === user.role}>
             {setRoleMutation.isPending ? "Enregistrement..." : "Enregistrer"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // Ban User Dialog
@@ -87,24 +84,24 @@ export function BanUserDialog({
   open,
   onOpenChange,
 }: {
-  user: User
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  user: User;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [banReason, setBanReason] = useState("")
-  const banMutation = useBanUser()
+  const [banReason, setBanReason] = useState("");
+  const banMutation = useBanUser();
 
   const handleSubmit = () => {
     banMutation.mutate(
       { userId: user.id, banReason: banReason || undefined },
       {
         onSuccess: () => {
-          setBanReason("")
-          onOpenChange(false)
+          setBanReason("");
+          onOpenChange(false);
         },
       },
-    )
-  }
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -130,25 +127,21 @@ export function BanUserDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Annuler
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleSubmit}
-            disabled={banMutation.isPending}
-          >
+          <Button variant="destructive" onClick={handleSubmit} disabled={banMutation.isPending}>
             {banMutation.isPending ? "Bannissement..." : "Bannir"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // Set Password Dialog
 function generatePassword(length = 16) {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*"
-  const array = new Uint8Array(length)
-  crypto.getRandomValues(array)
-  return Array.from(array, (byte) => chars[byte % chars.length]).join("")
+  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*";
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  return Array.from(array, (byte) => chars[byte % chars.length]).join("");
 }
 
 export function SetPasswordDialog({
@@ -156,41 +149,50 @@ export function SetPasswordDialog({
   open,
   onOpenChange,
 }: {
-  user: User
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  user: User;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [password, setPassword] = useState("")
-  const [copied, setCopied] = useState(false)
-  const setPasswordMutation = useSetUserPassword()
+  const [password, setPassword] = useState("");
+  const [copied, setCopied] = useState(false);
+  const setPasswordMutation = useSetUserPassword();
 
   const handleGenerate = () => {
-    const generated = generatePassword()
-    setPassword(generated)
-    setCopied(false)
-  }
+    const generated = generatePassword();
+    setPassword(generated);
+    setCopied(false);
+  };
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(password)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+    await navigator.clipboard.writeText(password);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleSubmit = () => {
     setPasswordMutation.mutate(
       { userId: user.id, newPassword: password },
       {
         onSuccess: () => {
-          onOpenChange(false)
-          setPassword("")
-          setCopied(false)
+          onOpenChange(false);
+          setPassword("");
+          setCopied(false);
         },
       },
-    )
-  }
+    );
+  };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) { setPassword(""); setCopied(false) } }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        onOpenChange(v);
+        if (!v) {
+          setPassword("");
+          setCopied(false);
+        }
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Définir le mot de passe</DialogTitle>
@@ -205,7 +207,10 @@ export function SetPasswordDialog({
               <Input
                 id="password"
                 value={password}
-                onChange={(e) => { setPassword(e.target.value); setCopied(false) }}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setCopied(false);
+                }}
                 placeholder="Entrez ou générez un mot de passe"
               />
               <Button type="button" variant="outline" size="sm" onClick={handleGenerate}>
@@ -237,7 +242,7 @@ export function SetPasswordDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // Unban User Dialog
@@ -246,18 +251,15 @@ export function UnbanUserDialog({
   open,
   onOpenChange,
 }: {
-  user: User
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  user: User;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const unbanMutation = useUnbanUser()
+  const unbanMutation = useUnbanUser();
 
   const handleSubmit = () => {
-    unbanMutation.mutate(
-      { userId: user.id },
-      { onSuccess: () => onOpenChange(false) },
-    )
-  }
+    unbanMutation.mutate({ userId: user.id }, { onSuccess: () => onOpenChange(false) });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -278,5 +280,5 @@ export function UnbanUserDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

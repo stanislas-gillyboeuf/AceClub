@@ -101,8 +101,7 @@ export const siteConfig = {
     },
     {
       name: "Messagerie intégrée",
-      description:
-        "Discutez directement avec vos partenaires sans quitter l'application.",
+      description: "Discutez directement avec vos partenaires sans quitter l'application.",
       icon: <MessageSquareIcon className="h-6 w-6" />,
     },
     {
@@ -245,9 +244,9 @@ export const siteConfig = {
       question: "L'application est-elle vraiment gratuite pour les membres ?",
       answer: (
         <span>
-          Oui, l'application AceClub est 100% gratuite pour tous les membres des
-          clubs partenaires. Téléchargez-la, créez votre compte, et commencez à
-          trouver des partenaires immédiatement. Aucun paiement, aucune publicité.
+          Oui, l'application AceClub est 100% gratuite pour tous les membres des clubs partenaires.
+          Téléchargez-la, créez votre compte, et commencez à trouver des partenaires immédiatement.
+          Aucun paiement, aucune publicité.
         </span>
       ),
     },
@@ -255,9 +254,9 @@ export const siteConfig = {
       question: "Comment mon club peut-il rejoindre AceClub ?",
       answer: (
         <span>
-          Contactez-nous via le formulaire de contact ou par email à
-          contact@aceclub.app. Nous vous présenterons les fonctionnalités et
-          établirons un devis personnalisé selon la taille de votre club.
+          Contactez-nous via le formulaire de contact ou par email à contact@aceclub.app. Nous vous
+          présenterons les fonctionnalités et établirons un devis personnalisé selon la taille de
+          votre club.
         </span>
       ),
     },
@@ -265,9 +264,8 @@ export const siteConfig = {
       question: "Quels sports sont supportés ?",
       answer: (
         <span>
-          AceClub est conçu principalement pour le tennis et le padel. Nous
-          travaillons à étendre notre offre à d'autres sports de raquette comme
-          le squash et le badminton.
+          AceClub est conçu principalement pour le tennis et le padel. Nous travaillons à étendre
+          notre offre à d'autres sports de raquette comme le squash et le badminton.
         </span>
       ),
     },
@@ -275,10 +273,9 @@ export const siteConfig = {
       question: "Mes données sont-elles sécurisées ?",
       answer: (
         <span>
-          AceClub respecte le RGPD et toutes les réglementations européennes
-          sur la protection des données. Vos informations personnelles sont
-          chiffrées et ne sont jamais partagées avec des tiers sans votre
-          consentement explicite.
+          AceClub respecte le RGPD et toutes les réglementations européennes sur la protection des
+          données. Vos informations personnelles sont chiffrées et ne sont jamais partagées avec des
+          tiers sans votre consentement explicite.
         </span>
       ),
     },
@@ -286,10 +283,9 @@ export const siteConfig = {
       question: "Comment créer mon profil joueur ?",
       answer: (
         <span>
-          Après avoir téléchargé l'application, créez votre compte et
-          renseignez votre niveau de jeu, vos disponibilités et vos
-          préférences. Ces informations permettent de vous connecter avec
-          des partenaires compatibles.
+          Après avoir téléchargé l'application, créez votre compte et renseignez votre niveau de
+          jeu, vos disponibilités et vos préférences. Ces informations permettent de vous connecter
+          avec des partenaires compatibles.
         </span>
       ),
     },
@@ -297,10 +293,9 @@ export const siteConfig = {
       question: "Comment fonctionne le système de défis ?",
       answer: (
         <span>
-          Les défis sont des challenges sociaux proposés par votre club ou par
-          AceClub. Jouez un certain nombre de matchs, invitez des nouveaux
-          membres, ou participez à des événements pour gagner des Aces et monter
-          dans le classement.
+          Les défis sont des challenges sociaux proposés par votre club ou par AceClub. Jouez un
+          certain nombre de matchs, invitez des nouveaux membres, ou participez à des événements
+          pour gagner des Aces et monter dans le classement.
         </span>
       ),
     },
