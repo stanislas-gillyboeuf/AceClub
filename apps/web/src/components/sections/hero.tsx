@@ -75,7 +75,7 @@ export function Hero() {
             className="flex justify-center mb-16"
           >
             <Link
-              href="https://apps.apple.com"
+              href="https://apps.apple.com/fr/app/ace-club/id6758263483"
               target="_blank"
               rel="noopener noreferrer"
               className="transition-transform hover:scale-105 active:scale-98"
