@@ -8,6 +8,18 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - Date Section Model
+
+private struct MatchDateSection: Identifiable {
+    let id: String // "yyyy-MM-dd" format
+    let date: Date
+    let matches: [MatchModel]
+
+    var isToday: Bool {
+        Calendar.current.isDateInToday(date)
+    }
+}
+
 // MARK: - MatchListContent using SwiftData @Query
 
 struct MatchListContent: View {
@@ -16,87 +28,130 @@ struct MatchListContent: View {
     @Query(sort: \MatchModel.createdAt, order: .reverse)
     private var allMatches: [MatchModel]
 
-    @Binding var selectedStatus: MatchStatus?
     @State private var syncService: MatchSyncService?
     @State private var isLoading = false
-    @State private var isLoadingMore = false
-    @State private var hasMorePages = true
-    @State private var currentPage = 1
-    private let pageSize = 20
+    @State private var hasScrolledToToday = false
 
-    private var matches: [MatchModel] {
-        guard let status = selectedStatus else {
-            return allMatches
+    private static let groupKeyFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
+    // MARK: - Grouped Sections
+
+    private var groupedSections: [MatchDateSection] {
+        let calendar = Calendar.current
+        let keyFormatter = Self.groupKeyFormatter
+
+        var grouped = Dictionary(grouping: allMatches) { match -> String in
+            let date = match.scheduledAt ?? match.startedAt ?? match.createdAt
+            let dayStart = calendar.startOfDay(for: date)
+            return keyFormatter.string(from: dayStart)
         }
-        return allMatches.filter { $0.status == status.rawValue }
+
+        // Always include today even if no matches
+        let today = calendar.startOfDay(for: Date())
+        let todayKey = keyFormatter.string(from: today)
+        if grouped[todayKey] == nil {
+            grouped[todayKey] = []
+        }
+
+        return grouped.map { key, matches in
+            let date = keyFormatter.date(from: key) ?? Date()
+            let sorted = matches.sorted { lhs, rhs in
+                let lhsDate = lhs.scheduledAt ?? lhs.startedAt ?? lhs.createdAt
+                let rhsDate = rhs.scheduledAt ?? rhs.startedAt ?? rhs.createdAt
+                return lhsDate < rhsDate
+            }
+            return MatchDateSection(id: key, date: date, matches: sorted)
+        }
+        .sorted { $0.date < $1.date }
     }
 
+    // MARK: - Body
+
     var body: some View {
-        VStack(spacing: 0) {
-            MatchFilterChips(
-                selectedStatus: $selectedStatus,
-                onFilterChange: { _ in
-                }
+        if !isLoading && allMatches.isEmpty {
+            ContentUnavailableView(
+                "Aucun match",
+                systemImage: "tennis.racket",
+                description: Text("Tes matchs apparaitront ici une fois planifies ou joues.")
             )
-
-            if !isLoading && matches.isEmpty {
-                ContentUnavailableView(
-                    "Aucun match",
-                    systemImage: "tennis.racket",
-                    description: Text("Tes matchs apparaîtront ici une fois planifiés ou joués.")
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                List {
-                    ForEach(matches) { match in
-                        MatchRowView(match: match)
-                            .background(
-                                NavigationLink("", destination: MatchDetailView(matchId: match.id))
-                                    .opacity(0)
-                            )
-                        .onAppear {
-                            if shouldLoadMore(for: match) {
-                                Task { await loadMoreMatches() }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                        ForEach(groupedSections) { section in
+                            Section {
+                                if section.matches.isEmpty && section.isToday {
+                                    TodayEmptyView()
+                                        .padding(.horizontal, Theme.paddingHorizontal)
+                                        .padding(.vertical, 8)
+                                } else {
+                                    VStack(spacing: 12) {
+                                        ForEach(section.matches) { match in
+                                            NavigationLink(value: match.id) {
+                                                MatchRowView(match: match)
+                                            }
+                                            .buttonStyle(.plain)
+                                        }
+                                    }
+                                    .padding(.horizontal, Theme.paddingHorizontal)
+                                    .padding(.vertical, 8)
+                                }
+                            } header: {
+                                DateSectionHeader(date: section.date, isToday: section.isToday)
                             }
+                            .id(section.id)
                         }
-                    }
-
-                    if isLoadingMore {
-                        HStack {
-                            Spacer()
-                            ProgressView()
-                            Spacer()
-                        }
-                        .listRowSeparator(.hidden)
                     }
                 }
-                .listStyle(.insetGrouped)
                 .refreshable {
                     await refresh()
                 }
+                .onAppear {
+                    if !hasScrolledToToday && !allMatches.isEmpty {
+                        scrollToToday(proxy)
+                    }
+                }
+                .onChange(of: isLoading) { oldValue, newValue in
+                    if oldValue && !newValue && !hasScrolledToToday {
+                        scrollToToday(proxy)
+                    }
+                }
             }
-        }
-        .task {
-            syncService = MatchSyncService(modelContext: modelContext)
-            await initialSync()
+            .task {
+                syncService = MatchSyncService(modelContext: modelContext)
+                await initialSync()
+            }
         }
     }
 
-    private func shouldLoadMore(for match: MatchModel) -> Bool {
-        guard matches.count >= 3 else { return false }
-        let lastThree = matches.suffix(3)
-        return lastThree.contains { $0.id == match.id }
+    // MARK: - Scroll to Today
+
+    private func scrollToToday(_ proxy: ScrollViewProxy) {
+        guard !groupedSections.isEmpty else { return }
+        hasScrolledToToday = true
+
+        let today = Calendar.current.startOfDay(for: Date())
+        let todayKey = Self.groupKeyFormatter.string(from: today)
+
+        withAnimation {
+            proxy.scrollTo(todayKey, anchor: .top)
+        }
     }
+
+    // MARK: - Sync
 
     private func initialSync() async {
         guard !isLoading else { return }
         isLoading = true
-        currentPage = 1
-        hasMorePages = true
+        hasScrolledToToday = false
         do {
-            let result = try await syncService?.syncMatchesPage(page: 1, limit: pageSize, purgeOnFirstPage: true)
-            hasMorePages = result?.hasMore ?? false
-            currentPage = 1
+            // purgeOnFirstPage loads ALL pages, so all matches end up in SwiftData
+            _ = try await syncService?.syncMatchesPage(page: 1, limit: 20, purgeOnFirstPage: true)
         } catch {
             print("Initial sync error: \(error)")
         }
@@ -106,31 +161,83 @@ struct MatchListContent: View {
     private func refresh() async {
         guard !isLoading else { return }
         isLoading = true
-        currentPage = 1
-        hasMorePages = true
+        hasScrolledToToday = false
         do {
-            let result = try await syncService?.syncMatchesPage(page: 1, limit: pageSize, purgeOnFirstPage: true)
-            hasMorePages = result?.hasMore ?? false
-            currentPage = 1
+            _ = try await syncService?.syncMatchesPage(page: 1, limit: 20, purgeOnFirstPage: true)
         } catch {
             print("Refresh error: \(error)")
         }
         isLoading = false
     }
+}
 
-    private func loadMoreMatches() async {
-        guard !isLoadingMore, !isLoading, hasMorePages else { return }
-        isLoadingMore = true
-        do {
-            let nextPage = currentPage + 1
-            let result = try await syncService?.syncMatchesPage(page: nextPage, limit: pageSize, purgeOnFirstPage: false)
-            if let result {
-                hasMorePages = result.hasMore
-                currentPage = result.currentPage
+// MARK: - Date Section Header
+
+private struct DateSectionHeader: View {
+    let date: Date
+    let isToday: Bool
+
+    private static let headerFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.dateFormat = "EEEE - d MMM"
+        return formatter
+    }()
+
+    var body: some View {
+        HStack(spacing: 8) {
+            if isToday {
+                Circle()
+                    .fill(Theme.accentGreen)
+                    .frame(width: 8, height: 8)
             }
-        } catch {
-            print("Load more error: \(error)")
+
+            Text(Self.headerFormatter.string(from: date).capitalized)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(isToday ? Theme.accentGreen : .primary)
+
+            if isToday {
+                Text("Aujourd'hui")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .glassEffect(.regular.tint(Theme.accentGreen).interactive(), in: .capsule)
+            }
+
+            Spacer()
         }
-        isLoadingMore = false
+        .padding(.horizontal, Theme.paddingHorizontal)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity)
+        .glassEffect(.regular)
+    }
+}
+
+// MARK: - Today Empty View
+
+private struct TodayEmptyView: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "figure.tennis")
+                .font(.system(size: 32))
+                .foregroundStyle(Theme.tintColor.opacity(0.6))
+
+            Text("Pas de match aujourd'hui")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.primary)
+
+            Text("Planifie un match et lance-toi !")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 24)
+        .background(Theme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: Theme.cornerRadiusMedium, style: .continuous)
+                .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
+        }
     }
 }

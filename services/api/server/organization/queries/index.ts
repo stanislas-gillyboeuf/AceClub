@@ -9,3 +9,4 @@ export * from "./get-invitation";
 export * from "./search-organizations";
 export * from "./get-organization-stats";
 export * from "./get-pin";
+export * from "./list-user-organizations";

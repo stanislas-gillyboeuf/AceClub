@@ -36,6 +36,7 @@ struct CreateMatchSheet: View {
 
     private let getMeUseCase = GetMeUseCase()
     private let listOrganizationsUseCase = ListOrganizationsUseCase()
+    private let organizationRepository = OrganizationRepository()
 
     private var combinedDateTime: Date? {
         guard let slot = selectedSlot else { return nil }
@@ -220,6 +221,7 @@ struct CreateMatchSheet: View {
             case .opponent:
                 Button("Continuer") {
                     triggerHaptic()
+                    Task { await loadOrganizations() }
                     currentStep = .venue
                 }
                 .buttonStyle(.appPrimary)
@@ -594,7 +596,18 @@ struct CreateMatchSheet: View {
 
     private func loadOrganizations() async {
         do {
-            organizations = try await listOrganizationsUseCase.execute()
+            var allOrgs = try await listOrganizationsUseCase.execute()
+
+            // Also fetch opponent's organizations if available
+            if let opponentId = opponent?.id {
+                let opponentOrgs = try await organizationRepository.listUserOrganizations(userId: opponentId)
+                let existingIds = Set(allOrgs.map(\.id))
+                for org in opponentOrgs where !existingIds.contains(org.id) {
+                    allOrgs.append(org)
+                }
+            }
+
+            organizations = allOrgs
         } catch {
             // Silent fail - venue step will show empty state
         }
