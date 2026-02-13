@@ -22,7 +22,12 @@ export default function MatchesPage() {
 
         <h1 className="text-sm font-semibold">Matchs</h1>
 
-        <Button variant="ghost" size="icon" className="size-9" onClick={() => setShowRequests(true)}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-9"
+          onClick={() => setShowRequests(true)}
+        >
           <Mail className="size-5" />
         </Button>
       </div>

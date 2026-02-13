@@ -28,7 +28,7 @@ export function useOrganizationMembers(
   const qs = searchParams.toString();
 
   return useQuery({
-    queryKey: ["organization-members", orgId, params],
+    queryKey: ["organization-members", orgId, params, qs],
     queryFn: () =>
       apiClient<{ members: OrganizationMember[]; total: number }>(
         `/organization/list-members?${qs}`,

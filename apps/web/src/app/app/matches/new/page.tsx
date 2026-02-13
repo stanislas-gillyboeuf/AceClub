@@ -12,7 +12,16 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Swords, Dumbbell, Check, X, ChevronLeft, Building2, CalendarPlus, Loader2 } from "lucide-react";
+import {
+  Swords,
+  Dumbbell,
+  Check,
+  X,
+  ChevronLeft,
+  Building2,
+  CalendarPlus,
+  Loader2,
+} from "lucide-react";
 import { useSearchUsers, useMe } from "@/hooks/use-user-queries";
 import { useMyOrganizations } from "@/hooks/use-org-queries";
 import { useCreateMatch } from "@/hooks/use-match-mutations";
@@ -82,7 +91,9 @@ export default function NewMatchPage() {
 
     return ALL_TIME_SLOTS.filter((slot) => {
       if (!isToday) return true;
-      const slotDate = new Date(`${matchDate}T${String(slot.hour).padStart(2, "0")}:${String(slot.minute).padStart(2, "0")}:00`);
+      const slotDate = new Date(
+        `${matchDate}T${String(slot.hour).padStart(2, "0")}:${String(slot.minute).padStart(2, "0")}:00`,
+      );
       return slotDate >= minimumDate;
     });
   }, [matchDate]);
@@ -142,12 +153,20 @@ export default function NewMatchPage() {
       {/* Header */}
       <div className="flex items-center gap-3 border-b px-4 py-3">
         {currentStep !== "activityType" && (
-          <button type="button" onClick={goBack} className="text-muted-foreground hover:text-foreground transition-colors">
+          <button
+            type="button"
+            onClick={goBack}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
             <ChevronLeft className="size-5" />
           </button>
         )}
         <h1 className="flex-1 text-center text-sm font-semibold">{STEP_TITLES[currentStep]}</h1>
-        <button type="button" onClick={() => router.back()} className="text-muted-foreground hover:text-foreground transition-colors">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
           <X className="size-5" />
         </button>
       </div>
@@ -230,7 +249,9 @@ export default function NewMatchPage() {
                       >
                         <Avatar className="size-8 mr-2">
                           <AvatarImage src={user.image ?? undefined} />
-                          <AvatarFallback className="text-[10px]">{user.name?.charAt(0)}</AvatarFallback>
+                          <AvatarFallback className="text-[10px]">
+                            {user.name?.charAt(0)}
+                          </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
                           <p className="text-sm font-medium truncate">{user.name}</p>
@@ -253,7 +274,9 @@ export default function NewMatchPage() {
               <div className="flex flex-col items-center gap-3 py-8 text-center">
                 <Building2 className="size-10 text-muted-foreground/50" />
                 <p className="text-sm text-muted-foreground">Aucun club trouvé</p>
-                <p className="text-xs text-muted-foreground/70">Le lieu sera déterminé automatiquement</p>
+                <p className="text-xs text-muted-foreground/70">
+                  Le lieu sera déterminé automatiquement
+                </p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -284,7 +307,12 @@ export default function NewMatchPage() {
                 min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => {
                   setMatchDate(e.target.value);
-                  if (selectedSlot && !availableSlots.some((s) => s.hour === selectedSlot.hour && s.minute === selectedSlot.minute)) {
+                  if (
+                    selectedSlot &&
+                    !availableSlots.some(
+                      (s) => s.hour === selectedSlot.hour && s.minute === selectedSlot.minute,
+                    )
+                  ) {
                     setSelectedSlot(null);
                   }
                 }}
@@ -303,7 +331,8 @@ export default function NewMatchPage() {
               ) : (
                 <div className="grid grid-cols-4 gap-2">
                   {availableSlots.map((slot) => {
-                    const isSelected = selectedSlot?.hour === slot.hour && selectedSlot?.minute === slot.minute;
+                    const isSelected =
+                      selectedSlot?.hour === slot.hour && selectedSlot?.minute === slot.minute;
                     return (
                       <button
                         key={slot.label}
@@ -331,8 +360,16 @@ export default function NewMatchPage() {
         {errorMessage && <p className="text-xs text-destructive">{errorMessage}</p>}
 
         {currentStep === "dateTime" ? (
-          <Button onClick={handleCreate} disabled={!canContinue || createMatch.isPending} className="w-full gap-2">
-            {createMatch.isPending ? <Loader2 className="size-4 animate-spin" /> : <CalendarPlus className="size-4" />}
+          <Button
+            onClick={handleCreate}
+            disabled={!canContinue || createMatch.isPending}
+            className="w-full gap-2"
+          >
+            {createMatch.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <CalendarPlus className="size-4" />
+            )}
             Planifier le match
           </Button>
         ) : (
@@ -406,7 +443,9 @@ function ActivityTile({
       </div>
 
       {/* Label */}
-      <span className={`text-base font-semibold transition-colors ${selected ? "text-primary" : "text-foreground"}`}>
+      <span
+        className={`text-base font-semibold transition-colors ${selected ? "text-primary" : "text-foreground"}`}
+      >
         {label}
       </span>
 

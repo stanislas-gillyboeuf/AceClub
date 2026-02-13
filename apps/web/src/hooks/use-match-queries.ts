@@ -1,6 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
-import type { Match, MatchListItem, MatchIntent, MatchRequest, MatchDetailResponse } from "@/types/match";
+import type {
+  Match,
+  MatchListItem,
+  MatchIntent,
+  MatchRequest,
+  MatchDetailResponse,
+} from "@/types/match";
 
 export function useMatches(params?: { status?: string; limit?: number; offset?: number }) {
   const searchParams = new URLSearchParams();
@@ -10,7 +16,7 @@ export function useMatches(params?: { status?: string; limit?: number; offset?: 
   const qs = searchParams.toString();
 
   return useQuery({
-    queryKey: ["matches", params],
+    queryKey: ["matches", params, qs],
     queryFn: () =>
       apiClient<{ matches: MatchListItem[]; total: number }>(`/match${qs ? `?${qs}` : ""}`),
   });

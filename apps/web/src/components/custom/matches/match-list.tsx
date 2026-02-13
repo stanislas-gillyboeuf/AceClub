@@ -19,14 +19,22 @@ function formatTime(date: Date): string {
 }
 
 function formatSectionDate(date: Date): string {
-  const formatter = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "short" });
+  const formatter = new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "short",
+  });
   const parts = formatter.format(date);
   return parts.charAt(0).toUpperCase() + parts.slice(1);
 }
 
 function isToday(date: Date): boolean {
   const now = new Date();
-  return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+  return (
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate()
+  );
 }
 
 function toDateKey(date: Date): string {
@@ -100,7 +108,9 @@ function MatchRow({ match }: { match: MatchListItem }) {
             <Clock className="size-3.5 text-primary" />
             <span className="text-sm">{formatTime(displayDate)}</span>
           </div>
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${status.color}`}>
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-semibold text-white ${status.color}`}
+          >
             {status.label}
           </span>
         </div>
@@ -134,7 +144,13 @@ function MatchRow({ match }: { match: MatchListItem }) {
   );
 }
 
-function PlayerView({ participant, isWinner }: { participant?: MatchParticipant; isWinner: boolean }) {
+function PlayerView({
+  participant,
+  isWinner,
+}: {
+  participant?: MatchParticipant;
+  isWinner: boolean;
+}) {
   const name = participant?.user?.name ?? "N/A";
   const image = participant?.user?.image;
   const initial = name.charAt(0);
@@ -143,10 +159,14 @@ function PlayerView({ participant, isWinner }: { participant?: MatchParticipant;
     <div className="flex items-center gap-2">
       <Avatar className="size-10">
         <AvatarImage src={image ?? undefined} />
-        <AvatarFallback className="bg-primary/15 text-primary text-sm font-semibold">{initial}</AvatarFallback>
+        <AvatarFallback className="bg-primary/15 text-primary text-sm font-semibold">
+          {initial}
+        </AvatarFallback>
       </Avatar>
       <div className="flex items-center gap-1">
-        <span className={`text-sm leading-tight ${isWinner ? "font-bold" : ""}`}>{name.split(" ")[0]}</span>
+        <span className={`text-sm leading-tight ${isWinner ? "font-bold" : ""}`}>
+          {name.split(" ")[0]}
+        </span>
         {isWinner && <span className="text-xs">👑</span>}
       </div>
     </div>
@@ -234,7 +254,9 @@ export function MatchList() {
     // Sort matches within each group by time ascending
     const result: DateSection[] = [];
     for (const [key, groupMatches] of groups) {
-      const sorted = [...groupMatches].sort((a, b) => getDisplayDate(a).getTime() - getDisplayDate(b).getTime());
+      const sorted = [...groupMatches].sort(
+        (a, b) => getDisplayDate(a).getTime() - getDisplayDate(b).getTime(),
+      );
       const date = new Date(key + "T00:00:00");
       result.push({ key, date, matches: sorted, isToday: isToday(date) });
     }
@@ -267,7 +289,9 @@ export function MatchList() {
       <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
         <Swords className="size-10 text-muted-foreground/40" />
         <p className="text-sm font-medium">Aucun match</p>
-        <p className="text-xs text-muted-foreground">Tes matchs apparaîtront ici une fois planifiés ou joués.</p>
+        <p className="text-xs text-muted-foreground">
+          Tes matchs apparaîtront ici une fois planifiés ou joués.
+        </p>
       </div>
     );
   }

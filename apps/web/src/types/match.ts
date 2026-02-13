@@ -90,9 +90,26 @@ export interface MatchDetailResponse {
     updatedAt: string;
     user: { id: string; name: string; email: string; image: string | null } | null;
   }[];
-  myFeedback: { id: string; userId: string; sensation: string; comment: string | null; createdAt: string } | null;
-  venueOrganization: { id: string; name: string; slug: string; logo: string | null; address: string | null; latitude: number | null; longitude: number | null } | null;
-  participantOrganizations: { userId: string; organization: { id: string; name: string; logo: string | null } }[];
+  myFeedback: {
+    id: string;
+    userId: string;
+    sensation: string;
+    comment: string | null;
+    createdAt: string;
+  } | null;
+  venueOrganization: {
+    id: string;
+    name: string;
+    slug: string;
+    logo: string | null;
+    address: string | null;
+    latitude: number | null;
+    longitude: number | null;
+  } | null;
+  participantOrganizations: {
+    userId: string;
+    organization: { id: string; name: string; logo: string | null };
+  }[];
 }
 
 export interface MatchFeedback {

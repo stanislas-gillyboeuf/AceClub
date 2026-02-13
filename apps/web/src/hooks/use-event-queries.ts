@@ -9,7 +9,7 @@ export function useEvents(params?: { limit?: number; offset?: number }) {
   const qs = searchParams.toString();
 
   return useQuery({
-    queryKey: ["events", params],
+    queryKey: ["events", params, qs],
     queryFn: () =>
       apiClient<{ events: Event[]; total: number }>(`/event/list${qs ? `?${qs}` : ""}`),
   });
@@ -30,7 +30,7 @@ export function useMyEvents(params?: { limit?: number; offset?: number }) {
   const qs = searchParams.toString();
 
   return useQuery({
-    queryKey: ["my-events", params],
+    queryKey: ["my-events", params, qs],
     queryFn: () =>
       apiClient<{ events: Event[]; total: number }>(`/event/list-my-events${qs ? `?${qs}` : ""}`),
   });

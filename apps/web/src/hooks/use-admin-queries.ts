@@ -29,7 +29,7 @@ export function useAdminUsers(params: ListUsersParams) {
   const qs = searchParams.toString();
 
   return useQuery({
-    queryKey: ["admin-users", params],
+    queryKey: ["admin-users", params, qs],
     queryFn: () => apiClient<ListUsersResponse>(`/admin/list-users${qs ? `?${qs}` : ""}`),
   });
 }
@@ -52,7 +52,7 @@ export function useAdminOrganizations(params: ListOrganizationsParams) {
   const qs = searchParams.toString();
 
   return useQuery({
-    queryKey: ["admin-organizations", params],
+    queryKey: ["admin-organizations", params, qs],
     queryFn: () =>
       apiClient<ListOrganizationsResponse>(`/admin/list-organizations${qs ? `?${qs}` : ""}`),
   });
@@ -68,7 +68,7 @@ export function useOrganizationMembers(params: ListOrganizationMembersParams) {
   const qs = searchParams.toString();
 
   return useQuery({
-    queryKey: ["admin-organization-members", params],
+    queryKey: ["admin-organization-members", params, qs],
     queryFn: () =>
       apiClient<ListOrganizationMembersResponse>(`/admin/list-organization-members?${qs}`),
     enabled: !!params.organizationId,
@@ -81,7 +81,7 @@ export function useOrganizationInvitations(params: ListOrganizationInvitationsPa
   const qs = searchParams.toString();
 
   return useQuery({
-    queryKey: ["admin-organization-invitations", params],
+    queryKey: ["admin-organization-invitations", params, qs],
     queryFn: () =>
       apiClient<ListOrganizationInvitationsResponse>(`/admin/list-organization-invitations?${qs}`),
     enabled: !!params.organizationId,

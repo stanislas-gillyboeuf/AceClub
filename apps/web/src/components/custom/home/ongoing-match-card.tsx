@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { MatchListItem } from "@/types/match";
 
@@ -10,59 +9,68 @@ interface OngoingMatchCardProps {
   match: MatchListItem;
 }
 
+function getInitials(name: string | undefined): string {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function PlayerView({
+  participant,
+}: {
+  participant: { user: { name: string; image: string | null } | null } | undefined;
+}) {
+  const name = participant?.user?.name;
+  const image = participant?.user?.image;
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <Avatar className="size-8">
+        <AvatarImage src={image ?? undefined} />
+        <AvatarFallback className="bg-muted text-[10px] font-semibold text-muted-foreground">
+          {getInitials(name ?? undefined)}
+        </AvatarFallback>
+      </Avatar>
+      <span className="max-w-16 truncate text-[11px]">{name?.split(" ")[0] ?? "N/A"}</span>
+    </div>
+  );
+}
+
 export function OngoingMatchCard({ match }: OngoingMatchCardProps) {
-  const sideHome = match.participants.filter((p) => p.side === "home");
-  const sideAway = match.participants.filter((p) => p.side === "away");
+  const homeParticipant = match.participants.find((p) => p.side === "home");
+  const awayParticipant = match.participants.find((p) => p.side === "away");
+
+  const formattedScore = match.sets
+    .map((s) => {
+      const home = s.scores.find((sc) => sc.side === "home")?.games ?? 0;
+      const away = s.scores.find((sc) => sc.side === "away")?.games ?? 0;
+      return `${home}-${away}`;
+    })
+    .join(" ");
 
   return (
     <Link href={`/app/matches/${match.id}`}>
-      <Card className="w-64 shrink-0 transition-colors hover:bg-accent/50">
-        <CardContent className="p-3 space-y-2">
+      <Card className="w-52 shrink-0 border-2 border-orange-400/30 p-3 transition-all hover:scale-[0.98] hover:opacity-90 active:scale-[0.97]">
+        <div className="space-y-2">
+          {/* Header */}
           <div className="flex items-center justify-between">
-            <Badge variant="secondary" className="text-xs">
-              {match.sport === "padel" ? "Padel" : "Tennis"}
-            </Badge>
-            <span className="text-xs text-muted-foreground">En cours</span>
+            <span className="rounded-full bg-orange-500 px-2 py-0.5 text-[11px] font-semibold text-white">
+              En cours
+            </span>
+            <span className="text-xs text-muted-foreground">Set {match.sets.length || 1}</span>
           </div>
+
+          {/* Players + score */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              {sideHome.map((p) => (
-                <Avatar key={p.id} className="size-6">
-                  <AvatarImage src={p.user?.image ?? undefined} />
-                  <AvatarFallback className="text-[10px]">{p.user?.name?.charAt(0)}</AvatarFallback>
-                </Avatar>
-              ))}
-              <span className="text-xs truncate max-w-16">
-                {sideHome.map((p) => p.user?.name?.split(" ")[0]).join(" / ")}
-              </span>
-            </div>
-            <span className="text-sm font-bold">vs</span>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs truncate max-w-16">
-                {sideAway.map((p) => p.user?.name?.split(" ")[0]).join(" / ")}
-              </span>
-              {sideAway.map((p) => (
-                <Avatar key={p.id} className="size-6">
-                  <AvatarImage src={p.user?.image ?? undefined} />
-                  <AvatarFallback className="text-[10px]">{p.user?.name?.charAt(0)}</AvatarFallback>
-                </Avatar>
-              ))}
-            </div>
+            <PlayerView participant={homeParticipant} />
+            <span className="text-lg font-bold tabular-nums">{formattedScore || "0-0"}</span>
+            <PlayerView participant={awayParticipant} />
           </div>
-          {(match.sets?.length ?? 0) > 0 && (
-            <div className="flex justify-center gap-2 text-xs font-mono">
-              {match.sets.map((s) => {
-                const homeGames = s.scores.find((sc) => sc.side === "home")?.games ?? 0;
-                const awayGames = s.scores.find((sc) => sc.side === "away")?.games ?? 0;
-                return (
-                  <span key={s.id}>
-                    {homeGames}-{awayGames}
-                  </span>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
+        </div>
       </Card>
     </Link>
   );

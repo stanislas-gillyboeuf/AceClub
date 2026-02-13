@@ -33,8 +33,13 @@ export function useUpdateMatchScores(matchId: string) {
 export function useUpdateMatchStatus(matchId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { status?: string; scheduledAt?: string; startedAt?: string; finishedAt?: string; winnerId?: string | null }) =>
-      apiClient(`/match/${matchId}`, { method: "PUT", body: JSON.stringify(data) }),
+    mutationFn: (data: {
+      status?: string;
+      scheduledAt?: string;
+      startedAt?: string;
+      finishedAt?: string;
+      winnerId?: string | null;
+    }) => apiClient(`/match/${matchId}`, { method: "PUT", body: JSON.stringify(data) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["match", matchId] });
       queryClient.invalidateQueries({ queryKey: ["matches"] });
@@ -45,8 +50,12 @@ export function useUpdateMatchStatus(matchId: string) {
 export function useUpdateMatch(matchId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { status?: string; scheduledAt?: string; startedAt?: string; finishedAt?: string }) =>
-      apiClient(`/match/${matchId}`, { method: "PUT", body: JSON.stringify(data) }),
+    mutationFn: (data: {
+      status?: string;
+      scheduledAt?: string;
+      startedAt?: string;
+      finishedAt?: string;
+    }) => apiClient(`/match/${matchId}`, { method: "PUT", body: JSON.stringify(data) }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["match", matchId] });
       queryClient.invalidateQueries({ queryKey: ["matches"] });

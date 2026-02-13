@@ -11,7 +11,7 @@ const pageTitles: Record<string, string> = {
   "/app": "Accueil",
   "/app/matches": "Matchs",
   "/app/matches/new": "Nouveau match",
-  "/app/discover": "Découvrir",
+  "/app/discover": "Trouver un partenaire",
   "/app/events": "Événements",
   "/app/profile": "Profil",
   "/app/progression": "Progression",

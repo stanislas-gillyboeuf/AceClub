@@ -1,39 +1,68 @@
 "use client";
 
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Trophy } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useMyLevel } from "@/hooks/use-gamification-queries";
 
 export function LevelProgressCard() {
   const { data: level, isPending } = useMyLevel();
 
   if (isPending) {
-    return <Skeleton className="h-24 w-full" />;
+    return <Skeleton className="h-40 w-full rounded-xl" />;
   }
 
   if (!level) return null;
 
+  const isMaxLevel = level.acesForNextLevel === 0;
+
   return (
     <Link href="/app/progression">
-      <Card className="transition-colors hover:bg-accent/50">
-        <CardContent className="flex items-center gap-4 p-4">
-          <div className="flex size-12 items-center justify-center rounded-full bg-primary/10">
-            <Trophy className="size-6 text-primary" />
-          </div>
-          <div className="flex-1 space-y-1">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Niveau {level.currentLevel}</p>
-              <p className="text-xs text-muted-foreground">{level.totalAces} aces</p>
+      <Card className="p-4 transition-all hover:scale-[0.98] hover:opacity-90 active:scale-[0.97] cursor-pointer">
+        <div className="space-y-4">
+          {/* Header: level name + badge */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xl font-bold">Niveau {level.currentLevel}</p>
+              <p className="text-sm text-muted-foreground">{level.totalAces} aces au total</p>
             </div>
-            <Progress value={level.progressPercent} className="h-2" />
-            <p className="text-xs text-muted-foreground">
-              {level.acesInCurrentLevel} / {level.acesForNextLevel} pour le prochain niveau
-            </p>
+
+            {/* Level badge circle */}
+            <div className="flex size-16 items-center justify-center rounded-full bg-primary/10 ring-[3px] ring-primary">
+              <span className="text-2xl font-bold text-primary tabular-nums">
+                {level.currentLevel}
+              </span>
+            </div>
           </div>
-        </CardContent>
+
+          {/* Progress bar */}
+          {!isMaxLevel && (
+            <div className="space-y-2">
+              <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500"
+                  style={{ width: `${Math.min(level.progressPercent, 100)}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">
+                  {level.acesInCurrentLevel} / {level.acesForNextLevel} aces
+                </p>
+                <p className="text-xs font-medium text-primary">Niveau {level.currentLevel + 1}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Detail indicator */}
+          <div className="space-y-3">
+            <div className="h-px bg-border" />
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-primary">Voir ma progression</span>
+              <ChevronRight className="size-4 text-primary/60" />
+            </div>
+          </div>
+        </div>
       </Card>
     </Link>
   );

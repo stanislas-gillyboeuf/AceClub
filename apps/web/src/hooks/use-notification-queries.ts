@@ -9,7 +9,7 @@ export function useNotifications(params?: { limit?: number; offset?: number }) {
   const qs = searchParams.toString();
 
   return useQuery({
-    queryKey: ["notifications", params],
+    queryKey: ["notifications", params, qs],
     queryFn: () => apiClient<NotificationsResponse>(`/notification${qs ? `?${qs}` : ""}`),
   });
 }

@@ -1,7 +1,9 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ChevronRight } from "lucide-react";
 import { useMyBadges } from "@/hooks/use-gamification-queries";
 
 export function ProfileBadgesSection() {
@@ -9,50 +11,63 @@ export function ProfileBadgesSection() {
   const badges = data?.badges ?? [];
 
   if (isPending) {
-    return <Skeleton className="h-32 w-full" />;
+    return <Skeleton className="h-32 w-full rounded-xl" />;
   }
 
-  // All badges from /reward/badges are already unlocked
   const unlockedBadges = badges;
 
-  if (unlockedBadges.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Badges</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Badges
+        </h3>
+        {unlockedBadges.length > 0 && (
+          <span className="text-xs text-muted-foreground">
+            {unlockedBadges.length} débloqué{unlockedBadges.length > 1 ? "s" : ""}
+          </span>
+        )}
+      </div>
+
+      <Card className="p-4">
+        {unlockedBadges.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-2">
             Jouez des matchs pour débloquer vos premiers badges !
           </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Badges ({unlockedBadges.length})</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-4 gap-3">
-          {unlockedBadges.slice(0, 8).map((badge) => (
-            <div key={badge.id} className="flex flex-col items-center gap-1">
-              {badge.imageUrl ? (
-                <img src={badge.imageUrl} alt={badge.name} className="size-10 rounded-full" />
-              ) : (
-                <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-lg">
-                  🏆
+        ) : (
+          <div className="space-y-3">
+            <div className="grid grid-cols-4 gap-3">
+              {unlockedBadges.slice(0, 4).map((badge) => (
+                <div key={badge.id} className="flex flex-col items-center gap-1.5">
+                  {badge.imageUrl ? (
+                    <img src={badge.imageUrl} alt={badge.name} className="size-12 rounded-full" />
+                  ) : (
+                    <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-xl">
+                      🏆
+                    </div>
+                  )}
+                  <span className="text-[10px] text-center text-muted-foreground truncate w-full leading-tight">
+                    {badge.name}
+                  </span>
                 </div>
-              )}
-              <span className="text-[10px] text-center text-muted-foreground truncate w-full">
-                {badge.name}
-              </span>
+              ))}
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+
+            {unlockedBadges.length > 4 && (
+              <>
+                <div className="h-px bg-border" />
+                <Link
+                  href="/app/progression"
+                  className="flex items-center justify-between text-sm text-primary font-medium"
+                >
+                  <span>Voir tous les badges</span>
+                  <ChevronRight className="size-4 text-primary/60" />
+                </Link>
+              </>
+            )}
+          </div>
+        )}
+      </Card>
+    </div>
   );
 }

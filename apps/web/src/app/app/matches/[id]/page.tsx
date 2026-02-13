@@ -6,12 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -137,7 +132,9 @@ export default function MatchDetailPage({ params }: { params: Promise<{ id: stri
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
         <p className="text-sm font-medium">Match introuvable</p>
-        <p className="text-xs text-muted-foreground">Ce match n&apos;existe pas ou a été supprimé.</p>
+        <p className="text-xs text-muted-foreground">
+          Ce match n&apos;existe pas ou a été supprimé.
+        </p>
       </div>
     );
   }
@@ -173,7 +170,11 @@ export default function MatchDetailPage({ params }: { params: Promise<{ id: stri
     <div className="flex min-h-[calc(100dvh-4rem)] flex-col">
       {/* Header */}
       <div className="flex items-center gap-3 border-b px-4 py-3">
-        <button type="button" onClick={() => router.back()} className="text-muted-foreground hover:text-foreground transition-colors">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
           <ChevronLeft className="size-5" />
         </button>
         <h1 className="flex-1 text-center text-sm font-semibold">Détails du match</h1>
@@ -195,7 +196,14 @@ export default function MatchDetailPage({ params }: { params: Promise<{ id: stri
         <InfoCard match={match} />
 
         {/* Comments Card (finished) */}
-        {isFinished && <CommentsCard matchId={match.id} comments={match.comments} currentUserId={currentUserId} isParticipant={isParticipant} />}
+        {isFinished && (
+          <CommentsCard
+            matchId={match.id}
+            comments={match.comments}
+            currentUserId={currentUserId}
+            isParticipant={isParticipant}
+          />
+        )}
       </div>
 
       {/* Floating action bar */}
@@ -203,20 +211,45 @@ export default function MatchDetailPage({ params }: { params: Promise<{ id: stri
         <div className="fixed bottom-0 left-0 right-0 z-20 border-t bg-background/95 px-5 py-3 backdrop-blur-sm">
           <div className="mx-auto flex max-w-lg items-center justify-center gap-3">
             {isScheduled && (
-              <Button size="sm" variant="outline" onClick={handleStart} disabled={updateMatch.isPending} className="gap-1.5">
-                {updateMatch.isPending ? <Loader2 className="size-4 animate-spin" /> : <PlayCircle className="size-4 text-primary" />}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleStart}
+                disabled={updateMatch.isPending}
+                className="gap-1.5"
+              >
+                {updateMatch.isPending ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <PlayCircle className="size-4 text-primary" />
+                )}
                 Démarrer
               </Button>
             )}
 
             {isOngoing && (
               <>
-                <Button size="sm" variant="outline" onClick={() => setShowScoreEditor(true)} className="gap-1.5">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowScoreEditor(true)}
+                  className="gap-1.5"
+                >
                   <Pencil className="size-4 text-primary" />
                   Scores
                 </Button>
-                <Button size="sm" variant="outline" onClick={handleFinish} disabled={updateMatch.isPending} className="gap-1.5">
-                  {updateMatch.isPending ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4 text-orange-500" />}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleFinish}
+                  disabled={updateMatch.isPending}
+                  className="gap-1.5"
+                >
+                  {updateMatch.isPending ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Check className="size-4 text-orange-500" />
+                  )}
                   Terminer
                 </Button>
               </>
@@ -271,25 +304,36 @@ export default function MatchDetailPage({ params }: { params: Promise<{ id: stri
 
 // --- Hero Score Card ---
 
-function HeroScoreCard({ match, home, away }: { match: Match; home?: MatchParticipant; away?: MatchParticipant }) {
+function HeroScoreCard({
+  match,
+  home,
+  away,
+}: {
+  match: Match;
+  home?: MatchParticipant;
+  away?: MatchParticipant;
+}) {
   const score = getMatchScore(match.sets);
   const hasScore = match.sets.length > 0;
   const isFinished = match.status === "finished";
   const hasWinner = match.participants.some((p) => p.isWinner);
   const duration = getDuration(match.startedAt, match.finishedAt);
 
-  const statusConfig: Record<string, { label: string; color: string; bg: string; dot?: boolean }> = {
-    scheduled: { label: "PLANIFIÉ", color: "text-blue-600", bg: "bg-blue-500/10" },
-    ongoing: { label: "EN COURS", color: "text-red-600", bg: "bg-red-500/10", dot: true },
-    finished: { label: "TERMINÉ", color: "text-green-600", bg: "bg-green-500/10" },
-  };
+  const statusConfig: Record<string, { label: string; color: string; bg: string; dot?: boolean }> =
+    {
+      scheduled: { label: "PLANIFIÉ", color: "text-blue-600", bg: "bg-blue-500/10" },
+      ongoing: { label: "EN COURS", color: "text-red-600", bg: "bg-red-500/10", dot: true },
+      finished: { label: "TERMINÉ", color: "text-green-600", bg: "bg-green-500/10" },
+    };
   const status = statusConfig[match.status] ?? statusConfig.scheduled;
 
   return (
     <div className="rounded-2xl border bg-card p-5 space-y-5">
       {/* Status pill */}
       <div className="flex justify-center">
-        <span className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold tracking-widest ${status.color} ${status.bg}`}>
+        <span
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold tracking-widest ${status.color} ${status.bg}`}
+        >
           {status.dot && <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />}
           {status.label}
         </span>
@@ -310,8 +354,14 @@ function HeroScoreCard({ match, home, away }: { match: Match; home?: MatchPartic
             <span className="text-4xl font-black text-muted-foreground/30">VS</span>
           ) : (
             <>
-              <span className="text-5xl font-black tabular-nums">{score.home}-{score.away}</span>
-              {hasScore && <span className="mt-1 text-[10px] font-bold tracking-widest text-muted-foreground">SETS</span>}
+              <span className="text-5xl font-black tabular-nums">
+                {score.home}-{score.away}
+              </span>
+              {hasScore && (
+                <span className="mt-1 text-[10px] font-bold tracking-widest text-muted-foreground">
+                  SETS
+                </span>
+              )}
             </>
           )}
         </div>
@@ -329,7 +379,9 @@ function HeroScoreCard({ match, home, away }: { match: Match; home?: MatchPartic
         <div className="h-px bg-border" />
         <div className="text-center text-xs text-muted-foreground">
           {match.status === "scheduled" && match.scheduledAt && formatDateFull(match.scheduledAt)}
-          {match.status === "ongoing" && match.startedAt && `Depuis ${new Date(match.startedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`}
+          {match.status === "ongoing" &&
+            match.startedAt &&
+            `Depuis ${new Date(match.startedAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`}
           {match.status === "finished" && duration && (
             <span className="inline-flex items-center gap-1">
               <Timer className="size-3" />
@@ -342,7 +394,15 @@ function HeroScoreCard({ match, home, away }: { match: Match; home?: MatchPartic
   );
 }
 
-function PlayerColumn({ participant, isWinner, isLoser }: { participant?: MatchParticipant; isWinner: boolean; isLoser: boolean }) {
+function PlayerColumn({
+  participant,
+  isWinner,
+  isLoser,
+}: {
+  participant?: MatchParticipant;
+  isWinner: boolean;
+  isLoser: boolean;
+}) {
   const name = participant?.user?.name ?? "Joueur";
   const image = participant?.user?.image;
   const initial = name.charAt(0);
@@ -352,9 +412,13 @@ function PlayerColumn({ participant, isWinner, isLoser }: { participant?: MatchP
       <div className="relative">
         <Avatar className="size-16">
           <AvatarImage src={image ?? undefined} />
-          <AvatarFallback className="bg-primary/15 text-primary text-lg font-semibold">{initial}</AvatarFallback>
+          <AvatarFallback className="bg-primary/15 text-primary text-lg font-semibold">
+            {initial}
+          </AvatarFallback>
         </Avatar>
-        {isWinner && <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-base">👑</span>}
+        {isWinner && (
+          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-base">👑</span>
+        )}
       </div>
       <span className="text-sm font-semibold text-center leading-tight">{name.split(" ")[0]}</span>
     </div>
@@ -377,7 +441,10 @@ function LiveTimerCard({ startedAt }: { startedAt: string }) {
   const h = Math.floor(elapsed / 3600);
   const m = Math.floor((elapsed % 3600) / 60);
   const s = elapsed % 60;
-  const formatted = h > 0 ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  const formatted =
+    h > 0
+      ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+      : `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 
   return (
     <div className="rounded-2xl border-2 border-red-500/30 bg-card p-4 text-center space-y-2">
@@ -396,14 +463,24 @@ function LiveTimerCard({ startedAt }: { startedAt: string }) {
 
 // --- Sets Card ---
 
-function SetsCard({ sets, home, away }: { sets: MatchSet[]; home?: MatchParticipant; away?: MatchParticipant }) {
+function SetsCard({
+  sets,
+  home,
+  away,
+}: {
+  sets: MatchSet[];
+  home?: MatchParticipant;
+  away?: MatchParticipant;
+}) {
   const sorted = [...sets].sort((a, b) => a.setNumber - b.setNumber);
   const homeName = home?.user?.name?.split(" ")[0] ?? "Joueur 1";
   const awayName = away?.user?.name?.split(" ")[0] ?? "Joueur 2";
 
   return (
     <div className="space-y-2.5">
-      <p className="text-[10px] font-bold tracking-widest text-muted-foreground px-1">SCORES PAR SET</p>
+      <p className="text-[10px] font-bold tracking-widest text-muted-foreground px-1">
+        SCORES PAR SET
+      </p>
 
       {sorted.map((set) => {
         const hs = set.scores.find((s) => s.side === "home")?.games ?? 0;
@@ -419,9 +496,15 @@ function SetsCard({ sets, home, away }: { sets: MatchSet[]; home?: MatchParticip
               <div className="flex-1 space-y-2 text-center">
                 <div className="flex items-center justify-center gap-1">
                   {homeWins && <ChevronRight className="size-3 text-blue-500" />}
-                  <span className={`text-xs ${homeWins ? "font-medium text-foreground" : "text-muted-foreground"}`}>{homeName}</span>
+                  <span
+                    className={`text-xs ${homeWins ? "font-medium text-foreground" : "text-muted-foreground"}`}
+                  >
+                    {homeName}
+                  </span>
                 </div>
-                <div className={`mx-auto rounded-xl bg-muted py-3 text-2xl font-bold tabular-nums ${homeWins ? "ring-1 ring-blue-500/30" : ""}`}>
+                <div
+                  className={`mx-auto rounded-xl bg-muted py-3 text-2xl font-bold tabular-nums ${homeWins ? "ring-1 ring-blue-500/30" : ""}`}
+                >
                   {hs}
                 </div>
               </div>
@@ -432,9 +515,15 @@ function SetsCard({ sets, home, away }: { sets: MatchSet[]; home?: MatchParticip
               <div className="flex-1 space-y-2 text-center">
                 <div className="flex items-center justify-center gap-1">
                   {awayWins && <ChevronRight className="size-3 text-orange-500" />}
-                  <span className={`text-xs ${awayWins ? "font-medium text-foreground" : "text-muted-foreground"}`}>{awayName}</span>
+                  <span
+                    className={`text-xs ${awayWins ? "font-medium text-foreground" : "text-muted-foreground"}`}
+                  >
+                    {awayName}
+                  </span>
                 </div>
-                <div className={`mx-auto rounded-xl bg-muted py-3 text-2xl font-bold tabular-nums ${awayWins ? "ring-1 ring-orange-500/30" : ""}`}>
+                <div
+                  className={`mx-auto rounded-xl bg-muted py-3 text-2xl font-bold tabular-nums ${awayWins ? "ring-1 ring-orange-500/30" : ""}`}
+                >
                   {as_}
                 </div>
               </div>
@@ -463,15 +552,27 @@ function InfoCard({ match }: { match: Match }) {
   });
 
   if (match.scheduledAt) {
-    rows.push({ icon: <Calendar className="size-3.5" />, label: "Date prévue", value: formatDateFull(match.scheduledAt) });
+    rows.push({
+      icon: <Calendar className="size-3.5" />,
+      label: "Date prévue",
+      value: formatDateFull(match.scheduledAt),
+    });
   }
 
   if (match.startedAt) {
-    rows.push({ icon: <PlayCircle className="size-3.5" />, label: "Démarré le", value: formatDateFull(match.startedAt) });
+    rows.push({
+      icon: <PlayCircle className="size-3.5" />,
+      label: "Démarré le",
+      value: formatDateFull(match.startedAt),
+    });
   }
 
   if (match.finishedAt) {
-    rows.push({ icon: <CheckCircle className="size-3.5" />, label: "Terminé le", value: formatDateFull(match.finishedAt) });
+    rows.push({
+      icon: <CheckCircle className="size-3.5" />,
+      label: "Terminé le",
+      value: formatDateFull(match.finishedAt),
+    });
   }
 
   if (duration) {
@@ -480,7 +581,9 @@ function InfoCard({ match }: { match: Match }) {
 
   return (
     <div className="rounded-2xl border bg-card overflow-hidden">
-      <p className="text-[10px] font-bold tracking-widest text-muted-foreground px-4 pt-4 pb-2">INFORMATIONS</p>
+      <p className="text-[10px] font-bold tracking-widest text-muted-foreground px-4 pt-4 pb-2">
+        INFORMATIONS
+      </p>
       <div className="px-4 pb-4">
         {rows.map((row, i) => (
           <div key={row.label}>
@@ -515,7 +618,9 @@ function CommentsCard({
   const [content, setContent] = useState("");
   const createComment = useCreateComment(matchId);
   const hasUserCommented = comments.some((c) => c.userId === currentUserId);
-  const sorted = [...comments].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  const sorted = [...comments].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -526,7 +631,9 @@ function CommentsCard({
 
   return (
     <div className="rounded-2xl border bg-card overflow-hidden">
-      <p className="text-[10px] font-bold tracking-widest text-muted-foreground px-4 pt-4 pb-2">COMMENTAIRES</p>
+      <p className="text-[10px] font-bold tracking-widest text-muted-foreground px-4 pt-4 pb-2">
+        COMMENTAIRES
+      </p>
 
       <div className="px-4 pb-4">
         {sorted.length === 0 ? (
@@ -542,13 +649,18 @@ function CommentsCard({
                 <div className="flex gap-3 py-3">
                   <Avatar className="size-8 shrink-0">
                     <AvatarImage src={comment.userImage ?? undefined} />
-                    <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">{comment.userName?.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">
+                      {comment.userName?.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">{comment.userName}</span>
                       <span className="text-[10px] text-muted-foreground ml-auto">
-                        {new Date(comment.createdAt).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                        {new Date(comment.createdAt).toLocaleDateString("fr-FR", {
+                          day: "numeric",
+                          month: "short",
+                        })}
                       </span>
                     </div>
                     <p className="text-sm mt-0.5">{comment.content}</p>
@@ -569,7 +681,12 @@ function CommentsCard({
               className="min-h-9 resize-none text-sm"
               rows={1}
             />
-            <Button type="submit" size="icon" disabled={!content.trim() || createComment.isPending} className="shrink-0">
+            <Button
+              type="submit"
+              size="icon"
+              disabled={!content.trim() || createComment.isPending}
+              className="shrink-0"
+            >
               <Send className="size-4" />
             </Button>
           </form>
@@ -653,7 +770,10 @@ function ScoreEditorDialog({
 
   function addSet() {
     const nextNum = (editedSets.at(-1)?.setNumber ?? 0) + 1;
-    setEditedSets((prev) => [...prev, { key: keyCounter, setNumber: nextNum, homeScore: 0, awayScore: 0 }]);
+    setEditedSets((prev) => [
+      ...prev,
+      { key: keyCounter, setNumber: nextNum, homeScore: 0, awayScore: 0 },
+    ]);
     setKeyCounter((c) => c + 1);
   }
 
@@ -693,18 +813,24 @@ function ScoreEditorDialog({
             <div className="flex flex-col items-center gap-1">
               <Avatar className="size-12">
                 <AvatarImage src={home.user?.image ?? undefined} />
-                <AvatarFallback className="bg-primary/15 text-primary text-sm font-semibold">{homeName.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="bg-primary/15 text-primary text-sm font-semibold">
+                  {homeName.charAt(0)}
+                </AvatarFallback>
               </Avatar>
               <span className="text-xs font-medium">{homeName}</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-2xl font-bold tabular-nums">{homeSetsWon} - {awaySetsWon}</span>
+              <span className="text-2xl font-bold tabular-nums">
+                {homeSetsWon} - {awaySetsWon}
+              </span>
               <span className="text-[10px] text-muted-foreground">Sets</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <Avatar className="size-12">
                 <AvatarImage src={away.user?.image ?? undefined} />
-                <AvatarFallback className="bg-primary/15 text-primary text-sm font-semibold">{awayName.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="bg-primary/15 text-primary text-sm font-semibold">
+                  {awayName.charAt(0)}
+                </AvatarFallback>
               </Avatar>
               <span className="text-xs font-medium">{awayName}</span>
             </div>
@@ -717,7 +843,11 @@ function ScoreEditorDialog({
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold">Set {s.setNumber}</span>
                   {editedSets.length > 1 && (
-                    <button type="button" onClick={() => removeSet(s.key)} className="text-muted-foreground hover:text-destructive transition-colors">
+                    <button
+                      type="button"
+                      onClick={() => removeSet(s.key)}
+                      className="text-muted-foreground hover:text-destructive transition-colors"
+                    >
                       <X className="size-4" />
                     </button>
                   )}
@@ -735,7 +865,9 @@ function ScoreEditorDialog({
                       >
                         <Minus className="size-3.5" />
                       </button>
-                      <span className="w-8 text-center text-xl font-bold tabular-nums">{s.homeScore}</span>
+                      <span className="w-8 text-center text-xl font-bold tabular-nums">
+                        {s.homeScore}
+                      </span>
                       <button
                         type="button"
                         onClick={() => updateSetScore(s.key, "homeScore", 1)}
@@ -759,7 +891,9 @@ function ScoreEditorDialog({
                       >
                         <Minus className="size-3.5" />
                       </button>
-                      <span className="w-8 text-center text-xl font-bold tabular-nums">{s.awayScore}</span>
+                      <span className="w-8 text-center text-xl font-bold tabular-nums">
+                        {s.awayScore}
+                      </span>
                       <button
                         type="button"
                         onClick={() => updateSetScore(s.key, "awayScore", 1)}
@@ -788,7 +922,11 @@ function ScoreEditorDialog({
 
           {/* Save button */}
           <Button onClick={handleSave} disabled={updateScores.isPending} className="w-full gap-2">
-            {updateScores.isPending ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
+            {updateScores.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Check className="size-4" />
+            )}
             Enregistrer
           </Button>
         </div>

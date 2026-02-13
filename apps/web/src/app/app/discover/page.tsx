@@ -10,12 +10,12 @@ export default function DiscoverPage() {
   const [showCreate, setShowCreate] = useState(false);
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Découvrir</h2>
-        <Button size="sm" onClick={() => setShowCreate(true)}>
-          <Plus className="mr-1 size-4" />
-          Publier
+    <div className="mx-auto w-full max-w-2xl px-4 py-6">
+      <div className="mb-6 flex items-center justify-between">
+        <div />
+        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setShowCreate(true)}>
+          <Plus className="size-4" />
+          Créer une annonce
         </Button>
       </div>
       <DiscoverFeed />
