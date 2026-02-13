@@ -11,7 +11,6 @@
     "ios": {
       "bundleIdentifier": "com.miniko.mobile",
       "usesAppleSignIn": true
-
     },
     "android": {
       "adaptiveIcon": {
@@ -40,7 +39,11 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-secure-store",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
