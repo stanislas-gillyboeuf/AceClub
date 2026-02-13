@@ -80,7 +80,7 @@ export const siteConfig = {
     "Application club",
   ],
   links: {
-    email: "contact@aceclub.app",
+    email: "contact.stanislas@ace-club.app",
     twitter: "https://twitter.com/aceclub_app",
     discord: "",
     github: "",
@@ -254,7 +254,7 @@ export const siteConfig = {
       question: "Comment mon club peut-il rejoindre AceClub ?",
       answer: (
         <span>
-          Contactez-nous via le formulaire de contact ou par email à contact@aceclub.app. Nous vous
+          Contactez-nous via le formulaire de contact ou par email à contact.stanislas@ace-club.app. Nous vous
           présenterons les fonctionnalités et établirons un devis personnalisé selon la taille de
           votre club.
         </span>

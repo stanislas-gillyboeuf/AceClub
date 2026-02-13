@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     // Send email via Resend
     const { data, error } = await resend.emails.send({
       from: "AceClub <noreply@aceclub.app>",
-      to: ["contact@aceclub.app"],
+      to: ["contact.stanislas@ace-club.app"],
       replyTo: body.email,
       subject: `[Contact AceClub] ${body.clubName}`,
       html: `
