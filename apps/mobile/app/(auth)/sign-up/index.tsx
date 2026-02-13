@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { View, TextInput, Button } from "react-native";
+import { View, TextInput, Pressable, Text } from "react-native";
 import { authClient } from "@/lib/auth-client";
-
 export default function SignUp() {
     const [email, setEmail] = useState("");
     const [name, setName] = useState("");
@@ -15,8 +14,15 @@ export default function SignUp() {
         })
     };
 
-    return (
-        <View>
+  return (
+
+
+    <View>
+          <View className="flex-1 items-center justify-center bg-white">
+            <Text className="text-xl font-bold text-blue-500">
+              Welcome to Nativewind!
+            </Text>
+          </View>
             <TextInput
                 placeholder="Name"
                 value={name}
@@ -32,7 +38,9 @@ export default function SignUp() {
                 value={password}
                 onChangeText={setPassword}
             />
-            <Button title="Login" onPress={handleLogin} />
+            <Pressable onPress={handleLogin}>
+                <Text>Sign Up</Text>
+            </Pressable>
         </View>
     );
 }

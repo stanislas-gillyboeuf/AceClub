@@ -1,55 +1,29 @@
-import { Tabs } from "expo-router";
-import { HapticTab } from "@/components/haptic-tab";
-import { Home, Swords, MessageCircle, Search, User } from "lucide-react-native";
-import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { NativeTabs, Icon, Label } from "expo-router/unstable-native-tabs";
+import { colors } from "@/constants/theme";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}
-    >
-      <Tabs.Screen
-        name="feed"
-        options={{
-          title: "Feed",
-          tabBarIcon: ({ color }) => <Home size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="matches"
-        options={{
-          title: "Matches",
-          tabBarIcon: ({ color }) => <Swords size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: "Chat",
-          tabBarIcon: ({ color }) => <MessageCircle size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="discover"
-        options={{
-          title: "Discover",
-          tabBarIcon: ({ color }) => <Search size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ color }) => <User size={24} color={color} />,
-        }}
-      />
-    </Tabs>
+    <NativeTabs tintColor={colors.accentGreen}>
+      <NativeTabs.Trigger name="feed">
+        <Icon sf={{ default: 'house', selected: 'house.fill' }} drawable="custom_home_drawable" />
+        <Label>Feed</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="matches">
+        <Icon sf={{ default: "sportscourt", selected: "sportscourt.fill" }} />
+        <Label>Matches</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="chat">
+        <Icon sf={{ default: "message", selected: "message.fill" }} />
+        <Label>Chat</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="discover">
+        <Icon sf={{ default: "magnifyingglass", selected: "magnifyingglass" }} />
+        <Label>Discover</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="profile">
+        <Icon sf={{ default: "person", selected: "person.fill" }} />
+        <Label>Profile</Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }

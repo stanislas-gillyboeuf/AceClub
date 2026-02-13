@@ -9,7 +9,9 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.miniko.mobile",
+      "usesAppleSignIn": true
+
     },
     "android": {
       "adaptiveIcon": {
