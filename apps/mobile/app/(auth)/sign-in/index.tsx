@@ -6,6 +6,7 @@ import {
   Pressable,
   TextInput,
   StyleSheet,
+  Platform,
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as AppleAuthentication from "expo-apple-authentication";
@@ -100,14 +101,16 @@ export default function SignIn() {
           </View>
         )}
 
-        {/* Apple Sign-In */}
-        <AppleAuthentication.AppleAuthenticationButton
-          buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-          cornerRadius={radii.sm}
-          style={styles.appleButton}
-          onPress={handleAppleSignIn}
-        />
+        {/* Apple Sign-In (iOS only) */}
+        {Platform.OS === "ios" && (
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+            cornerRadius={radii.sm}
+            style={styles.appleButton}
+            onPress={handleAppleSignIn}
+          />
+        )}
 
         {/* Google Sign-In */}
         <Pressable onPress={handleGoogleSignIn} disabled={isLoading}>

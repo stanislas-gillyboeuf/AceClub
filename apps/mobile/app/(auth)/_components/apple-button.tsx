@@ -1,5 +1,5 @@
 import * as AppleAuthentication from "expo-apple-authentication";
-import { View } from "react-native";
+import { View, Platform } from "react-native";
 
 type AppleButtonProps = {
   onSignIn?: (credential: AppleAuthentication.AppleAuthenticationCredential) => void;
@@ -7,6 +7,8 @@ type AppleButtonProps = {
 };
 
 export default function AppleButton({ onSignIn, onError }: AppleButtonProps) {
+  if (Platform.OS !== "ios") return null;
+
   return (
     <View className="flex-row items-center justify-center">
       <AppleAuthentication.AppleAuthenticationButton

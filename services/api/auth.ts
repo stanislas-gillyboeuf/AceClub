@@ -114,17 +114,19 @@ export const auth = betterAuth({
     "http://localhost:3001",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:3001",
+    "http://10.0.2.2:3000",
     "aceclub://",
+    "mobile://",
     "https://ace-club-production.up.railway.app",
     "https://ace-club.app",
     "https://appleid.apple.com",
-    "mobile://",
     process.env.NGROK_URL || "",
     ...(process.env.NODE_ENV === "development" ? [
-                "exp://",                      // Trust all Expo URLs (prefix matching)
-                "exp://**",                    // Trust all Expo URLs (wildcard matching)
-                "exp://192.168.*.*:*/**",      // Trust 192.168.x.x IP range with any port and path
-            ] : [])
+      "exp://192.168.1.23:8081",
+      "exp://",
+      "exp://**",
+      "exp://192.168.*.*:*/**",
+    ] : []),
   ].filter(Boolean),
 
   plugins: [

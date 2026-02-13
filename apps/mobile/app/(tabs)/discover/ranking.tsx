@@ -1,20 +1,17 @@
-import { Stack, useRouter } from "expo-router";
 import { View, Text } from "react-native";
+import { Stack, useRouter } from "expo-router";
 
-export default function Discover() {
+export default function Ranking() {
   const router = useRouter();
 
   return (
     <>
       <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Button
-          icon="trophy"
-          onPress={() => router.push("/(tabs)/discover/ranking")}
-        />
+        <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} />
       </Stack.Toolbar>
 
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Discover</Text>
+        <Text>Ranking</Text>
       </View>
     </>
   );
