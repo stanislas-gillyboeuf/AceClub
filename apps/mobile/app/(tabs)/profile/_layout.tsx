@@ -8,7 +8,18 @@ export default function ProfileLayout() {
         name="settings"
         options={{
           title: "Paramètres",
-          presentation: "modal",
+          presentation: "formSheet",
+          sheetGrabberVisible: true,
+          headerTransparent: true,
+        }}
+      />
+      <Stack.Screen
+        name="create-intent"
+        options={{
+          title: "Nouvelle dispo",
+          presentation: "formSheet",
+          sheetGrabberVisible: true,
+          headerTransparent: true,
         }}
       />
     </Stack>

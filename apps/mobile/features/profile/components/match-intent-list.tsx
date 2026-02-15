@@ -15,19 +15,21 @@ interface MatchIntentListProps {
   deletingId?: string | null;
 }
 
+function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
+}
+
 function formatIntentDate(intent: MatchIntent): string {
-  if (!intent.scheduledDate) return "Flexible";
-  const date = new Date(intent.scheduledDate);
+  const date = new Date(intent.date);
   const formatter = new Intl.DateTimeFormat("fr-FR", {
     weekday: "short",
     day: "numeric",
     month: "short",
   });
-  let result = formatter.format(date);
-  if (intent.scheduledTime) {
-    result += ` - ${intent.scheduledTime}`;
-  }
-  return result;
+  return `${formatter.format(date)} - ${intent.time} (${formatDuration(intent.duration)})`;
 }
 
 export function MatchIntentList({
@@ -90,10 +92,9 @@ export function MatchIntentList({
               />
               <View style={styles.intentInfo}>
                 <Text
-                  style={[styles.intentSport, { color: semanticColors.labelPrimary[scheme] }]}
+                  style={[styles.intentType, { color: semanticColors.labelPrimary[scheme] }]}
                 >
-                  {intent.sport === "tennis" ? "Tennis" : "Padel"} -{" "}
-                  {intent.type === "singles" ? "Simple" : "Double"}
+                  {intent.type === "match" ? "Match" : "Entraînement"}
                 </Text>
                 <Text
                   style={[styles.intentDate, { color: semanticColors.labelSecondary[scheme] }]}
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
-  intentSport: {
+  intentType: {
     fontSize: 15,
     fontWeight: "500",
   },

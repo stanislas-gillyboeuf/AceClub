@@ -192,16 +192,23 @@ export default function Settings() {
         }
       }
 
+      // Build payload with only defined (non-null) values
+      const payload: Record<string, string> = {};
+      const trimmedName = name.trim();
+      const trimmedPhone = phoneNumber.trim();
+
+      if (trimmedName && trimmedName !== originalValues.name) payload.name = trimmedName;
+      if (trimmedPhone && trimmedPhone !== originalValues.phoneNumber) payload.phoneNumber = trimmedPhone;
+      if (selectedSport && selectedSport !== originalValues.sport) payload.sport = selectedSport;
+      if (selectedSkillLevel && selectedSkillLevel !== originalValues.skillLevel) payload.skillLevel = selectedSkillLevel;
+      if (selectedOrganization?.id && selectedOrganization.id !== originalValues.organizationId) {
+        payload.organizationId = selectedOrganization.id;
+        if (pendingPin) payload.pin = pendingPin;
+      }
+      if (imageUrl) payload.image = imageUrl;
+
       // Update profile
-      await updateProfile.mutateAsync({
-        name: name.trim() || null,
-        phoneNumber: phoneNumber.trim() || null,
-        sport: selectedSport,
-        skillLevel: selectedSkillLevel,
-        organizationId: selectedOrganization?.id ?? null,
-        image: imageUrl,
-        pin: pendingPin,
-      });
+      await updateProfile.mutateAsync(payload);
 
       setSuccessMessage("Profil mis à jour avec succès");
       setSelectedImageUri(null);
@@ -283,15 +290,11 @@ export default function Settings() {
       <Stack.Screen
         options={{
           title: "Paramètres",
-          presentation: "modal",
-          headerLeft:
-            Platform.OS === "android"
-              ? () => (
-                  <Pressable onPress={() => router.back()} hitSlop={8}>
-                    <X size={24} color={semanticColors.labelPrimary[scheme]} strokeWidth={2} />
-                  </Pressable>
-                )
-              : undefined,
+          headerLeft: () => (
+            <Pressable onPress={() => router.back()} hitSlop={8}>
+              <X size={24} color={semanticColors.labelPrimary[scheme]} strokeWidth={2} />
+            </Pressable>
+          ),
           headerRight: () => (
             <Pressable onPress={handleSave} disabled={!canSave} hitSlop={8}>
               {isSaving ? (
@@ -310,15 +313,6 @@ export default function Settings() {
           ),
         }}
       />
-
-      {Platform.OS === "ios" && (
-        <Stack.Toolbar placement="left">
-          <Stack.Toolbar.Button
-            icon="xmark"
-            onPress={() => router.back()}
-          />
-        </Stack.Toolbar>
-      )}
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}

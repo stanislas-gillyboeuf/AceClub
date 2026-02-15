@@ -13,12 +13,17 @@ export const createMatchIntent = async (c: Context<HonoContext>) => {
     if (!userId) {
       return c.json({ error: "User not authenticated" }, 401);
     }
+    const dateObj = new Date(`${validated.date}T${validated.time}:00`);
+    if (isNaN(dateObj.getTime())) {
+      return c.json({ error: "Invalid date or time format" }, 400);
+    }
+
     const [createdMatchIntent] = await db
       .insert(matchIntent)
       .values({
         userId: userId,
-        date: new Date(validated.date),
-        time: new Date(validated.time),
+        date: dateObj,
+        time: dateObj,
         duration: validated.duration,
         type: validated.type,
         description: validated.description,

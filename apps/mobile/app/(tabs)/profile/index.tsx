@@ -196,9 +196,7 @@ export default function Profile() {
 
   // Navigation
   const openSettings = () => router.push("/(tabs)/profile/settings");
-  const openCreateIntent = () => {
-    // Navigate to create intent flow (placeholder)
-  };
+  const openCreateIntent = () => router.push("/(tabs)/profile/create-intent");
 
   const isLoading = userLoading && !user;
 
