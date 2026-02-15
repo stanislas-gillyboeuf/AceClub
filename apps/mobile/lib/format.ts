@@ -94,3 +94,46 @@ export function formatAces(count: number): string {
   }
   return count.toString();
 }
+
+export function formatShortDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  const formatter = new Intl.DateTimeFormat("fr-FR", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+  const formatted = formatter.format(date);
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+}
+
+export function formatFullDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  const formatter = new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  const formatted = formatter.format(date);
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+}
+
+export function formatTime(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+
+export function formatDuration(minutes: number): string {
+  if (minutes >= 60) {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return m > 0 ? `${h}h ${m}min` : `${h}h`;
+  }
+  return `${minutes}min`;
+}
+
+export function formatDistance(km: number): string {
+  if (km < 1) {
+    return `${Math.round(km * 1000)} m`;
+  }
+  return `${km.toFixed(1)} km`;
+}
