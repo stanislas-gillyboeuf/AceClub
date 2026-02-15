@@ -37,4 +37,13 @@ export const conversationService = {
 
   muteConversation: (conversationId: string, isMuted: boolean) =>
     api.post<void>(`/conversation/${conversationId}/mute`, { isMuted }),
+
+  uploadAttachment: (conversationId: string, fileUri: string, fileName: string, mimeType: string) =>
+    api.uploadMultipart<UploadAttachmentResponse>(
+      `/conversation/${conversationId}/upload-attachment`,
+      "file",
+      fileUri,
+      fileName,
+      mimeType,
+    ),
 };
