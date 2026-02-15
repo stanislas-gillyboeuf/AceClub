@@ -3,14 +3,14 @@ import type { MyBadgesResponse, AllBadgesResponse, TitlesResponse, EquipTitleRes
 
 export const rewardService = {
   getMyBadges: () =>
-    api.get<MyBadgesResponse>("/reward/my-badges"),
+    api.get<MyBadgesResponse>("/reward/badges"),
 
   getAllBadges: () =>
-    api.get<AllBadgesResponse>("/reward/all-badges"),
+    api.get<AllBadgesResponse>("/reward/badges/all"),
 
   getMyTitles: () =>
-    api.get<TitlesResponse>("/reward/my-titles"),
+    api.get<TitlesResponse>("/reward/titles"),
 
   equipTitle: (titleId: string) =>
-    api.post<EquipTitleResponse>("/reward/equip-title", { titleId }),
+    api.put<EquipTitleResponse>("/reward/titles/equip", { titleId }),
 };
