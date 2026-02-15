@@ -1,9 +1,327 @@
-import { View, Text } from "react-native";
+import { useState, useCallback, useMemo } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  StyleSheet,
+  RefreshControl,
+  ActivityIndicator,
+  Alert,
+  Platform,
+} from "react-native";
+import { Stack, useRouter } from "expo-router";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { LogOut } from "lucide-react-native";
+
+import { useMe, usePreferences } from "@/hooks/use-user";
+import { useMyLevel } from "@/hooks/use-level";
+import { useMyBadges, useAllBadges } from "@/hooks/use-reward";
+import { useMatchIntents, useDeleteMatchIntent } from "@/hooks/use-match-intent";
+import { useMyOrganizations, useActiveMemberRole } from "@/hooks/use-organization";
+import { useUserInvitations, useAcceptInvitation, useRejectInvitation } from "@/hooks/use-invitation";
+import { useMatches } from "@/hooks/use-match";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { authClient } from "@/lib/auth-client";
+
+import { ProfileHeaderCard } from "@/features/profile/components/profile-header-card";
+import { ProfileBadgeSection } from "@/features/profile/components/profile-badge-section";
+import { MatchIntentList } from "@/features/profile/components/match-intent-list";
+import { OrganizationCard } from "@/features/profile/components/organization-card";
+import { InvitationList } from "@/features/profile/components/invitation-list";
+import { semanticColors, spacing, colors, radii } from "@/constants/theme";
+import type { MatchWithParticipants } from "@/types/match";
+
+function calculateMatchStats(matches: MatchWithParticipants[], userId: string) {
+  let totalMatches = 0;
+  let wins = 0;
+  let totalPlaytimeMinutes = 0;
+
+  for (const match of matches) {
+    if (match.status !== "finished") continue;
+    totalMatches++;
+
+    // Calculate playtime
+    if (match.startedAt && match.finishedAt) {
+      const start = new Date(match.startedAt).getTime();
+      const end = new Date(match.finishedAt).getTime();
+      const diffMinutes = Math.floor((end - start) / 60000);
+      if (diffMinutes > 0) totalPlaytimeMinutes += diffMinutes;
+    }
+
+    // Determine winner by set wins
+    if (match.sets && match.sets.length > 0) {
+      const myParticipant = match.participants.find((p) => p.userId === userId);
+      if (!myParticipant) continue;
+
+      let mySetsWon = 0;
+      let theirSetsWon = 0;
+
+      for (const set of match.sets) {
+        const myScore = set.scores?.find((s) => s.userId === userId)?.games ?? 0;
+        const otherScores = set.scores?.filter((s) => s.userId !== userId) ?? [];
+        const theirMaxScore = Math.max(...otherScores.map((s) => s.games ?? 0), 0);
+
+        if (myScore > theirMaxScore) mySetsWon++;
+        else if (theirMaxScore > myScore) theirSetsWon++;
+      }
+
+      if (mySetsWon > theirSetsWon) wins++;
+    }
+  }
+
+  const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+
+  return { totalMatches, winRate, totalPlaytimeMinutes };
+}
 
 export default function Profile() {
+  const scheme = useColorScheme();
+  const router = useRouter();
+
+  // Data queries
+  const { data: user, isLoading: userLoading, refetch: refetchUser } = useMe();
+  const { data: preferences, isLoading: prefsLoading, refetch: refetchPrefs } = usePreferences();
+  const { data: level, isLoading: levelLoading, refetch: refetchLevel } = useMyLevel();
+  const { data: badgesData, refetch: refetchBadges } = useMyBadges();
+  const { data: allBadgesData } = useAllBadges();
+  const {
+    data: intentsData,
+    isLoading: intentsLoading,
+    error: intentsError,
+    refetch: refetchIntents,
+  } = useMatchIntents();
+  const { data: orgs, refetch: refetchOrgs } = useMyOrganizations();
+  const { data: memberRole } = useActiveMemberRole();
+  const {
+    data: invitations,
+    refetch: refetchInvitations,
+  } = useUserInvitations();
+  const { data: matchesData } = useMatches({ status: "finished", limit: 100 });
+
+  // Mutations
+  const deleteIntent = useDeleteMatchIntent();
+  const acceptInvitation = useAcceptInvitation();
+  const rejectInvitation = useRejectInvitation();
+
+  // Local state
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [deletingIntentId, setDeletingIntentId] = useState<string | null>(null);
+  const [loadingInvitationId, setLoadingInvitationId] = useState<string | null>(null);
+
+  // Derived data
+  const currentUserId = user?.id ?? "";
+  const matchIntents = intentsData?.data ?? [];
+  const primaryOrg = orgs?.[0] ?? null;
+  const pendingInvitations = (invitations ?? []).filter((i) => i.status === "pending");
+  const badges = badgesData?.badges ?? [];
+  const totalBadges = allBadgesData?.badges?.length ?? 0;
+
+  const matchStats = useMemo(() => {
+    const allMatches = matchesData?.matches ?? [];
+    return calculateMatchStats(allMatches, currentUserId);
+  }, [matchesData, currentUserId]);
+
+  // Refresh all
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        refetchUser(),
+        refetchPrefs(),
+        refetchLevel(),
+        refetchBadges(),
+        refetchIntents(),
+        refetchOrgs(),
+        refetchInvitations(),
+      ]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refetchUser, refetchPrefs, refetchLevel, refetchBadges, refetchIntents, refetchOrgs, refetchInvitations]);
+
+  // Delete match intent
+  const handleDeleteIntent = useCallback(
+    (id: string) => {
+      setDeletingIntentId(id);
+      deleteIntent.mutate(id, {
+        onSettled: () => setDeletingIntentId(null),
+      });
+    },
+    [deleteIntent]
+  );
+
+  // Accept/reject invitation
+  const handleAcceptInvitation = useCallback(
+    (id: string) => {
+      setLoadingInvitationId(id);
+      acceptInvitation.mutate(id, {
+        onSettled: () => {
+          setLoadingInvitationId(null);
+          refetchOrgs();
+        },
+      });
+    },
+    [acceptInvitation, refetchOrgs]
+  );
+
+  const handleRejectInvitation = useCallback(
+    (id: string) => {
+      setLoadingInvitationId(id);
+      rejectInvitation.mutate(id, {
+        onSettled: () => setLoadingInvitationId(null),
+      });
+    },
+    [rejectInvitation]
+  );
+
+  // Sign out
+  const handleSignOut = () => {
+    Alert.alert(
+      "Déconnexion",
+      "Voulez-vous vraiment vous déconnecter ?",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Déconnexion",
+          style: "destructive",
+          onPress: async () => {
+            await authClient.signOut();
+            router.replace("/(auth)/sign-in");
+          },
+        },
+      ]
+    );
+  };
+
+  // Navigation
+  const openSettings = () => router.push("/(tabs)/profile/settings");
+  const openCreateIntent = () => {
+    // Navigate to create intent flow (placeholder)
+  };
+
+  const isLoading = userLoading && !user;
+
+  if (isLoading) {
+    return (
+      <>
+        <Stack.Screen options={{ title: "Profil", headerLargeTitle: true }} />
+        <View style={[styles.loadingContainer, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
+          <ActivityIndicator size="large" color={colors.accentGreen} />
+        </View>
+      </>
+    );
+  }
+
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Profile</Text>
-    </View>
+    <>
+      <Stack.Screen
+        options={{
+          title: "Profil",
+          headerLargeTitle: true,
+          headerRight:
+            Platform.OS === "android"
+              ? () => (
+                  <Pressable onPress={openSettings} hitSlop={8}>
+                    <MaterialIcons name="settings" size={24} color={semanticColors.labelPrimary[scheme]} />
+                  </Pressable>
+                )
+              : undefined,
+        }}
+      />
+
+      {Platform.OS === "ios" && (
+        <Stack.Toolbar placement="right">
+          <Stack.Toolbar.Button icon="gearshape" onPress={openSettings} />
+        </Stack.Toolbar>
+      )}
+
+      <ScrollView
+        style={{ backgroundColor: semanticColors.primaryBackground[scheme] }}
+        contentContainerStyle={styles.content}
+        contentInsetAdjustmentBehavior="automatic"
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Profile Header */}
+        {user && (
+          <ProfileHeaderCard
+            user={user}
+            preferences={preferences ?? null}
+            level={level ?? null}
+            matchStats={matchStats}
+          />
+        )}
+
+        {/* Badges */}
+        <ProfileBadgeSection badges={badges} totalBadges={totalBadges} />
+
+        {/* Match Intents */}
+        <MatchIntentList
+          intents={matchIntents}
+          isLoading={intentsLoading}
+          error={intentsError?.message}
+          onDelete={handleDeleteIntent}
+          onCreateNew={openCreateIntent}
+          deletingId={deletingIntentId}
+        />
+
+        {/* Invitations */}
+        <InvitationList
+          invitations={pendingInvitations}
+          onAccept={handleAcceptInvitation}
+          onReject={handleRejectInvitation}
+          loadingId={loadingInvitationId}
+        />
+
+        {/* Organization */}
+        <OrganizationCard
+          organization={primaryOrg}
+          memberRole={memberRole?.role}
+        />
+
+        {/* Sign Out */}
+        <Pressable
+          onPress={handleSignOut}
+          style={({ pressed }) => [
+            styles.signOutButton,
+            pressed ? { opacity: 0.6 } : undefined,
+          ]}
+        >
+          <LogOut size={18} color="#ef4444" strokeWidth={2} />
+          <Text style={styles.signOutText}>Déconnexion</Text>
+        </Pressable>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  content: {
+    padding: spacing.horizontal,
+    gap: 16,
+    paddingBottom: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  signOutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    height: 52,
+    borderRadius: radii.md,
+    backgroundColor: "#fef2f2",
+  },
+  signOutText: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: "#ef4444",
+  },
+});
