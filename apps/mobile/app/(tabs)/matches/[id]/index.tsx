@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useCallback, useState } from "react";
 import { View, ScrollView, Alert, ActivityIndicator, RefreshControl, StyleSheet, Platform, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -19,10 +19,20 @@ export default function MatchDetail() {
   const router = useRouter();
   const scheme = useColorScheme();
 
-  const { data: matchDetail, isLoading, error, refetch, isRefetching } = useMatch(id);
+  const { data: matchDetail, isLoading, error, refetch } = useMatch(id);
   const { data: me } = useMe();
   const updateMatch = useUpdateMatch();
   const deleteMatch = useDeleteMatch();
+  const [isManualRefresh, setIsManualRefresh] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    setIsManualRefresh(true);
+    try {
+      await refetch();
+    } finally {
+      setIsManualRefresh(false);
+    }
+  }, [refetch]);
 
   const currentUserId = me?.id ?? "";
 
@@ -34,7 +44,7 @@ export default function MatchDetail() {
   const matchStatus = matchDetail?.match.status;
   const isFinished = matchStatus === "finished";
   const isScheduled = matchStatus === "scheduled";
-  const isOngoing = matchStatus === "in_progress";
+  const isOngoing = matchStatus === "ongoing";
   const hasUserCommented = (matchDetail?.comments ?? []).some(
     (c) => c.userId === currentUserId
   );
@@ -45,7 +55,7 @@ export default function MatchDetail() {
     if (!matchDetail) return;
     updateMatch.mutate({
       id: matchDetail.match.id,
-      data: { status: "in_progress", startedAt: new Date().toISOString() },
+      data: { status: "ongoing", startedAt: new Date().toISOString() },
     });
   };
 
@@ -94,7 +104,6 @@ export default function MatchDetail() {
   };
 
   // --- Loading ---
-
   if (isLoading && !matchDetail) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
@@ -104,7 +113,6 @@ export default function MatchDetail() {
   }
 
   // --- Error ---
-
   if (error && !matchDetail) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
@@ -116,8 +124,6 @@ export default function MatchDetail() {
       </View>
     );
   }
-
-  // --- Not found ---
 
   if (!matchDetail) {
     return (
@@ -154,21 +160,41 @@ export default function MatchDetail() {
       {isParticipant && (
         <Stack.Toolbar placement="bottom">
           {isScheduled && (
+            <>
             <Stack.Toolbar.Button icon="play.fill" onPress={handleStart} tintColor={colors.accentGreen} />
+            <Stack.Toolbar.Spacer />
+
+            </>
           )}
+          
           {isOngoing && (
+            <>
             <Stack.Toolbar.Button icon="pencil" onPress={handleEditScores} tintColor={colors.accentGreen} />
+            <Stack.Toolbar.Spacer />
+
+            </>
           )}
           {isOngoing && (
+            <>
             <Stack.Toolbar.Button icon="checkmark.circle" onPress={handleFinish} tintColor={colors.accentOrange} />
+            <Stack.Toolbar.Spacer />
+            </>
           )}
           {isFinished && (
+            <>
             <Stack.Toolbar.Button icon="pencil" onPress={handleEditMatch} tintColor={colors.accentOrange} />
+            <Stack.Toolbar.Spacer />
+            </>
           )}
           {isFinished && !hasUserCommented && (
+            <>
             <Stack.Toolbar.Button icon="bubble.left" onPress={handleComment} tintColor={colors.accentGreen} />
+            <Stack.Toolbar.Spacer />
+            </>
           )}
+          <>
           <Stack.Toolbar.Button icon="trash" onPress={handleDelete} tintColor="#FF3B30" />
+          </>
         </Stack.Toolbar>
       )}
       
@@ -180,7 +206,7 @@ export default function MatchDetail() {
           { paddingBottom: 20 },
         ]}
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />
+          <RefreshControl refreshing={isManualRefresh} onRefresh={handleRefresh} />
         }
       >
         <ScoreCard matchDetail={matchDetail} currentUserId={currentUserId} />

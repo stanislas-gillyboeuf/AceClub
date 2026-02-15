@@ -1,8 +1,18 @@
+import { useRef } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import Animated, {
+  FadeInUp,
+  FadeInDown,
+  FadeOutUp,
+  FadeOutDown,
+} from "react-native-reanimated";
 import { Minus, Plus } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { radii } from "@/constants/theme";
 import * as Haptics from "expo-haptics";
+
+const SLIDE_DISTANCE = 20;
+const DURATION = 150;
 
 interface ScoreStepperProps {
   value: number;
@@ -22,6 +32,28 @@ export function ScoreStepper({
   const scheme = useColorScheme();
   const canDecrement = value > minValue;
   const canIncrement = value < maxValue;
+  const prevValue = useRef(value);
+  const isInitial = useRef(true);
+
+  // Determine direction
+  const goingUp = value > prevValue.current;
+  prevValue.current = value;
+
+  // Skip animation on first render
+  const shouldAnimate = !isInitial.current;
+  isInitial.current = false;
+
+  // Score goes UP → old exits down, new enters from top
+  // Score goes DOWN → old exits up, new enters from bottom
+  const entering = shouldAnimate
+    ? goingUp
+      ? FadeInUp.duration(DURATION).withInitialValues({ transform: [{ translateY: -SLIDE_DISTANCE }], opacity: 0 })
+      : FadeInDown.duration(DURATION).withInitialValues({ transform: [{ translateY: SLIDE_DISTANCE }], opacity: 0 })
+    : undefined;
+
+  const exiting = goingUp
+    ? FadeOutDown.duration(DURATION).withInitialValues({ transform: [{ translateY: 0 }], opacity: 1 })
+    : FadeOutUp.duration(DURATION).withInitialValues({ transform: [{ translateY: 0 }], opacity: 1 });
 
   const decrement = () => {
     if (canDecrement) {
@@ -38,10 +70,10 @@ export function ScoreStepper({
   };
 
   const bgColor = scheme === "light" ? "#F2F2F7" : "#1C1C1E";
+  const textColor = scheme === "light" ? "#000" : "#FFF";
 
   return (
     <View style={[styles.container, { backgroundColor: bgColor }]}>
-      {/* Minus button */}
       <Pressable
         onPress={decrement}
         disabled={!canDecrement}
@@ -57,12 +89,17 @@ export function ScoreStepper({
         />
       </Pressable>
 
-      {/* Value */}
-      <Text style={[styles.value, { color: scheme === "light" ? "#000" : "#FFF" }]}>
-        {value}
-      </Text>
+      <View style={styles.valueContainer}>
+        <Animated.Text
+          key={value}
+          entering={entering}
+          exiting={exiting}
+          style={[styles.value, { color: textColor }]}
+        >
+          {value}
+        </Animated.Text>
+      </View>
 
-      {/* Plus button */}
       <Pressable
         onPress={increment}
         disabled={!canIncrement}
@@ -95,12 +132,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  value: {
+  valueContainer: {
     flex: 1,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 56,
+    overflow: "hidden",
+  },
+  value: {
     fontSize: 32,
     fontWeight: "700",
     textAlign: "center",
     fontVariant: ["tabular-nums"],
-    minWidth: 56,
   },
 });

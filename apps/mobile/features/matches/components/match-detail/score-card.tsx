@@ -1,4 +1,15 @@
+import { useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  withSequence,
+  withSpring,
+  FadeInUp,
+  Easing,
+} from "react-native-reanimated";
 import { Crown } from "lucide-react-native";
 import { Avatar } from "@/components/ui/avatar";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -19,7 +30,7 @@ interface ScoreCardProps {
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   scheduled: { label: "PLANIFIE", color: "#007AFF" },
-  in_progress: { label: "EN COURS", color: "#FF3B30" },
+  ongoing: { label: "EN COURS", color: "#FF3B30" },
   finished: { label: "TERMINE", color: "#34C759" },
 };
 
@@ -46,6 +57,50 @@ function formatContextTime(dateStr: string): string {
   return date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 }
 
+function PulsingDot({ color }: { color: string }) {
+  const opacity = useSharedValue(1);
+
+  useEffect(() => {
+    opacity.value = withRepeat(
+      withSequence(
+        withTiming(0.3, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1,
+      true
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
+  return <Animated.View style={[styles.liveDot, { backgroundColor: color }, animatedStyle]} />;
+}
+
+function AnimatedScore({ score, scheme }: { score: string; scheme: "light" | "dark" }) {
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    scale.value = withSequence(
+      withSpring(1.08, { damping: 6, stiffness: 400 }),
+      withSpring(1, { damping: 10, stiffness: 300 })
+    );
+  }, [score]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <Text style={[styles.scoreText, { color: semanticColors.labelPrimary[scheme] }]}>
+        {score}
+      </Text>
+    </Animated.View>
+  );
+}
+
 export function ScoreCard({ matchDetail, currentUserId }: ScoreCardProps) {
   const scheme = useColorScheme();
   const match = matchDetailToMatchWithParticipants(matchDetail);
@@ -65,19 +120,17 @@ export function ScoreCard({ matchDetail, currentUserId }: ScoreCardProps) {
       borderColor: semanticColors.borderColor[scheme],
     }]}>
       {/* Status pill */}
-      <View style={styles.pillRow}>
+      <Animated.View entering={FadeInUp.duration(300).delay(100)} style={styles.pillRow}>
         <View style={[styles.pill, { backgroundColor: `${statusConfig.color}1A` }]}>
-          {status === "in_progress" && (
-            <View style={[styles.liveDot, { backgroundColor: statusConfig.color }]} />
-          )}
+          {status === "ongoing" && <PulsingDot color={statusConfig.color} />}
           <Text style={[styles.pillText, { color: statusConfig.color }]}>
             {statusConfig.label}
           </Text>
         </View>
-      </View>
+      </Animated.View>
 
       {/* Players + Score */}
-      <View style={styles.playersRow}>
+      <Animated.View entering={FadeInUp.duration(400).delay(200)} style={styles.playersRow}>
         <PlayerColumn
           participant={home}
           clubName={getOrgName(home?.userId ?? "", matchDetail.participantOrganizations)}
@@ -90,9 +143,7 @@ export function ScoreCard({ matchDetail, currentUserId }: ScoreCardProps) {
           {status === "scheduled" && !hasSets ? (
             <Text style={[styles.vsText, { color: semanticColors.labelTertiary[scheme] }]}>VS</Text>
           ) : (
-            <Text style={[styles.scoreText, { color: semanticColors.labelPrimary[scheme] }]}>
-              {score}
-            </Text>
+            <AnimatedScore score={score} scheme={scheme} />
           )}
           {hasSets && (
             <Text style={[styles.setsLabel, { color: semanticColors.labelTertiary[scheme] }]}>
@@ -108,7 +159,7 @@ export function ScoreCard({ matchDetail, currentUserId }: ScoreCardProps) {
           isLoser={isFinished && !away?.isWinner && hasWinner}
           scheme={scheme}
         />
-      </View>
+      </Animated.View>
 
       {/* Divider + Context line */}
       <View style={styles.contextSection}>
@@ -178,7 +229,7 @@ function ContextLine({
     return <Text style={[styles.contextText, { color }]}>{formatContextDate(match.scheduledAt)}</Text>;
   }
 
-  if (match.status === "in_progress" && match.startedAt) {
+  if (match.status === "ongoing" && match.startedAt) {
     return (
       <Text style={[styles.contextText, { color }]}>
         Depuis {formatContextTime(match.startedAt)}

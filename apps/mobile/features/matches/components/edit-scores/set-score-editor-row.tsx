@@ -1,4 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import Animated, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 import { XCircle, ChevronRight } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors, spacing, radii } from "@/constants/theme";
@@ -35,10 +36,13 @@ export function SetScoreEditorRow({
   const awayLeading = set.awayScore > set.homeScore;
 
   return (
-    <View style={[styles.container, {
-      backgroundColor: semanticColors.cardBackground[scheme],
-      borderColor: semanticColors.borderColor[scheme],
-    }]}>
+    <Animated.View
+      layout={LinearTransition.springify().damping(16).stiffness(140)}
+      style={[styles.container, {
+        backgroundColor: semanticColors.cardBackground[scheme],
+        borderColor: semanticColors.borderColor[scheme],
+      }]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Text style={[styles.setTitle, { color: semanticColors.labelPrimary[scheme] }]}>
@@ -56,12 +60,17 @@ export function SetScoreEditorRow({
         {/* Home player */}
         <View style={styles.playerColumn}>
           <View style={styles.nameRow}>
-            {homeLeading && <ChevronRight size={10} color="#007AFF" strokeWidth={3} />}
+            {homeLeading && (
+              <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)}>
+                <ChevronRight size={10} color="#007AFF" strokeWidth={3} />
+              </Animated.View>
+            )}
             <Text
               style={[styles.playerName, {
                 color: homeLeading
                   ? semanticColors.labelPrimary[scheme]
                   : semanticColors.labelSecondary[scheme],
+                fontWeight: homeLeading ? "700" : "500",
               }]}
               numberOfLines={1}
             >
@@ -83,12 +92,17 @@ export function SetScoreEditorRow({
         {/* Away player */}
         <View style={styles.playerColumn}>
           <View style={styles.nameRow}>
-            {awayLeading && <ChevronRight size={10} color={colors.accentOrange} strokeWidth={3} />}
+            {awayLeading && (
+              <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)}>
+                <ChevronRight size={10} color={colors.accentOrange} strokeWidth={3} />
+              </Animated.View>
+            )}
             <Text
               style={[styles.playerName, {
                 color: awayLeading
                   ? semanticColors.labelPrimary[scheme]
                   : semanticColors.labelSecondary[scheme],
+                fontWeight: awayLeading ? "700" : "500",
               }]}
               numberOfLines={1}
             >
@@ -102,7 +116,7 @@ export function SetScoreEditorRow({
           />
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -139,7 +153,6 @@ const styles = StyleSheet.create({
   },
   playerName: {
     fontSize: 12,
-    fontWeight: "500",
   },
   vsSeparator: {
     width: 32,

@@ -39,7 +39,7 @@ export function SheetActionBar({
 
   const status = matchDetail.match.status;
   const isScheduled = status === "scheduled";
-  const isOngoing = status === "in_progress";
+  const isOngoing = status === "ongoing";
   const isFinished = status === "finished";
   const hasUserCommented = (matchDetail.comments ?? []).some(
     (c) => c.userId === currentUserId

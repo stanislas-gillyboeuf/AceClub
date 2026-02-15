@@ -21,7 +21,7 @@ interface MatchRowProps {
 const STATUS_CONFIG: Record<string, { label: string; variant: "success" | "warning" | "danger" }> = {
   scheduled: { label: "Planifi\u00e9", variant: "warning" },
   pending: { label: "En attente", variant: "warning" },
-  in_progress: { label: "En cours", variant: "warning" },
+  ongoing: { label: "En cours", variant: "warning" },
   finished: { label: "Termin\u00e9", variant: "success" },
   cancelled: { label: "Annul\u00e9", variant: "danger" },
 };
@@ -45,7 +45,7 @@ export function MatchRow({ match, onPress }: MatchRowProps) {
   const duration = formatMatchDuration(match);
   const statusBadge = getStatusBadge(match.status);
   const displayTime = formatTime(match.scheduledAt ?? match.startedAt ?? match.createdAt);
-  const isOngoing = match.status === "in_progress";
+  const isOngoing = match.status === "ongoing";
 
   return (
     <Card

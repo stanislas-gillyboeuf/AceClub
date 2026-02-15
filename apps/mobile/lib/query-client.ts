@@ -24,7 +24,8 @@ AppState.addEventListener("change", onAppStateChange);
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60, // 1 minute
+      staleTime: 1000 * 60 * 5, // 5 minutes — data stays fresh, no refetch on remount
+      gcTime: 1000 * 60 * 30, // 30 minutes — keep in cache after unmount
       retry: 2,
     },
   },

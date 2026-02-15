@@ -2,7 +2,7 @@ import type { Pagination } from "./common";
 import type { Organization } from "./organization";
 import type { User } from "./user";
 
-export type MatchStatus = "pending" | "scheduled" | "in_progress" | "finished" | "cancelled";
+export type MatchStatus = "scheduled" | "ongoing" | "finished";
 export type MatchSide = "home" | "away";
 export type MatchType = "singles" | "doubles";
 
