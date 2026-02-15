@@ -1,5 +1,11 @@
-import { useState, useRef, useCallback } from "react";
-import { Audio } from "expo-av";
+import { useCallback, useRef } from "react";
+import {
+  useAudioRecorder as useExpoAudioRecorder,
+  useAudioRecorderState,
+  AudioModule,
+  RecordingPresets,
+  setAudioModeAsync,
+} from "expo-audio";
 
 interface RecordingResult {
   uri: string;
@@ -7,84 +13,54 @@ interface RecordingResult {
 }
 
 export function useAudioRecorder() {
-  const [isRecording, setIsRecording] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const recordingRef = useRef<Audio.Recording | null>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recorder = useExpoAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const state = useAudioRecorderState(recorder, 50);
   const startTimeRef = useRef(0);
 
   const start = useCallback(async () => {
     try {
-      const permission = await Audio.requestPermissionsAsync();
+      const permission = await AudioModule.requestRecordingPermissionsAsync();
       if (!permission.granted) return;
 
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
+      await setAudioModeAsync({
+        allowsRecording: true,
+        playsInSilentMode: true,
       });
 
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY,
-      );
-
-      recordingRef.current = recording;
+      await recorder.prepareToRecordAsync();
+      recorder.record();
       startTimeRef.current = Date.now();
-      setIsRecording(true);
-      setDuration(0);
-
-      timerRef.current = setInterval(() => {
-        setDuration((Date.now() - startTimeRef.current) / 1000);
-      }, 50);
     } catch (error) {
       console.warn("[AudioRecorder] Failed to start:", error);
     }
-  }, []);
+  }, [recorder]);
 
   const stop = useCallback((): RecordingResult | null => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    setIsRecording(false);
+    const uri = recorder.uri;
+    const durationSecs = (Date.now() - startTimeRef.current) / 1000;
 
-    const recording = recordingRef.current;
-    if (!recording) return null;
+    recorder.stop(); // Fire and forget
 
-    try {
-      recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
-      const durationSecs = (Date.now() - startTimeRef.current) / 1000;
-      recordingRef.current = null;
-
-      if (!uri || durationSecs < 0.5) {
-        return null;
-      }
-
-      return { uri, duration: durationSecs };
-    } catch {
-      recordingRef.current = null;
+    if (!uri || durationSecs < 0.5) {
       return null;
     }
-  }, []);
+
+    return { uri, duration: durationSecs };
+  }, [recorder]);
 
   const cancel = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+    try {
+      recorder.stop(); // Fire and forget
+    } catch {
+      // Ignore
     }
-    setIsRecording(false);
+  }, [recorder]);
 
-    const recording = recordingRef.current;
-    if (recording) {
-      try {
-        recording.stopAndUnloadAsync();
-      } catch {
-        // Ignore
-      }
-      recordingRef.current = null;
-    }
-    setDuration(0);
-  }, []);
-
-  return { isRecording, duration, start, stop, cancel };
+  return {
+    isRecording: state.isRecording,
+    duration: state.durationMillis / 1000,
+    start,
+    stop,
+    cancel,
+  };
 }

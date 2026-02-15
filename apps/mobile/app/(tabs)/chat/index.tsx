@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import {
   View,
   FlatList,
@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  Text,
 } from "react-native";
 import { useRouter, Stack } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -16,8 +17,33 @@ import { colors, semanticColors } from "@/constants/theme";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ConversationRow } from "@/features/chat/components/ConversationRow";
 import { wsManager } from "@/lib/websocket-manager";
-import { Plus } from "lucide-react-native";
+import { SquarePen } from "lucide-react-native";
+import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import Animated, { SharedValue, useAnimatedStyle } from "react-native-reanimated";
+import { GlassView } from "expo-glass-effect";
 import type { Conversation } from "@/types/conversation";
+
+function RightActions({
+  prog,
+  drag,
+  onDelete,
+}: {
+  prog: SharedValue<number>;
+  drag: SharedValue<number>;
+  onDelete: () => void;
+}) {
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: drag.value + 80 }],
+  }));
+
+  return (
+    <Animated.View style={[styles.swipeActions, animatedStyle]}>
+      <Pressable onPress={onDelete} style={styles.swipeDeleteBtn}>
+        <Text style={styles.swipeActionText}>Supprimer</Text>
+      </Pressable>
+    </Animated.View>
+  );
+}
 
 export default function ConversationListScreen() {
   const router = useRouter();
@@ -25,6 +51,7 @@ export default function ConversationListScreen() {
   const queryClient = useQueryClient();
   const { data: conversations, isLoading, refetch } = useConversations();
   const deleteConversation = useDeleteConversation();
+  const [searchText, setSearchText] = useState("");
 
   // Connect WebSocket on mount
   useEffect(() => {
@@ -71,29 +98,44 @@ export default function ConversationListScreen() {
     router.push("/(tabs)/chat/new");
   }, [router]);
 
+  const filteredConversations = conversations?.filter((c) => {
+    if (!searchText.trim()) return true;
+    const query = searchText.toLowerCase();
+    const name = c.name || c.otherParticipants[0]?.user?.name || "";
+    return name.toLowerCase().includes(query);
+  });
+
   const renderItem = useCallback(
     ({ item }: { item: Conversation }) => (
-      <Pressable
-        onPress={() => handlePress(item)}
-        onLongPress={() => handleDelete(item)}
-        style={({ pressed }) => [
-          styles.rowWrapper,
-          { backgroundColor: pressed ? semanticColors.skeleton[scheme] : "transparent" },
-        ]}
+      <ReanimatedSwipeable
+        friction={2}
+        rightThreshold={40}
+        renderRightActions={(prog, drag) => (
+          <RightActions prog={prog} drag={drag} onDelete={() => handleDelete(item)} />
+        )}
       >
-        <ConversationRow conversation={item} />
-      </Pressable>
+        <Pressable onPress={() => handlePress(item)} style={styles.rowWrapper}>
+          <GlassView style={styles.glassRow} isInteractive>
+            <ConversationRow conversation={item} />
+          </GlassView>
+        </Pressable>
+      </ReanimatedSwipeable>
     ),
-    [handlePress, handleDelete, scheme],
+    [handlePress, handleDelete],
   );
 
   const renderSeparator = useCallback(
+    () => <View style={styles.separator} />,
+    [],
+  );
+
+  const headerRight = useCallback(
     () => (
-      <View
-        style={[styles.separator, { backgroundColor: semanticColors.divider[scheme] }]}
-      />
+      <Pressable onPress={handleNewConversation}>
+        <SquarePen size={22} color={colors.accentGreen} />
+      </Pressable>
     ),
-    [scheme],
+    [handleNewConversation],
   );
 
   if (isLoading && !conversations) {
@@ -103,11 +145,7 @@ export default function ConversationListScreen() {
           options={{
             title: "Messages",
             headerLargeTitle: true,
-            headerRight: () => (
-              <Pressable onPress={handleNewConversation}>
-                <Plus size={22} color={colors.accentGreen} />
-              </Pressable>
-            ),
+            headerRight,
           }}
         />
         <ActivityIndicator color={colors.accentGreen} />
@@ -121,23 +159,25 @@ export default function ConversationListScreen() {
         options={{
           title: "Messages",
           headerLargeTitle: true,
-          headerRight: () => (
-            <Pressable onPress={handleNewConversation}>
-              <Plus size={22} color={colors.accentGreen} />
-            </Pressable>
-          ),
+          headerSearchBarOptions: {
+            placeholder: "Rechercher",
+            onChangeText: (e) => setSearchText(e.nativeEvent.text),
+            hideWhenScrolling: true,
+          },
+          headerRight,
         }}
       />
-      {!conversations || conversations.length === 0 ? (
+      {!filteredConversations || filteredConversations.length === 0 ? (
         <EmptyState
           icon="MessageSquare"
           title="Aucune conversation"
-          description="Démarrez une conversation avec un membre de votre club en appuyant sur +."
+          description="Démarrez une conversation avec un membre de votre club en appuyant sur le bouton en haut à droite."
           containerStyle={styles.emptyState}
         />
       ) : (
         <FlatList
-          data={conversations}
+          contentInsetAdjustmentBehavior="automatic"
+          data={filteredConversations}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           ItemSeparatorComponent={renderSeparator}
@@ -165,16 +205,35 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   listContent: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
     paddingBottom: 20,
   },
-  rowWrapper: {
-    borderRadius: 0,
+  rowWrapper: {},
+  glassRow: {
+    borderRadius: 16,
+    overflow: "hidden",
   },
   separator: {
-    height: StyleSheet.hairlineWidth,
-    marginLeft: 84,
+    height: 8,
   },
   emptyState: {
     flex: 1,
+  },
+  swipeActions: {
+    width: 80,
+    flexDirection: "row",
+  },
+  swipeDeleteBtn: {
+    flex: 1,
+    backgroundColor: "#FF3B30",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 16,
+  },
+  swipeActionText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "600",
   },
 });

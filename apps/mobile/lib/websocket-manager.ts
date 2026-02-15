@@ -85,7 +85,7 @@ class WebSocketManager {
       // Build WS URL from the API base URL
       const wsProtocol = BASE_URL.startsWith("https") ? "wss" : "ws";
       const host = BASE_URL.replace(/^https?:\/\//, "");
-      const wsURL = `${wsProtocol}://${host}/api/ws/chat?cookie=${encodeURIComponent(cookie)}`;
+      const wsURL = `${wsProtocol}://${host}/ws/chat?cookie=${encodeURIComponent(cookie)}`;
 
       const ws = new WebSocket(wsURL);
 

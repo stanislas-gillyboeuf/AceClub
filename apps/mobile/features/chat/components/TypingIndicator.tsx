@@ -10,11 +10,13 @@ import Animated, {
 } from "react-native-reanimated";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { semanticColors } from "@/constants/theme";
+type ColorScheme = "light" | "dark";
 
 export function TypingIndicator() {
+  const scheme = useColorScheme() as ColorScheme;
   return (
     <View style={styles.container}>
-      <View style={styles.bubble}>
+      <View style={[styles.bubble, { backgroundColor: semanticColors.incomingBubble[scheme] }]}>
         <Dot delay={0} />
         <Dot delay={150} />
         <Dot delay={300} />
@@ -73,7 +75,6 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
     borderBottomRightRadius: 18,
     borderTopRightRadius: 18,
-    backgroundColor: "rgba(128,128,128,0.15)",
   },
   dot: {
     width: 7,

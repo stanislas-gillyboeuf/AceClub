@@ -7,10 +7,9 @@ import {
   Pressable,
   Text,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { useConversation } from "@/hooks/use-conversation";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
@@ -21,8 +20,7 @@ import { TypingIndicator } from "@/features/chat/components/TypingIndicator";
 import { useChat } from "@/features/chat/hooks/useChat";
 import { wsManager } from "@/lib/websocket-manager";
 import { authClient } from "@/lib/auth-client";
-import { ChevronRight } from "lucide-react-native";
-import type { ChatMessage } from "@/features/chat/components/MessageBubble";
+import type { ChatMessage, GroupPosition } from "@/features/chat/components/MessageBubble";
 import type { Conversation } from "@/types/conversation";
 
 function getDisplayName(conversation: Conversation): string {
@@ -32,6 +30,75 @@ function getDisplayName(conversation: Conversation): string {
 
 function getAvatarUrl(conversation: Conversation): string | null {
   return conversation.otherParticipants[0]?.user?.image ?? null;
+}
+
+// Message grouping: same sender + < 60s apart
+function getMessageGroupPosition(
+  messages: ChatMessage[],
+  index: number,
+): GroupPosition {
+  const message = messages[index];
+  // FlatList is inverted: index 0 = newest, index+1 = older
+  const newer = index > 0 ? messages[index - 1] : null;
+  const older = index < messages.length - 1 ? messages[index + 1] : null;
+
+  const isSameSenderAsNewer =
+    newer &&
+    newer.senderId === message.senderId &&
+    Math.abs(new Date(message.createdAt).getTime() - new Date(newer.createdAt).getTime()) < 60000;
+
+  const isSameSenderAsOlder =
+    older &&
+    older.senderId === message.senderId &&
+    Math.abs(new Date(message.createdAt).getTime() - new Date(older.createdAt).getTime()) < 60000;
+
+  if (isSameSenderAsNewer && isSameSenderAsOlder) return "middle";
+  if (isSameSenderAsNewer && !isSameSenderAsOlder) return "first";
+  if (!isSameSenderAsNewer && isSameSenderAsOlder) return "last";
+  return "single";
+}
+
+// Time separator: show when gap > 5 minutes between messages
+function shouldShowTimeSeparator(
+  messages: ChatMessage[],
+  index: number,
+): boolean {
+  // FlatList is inverted: index+1 = older message
+  const older = index < messages.length - 1 ? messages[index + 1] : null;
+  if (!older) return true; // First message in history
+  const diff = Math.abs(
+    new Date(messages[index].createdAt).getTime() - new Date(older.createdAt).getTime(),
+  );
+  return diff > 300000; // 5 minutes
+}
+
+function formatTimeSeparator(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+  if (diffDays === 0) return `Aujourd'hui ${time}`;
+  if (diffDays === 1) return `Hier ${time}`;
+  if (diffDays < 7) {
+    const day = date.toLocaleDateString("fr-FR", { weekday: "long" });
+    return `${day.charAt(0).toUpperCase() + day.slice(1)} ${time}`;
+  }
+  return `${date.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} ${time}`;
+}
+
+function formatDeliveryStatus(status: string): string {
+  switch (status) {
+    case "sending":
+      return "Envoi…";
+    case "sent":
+      return "Envoyé";
+    case "read":
+      return "Lu";
+    default:
+      return "";
+  }
 }
 
 export default function ChatScreen() {
@@ -44,7 +111,7 @@ export default function ChatScreen() {
 
   if (isConversationLoading || !conversation) {
     return (
-      <View style={[styles.centered, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
+      <View style={[styles.centered, { backgroundColor: semanticColors.chatBackground[scheme] }]}>
         <Stack.Screen options={{ title: "" }} />
         <ActivityIndicator color={colors.accentGreen} />
       </View>
@@ -67,7 +134,6 @@ function ChatContent({
 
   const {
     messages,
-    isLoading,
     isOtherUserTyping,
     hasMoreMessages,
     loadMessages,
@@ -118,27 +184,45 @@ function ChatContent({
     ]);
   }, [displayName, conversation.isMuted, toggleMute, deleteConversation, router]);
 
-  const shouldShowTime = useCallback(
-    (message: ChatMessage, index: number): boolean => {
-      if (index === 0) return true;
-      const next = messages[index - 1];
-      if (!next) return true;
-      const diff = new Date(next.createdAt).getTime() - new Date(message.createdAt).getTime();
-      return Math.abs(diff) > 300000; // 5 minutes
+  const handleSendText = useCallback(
+    (text: string) => {
+      sendMessage(text);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     },
-    [messages],
+    [sendMessage],
   );
 
   const renderMessage = useCallback(
-    ({ item, index }: { item: ChatMessage; index: number }) => (
-      <MessageBubble
-        message={item}
-        showTime={shouldShowTime(item, index)}
-        onRetry={() => retryFailedMessage(item)}
-        onDelete={() => deleteMessage(item)}
-      />
-    ),
-    [shouldShowTime, retryFailedMessage, deleteMessage],
+    ({ item, index }: { item: ChatMessage; index: number }) => {
+      const groupPosition = getMessageGroupPosition(messages, index);
+      const showSeparator = shouldShowTimeSeparator(messages, index);
+
+      // Delivery status: only under the newest outgoing message (index 0)
+      const showDeliveryStatus =
+        index === 0 && item.isFromMe && item.sendStatus !== "failed";
+
+      return (
+        <View>
+          {showSeparator && (
+            <Text style={[styles.timeSeparator, { color: semanticColors.labelSecondary[scheme] }]}>
+              {formatTimeSeparator(item.createdAt)}
+            </Text>
+          )}
+          <MessageBubble
+            message={item}
+            groupPosition={groupPosition}
+            onRetry={() => retryFailedMessage(item)}
+            onDelete={() => deleteMessage(item)}
+          />
+          {showDeliveryStatus && (
+            <Text style={[styles.deliveryStatus, { color: semanticColors.labelSecondary[scheme] }]}>
+              {formatDeliveryStatus(item.sendStatus)}
+            </Text>
+          )}
+        </View>
+      );
+    },
+    [messages, scheme, retryFailedMessage, deleteMessage],
   );
 
   const renderFooter = useCallback(() => {
@@ -151,37 +235,27 @@ function ChatContent({
   }, [hasMoreMessages, messages.length]);
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-    >
+    <View style={[styles.container, { backgroundColor: semanticColors.chatBackground[scheme] }]}>
       <Stack.Screen
         options={{
+          headerBlurEffect: scheme === "dark" ? "systemMaterialDark" : "systemMaterial",
           headerTitle: () => (
             <Pressable onPress={handleProfilePress} style={styles.headerTitle}>
-              <Avatar imageUrl={avatarUrl} name={displayName} size={32} />
-              <View>
-                <Text
-                  style={[styles.headerName, { color: semanticColors.labelPrimary[scheme] }]}
-                  numberOfLines={1}
-                >
-                  {displayName}
-                </Text>
-                {!wsManager.isConnected && (
-                  <Text style={[styles.headerStatus, { color: semanticColors.labelTertiary[scheme] }]}>
-                    {wsManager.connectionState === "reconnecting" ? "Reconnexion..." : "Hors ligne"}
-                  </Text>
-                )}
-              </View>
-              <ChevronRight size={14} color={semanticColors.labelSecondary[scheme]} />
+              <Avatar imageUrl={avatarUrl} name={displayName} size={28} />
+              <Text
+                style={[styles.headerName, { color: semanticColors.labelPrimary[scheme] }]}
+                numberOfLines={1}
+              >
+                {displayName}
+              </Text>
             </Pressable>
           ),
-          headerBackTitle: "Messages",
         }}
       />
 
       <FlatList
+        automaticallyAdjustsScrollIndicatorInsets
+        automaticallyAdjustKeyboardInsets
         ref={flatListRef}
         data={messages}
         keyExtractor={(item) => item.id}
@@ -198,12 +272,12 @@ function ChatContent({
       {isOtherUserTyping && <TypingIndicator />}
 
       <ChatBottomBar
-        onSendText={sendMessage}
+        onSendText={handleSendText}
         onSendVoice={sendVoiceMessage}
         onSendImage={sendImageMessage}
         onTyping={sendTypingIndicator}
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -225,12 +299,22 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "600",
   },
-  headerStatus: {
-    fontSize: 11,
-  },
   messagesList: {
     paddingHorizontal: 16,
     paddingVertical: 8,
+  },
+  timeSeparator: {
+    textAlign: "center",
+    fontSize: 12,
+    fontWeight: "500",
+    marginVertical: 12,
+  },
+  deliveryStatus: {
+    textAlign: "right",
+    fontSize: 11,
+    marginTop: 2,
+    marginBottom: 4,
+    paddingRight: 4,
   },
   loadMore: {
     paddingVertical: 16,

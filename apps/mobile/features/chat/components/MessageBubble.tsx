@@ -3,9 +3,11 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
 import { VoiceMessageContent } from "./VoiceMessageContent";
 import { ImageMessageContent } from "./ImageMessageContent";
-import { Clock, Check, CheckCheck, AlertCircle } from "lucide-react-native";
+import { AlertCircle } from "lucide-react-native";
 
 export type MessageSendStatus = "sending" | "sent" | "read" | "failed";
+
+export type GroupPosition = "first" | "middle" | "last" | "single";
 
 export interface ChatMessage {
   id: string;
@@ -27,42 +29,36 @@ export interface ChatMessage {
 
 interface MessageBubbleProps {
   message: ChatMessage;
-  showTime: boolean;
+  groupPosition: GroupPosition;
   onRetry: () => void;
   onDelete: () => void;
 }
 
-function formatTime(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
-export function MessageBubble({ message, showTime, onRetry, onDelete }: MessageBubbleProps) {
+export function MessageBubble({ message, groupPosition, onRetry, onDelete }: MessageBubbleProps) {
   const scheme = useColorScheme();
   const isFromMe = message.isFromMe;
 
-  return (
-    <View style={[styles.row, isFromMe ? styles.rowRight : styles.rowLeft]}>
-      <View style={[styles.column, { alignItems: isFromMe ? "flex-end" : "flex-start" }]}>
-        <View
-          style={[
-            styles.bubble,
-            isFromMe ? styles.bubbleMine : getBubbleOther(scheme),
-            getBubbleRadius(message),
-          ]}
-        >
-          <MessageContent message={message} scheme={scheme} />
-        </View>
+  const marginBottom = groupPosition === "last" || groupPosition === "single" ? 8 : 2;
 
-        {showTime && (
-          <View style={styles.statusRow}>
-            <Text style={[styles.timeText, { color: semanticColors.labelSecondary[scheme] }]}>
-              {formatTime(message.createdAt)}
-            </Text>
-            {isFromMe && <StatusIcon status={message.sendStatus} onRetry={onRetry} />}
-          </View>
-        )}
+  return (
+    <View style={[styles.row, isFromMe ? styles.rowRight : styles.rowLeft, { marginBottom }]}>
+      <View
+        style={[
+          styles.bubble,
+          isFromMe
+            ? styles.bubbleMine
+            : { backgroundColor: semanticColors.incomingBubble[scheme] },
+          getBubbleRadius(isFromMe, groupPosition),
+        ]}
+      >
+        <MessageContent message={message} scheme={scheme} />
       </View>
+
+      {message.sendStatus === "failed" && (
+        <Pressable onPress={onRetry} style={styles.retryButton}>
+          <AlertCircle size={18} color={colors.red500} />
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -88,55 +84,32 @@ function MessageContent({ message, scheme }: { message: ChatMessage; scheme: "li
   }
 }
 
-function StatusIcon({ status, onRetry }: { status: MessageSendStatus; onRetry: () => void }) {
-  switch (status) {
-    case "sending":
-      return <Clock size={12} color={semanticColors.labelSecondary.light} />;
-    case "sent":
-      return <Check size={12} color={semanticColors.labelSecondary.light} />;
-    case "read":
-      return <CheckCheck size={14} color={colors.accentGreen} />;
-    case "failed":
-      return (
-        <Pressable onPress={onRetry} style={styles.retryButton}>
-          <AlertCircle size={12} color={colors.red500} />
-          <Text style={styles.retryText}>Réessayer</Text>
-        </Pressable>
-      );
-  }
-}
+function getBubbleRadius(isFromMe: boolean, groupPosition: GroupPosition) {
+  const hasTail = groupPosition === "last" || groupPosition === "single";
+  const tailRadius = 4;
+  const fullRadius = 18;
 
-function getBubbleOther(scheme: "light" | "dark") {
-  return {
-    backgroundColor: scheme === "dark" ? "#2C2C2E" : "#E5E5EA",
-  };
-}
-
-function getBubbleRadius(message: ChatMessage) {
-  const isShort =
-    message.type === "text" && !message.content.includes("\n") && message.content.length <= 40;
-  const tail = isShort ? 4 : 18;
-
-  if (message.isFromMe) {
+  if (isFromMe) {
     return {
-      borderTopLeftRadius: 18,
-      borderBottomLeftRadius: 18,
-      borderBottomRightRadius: tail,
-      borderTopRightRadius: 18,
+      borderTopLeftRadius: fullRadius,
+      borderTopRightRadius: fullRadius,
+      borderBottomLeftRadius: fullRadius,
+      borderBottomRightRadius: hasTail ? tailRadius : fullRadius,
     };
   }
   return {
-    borderTopLeftRadius: 18,
-    borderBottomLeftRadius: tail,
-    borderBottomRightRadius: 18,
-    borderTopRightRadius: 18,
+    borderTopLeftRadius: fullRadius,
+    borderTopRightRadius: fullRadius,
+    borderBottomLeftRadius: hasTail ? tailRadius : fullRadius,
+    borderBottomRightRadius: fullRadius,
   };
 }
 
 const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
-    paddingVertical: 1,
+    alignItems: "flex-end",
+    gap: 4,
   },
   rowRight: {
     justifyContent: "flex-end",
@@ -145,9 +118,6 @@ const styles = StyleSheet.create({
   rowLeft: {
     justifyContent: "flex-start",
     paddingRight: 50,
-  },
-  column: {
-    gap: 2,
   },
   bubble: {
     overflow: "hidden",
@@ -159,23 +129,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  timeText: {
-    fontSize: 11,
+    paddingVertical: 8,
   },
   retryButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-  },
-  retryText: {
-    fontSize: 11,
-    color: colors.red500,
+    padding: 4,
   },
 });

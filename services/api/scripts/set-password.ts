@@ -6,7 +6,7 @@ import { eq, and } from "drizzle-orm";
 import crypto from "crypto";
 import { ulid } from "ulid";
 
-const EMAIL = process.argv[2] || "nicolas.becharat@gmail.com";
+const EMAIL = process.argv[2] || "nicolas@impulselab.ai";
 
 // Generate a secure random password
 const password = crypto.randomBytes(16).toString("base64url");

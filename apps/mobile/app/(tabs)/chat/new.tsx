@@ -121,11 +121,11 @@ export default function NewConversationScreen() {
     <View style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
       <Stack.Screen
         options={{
-          title: "Nouvelle conversation",
+          title: "Nouveau message",
           presentation: "modal",
           headerLeft: () => (
             <Pressable onPress={() => router.back()}>
-              <Text style={{ color: colors.accentGreen, fontSize: 17 }}>Annuler</Text>
+              <Text style={{ color: "#007AFF", fontSize: 17 }}>Annuler</Text>
             </Pressable>
           ),
         }}
@@ -174,6 +174,7 @@ export default function NewConversationScreen() {
         />
       ) : (
         <FlatList
+          contentInsetAdjustmentBehavior="automatic"
           data={filteredMembers}
           keyExtractor={(item) => item.id}
           renderItem={renderMember}

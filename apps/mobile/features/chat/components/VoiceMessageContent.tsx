@@ -18,7 +18,7 @@ function formatDuration(seconds: number | null | undefined): string {
 export function VoiceMessageContent({ message }: VoiceMessageContentProps) {
   const { isPlaying, isLoading, progress, togglePlayback } = useAudioPlayer(message.id);
   const isFromMe = message.isFromMe;
-  const tintColor = isFromMe ? colors.white : colors.accentGreen;
+  const tintColor = isFromMe ? colors.white : "#007AFF";
   const secondaryColor = isFromMe ? "rgba(255,255,255,0.8)" : semanticColors.labelSecondary.light;
 
   const handlePress = () => {

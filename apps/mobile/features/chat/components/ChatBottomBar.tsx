@@ -5,17 +5,16 @@ import {
   StyleSheet,
   Pressable,
   Text,
-  Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
-import { Send, Mic, ImageIcon, Trash2 } from "lucide-react-native";
+import { Plus, ArrowUp, Mic, Trash2 } from "lucide-react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withTiming,
   runOnJS,
 } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -35,6 +34,7 @@ export function ChatBottomBar({
   onTyping,
 }: ChatBottomBarProps) {
   const scheme = useColorScheme();
+  const insets = useSafeAreaInsets();
   const [text, setText] = useState("");
   const inputRef = useRef<TextInput>(null);
   const hasText = text.trim().length > 0;
@@ -129,20 +129,27 @@ export function ChatBottomBar({
   }));
 
   return (
-    <View style={styles.wrapper}>
-      <View style={[styles.container, { backgroundColor: semanticColors.cardBackground[scheme] }]}>
+    <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+      <View style={styles.container}>
+        {/* Plus button for image picker */}
+        <Pressable onPress={handlePickImage} style={styles.plusButton}>
+          <View style={[styles.plusCircle, { backgroundColor: scheme === "dark" ? "#38383A" : "#C7C7CC" }]}>
+            <Plus size={18} color={scheme === "dark" ? colors.white : colors.white} strokeWidth={2.5} />
+          </View>
+        </Pressable>
+
+        {/* Input area */}
         <View
           style={[
             styles.inputRow,
             {
               backgroundColor: scheme === "dark" ? "#1C1C1E" : "#F2F2F7",
-              borderColor: semanticColors.borderColor[scheme],
             },
           ]}
         >
           {recorder.isRecording ? (
             <View style={styles.recordingIndicator}>
-              <Trash2 size={20} color={colors.red500} />
+              <Trash2 size={18} color={colors.red500} />
               <Text style={styles.recordingTimer}>
                 {formatTimer(recorder.duration)}
               </Text>
@@ -151,42 +158,36 @@ export function ChatBottomBar({
               </Text>
             </View>
           ) : (
-            <>
-              <Pressable onPress={handlePickImage} style={styles.mediaButton}>
-                <ImageIcon
-                  size={22}
-                  color={semanticColors.labelPrimary[scheme]}
-                />
-              </Pressable>
-              <TextInput
-                ref={inputRef}
-                style={[
-                  styles.input,
-                  { color: semanticColors.labelPrimary[scheme] },
-                ]}
-                placeholder="Message..."
-                placeholderTextColor={semanticColors.labelSecondary[scheme]}
-                value={text}
-                onChangeText={handleTextChange}
-                multiline
-                maxLength={5000}
-              />
-            </>
+            <TextInput
+              ref={inputRef}
+              style={[
+                styles.input,
+                { color: semanticColors.labelPrimary[scheme] },
+              ]}
+              placeholder="Message"
+              placeholderTextColor={semanticColors.labelSecondary[scheme]}
+              value={text}
+              onChangeText={handleTextChange}
+              multiline
+              maxLength={5000}
+            />
           )}
+
+          {/* Send / Mic button inside input row */}
+          {hasText ? (
+            <Pressable onPress={handleSendText} style={styles.sendButtonInline}>
+              <View style={styles.sendCircle}>
+                <ArrowUp size={18} color={colors.white} strokeWidth={2.5} />
+              </View>
+            </Pressable>
+          ) : null}
         </View>
 
-        {hasText ? (
-          <Pressable onPress={handleSendText} style={styles.sendButton}>
-            <Send size={20} color={colors.white} />
-          </Pressable>
-        ) : (
+        {/* Mic button when no text (outside input) */}
+        {!hasText && (
           <GestureDetector gesture={combinedGesture}>
-            <Animated.View style={[styles.sendButton, buttonScale, buttonOffset]}>
-              {recorder.isRecording ? (
-                <Mic size={20} color={colors.white} />
-              ) : (
-                <Mic size={20} color={colors.white} />
-              )}
+            <Animated.View style={[styles.micButton, buttonScale, buttonOffset]}>
+              <Mic size={22} color={semanticColors.labelPrimary[scheme]} />
             </Animated.View>
           </GestureDetector>
         )}
@@ -203,56 +204,70 @@ function formatTimer(seconds: number): string {
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingHorizontal: 15,
-    paddingBottom: Platform.OS === "ios" ? 0 : 12,
-    paddingTop: 8,
+    paddingHorizontal: 8,
+    paddingTop: 6,
   },
   container: {
     flexDirection: "row",
     alignItems: "flex-end",
-    gap: 10,
+    gap: 6,
+  },
+  plusButton: {
+    paddingBottom: 4,
+  },
+  plusCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
   },
   inputRow: {
     flex: 1,
     flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 24,
-    minHeight: 48,
-    paddingHorizontal: 12,
-    borderWidth: 0.5,
-  },
-  mediaButton: {
-    width: 30,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
+    alignItems: "flex-end",
+    borderRadius: 20,
+    minHeight: 36,
+    paddingLeft: 12,
+    paddingRight: 4,
   },
   input: {
     flex: 1,
     fontSize: 16,
-    paddingHorizontal: 8,
-    paddingVertical: 12,
+    paddingVertical: 8,
     maxHeight: 120,
   },
-  sendButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  sendButtonInline: {
+    paddingBottom: 3,
+    paddingLeft: 4,
+    paddingRight: 2,
+  },
+  sendCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
+  },
+  micButton: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: 0,
   },
   recordingIndicator: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
   recordingTimer: {
     fontSize: 16,
     fontWeight: "500",
-    color: colors.gray500,
+    color: "#6b7280",
     fontVariant: ["tabular-nums"],
   },
   slideHint: {

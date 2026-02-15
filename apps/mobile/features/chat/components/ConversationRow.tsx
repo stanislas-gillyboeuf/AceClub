@@ -44,6 +44,7 @@ export function ConversationRow({ conversation }: ConversationRowProps) {
   const preview = conversation.lastMessagePreview;
   const isVoice = preview === "Message vocal";
   const isPhoto = preview === "Photo";
+  const hasUnread = conversation.unreadCount > 0;
 
   return (
     <View style={styles.container}>
@@ -51,13 +52,22 @@ export function ConversationRow({ conversation }: ConversationRowProps) {
       <View style={styles.content}>
         <View style={styles.topRow}>
           <Text
-            style={[styles.name, { color: semanticColors.labelPrimary[scheme] }]}
+            style={[
+              styles.name,
+              { color: semanticColors.labelPrimary[scheme] },
+              hasUnread && styles.nameUnread,
+            ]}
             numberOfLines={1}
           >
             {displayName}
           </Text>
           {time && (
-            <Text style={[styles.time, { color: semanticColors.labelSecondary[scheme] }]}>
+            <Text
+              style={[
+                styles.time,
+                { color: hasUnread ? colors.accentGreen : semanticColors.labelSecondary[scheme] },
+              ]}
+            >
               {time}
             </Text>
           )}
@@ -72,7 +82,14 @@ export function ConversationRow({ conversation }: ConversationRowProps) {
                 <ImageIcon size={14} color={semanticColors.labelSecondary[scheme]} />
               )}
               <Text
-                style={[styles.preview, { color: semanticColors.labelSecondary[scheme] }]}
+                style={[
+                  styles.preview,
+                  {
+                    color: hasUnread
+                      ? semanticColors.labelPrimary[scheme]
+                      : semanticColors.labelSecondary[scheme],
+                  },
+                ]}
                 numberOfLines={2}
               >
                 {preview}
@@ -80,7 +97,7 @@ export function ConversationRow({ conversation }: ConversationRowProps) {
             </View>
           ) : null}
           <View style={styles.badges}>
-            {conversation.unreadCount > 0 && (
+            {hasUnread && (
               <View style={styles.unreadBadge}>
                 <Text style={styles.unreadText}>{conversation.unreadCount}</Text>
               </View>
@@ -117,6 +134,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     flex: 1,
     marginRight: 8,
+  },
+  nameUnread: {
+    fontWeight: "700",
   },
   time: {
     fontSize: 13,

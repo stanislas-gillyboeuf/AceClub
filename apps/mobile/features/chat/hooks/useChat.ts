@@ -15,13 +15,29 @@ function generateId(): string {
   });
 }
 
-function apiMessageToChatMessage(msg: Message, currentUserId: string): ChatMessage {
+function apiMessageToChatMessage(msg: any, currentUserId: string): ChatMessage {
+  const senderId = msg.senderId ?? msg.sender?.id ?? "";
   return {
-    ...msg,
-    isFromMe: msg.senderId === currentUserId,
+    id: msg.id,
+    conversationId: msg.conversationId,
+    senderId,
+    content: msg.content ?? "",
+    type: msg.type ?? msg.messageType ?? "text",
+    isEncrypted: msg.isEncrypted ?? false,
+    clientMessageId: msg.clientMessageId ?? null,
+    attachmentUrl: msg.attachmentUrl ?? null,
+    attachmentDuration: msg.attachmentDuration ?? null,
+    attachmentWidth: msg.attachmentWidth ?? null,
+    attachmentHeight: msg.attachmentHeight ?? null,
+    createdAt: msg.createdAt,
+    sender: msg.sender ?? null,
+    isFromMe: msg.isFromMe ?? senderId === currentUserId,
     sendStatus: "sent" as MessageSendStatus,
   };
 }
+
+// Module-level flag: public key only needs to be uploaded once per app session
+let localKeyUploaded = false;
 
 export function useChat(conversation: Conversation, currentUserId: string) {
   const queryClient = useQueryClient();
@@ -36,6 +52,21 @@ export function useChat(conversation: Conversation, currentUserId: string) {
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
 
+  // Ensure local key pair exists and is uploaded to server
+  const ensureE2EEReady = useCallback(async () => {
+    await e2eeManager.init(); // Generates key pair if none exists
+
+    // Upload our public key to server (once per session)
+    if (!localKeyUploaded && e2eeManager.publicKeyBase64) {
+      try {
+        await e2eeService.uploadPublicKey({ publicKey: e2eeManager.publicKeyBase64 });
+        localKeyUploaded = true;
+      } catch {
+        // Non-blocking — will retry on next conversation open
+      }
+    }
+  }, []);
+
   // Pre-fetch participant's public key for E2EE
   const prefetchPublicKey = useCallback(async () => {
     if (participantPublicKeyRef.current) return;
@@ -47,21 +78,21 @@ export function useChat(conversation: Conversation, currentUserId: string) {
       const response = await e2eeService.getPublicKey(otherUserId);
       participantPublicKeyRef.current = response.publicKey;
     } catch {
-      // Other user has no E2EE keys, that's OK
+      // Other user has no E2EE keys yet — encryption/decryption disabled for now
     }
   }, [conversation]);
 
   // Decrypt a message if needed
   const decryptIfNeeded = useCallback(
-    (msg: ChatMessage): ChatMessage => {
+    async (msg: ChatMessage): Promise<ChatMessage> => {
       if (!msg.isEncrypted || !msg.content) return msg;
       try {
         const theirKey = participantPublicKeyRef.current;
         if (!theirKey) {
           return { ...msg, content: "[Message chiffré - impossible à déchiffrer]" };
         }
-        const key = e2eeManager.deriveConversationKey(theirKey, msg.conversationId);
-        const decrypted = e2eeManager.decryptMessage(msg.content, key);
+        const key = await e2eeManager.deriveConversationKey(theirKey, msg.conversationId);
+        const decrypted = await e2eeManager.decryptMessage(msg.content, key);
         return { ...msg, content: decrypted };
       } catch {
         return { ...msg, content: "[Message chiffré - impossible à déchiffrer]" };
@@ -76,13 +107,15 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     setErrorMessage(null);
 
     try {
-      await e2eeManager.init();
+      await ensureE2EEReady();
       await prefetchPublicKey();
 
       const loaded = await conversationService.listMessages(conversation.id);
-      const chatMessages = loaded
-        .map((m) => apiMessageToChatMessage(m, currentUserId))
-        .map(decryptIfNeeded);
+      const chatMessages = await Promise.all(
+        loaded
+          .map((m) => apiMessageToChatMessage(m, currentUserId))
+          .map((m) => decryptIfNeeded(m)),
+      );
 
       setMessages(chatMessages);
       setHasMoreMessages(loaded.length >= 50);
@@ -94,7 +127,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     } finally {
       setIsLoading(false);
     }
-  }, [conversation.id, currentUserId, prefetchPublicKey, decryptIfNeeded]);
+  }, [conversation.id, currentUserId, ensureE2EEReady, prefetchPublicKey, decryptIfNeeded]);
 
   // Load more (pagination)
   const loadMoreMessages = useCallback(async () => {
@@ -112,9 +145,11 @@ export function useChat(conversation: Conversation, currentUserId: string) {
       if (older.length === 0) {
         setHasMoreMessages(false);
       } else {
-        const chatMessages = older
-          .map((m) => apiMessageToChatMessage(m, currentUserId))
-          .map(decryptIfNeeded);
+        const chatMessages = await Promise.all(
+          older
+            .map((m) => apiMessageToChatMessage(m, currentUserId))
+            .map((m) => decryptIfNeeded(m)),
+        );
         setMessages((prev) => [...prev, ...chatMessages]);
       }
     } catch (error) {
@@ -166,8 +201,8 @@ export function useChat(conversation: Conversation, currentUserId: string) {
               theirKey = response.publicKey;
               participantPublicKeyRef.current = theirKey;
             }
-            const key = e2eeManager.deriveConversationKey(theirKey, conversation.id);
-            finalContent = e2eeManager.encryptMessage(trimmed, key);
+            const key = await e2eeManager.deriveConversationKey(theirKey, conversation.id);
+            finalContent = await e2eeManager.encryptMessage(trimmed, key);
             isEncrypted = true;
           } catch {
             // Fallback to unencrypted
@@ -371,21 +406,20 @@ export function useChat(conversation: Conversation, currentUserId: string) {
 
   // WebSocket listener
   useEffect(() => {
-    const unsubscribe = wsManager.subscribe((event) => {
+    const unsubscribe = wsManager.subscribe(async (event) => {
       switch (event.type) {
         case "reconnected": {
           // Fetch missed messages
           conversationService
             .listMessages(conversation.id)
-            .then((recent) => {
+            .then(async (recent) => {
+              const existingIds = new Set(messagesRef.current.map((m) => m.id));
+              const toDecrypt = recent
+                .filter((m) => !existingIds.has(m.id))
+                .map((m) => apiMessageToChatMessage(m, currentUserId));
+              if (toDecrypt.length === 0) return;
+              const newMsgs = await Promise.all(toDecrypt.map((m) => decryptIfNeeded(m)));
               setMessages((prev) => {
-                const existingIds = new Set(prev.map((m) => m.id));
-                const newMsgs = recent
-                  .filter((m) => !existingIds.has(m.id))
-                  .map((m) => apiMessageToChatMessage(m, currentUserId))
-                  .map(decryptIfNeeded);
-
-                if (newMsgs.length === 0) return prev;
                 const merged = [...newMsgs, ...prev];
                 merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
                 return merged;
@@ -413,7 +447,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
           if (messagesRef.current.some((m) => m.id === msg.id)) break;
 
           let chatMsg = apiMessageToChatMessage(msg, currentUserId);
-          chatMsg = decryptIfNeeded(chatMsg);
+          chatMsg = await decryptIfNeeded(chatMsg);
           setMessages((prev) => [chatMsg, ...prev]);
 
           // Mark as read

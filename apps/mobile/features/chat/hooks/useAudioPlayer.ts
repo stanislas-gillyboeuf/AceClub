@@ -1,34 +1,46 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { Audio } from "expo-av";
+import { useState, useCallback, useEffect } from "react";
+import {
+  useAudioPlayer as useExpoAudioPlayer,
+  useAudioPlayerStatus,
+  setAudioModeAsync,
+} from "expo-audio";
 
 // Global state to track which message is currently playing
 let currentPlayingId: string | null = null;
 let stopCurrentPlayback: (() => void) | null = null;
 
 export function useAudioPlayer(messageId: string) {
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const soundRef = useRef<Audio.Sound | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const player = useExpoAudioPlayer(null);
+  const status = useAudioPlayerStatus(player);
+
+  const isPlaying = currentPlayingId === messageId && status.playing;
+  const progress = status.duration > 0 ? status.currentTime / status.duration : 0;
 
   const cleanup = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    if (soundRef.current) {
-      soundRef.current.unloadAsync().catch(() => {});
-      soundRef.current = null;
-    }
-    setIsPlaying(false);
-    setProgress(0);
+    player.pause();
     if (currentPlayingId === messageId) {
       currentPlayingId = null;
       stopCurrentPlayback = null;
     }
-  }, [messageId]);
+  }, [messageId, player]);
 
+  // Reset when playback finishes
+  useEffect(() => {
+    if (status.didJustFinish && currentPlayingId === messageId) {
+      currentPlayingId = null;
+      stopCurrentPlayback = null;
+    }
+  }, [status.didJustFinish, messageId]);
+
+  // Clear loading when audio is loaded
+  useEffect(() => {
+    if (isLoading && status.isLoaded) {
+      setIsLoading(false);
+    }
+  }, [isLoading, status.isLoaded]);
+
+  // Cleanup on unmount
   useEffect(() => {
     return cleanup;
   }, [cleanup]);
@@ -36,13 +48,11 @@ export function useAudioPlayer(messageId: string) {
   const togglePlayback = useCallback(
     async (url: string) => {
       // If this message is currently playing, toggle pause/resume
-      if (currentPlayingId === messageId && soundRef.current) {
-        if (isPlaying) {
-          await soundRef.current.pauseAsync();
-          setIsPlaying(false);
+      if (currentPlayingId === messageId) {
+        if (status.playing) {
+          player.pause();
         } else {
-          await soundRef.current.playAsync();
-          setIsPlaying(true);
+          player.play();
         }
         return;
       }
@@ -55,37 +65,19 @@ export function useAudioPlayer(messageId: string) {
       setIsLoading(true);
 
       try {
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: false,
-          playsInSilentModeIOS: true,
-        });
+        await setAudioModeAsync({ playsInSilentMode: true });
 
-        const { sound } = await Audio.Sound.createAsync({ uri: url });
-        soundRef.current = sound;
+        player.replace({ uri: url });
         currentPlayingId = messageId;
         stopCurrentPlayback = cleanup;
-
-        sound.setOnPlaybackStatusUpdate((status) => {
-          if (!status.isLoaded) return;
-          if (status.didJustFinish) {
-            cleanup();
-            return;
-          }
-          if (status.durationMillis && status.durationMillis > 0) {
-            setProgress(status.positionMillis / status.durationMillis);
-          }
-        });
-
-        await sound.playAsync();
-        setIsPlaying(true);
-        setIsLoading(false);
+        player.play();
       } catch (error) {
         console.warn("[AudioPlayer] Playback failed:", error);
         setIsLoading(false);
         cleanup();
       }
     },
-    [messageId, isPlaying, cleanup],
+    [messageId, status.playing, cleanup, player],
   );
 
   return { isPlaying, isLoading, progress, togglePlayback };

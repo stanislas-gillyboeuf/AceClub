@@ -64,18 +64,18 @@ const styles = StyleSheet.create({
     padding: 3,
   },
   imageContainer: {
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: "hidden",
   },
   image: {
-    borderRadius: 12,
+    borderRadius: 16,
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "rgba(0,0,0,0.05)",
-    borderRadius: 12,
+    borderRadius: 16,
   },
   fullScreenContainer: {
     flex: 1,
