@@ -10,6 +10,7 @@ export default function MatchesLayout() {
           presentation: "formSheet",
           sheetGrabberVisible: true,
           title: "Demandes de match",
+          headerTransparent: true,
         }}
       />
       <Stack.Screen

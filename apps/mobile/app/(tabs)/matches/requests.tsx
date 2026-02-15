@@ -23,13 +23,13 @@ export default function MatchRequests() {
   const rejectMutation = useRejectRequest();
 
   const pendingRequests = (requests ?? []).filter(
-    (r) => r.request.status === "pending"
+    (r) => r.status === "pending"
   );
 
   const handleAccept = useCallback(
     async (item: MatchRequestWithDetails) => {
       try {
-        const result = await acceptMutation.mutateAsync(item.request.id);
+        const result = await acceptMutation.mutateAsync(item.id);
 
         if (result.conversationId) {
           // Dismiss the modal first, then navigate to chat
@@ -51,7 +51,7 @@ export default function MatchRequests() {
   const handleReject = useCallback(
     async (item: MatchRequestWithDetails) => {
       try {
-        await rejectMutation.mutateAsync(item.request.id);
+        await rejectMutation.mutateAsync(item.id);
       } catch {
         Alert.alert("Erreur", "Impossible de refuser la demande. Reessaye.");
       }
@@ -117,7 +117,7 @@ export default function MatchRequests() {
       <Stack.Screen options={{ title: "Demandes de match" }} />
       <FlatList
         data={pendingRequests}
-        keyExtractor={(item) => item.request.id}
+        keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
