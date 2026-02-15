@@ -83,8 +83,7 @@ export interface MatchRequest {
   respondedAt?: string | null;
 }
 
-export interface MatchRequestWithDetails {
-  request: MatchRequest;
+export interface MatchRequestWithDetails extends MatchRequest {
   matchIntent?: MatchIntent | null;
   requester?: UserBrief | null;
 }
