@@ -5,6 +5,15 @@ export default function MatchesLayout() {
     <Stack>
       <Stack.Screen name="index" options={{ title: "Matches", headerLargeTitle: true }} />
       <Stack.Screen
+        name="requests"
+        options={{
+          presentation: "formSheet",
+          sheetGrabberVisible: true,
+          title: "Demandes de match",
+          headerTransparent: true,
+        }}
+      />
+      <Stack.Screen
         name="[id]/index"
         options={{
           presentation: "fullScreenModal",
