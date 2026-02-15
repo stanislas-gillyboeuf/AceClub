@@ -12,7 +12,7 @@ import * as WebBrowser from "expo-web-browser";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { authClient } from "@/lib/auth-client";
 import { colors, radii, spacing, sizes } from "@/constants/theme";
-import GoogleLogo from "../_components/google-logo";
+import GoogleLogo from "@/features/auth/components/google-logo";
 
 const __DEV__ = process.env.NODE_ENV === "development";
 

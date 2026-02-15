@@ -1,0 +1,149 @@
+import { View, Text, StyleSheet } from "react-native";
+import { Clock } from "lucide-react-native";
+import { BadgePill } from "@/components/ui/badge-pill";
+import { Card } from "@/components/ui/card";
+import { PlayerView } from "@/components/ui/player-view";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { colors, semanticColors } from "@/constants/theme";
+import {
+  formatMatchScore,
+  formatMatchDuration,
+  getHomeParticipant,
+  getAwayParticipant,
+} from "@/lib/format";
+import type { MatchWithParticipants } from "@/types/match";
+
+interface MatchRowProps {
+  match: MatchWithParticipants;
+  onPress?: () => void;
+}
+
+const STATUS_CONFIG: Record<string, { label: string; variant: "success" | "warning" | "danger" }> = {
+  scheduled: { label: "Planifi\u00e9", variant: "warning" },
+  pending: { label: "En attente", variant: "warning" },
+  in_progress: { label: "En cours", variant: "warning" },
+  finished: { label: "Termin\u00e9", variant: "success" },
+  cancelled: { label: "Annul\u00e9", variant: "danger" },
+};
+
+function getStatusBadge(status: string) {
+  return STATUS_CONFIG[status] ?? { label: status, variant: "warning" as const };
+}
+
+function formatTime(dateStr?: string | null): string {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+
+export function MatchRow({ match, onPress }: MatchRowProps) {
+  const scheme = useColorScheme();
+
+  const home = getHomeParticipant(match);
+  const away = getAwayParticipant(match);
+  const score = formatMatchScore(match);
+  const duration = formatMatchDuration(match);
+  const statusBadge = getStatusBadge(match.status);
+  const displayTime = formatTime(match.scheduledAt ?? match.startedAt ?? match.createdAt);
+  const isOngoing = match.status === "in_progress";
+
+  return (
+    <Card
+      onPress={onPress}
+      style={isOngoing ? {
+        borderColor: `${colors.accentOrange}4D`,
+        borderWidth: 2,
+      } : undefined}
+    >
+      {/* Header: time + status badge */}
+      <View style={styles.headerRow}>
+        <View style={styles.timeRow}>
+          <Clock size={14} color={colors.accentGreen} strokeWidth={2} />
+          <Text style={[styles.timeText, { color: semanticColors.labelSecondary[scheme] }]}>
+            {displayTime}
+          </Text>
+        </View>
+        <BadgePill label={statusBadge.label} variant={statusBadge.variant} />
+      </View>
+
+      {/* Players + Score */}
+      <View style={styles.playersSection}>
+        <View style={styles.playersLeft}>
+          <PlayerView
+            name={home?.user?.name ?? "N/A"}
+            imageUrl={home?.user?.image}
+            isWinner={home?.isWinner ?? false}
+          />
+          <Text style={[styles.vsText, { color: semanticColors.labelSecondary[scheme] }]}>vs</Text>
+          <PlayerView
+            name={away?.user?.name ?? "N/A"}
+            imageUrl={away?.user?.image}
+            isWinner={away?.isWinner ?? false}
+          />
+        </View>
+
+        <View style={styles.scoreSection}>
+          <Text style={[styles.scoreText, { color: semanticColors.labelPrimary[scheme] }]}>
+            {score}
+          </Text>
+          {duration && (
+            <View style={styles.durationRow}>
+              <Clock size={10} color={semanticColors.labelSecondary[scheme]} strokeWidth={2} />
+              <Text style={[styles.durationText, { color: semanticColors.labelSecondary[scheme] }]}>
+                {duration}
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
+    </Card>
+  );
+}
+
+const styles = StyleSheet.create({
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  timeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  timeText: {
+    fontSize: 15,
+  },
+  playersSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  playersLeft: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  vsText: {
+    fontSize: 15,
+  },
+  scoreSection: {
+    alignItems: "flex-end",
+    gap: 4,
+  },
+  scoreText: {
+    fontSize: 20,
+    fontWeight: "700",
+    fontVariant: ["tabular-nums"],
+  },
+  durationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  durationText: {
+    fontSize: 12,
+  },
+});

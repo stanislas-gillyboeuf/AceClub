@@ -1,5 +1,9 @@
 import { createAuthClient } from "better-auth/react";
 import { expoClient } from "@better-auth/expo/client";
+import {
+    inferAdditionalFields,
+    organizationClient,
+} from "better-auth/client/plugins";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
@@ -14,6 +18,19 @@ export const authClient = createAuthClient({
             scheme: "mobile",
             storagePrefix: "mobile",
             storage: SecureStore,
-        })
-    ]
+        }),
+        organizationClient(),
+        inferAdditionalFields({
+            user: {
+                onboardingCompleted: {
+                    type: "boolean",
+                    required: false,
+                },
+                isGhost: {
+                    type: "boolean",
+                    required: false,
+                },
+            },
+        }),
+    ],
 });
