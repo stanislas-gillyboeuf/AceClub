@@ -42,6 +42,29 @@ export interface ListMatchIntentsResponse {
   pagination: CursorPagination;
 }
 
+/** Raw item from the discover API (flat structure) */
+export interface DiscoverItemRaw {
+  id: string;
+  userId: string;
+  type: string;
+  status: string;
+  date?: string | null;
+  time?: string | null;
+  duration?: number | null;
+  description?: string | null;
+  createdAt: string;
+  distance?: number | null;
+  user?: UserBrief | null;
+}
+
+/** Raw API response from /match-intents/discover */
+export interface DiscoverResponseRaw {
+  data: DiscoverItemRaw[];
+  pagination: CursorPagination;
+  isDiscoveryRestricted: boolean;
+}
+
+/** Mapped response used by the UI */
 export interface DiscoverResponse {
   data: MatchIntentWithUser[];
   pagination: CursorPagination;
