@@ -10,6 +10,7 @@
         "@noble/curves": "^2.0.1",
         "@noble/hashes": "^2.0.1",
         "@react-native-community/datetimepicker": "8.6.0",
+        "@react-native-google-signin/google-signin": "^16.1.1",
         "@react-navigation/bottom-tabs": "^7.4.0",
         "@react-navigation/elements": "^2.6.3",
         "@react-navigation/native": "^7.1.8",
@@ -438,6 +439,8 @@
     "@radix-ui/react-use-layout-effect": ["@radix-ui/react-use-layout-effect@1.1.1", "", { "peerDependencies": { "@types/react": "*", "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc" } }, "sha512-RbJRS4UWQFkzHTTwVymMTUv8EqYhOp8dOOviLj2ugtTiXRaRQS7GLGxZTLL1jWhMeoSCf5zmcZkqTl9IiYfXcQ=="],
 
     "@react-native-community/datetimepicker": ["@react-native-community/datetimepicker@8.6.0", "", { "dependencies": { "invariant": "^2.2.4" }, "peerDependencies": { "expo": ">=52.0.0", "react": "*", "react-native": "*", "react-native-windows": "*" }, "optionalPeers": ["expo", "react-native-windows"] }, "sha512-yxPSqNfxgpGaqHQIpatqe6ykeBdU/1pdsk/G3x01mY2bpTflLpmVTLqFSJYd3MiZzxNZcMs/j1dQakUczSjcYA=="],
+
+    "@react-native-google-signin/google-signin": ["@react-native-google-signin/google-signin@16.1.1", "", { "peerDependencies": { "expo": ">=52.0.40", "react": "*", "react-native": "*" }, "optionalPeers": ["expo"] }, "sha512-lcHBnZ7uvCJiWtGooKOklo/4okqszWvJ0BatW1UaIe+ynmpVpp1lyJkvv1Mj08d39k4soaWuhZVNKjD/RFL34Q=="],
 
     "@react-native/assets-registry": ["@react-native/assets-registry@0.83.1", "", {}, "sha512-AT7/T6UwQqO39bt/4UL5EXvidmrddXrt0yJa7ENXndAv+8yBzMsZn6fyiax6+ERMt9GLzAECikv3lj22cn2wJA=="],
 

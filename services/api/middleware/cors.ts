@@ -18,7 +18,7 @@ const getCorsOrigin = (): string | string[] | ((origin: string) => boolean) => {
     }
 
     // Allow iOS app custom scheme
-    if (origin === "apply://" || origin.startsWith("apply://")) {
+    if (origin === "aceclub://" || origin.startsWith("aceclub://")) {
       return true;
     }
 

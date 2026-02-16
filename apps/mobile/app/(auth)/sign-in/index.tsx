@@ -10,11 +10,12 @@ import {
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as AppleAuthentication from "expo-apple-authentication";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { authClient } from "@/lib/auth-client";
 import { colors, radii, spacing, sizes } from "@/constants/theme";
 import GoogleLogo from "@/features/auth/components/google-logo";
 
-const __DEV__ = process.env.NODE_ENV === "development";
+const __DEV__ = process.env.NODE_ENV !== "production";
 
 export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +29,22 @@ export default function SignIn() {
     setIsLoading(true);
     setError(null);
     try {
-      await authClient.signIn.social({ provider: "apple" });
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      if (!credential.identityToken) {
+        setError("Impossible de récupérer le token Apple");
+        return;
+      }
+      await authClient.signIn.social({
+        provider: "apple",
+        idToken: {
+          token: credential.identityToken,
+        },
+      });
     } catch (e: any) {
       if (e.code !== "ERR_REQUEST_CANCELED") {
         setError("Une erreur est survenue avec Apple Sign-In");
@@ -42,9 +58,24 @@ export default function SignIn() {
     setIsLoading(true);
     setError(null);
     try {
-      await authClient.signIn.social({ provider: "google" });
-    } catch {
-      setError("Une erreur est survenue avec Google Sign-In");
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      const idToken = response.data?.idToken;
+      if (!idToken) {
+        setError("Impossible de récupérer le token Google");
+        return;
+      }
+      await authClient.signIn.social({
+        provider: "google",
+        idToken: {
+          token: idToken,
+        },
+      });
+    } catch (e: any) {
+      console.error("Google Sign-In error:", JSON.stringify(e, null, 2), e);
+      if (e.code !== "SIGN_IN_CANCELLED") {
+        setError(e.message || "Une erreur est survenue avec Google Sign-In");
+      }
     } finally {
       setIsLoading(false);
     }

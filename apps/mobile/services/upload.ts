@@ -1,16 +1,4 @@
-import * as SecureStore from "expo-secure-store";
-import { Platform } from "react-native";
-
-const BASE_URL =
-  Platform.OS === "android" ? "http://10.0.2.2:3000" : "http://localhost:3000";
-
-async function getAuthCookie(): Promise<string | null> {
-  try {
-    return await SecureStore.getItemAsync("mobile_cookie");
-  } catch {
-    return null;
-  }
-}
+import { getAuthCookie, BASE_URL } from "@/lib/api";
 
 export const uploadService = {
   uploadUserImage: async (uri: string, fileName: string, mimeType: string) => {
