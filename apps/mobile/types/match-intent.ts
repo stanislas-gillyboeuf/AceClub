@@ -1,26 +1,18 @@
 import type { CursorPagination } from "./common";
 
-export type MatchIntentStatus = "active" | "expired" | "matched";
-export type MatchIntentType = "singles" | "doubles";
+export type MatchIntentStatus = "pending" | "accepted" | "rejected";
+export type MatchIntentType = "match" | "training";
 export type MatchRequestStatus = "pending" | "accepted" | "rejected";
 
 export interface MatchIntent {
   id: string;
   userId: string;
-  type: string;
-  status: string;
-  sport?: string;
-  date?: string | null;
-  time?: string | null;
-  duration?: number | null;
+  date: string;
+  time: string;
+  duration: number;
+  type: MatchIntentType;
   description?: string | null;
-  scheduledDate?: string | null;
-  scheduledTime?: string | null;
-  organizationId?: string | null;
-  message?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-  expiresAt?: string | null;
+  status: MatchIntentStatus;
   createdAt: string;
 }
 
@@ -80,14 +72,11 @@ export interface DiscoverResponse {
 }
 
 export interface CreateMatchIntentRequest {
-  type: string;
-  sport: string;
-  scheduledDate?: string | null;
-  scheduledTime?: string | null;
-  organizationId?: string | null;
-  message?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
+  date: string;
+  time: string;
+  duration: number;
+  type?: MatchIntentType;
+  description?: string;
 }
 
 export interface SwipeRequest {
@@ -110,8 +99,7 @@ export interface MatchRequest {
   respondedAt?: string | null;
 }
 
-export interface MatchRequestWithDetails {
-  request: MatchRequest;
+export interface MatchRequestWithDetails extends MatchRequest {
   matchIntent?: MatchIntent | null;
   requester?: UserBrief | null;
 }

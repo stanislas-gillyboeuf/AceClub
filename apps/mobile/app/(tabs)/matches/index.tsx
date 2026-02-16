@@ -47,8 +47,12 @@ export default function Matches() {
     [sections]
   );
 
-  const onCreateMatch =() => {
+  const onCreateMatch = () => {
     Alert.alert("Créer un match", "Bientôt disponible !");
+  };
+
+  const onOpenRequests = () => {
+    router.push("/matches/requests");
   };
 
   const onEndReached =() => {
@@ -81,17 +85,27 @@ export default function Matches() {
           headerRight:
             Platform.OS === "android"
               ? () => (
-                  <Pressable onPress={onCreateMatch}>
-                    <MaterialIcons name="add" size={24} />
-                  </Pressable>
+                  <View style={styles.androidToolbar}>
+                    <Pressable onPress={onOpenRequests}>
+                      <MaterialIcons name="mail-outline" size={24} />
+                    </Pressable>
+                    <Pressable onPress={onCreateMatch}>
+                      <MaterialIcons name="add" size={24} />
+                    </Pressable>
+                  </View>
                 )
               : undefined,
         }}
       />
       {Platform.OS === "ios" && (
-        <Stack.Toolbar placement="left">
-          <Stack.Toolbar.Button icon="plus" onPress={onCreateMatch} />
-        </Stack.Toolbar>
+        <>
+          <Stack.Toolbar placement="left">
+            <Stack.Toolbar.Button icon="plus" onPress={onCreateMatch} />
+          </Stack.Toolbar>
+          <Stack.Toolbar placement="right">
+            <Stack.Toolbar.Button icon="envelope.badge" onPress={onOpenRequests} />
+          </Stack.Toolbar>
+        </>
       )}
     </>
   );
@@ -196,5 +210,10 @@ const styles = StyleSheet.create({
   },
   sectionContent: {
     paddingHorizontal: spacing.horizontal,
+  },
+  androidToolbar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
   },
 });

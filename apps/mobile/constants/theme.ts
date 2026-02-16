@@ -60,6 +60,8 @@ export const semanticColors = {
   labelTertiary: { light: "#C7C7CC", dark: "#48484A" },
   skeleton: { light: "#E5E5EA", dark: "#3A3A3C" },
   divider: { light: "#C6C6C8", dark: "#38383A" },
+  incomingBubble: { light: "#E5E5EA", dark: "#26252A" },
+  chatBackground: { light: "#FFFFFF", dark: "#000000" },
 } as const;
 
 // Legacy format used by tabs layout / other screens

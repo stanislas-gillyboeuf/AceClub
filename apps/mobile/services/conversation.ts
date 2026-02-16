@@ -37,4 +37,25 @@ export const conversationService = {
 
   muteConversation: (conversationId: string, isMuted: boolean) =>
     api.post<void>(`/conversation/${conversationId}/mute`, { isMuted }),
+
+  uploadAttachment: (conversationId: string, fileUri: string, fileName: string, mimeType: string) =>
+    api.uploadMultipart<UploadAttachmentResponse>(
+      `/conversation/${conversationId}/upload-attachment`,
+      "file",
+      fileUri,
+      fileName,
+      mimeType,
+    ),
+
+  addReaction: (conversationId: string, messageId: string, emoji: string) =>
+    api.post<{ reactions: { emoji: string; count: number; users: { id: string; name: string }[]; hasReacted: boolean }[] }>(
+      `/conversation/${conversationId}/message/${messageId}/reaction`,
+      { emoji },
+    ),
+
+  removeReaction: (conversationId: string, messageId: string, emoji: string) =>
+    api.delete<{ success: boolean }>(
+      `/conversation/${conversationId}/message/${messageId}/reaction`,
+      { emoji },
+    ),
 };

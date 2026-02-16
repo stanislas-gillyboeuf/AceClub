@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { conversation, conversationParticipant, message } from "./schema";
+import { conversation, conversationParticipant, message, messageReaction } from "./schema";
 import { user } from "../auth/schema";
 
 export const conversationRelations = relations(conversation, ({ many }) => ({
@@ -18,13 +18,31 @@ export const conversationParticipantRelations = relations(conversationParticipan
   }),
 }));
 
-export const messageRelations = relations(message, ({ one }) => ({
+export const messageRelations = relations(message, ({ one, many }) => ({
   conversation: one(conversation, {
     fields: [message.conversationId],
     references: [conversation.id],
   }),
   sender: one(user, {
     fields: [message.senderId],
+    references: [user.id],
+  }),
+  replyTo: one(message, {
+    fields: [message.replyToId],
+    references: [message.id],
+    relationName: "messageReplies",
+  }),
+  replies: many(message, { relationName: "messageReplies" }),
+  reactions: many(messageReaction),
+}));
+
+export const messageReactionRelations = relations(messageReaction, ({ one }) => ({
+  message: one(message, {
+    fields: [messageReaction.messageId],
+    references: [message.id],
+  }),
+  user: one(user, {
+    fields: [messageReaction.userId],
     references: [user.id],
   }),
 }));

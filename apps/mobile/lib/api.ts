@@ -1,8 +1,10 @@
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
-const BASE_URL =
+const LOCAL_URL =
   Platform.OS === "android" ? "http://10.0.2.2:3000" : "http://localhost:3000";
+
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || LOCAL_URL;
 
 export class ApiError extends Error {
   status: number;
@@ -77,6 +79,46 @@ async function request<T>(
   return JSON.parse(text) as T;
 }
 
+export { getAuthCookie, BASE_URL };
+
+async function uploadMultipart<T>(
+  path: string,
+  fileField: string,
+  fileUri: string,
+  fileName: string,
+  mimeType: string,
+): Promise<T> {
+  const url = `${BASE_URL}/api${path}`;
+
+  const formData = new FormData();
+  formData.append(fileField, {
+    uri: fileUri,
+    name: fileName,
+    type: mimeType,
+  } as unknown as Blob);
+
+  const headers: Record<string, string> = {};
+  const cookie = await getAuthCookie();
+  if (cookie) {
+    headers["Cookie"] = cookie;
+  }
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ApiError(response.status, text);
+  }
+
+  const text = await response.text();
+  if (!text) return undefined as T;
+  return JSON.parse(text) as T;
+}
+
 export const api = {
   get: <T>(
     path: string,
@@ -91,4 +133,12 @@ export const api = {
 
   delete: <T>(path: string, body?: unknown) =>
     request<T>("DELETE", path, { body }),
+
+  uploadMultipart: <T>(
+    path: string,
+    fileField: string,
+    fileUri: string,
+    fileName: string,
+    mimeType: string,
+  ) => uploadMultipart<T>(path, fileField, fileUri, fileName, mimeType),
 };

@@ -1,113 +1,67 @@
-import { useCallback, useEffect, useState } from "react";
-import { e2eeManager } from "@/lib/e2ee";
+import { useState, useCallback } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { e2eeManager } from "@/lib/e2ee-manager";
 import { e2eeService } from "@/services/e2ee";
-import { ApiError } from "@/lib/api";
 
-/**
- * Hook to initialize and manage E2EE keys.
- * Mirrors the iOS SetupE2EEKeysUseCase:
- * - On mount, initializes the E2EE manager (loads keys from SecureStore)
- * - If keys exist locally, uploads the public key to the server
- * - If no keys exist, generates a new pair and uploads
- */
-export function useE2EESetup() {
-  const [isReady, setIsReady] = useState(false);
-  const [needsBackup, setNeedsBackup] = useState(false);
+export function useE2EEBackup() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      await e2eeManager.initialize();
-
-      if (e2eeManager.hasKeyPair) {
-        // Keys already exist - upload public key
-        const publicKey = e2eeManager.publicKeyBase64;
-        if (publicKey) {
-          try {
-            await e2eeService.uploadPublicKey({ publicKey });
-          } catch {
-            // Upload failed - continue, will retry later
-          }
-        }
-        setIsReady(true);
-      } else {
-        // Generate new key pair
-        const { publicKey } = await e2eeManager.generateKeyPair();
-        const publicKeyBase64 = e2eeManager.publicKeyBase64;
-        if (publicKeyBase64) {
-          try {
-            await e2eeService.uploadPublicKey({ publicKey: publicKeyBase64 });
-          } catch {
-            // Upload failed
-          }
-        }
-        setNeedsBackup(true);
-        setIsReady(true);
-      }
-    })();
+  const backup = useCallback(async (passphrase: string) => {
+    setIsLoading(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      await e2eeManager.init();
+      const { encryptedKey, salt } = await e2eeManager.encryptPrivateKeyWithPassphrase(passphrase);
+      await e2eeService.uploadKeyBackup({
+        encryptedPrivateKey: encryptedKey,
+        backupSalt: salt,
+      });
+      setSuccess(true);
+    } catch (e: any) {
+      setError(e.message ?? "Erreur lors de la sauvegarde de la clé");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  return { isReady, needsBackup };
+  return { backup, isLoading, error, success, resetSuccess: () => setSuccess(false) };
 }
 
-/**
- * Hook to encrypt a message for a conversation.
- * Returns null if E2EE is not available for this conversation.
- */
-export function useEncryptMessage() {
-  return useCallback(
-    async (
-      content: string,
-      conversationId: string,
-      otherParticipantId: string
-    ): Promise<{ encrypted: string; isEncrypted: true } | { encrypted: string; isEncrypted: false }> => {
-      await e2eeManager.initialize();
+export function useE2EERecovery() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-      if (!e2eeManager.hasKeyPair) {
-        return { encrypted: content, isEncrypted: false };
-      }
+  const recover = useCallback(async (passphrase: string) => {
+    setIsLoading(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      const backupData = await e2eeService.getKeyBackup();
+      await e2eeManager.restorePrivateKeyFromBackup(
+        backupData.encryptedPrivateKey,
+        backupData.backupSalt,
+        passphrase
+      );
+      setSuccess(true);
+    } catch (e: any) {
+      setError("La récupération a échoué. Vérifiez votre phrase de passe.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-      try {
-        const response = await e2eeService.getPublicKey(otherParticipantId);
-        const key = e2eeManager.deriveConversationKey(response.publicKey, conversationId);
-        const encrypted = e2eeManager.encryptMessage(content, key);
-        return { encrypted, isEncrypted: true };
-      } catch (err) {
-        // If recipient has no keys (404), send plaintext
-        if (err instanceof ApiError && err.status === 404) {
-          return { encrypted: content, isEncrypted: false };
-        }
-        // Other errors - fallback to plaintext
-        return { encrypted: content, isEncrypted: false };
-      }
-    },
-    []
-  );
+  return { recover, isLoading, error, success, resetSuccess: () => setSuccess(false) };
 }
 
-/**
- * Hook to decrypt a message from a conversation.
- */
-export function useDecryptMessage() {
-  return useCallback(
-    async (
-      encryptedContent: string,
-      conversationId: string,
-      senderUserId: string
-    ): Promise<string> => {
-      await e2eeManager.initialize();
-
-      if (!e2eeManager.hasKeyPair) {
-        return "[Message chiffr\u00e9 - impossible \u00e0 d\u00e9chiffrer]";
-      }
-
-      try {
-        const response = await e2eeService.getPublicKey(senderUserId);
-        const key = e2eeManager.deriveConversationKey(response.publicKey, conversationId);
-        return e2eeManager.decryptMessage(encryptedContent, key);
-      } catch {
-        return "[Message chiffr\u00e9 - impossible \u00e0 d\u00e9chiffrer]";
-      }
+export function useDeleteAccount() {
+  return useMutation({
+    mutationFn: async () => {
+      const { api } = await import("@/lib/api");
+      return api.delete<void>("/user/me");
     },
-    []
-  );
+  });
 }
