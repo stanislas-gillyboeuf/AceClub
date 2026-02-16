@@ -16,7 +16,7 @@ export class ApiError extends Error {
 
 async function getAuthCookie(): Promise<string | null> {
   try {
-    const raw = await SecureStore.getItemAsync("mobile_cookie");
+    const raw = await SecureStore.getItemAsync("aceclub_cookie");
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Record<
       string,
