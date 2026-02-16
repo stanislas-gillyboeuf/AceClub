@@ -71,6 +71,7 @@ Quand tu lances un subagent Explore, copie-colle les instructions sur mgrep de c
 <>
   <Stack.Screen options={{ ... }} />
   <FlatList
+    style={{ flex: 1 }}
     data={items}
     renderItem={renderItem}
     ListHeaderComponent={<SearchBar />}
@@ -79,6 +80,55 @@ Quand tu lances un subagent Explore, copie-colle les instructions sur mgrep de c
     keyboardShouldPersistTaps="handled"
   />
 </>
+```
+
+## FormSheet et KeyboardAvoidingView
+
+**Ne JAMAIS utiliser `KeyboardAvoidingView` dans un écran `presentation: "formSheet"`** — le formSheet iOS gère nativement le clavier. `KeyboardAvoidingView` provoque des conflits de layout et peut rendre le contenu invisible (hauteur 0).
+
+**Pattern correct** : utiliser un `View` simple avec `flex: 1` ou mettre `style={{ flex: 1 }}` directement sur le `FlatList`/`ScrollView`.
+```tsx
+// MAUVAIS — contenu invisible dans formSheet
+<KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+  <FlatList ... />
+</KeyboardAvoidingView>
+
+// BON — formSheet gère le clavier nativement
+<FlatList style={{ flex: 1 }} ... />
+```
+
+> **Note** : `KeyboardAvoidingView` reste valide pour `fullScreenModal` et les écrans non-modaux.
+
+## Glass Effect (iOS 26+)
+
+On utilise `expo-glass-effect` (`GlassView`) pour le design Liquid Glass iOS. `GlassView` fallback en `View` standard sur iOS < 26 et Android.
+
+**Règles** :
+- **Ne JAMAIS mettre `opacity < 1`** sur un `GlassView` ou ses parents — l'effet render mal. Utiliser `transform: [{ scale: 0.98 }]` pour les états pressed.
+- **Supprimer `backgroundColor`, `borderWidth`, `shadow*`, `elevation`** des styles quand on remplace un `View` par `GlassView` — le glass gère le visuel.
+- Utiliser `tintColor` pour colorer le glass (ex: `tintColor={colors.accentGreen}`).
+- `isInteractive` ne peut être set qu'au mount (pas de changement dynamique).
+
+**Usages actuels** :
+- `club-selection.tsx` : barre de recherche + cartes de club
+- `discover/index.tsx` : bouton filtre rayon + menu rayon
+- `discover-card.tsx` : badges distance et type sur les cartes
+- `discover-card-stack.tsx` : boutons pass/like
+- `discover-detail-sheet.tsx` : bouton close + cartes disponibilité/description
+- `ChatBottomBar.tsx` : bouton +, input row, bouton send
+
+```tsx
+// Carte avec glass
+<Pressable onPress={onPress} style={({ pressed }) => [pressed && { transform: [{ scale: 0.98 }] }]}>
+  <GlassView style={styles.card}>
+    {/* contenu */}
+  </GlassView>
+</Pressable>
+
+// Badge avec tint
+<GlassView style={styles.badge} tintColor="#3B82F6">
+  <Text style={styles.badgeText}>Match</Text>
+</GlassView>
 ```
 
 ---

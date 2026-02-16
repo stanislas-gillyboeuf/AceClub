@@ -4,7 +4,7 @@ import { challengeTemplate, userChallenge } from "../../../db/schema/challenge/s
 import type { ChallengeTemplate } from "../../../db/schema/challenge/type";
 import { user } from "../../../db/schema/auth/schema";
 import { userLevel } from "../../../db/schema/level/schema";
-import { sendNotificationToUser } from "../../../services/apns/notification-service";
+import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
 
 // Nombre de semaines à considérer pour éviter les répétitions
 const RECENT_WEEKS_TO_AVOID = 3;

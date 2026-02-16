@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   useAudioPlayer as useExpoAudioPlayer,
   useAudioPlayerStatus,
@@ -13,17 +13,27 @@ export function useAudioPlayer(messageId: string) {
   const [isLoading, setIsLoading] = useState(false);
   const player = useExpoAudioPlayer(null);
   const status = useAudioPlayerStatus(player);
+  const isMounted = useRef(true);
 
   const isPlaying = currentPlayingId === messageId && status.playing;
   const progress = status.duration > 0 ? status.currentTime / status.duration : 0;
 
+  const safePause = useCallback(() => {
+    if (!isMounted.current) return;
+    try {
+      player.pause();
+    } catch {
+      // Native player may already be released
+    }
+  }, [player]);
+
   const cleanup = useCallback(() => {
-    player.pause();
+    safePause();
     if (currentPlayingId === messageId) {
       currentPlayingId = null;
       stopCurrentPlayback = null;
     }
-  }, [messageId, player]);
+  }, [messageId, safePause]);
 
   // Reset when playback finishes
   useEffect(() => {
@@ -40,19 +50,31 @@ export function useAudioPlayer(messageId: string) {
     }
   }, [isLoading, status.isLoaded]);
 
-  // Cleanup on unmount
+  // Track mount state — cleanup on unmount only resets global state
+  // (Expo's useAudioPlayer hook handles native player release)
   useEffect(() => {
-    return cleanup;
-  }, [cleanup]);
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+      if (currentPlayingId === messageId) {
+        currentPlayingId = null;
+        stopCurrentPlayback = null;
+      }
+    };
+  }, [messageId]);
 
   const togglePlayback = useCallback(
     async (url: string) => {
       // If this message is currently playing, toggle pause/resume
       if (currentPlayingId === messageId) {
         if (status.playing) {
-          player.pause();
+          safePause();
         } else {
-          player.play();
+          try {
+            player.play();
+          } catch {
+            // Native player may already be released
+          }
         }
         return;
       }
@@ -77,7 +99,7 @@ export function useAudioPlayer(messageId: string) {
         cleanup();
       }
     },
-    [messageId, status.playing, cleanup, player],
+    [messageId, status.playing, cleanup, safePause, player],
   );
 
   return { isPlaying, isLoading, progress, togglePlayback };

@@ -20,7 +20,7 @@ export interface ListNotificationsResponse {
 
 export const notificationService = {
   listNotifications: (params?: { limit?: number; offset?: number; unreadOnly?: boolean }) =>
-    api.get<ListNotificationsResponse>("/notification/list", {
+    api.get<ListNotificationsResponse>("/notification", {
       limit: params?.limit ?? 20,
       offset: params?.offset ?? 0,
       unreadOnly: params?.unreadOnly ?? false,
@@ -30,8 +30,14 @@ export const notificationService = {
     api.get<{ unreadCount: number }>("/notification/unread-count"),
 
   markAsRead: (notificationId: string) =>
-    api.post<void>(`/notification/${notificationId}/read`),
+    api.post<void>("/notification/mark-read", { notificationId }),
+
+  markAllAsRead: () =>
+    api.post<void>("/notification/mark-all-read"),
 
   registerDeviceToken: (data: { token: string; platform: string }) =>
-    api.post<void>("/notification/register-device", data),
+    api.post<void>("/notification/register-token", data),
+
+  unregisterDeviceToken: (token: string) =>
+    api.post<void>("/notification/unregister-token", { token }),
 };

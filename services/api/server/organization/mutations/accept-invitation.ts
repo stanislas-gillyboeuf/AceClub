@@ -7,7 +7,7 @@ import { auth } from "../../../auth";
 import { db } from "../../../db";
 import { member, invitation, organization } from "../../../db/schema/auth/schema";
 import { userPreference } from "../../../db/schema/user-preference/schema";
-import { sendNotificationToUser } from "../../../services/apns/notification-service";
+import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
 
 export const acceptInvitation = async (c: Context<HonoContext>) => {
   try {

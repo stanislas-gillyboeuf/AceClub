@@ -7,8 +7,6 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { X, Shield } from "lucide-react-native";
@@ -46,10 +44,7 @@ export default function E2EEBackup() {
         }}
       />
 
-      <KeyboardAvoidingView
-        style={{ flex: 1, backgroundColor: semanticColors.primaryBackground[scheme] }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+      <View style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
         <View style={styles.content}>
           <View style={styles.infoBox}>
             <Shield size={24} color={colors.accentGreen} strokeWidth={1.5} />
@@ -120,12 +115,15 @@ export default function E2EEBackup() {
             )}
           </Pressable>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   content: {
     padding: spacing.horizontal,
     gap: 20,

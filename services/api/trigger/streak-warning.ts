@@ -2,7 +2,7 @@ import { schedules } from "@trigger.dev/sdk";
 import { db } from "../db";
 import { userStreak } from "../db/schema/streak/schema";
 import { eq, ne, and, or, isNull } from "drizzle-orm";
-import { sendNotificationToUser } from "../services/apns/notification-service";
+import { sendNotificationToUser } from "../services/expo-push/notification-service";
 
 function getCurrentWeekAndYear(): { week: number; year: number } {
   const now = new Date();

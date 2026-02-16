@@ -7,6 +7,7 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { GlassView } from "expo-glass-effect";
 import { Reply, AlertCircle } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
@@ -128,17 +129,12 @@ export function MessageBubble({
                   isFromMe ? styles.rowRight : styles.rowLeft,
                 ]}
               >
-                <View
+                <GlassView
                   style={[
                     styles.bubble,
-                    isFromMe
-                      ? styles.bubbleMine
-                      : {
-                          backgroundColor:
-                            semanticColors.incomingBubble[scheme],
-                        },
                     getBubbleRadius(isFromMe, groupPosition),
                   ]}
+                  tintColor={isFromMe ? colors.accentGreen : colors.gray300}
                 >
                   {message.replyTo && (
                     <InBubbleReplyPreview
@@ -147,7 +143,7 @@ export function MessageBubble({
                     />
                   )}
                   <MessageContent message={message} scheme={scheme} />
-                </View>
+                </GlassView>
 
                 {message.sendStatus === "failed" && (
                   <Pressable onPress={onRetry} style={styles.retryButton}>
@@ -259,9 +255,6 @@ const styles = StyleSheet.create({
   },
   bubble: {
     overflow: "hidden",
-  },
-  bubbleMine: {
-    backgroundColor: colors.accentGreen,
   },
   textContent: {
     fontSize: 16,

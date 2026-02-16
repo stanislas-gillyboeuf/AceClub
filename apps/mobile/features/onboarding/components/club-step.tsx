@@ -21,7 +21,7 @@ interface ClubStepProps {
   selectedOrganization: Organization | null;
   isPinVerified: boolean;
   onSelect: (org: Organization) => void;
-  onPinVerified: () => void;
+  onPinVerified: (pin: string) => void;
   onPinError: (error: string) => void;
   pinError: string | null;
 }
@@ -77,7 +77,7 @@ export function ClubStep({
         });
         if (result.valid) {
           onSelect(pendingOrg);
-          onPinVerified();
+          onPinVerified(pin);
           setShowPinModal(false);
           setPendingOrg(null);
         } else {

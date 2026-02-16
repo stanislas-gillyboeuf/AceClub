@@ -4,7 +4,7 @@ import { db } from "../../../db";
 import { matchRequest, matchIntent, match, matchParticipant, user } from "../../../db/schema";
 import { conversation, conversationParticipant } from "../../../db/schema/conversation/schema";
 import { and, eq, ne, sql } from "drizzle-orm";
-import { sendNotificationToUser } from "../../../services/apns/notification-service";
+import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
 
 export const acceptRequest = async (c: Context<HonoContext>) => {
   try {

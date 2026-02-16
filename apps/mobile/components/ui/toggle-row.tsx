@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: 6,
     gap: 12,
   },
   iconContainer: {

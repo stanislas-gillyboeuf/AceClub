@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, Pressable, StyleSheet, useWindowDimensions } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import { GlassView } from "expo-glass-effect";
 import {
   X,
   MapPin,
@@ -78,11 +79,10 @@ export function DiscoverDetailSheet({
           />
 
           {/* Close button */}
-          <Pressable
-            style={[styles.closeButton, { backgroundColor: semanticColors.cardBackground[scheme] }]}
-            onPress={onClose}
-          >
-            <X size={18} color={semanticColors.labelSecondary[scheme]} strokeWidth={2.5} />
+          <Pressable onPress={onClose}>
+            <GlassView style={styles.closeButton}>
+              <X size={18} color={semanticColors.labelSecondary[scheme]} strokeWidth={2.5} />
+            </GlassView>
           </Pressable>
         </View>
 
@@ -130,15 +130,7 @@ export function DiscoverDetailSheet({
             <Text style={[styles.sectionTitle, { color: semanticColors.labelPrimary[scheme] }]}>
               Disponibilit\u00e9
             </Text>
-            <View
-              style={[
-                styles.availabilityCard,
-                {
-                  backgroundColor: semanticColors.cardBackground[scheme],
-                  borderColor: semanticColors.borderColor[scheme],
-                },
-              ]}
-            >
+            <GlassView style={styles.availabilityCard}>
               <DetailRow
                 icon={TypeIcon}
                 title="Type"
@@ -173,7 +165,7 @@ export function DiscoverDetailSheet({
                   scheme={scheme}
                 />
               )}
-            </View>
+            </GlassView>
           </View>
 
           {/* Description section */}
@@ -182,19 +174,11 @@ export function DiscoverDetailSheet({
               <Text style={[styles.sectionTitle, { color: semanticColors.labelPrimary[scheme] }]}>
                 Note
               </Text>
-              <View
-                style={[
-                  styles.descriptionCard,
-                  {
-                    backgroundColor: semanticColors.cardBackground[scheme],
-                    borderColor: semanticColors.borderColor[scheme],
-                  },
-                ]}
-              >
+              <GlassView style={styles.descriptionCard}>
                 <Text style={[styles.descriptionText, { color: semanticColors.labelSecondary[scheme] }]}>
                   {item.intent.description ?? item.intent.message}
                 </Text>
-              </View>
+              </GlassView>
             </View>
           )}
         </View>
@@ -289,11 +273,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   content: {
     paddingHorizontal: spacing.horizontal,
@@ -355,7 +334,6 @@ const styles = StyleSheet.create({
   availabilityCard: {
     padding: spacing.card,
     borderRadius: radii.md,
-    borderWidth: 0.5,
     gap: 12,
   },
   detailRow: {
@@ -376,7 +354,6 @@ const styles = StyleSheet.create({
   descriptionCard: {
     padding: spacing.card,
     borderRadius: radii.md,
-    borderWidth: 0.5,
   },
   descriptionText: {
     fontSize: 15,

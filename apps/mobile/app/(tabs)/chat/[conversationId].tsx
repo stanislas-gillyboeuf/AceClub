@@ -1,108 +1,37 @@
-import { useEffect, useCallback, useRef, useState } from "react";
+import { useEffect, useCallback, useRef, useState, useMemo } from "react";
 import {
   View,
   FlatList,
   StyleSheet,
   ActivityIndicator,
-  Pressable,
   Text,
   Alert,
-  Platform,
 } from "react-native";
-import { useLocalSearchParams, useRouter, Stack } from "expo-router";
+import { useLocalSearchParams, Stack } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import * as Haptics from "expo-haptics";
 import { useConversation } from "@/hooks/use-conversation";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
-import { Avatar } from "@/components/ui/avatar";
 import { MessageBubble } from "@/features/chat/components/MessageBubble";
 import { ChatBottomBar } from "@/features/chat/components/ChatBottomBar";
+import { ChatHeader } from "@/features/chat/components/ChatHeader";
 import { TypingIndicator } from "@/features/chat/components/TypingIndicator";
 import { MessageContextMenu } from "@/features/chat/components/MessageContextMenu";
+import {
+  getMessageGroupPosition,
+  shouldShowTimeSeparator,
+  formatTimeSeparator,
+  formatDeliveryStatus,
+} from "@/features/chat/utils/message-helpers";
 import { useChat } from "@/features/chat/hooks/useChat";
 import { wsManager } from "@/lib/websocket-manager";
 import { authClient } from "@/lib/auth-client";
-import type { ChatMessage, GroupPosition } from "@/features/chat/types";
+import type { ChatMessage } from "@/features/chat/types";
 import type { Conversation } from "@/types/conversation";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
-function getDisplayName(conversation: Conversation): string {
-  if (conversation.name) return conversation.name;
-  return conversation.otherParticipants[0]?.user?.name ?? "Conversation";
-}
-
-function getAvatarUrl(conversation: Conversation): string | null {
-  return conversation.otherParticipants[0]?.user?.image ?? null;
-}
-
-// Message grouping: same sender + < 60s apart
-function getMessageGroupPosition(
-  messages: ChatMessage[],
-  index: number,
-): GroupPosition {
-  const message = messages[index];
-  // FlatList is inverted: index 0 = newest, index+1 = older
-  const newer = index > 0 ? messages[index - 1] : null;
-  const older = index < messages.length - 1 ? messages[index + 1] : null;
-
-  const isSameSenderAsNewer =
-    newer &&
-    newer.senderId === message.senderId &&
-    Math.abs(new Date(message.createdAt).getTime() - new Date(newer.createdAt).getTime()) < 60000;
-
-  const isSameSenderAsOlder =
-    older &&
-    older.senderId === message.senderId &&
-    Math.abs(new Date(message.createdAt).getTime() - new Date(older.createdAt).getTime()) < 60000;
-
-  if (isSameSenderAsNewer && isSameSenderAsOlder) return "middle";
-  if (isSameSenderAsNewer && !isSameSenderAsOlder) return "first";
-  if (!isSameSenderAsNewer && isSameSenderAsOlder) return "last";
-  return "single";
-}
-
-// Time separator: show when gap > 5 minutes between messages
-function shouldShowTimeSeparator(
-  messages: ChatMessage[],
-  index: number,
-): boolean {
-  // FlatList is inverted: index+1 = older message
-  const older = index < messages.length - 1 ? messages[index + 1] : null;
-  if (!older) return true; // First message in history
-  const diff = Math.abs(
-    new Date(messages[index].createdAt).getTime() - new Date(older.createdAt).getTime(),
-  );
-  return diff > 300000; // 5 minutes
-}
-
-function formatTimeSeparator(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-  if (diffDays === 0) return `Aujourd'hui ${time}`;
-  if (diffDays === 1) return `Hier ${time}`;
-  if (diffDays < 7) {
-    const day = date.toLocaleDateString("fr-FR", { weekday: "long" });
-    return `${day.charAt(0).toUpperCase() + day.slice(1)} ${time}`;
-  }
-  return `${date.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} ${time}`;
-}
-
-function formatDeliveryStatus(status: string): string {
-  switch (status) {
-    case "sending":
-      return "Envoi\u2026";
-    case "sent":
-      return "Envoy\u00e9";
-    case "read":
-      return "Lu";
-    default:
-      return "";
-  }
-}
+const HEADER_HEIGHT = 44;
 
 export default function ChatScreen() {
   const { conversationId } = useLocalSearchParams<{ conversationId: string }>();
@@ -114,7 +43,7 @@ export default function ChatScreen() {
 
   if (isConversationLoading || !conversation) {
     return (
-      <View style={[styles.centered, { backgroundColor: semanticColors.chatBackground[scheme] }]}>
+      <View style={styles.centered}>
         <Stack.Screen options={{ title: "" }} />
         <ActivityIndicator color={colors.accentGreen} />
       </View>
@@ -132,9 +61,11 @@ function ChatContent({
   currentUserId: string;
 }) {
   const scheme = useColorScheme();
-  const router = useRouter();
+  const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
   const [contextMenuMessage, setContextMenuMessage] = useState<ChatMessage | null>(null);
+  const isNearBottom = useRef(true);
+  const hasInitiallyScrolled = useRef(false);
 
   const {
     messages,
@@ -152,18 +83,36 @@ function ChatContent({
     deleteConversation,
     errorMessage,
     setErrorMessage,
-    // New
     replyingTo,
     setReplyingTo,
     clearReply,
     toggleReaction,
   } = useChat(conversation, currentUserId);
 
+  // Reverse messages: oldest first for non-inverted FlatList
+  const reversedMessages = useMemo(() => [...messages].reverse(), [messages]);
+
   // Load messages on mount and connect WS
   useEffect(() => {
     loadMessages();
     wsManager.connect();
   }, [loadMessages]);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    if (reversedMessages.length === 0) return;
+
+    if (!hasInitiallyScrolled.current) {
+      hasInitiallyScrolled.current = true;
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: false });
+      }, 100);
+    } else if (isNearBottom.current) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [reversedMessages.length]);
 
   // Error alert
   useEffect(() => {
@@ -172,26 +121,19 @@ function ChatContent({
     }
   }, [errorMessage, setErrorMessage]);
 
-  const displayName = getDisplayName(conversation);
-  const avatarUrl = getAvatarUrl(conversation);
+  // Track scroll position & load more when near top
+  const handleScroll = useCallback(
+    (e: { nativeEvent: { contentOffset: { y: number }; contentSize: { height: number }; layoutMeasurement: { height: number } } }) => {
+      const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+      isNearBottom.current =
+        contentOffset.y >= contentSize.height - layoutMeasurement.height - 100;
 
-  const handleProfilePress = useCallback(() => {
-    Alert.alert(displayName, undefined, [
-      {
-        text: conversation.isMuted ? "R\u00e9activer" : "Mettre en sourdine",
-        onPress: toggleMute,
-      },
-      {
-        text: "Supprimer la conversation",
-        style: "destructive",
-        onPress: () => {
-          deleteConversation();
-          router.dismiss();
-        },
-      },
-      { text: "Annuler", style: "cancel" },
-    ]);
-  }, [displayName, conversation.isMuted, toggleMute, deleteConversation, router]);
+      if (contentOffset.y < 200 && hasMoreMessages) {
+        loadMoreMessages();
+      }
+    },
+    [hasMoreMessages, loadMoreMessages],
+  );
 
   const handleSendText = useCallback(
     (text: string) => {
@@ -224,12 +166,11 @@ function ChatContent({
 
   const renderMessage = useCallback(
     ({ item, index }: { item: ChatMessage; index: number }) => {
-      const groupPosition = getMessageGroupPosition(messages, index);
-      const showSeparator = shouldShowTimeSeparator(messages, index);
+      const groupPosition = getMessageGroupPosition(reversedMessages, index);
+      const showSeparator = shouldShowTimeSeparator(reversedMessages, index);
 
-      // Delivery status: only under the newest outgoing message (index 0)
       const showDeliveryStatus =
-        index === 0 && item.isFromMe && item.sendStatus !== "failed";
+        index === reversedMessages.length - 1 && item.isFromMe && item.sendStatus !== "failed";
 
       return (
         <View>
@@ -255,78 +196,64 @@ function ChatContent({
         </View>
       );
     },
-    [messages, scheme, retryFailedMessage, deleteMessage, setReplyingTo, toggleReaction],
+    [reversedMessages, scheme, retryFailedMessage, deleteMessage, setReplyingTo, toggleReaction],
   );
 
-  const renderFooter = useCallback(() => {
-    if (!hasMoreMessages || messages.length === 0) return null;
+  const renderListHeader = useCallback(() => {
+    if (!hasMoreMessages || reversedMessages.length === 0) return null;
     return (
       <View style={styles.loadMore}>
         <ActivityIndicator color={colors.accentGreen} />
       </View>
     );
-  }, [hasMoreMessages, messages.length]);
+  }, [hasMoreMessages, reversedMessages.length]);
+
+  const topInset = insets.top + HEADER_HEIGHT;
 
   return (
-    <View style={[styles.container, { backgroundColor: semanticColors.chatBackground[scheme] }]}>
-      <Stack.Screen
-        options={{
-          headerBlurEffect: scheme === "dark" ? "systemMaterialDark" : "systemMaterial",
-          headerLeft:
-            Platform.OS === "android"
-              ? () => (
-                  <View style={styles.androidToolbar}>
-                    <Pressable onPress={() => router.dismiss()} hitSlop={8}>
-                      <MaterialIcons name="close" size={24} />
-                    </Pressable>
-                  </View>
-                )
-              : undefined,
-          headerTitle: () => (
-            <Pressable onPress={handleProfilePress} style={styles.headerTitle}>
-              <Avatar imageUrl={avatarUrl} name={displayName} size={28} />
-              <Text
-                style={[styles.headerName, { color: semanticColors.labelPrimary[scheme] }]}
-                numberOfLines={1}
-              >
-                {displayName}
-              </Text>
-            </Pressable>
-          ),
-        }}
-      />
-       {Platform.OS === "ios" && (
-        <Stack.Toolbar placement="left">
-          <Stack.Toolbar.Button icon="xmark" onPress={() => router.dismiss()} />
-        </Stack.Toolbar>
-      )}
-
-      <FlatList
-        automaticallyAdjustsScrollIndicatorInsets
-        automaticallyAdjustKeyboardInsets
-        ref={flatListRef}
-        data={messages}
-        keyExtractor={(item) => item.id}
-        renderItem={renderMessage}
-        inverted
-        contentContainerStyle={styles.messagesList}
-        ListFooterComponent={renderFooter}
-        onEndReached={loadMoreMessages}
-        onEndReachedThreshold={0.3}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="interactive"
+    <View style={styles.container}>
+      <ChatHeader
+        conversation={conversation}
+        onToggleMute={toggleMute}
+        onDeleteConversation={deleteConversation}
       />
 
-      {isOtherUserTyping && <TypingIndicator />}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior="padding"
+        keyboardVerticalOffset={0}
+      >
+        <FlatList
+          style={{ flex: 1 }}
+          contentInsetAdjustmentBehavior="never"
+          ref={flatListRef}
+          data={reversedMessages}
+          keyExtractor={(item) => item.id}
+          renderItem={renderMessage}
+          contentContainerStyle={[
+            styles.messagesList,
+            { paddingTop: topInset, paddingBottom: 8 },
+          ]}
+          scrollIndicatorInsets={{ top: topInset }}
+          ListHeaderComponent={renderListHeader}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+        />
 
-      <ChatBottomBar
-        onSendText={handleSendText}
-        onSendVoice={sendVoiceMessage}
-        onSendImage={sendImageMessage}
-        onTyping={sendTypingIndicator}
-        replyingTo={replyingTo}
-        onCancelReply={clearReply}
-      />
+        {isOtherUserTyping && <TypingIndicator />}
+
+        <ChatBottomBar
+          onSendText={handleSendText}
+          onSendVoice={sendVoiceMessage}
+          onSendImage={sendImageMessage}
+          onTyping={sendTypingIndicator}
+          replyingTo={replyingTo}
+          onCancelReply={clearReply}
+        />
+      </KeyboardAvoidingView>
 
       <MessageContextMenu
         message={contextMenuMessage}
@@ -349,23 +276,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  androidToolbar: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  headerTitle: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  headerName: {
-    fontSize: 17,
-    fontWeight: "600",
-  },
   messagesList: {
+    flexGrow: 1,
+    justifyContent: "flex-end" as const,
     paddingHorizontal: 16,
-    paddingVertical: 8,
   },
   timeSeparator: {
     textAlign: "center",

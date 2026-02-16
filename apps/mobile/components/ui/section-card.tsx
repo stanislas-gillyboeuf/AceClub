@@ -46,7 +46,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   card: {
-    padding: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: radii.md,
     borderWidth: 0.5,
   },

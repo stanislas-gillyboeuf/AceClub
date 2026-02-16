@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import { GlassView } from "expo-glass-effect";
 import {
   Calendar,
   Clock,
@@ -71,28 +72,21 @@ export function DiscoverCard({ item }: DiscoverCardProps) {
       {/* Top badges */}
       <View style={styles.topBadges}>
         {item.distance != null && (
-          <View style={styles.distanceBadge}>
+          <GlassView style={styles.distanceBadge}>
             <MapPin size={10} color="#FFFFFF" strokeWidth={2.5} />
             <Text style={styles.distanceText}>
               {formatDistance(item.distance)}
             </Text>
-          </View>
+          </GlassView>
         )}
         <View style={styles.spacer} />
-        <View
-          style={[
-            styles.typeBadge,
-            {
-              backgroundColor:
-                intentType === "match"
-                  ? "rgba(59,130,246,0.85)"
-                  : "rgba(249,115,22,0.85)",
-            },
-          ]}
+        <GlassView
+          style={styles.typeBadge}
+          tintColor={intentType === "match" ? "#3B82F6" : "#F97316"}
         >
           <TypeIcon size={10} color="#FFFFFF" strokeWidth={2.5} />
           <Text style={styles.typeText}>{typeLabel}</Text>
-        </View>
+        </GlassView>
       </View>
 
       {/* Info overlay at bottom */}
@@ -174,7 +168,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 100,
-    backgroundColor: "rgba(255,255,255,0.2)",
   },
   distanceText: {
     color: "#FFFFFF",

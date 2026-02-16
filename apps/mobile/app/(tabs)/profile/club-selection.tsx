@@ -8,11 +8,10 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 import { Image } from "expo-image";
+import { GlassView } from "expo-glass-effect";
 import { Search, X, Building2, Lock, ChevronRight } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useSearchOrganizations, useVerifyPin, useRequestClub } from "@/hooks/use-organization";
@@ -114,43 +113,43 @@ export default function ClubSelection() {
       <Pressable
         onPress={() => handleOrgPress(item)}
         style={({ pressed }) => [
-          styles.orgRow,
-          { borderBottomColor: semanticColors.divider[scheme] },
-          pressed ? { opacity: 0.6 } : undefined,
+          styles.orgCardWrapper,
+          pressed && styles.orgCardPressed,
         ]}
       >
-        {item.logo ? (
-          <Image source={{ uri: item.logo }} style={styles.orgLogo} contentFit="cover" />
-        ) : (
-          <View style={styles.orgLogoPlaceholder}>
-            <Building2 size={18} color={colors.accentGreen} strokeWidth={1.5} />
-          </View>
-        )}
-        <View style={styles.orgInfo}>
-          <Text
-            style={[styles.orgName, { color: semanticColors.labelPrimary[scheme] }]}
-            numberOfLines={1}
-          >
-            {item.name}
-          </Text>
-          {item.address && (
+        <GlassView style={styles.orgCard}>
+          {item.logo ? (
+            <Image source={{ uri: item.logo }} style={styles.orgLogo} contentFit="cover" />
+          ) : (
+            <View style={styles.orgLogoPlaceholder}>
+              <Building2 size={18} color={colors.accentGreen} strokeWidth={1.5} />
+            </View>
+          )}
+          <View style={styles.orgInfo}>
             <Text
-              style={[styles.orgAddress, { color: semanticColors.labelSecondary[scheme] }]}
+              style={[styles.orgName, { color: semanticColors.labelPrimary[scheme] }]}
               numberOfLines={1}
             >
-              {item.address}
+              {item.name}
             </Text>
+            {item.address && (
+              <Text
+                style={[styles.orgAddress, { color: semanticColors.labelSecondary[scheme] }]}
+                numberOfLines={1}
+              >
+                {item.address}
+              </Text>
+            )}
+          </View>
+          {item.pinEnabled && (
+            <Lock size={16} color={semanticColors.labelTertiary[scheme]} strokeWidth={1.5} />
           )}
-        </View>
-        {item.pinEnabled && (
-          <Lock size={16} color={semanticColors.labelTertiary[scheme]} strokeWidth={1.5} />
-        )}
-        {isSelected && <View style={styles.selectedDot} />}
+          {isSelected && <View style={styles.selectedDot} />}
+        </GlassView>
       </Pressable>
     );
   };
 
-  // PIN entry sub-view
   if (pinOrg) {
     return (
       <>
@@ -195,7 +194,6 @@ export default function ClubSelection() {
     );
   }
 
-  // Club request sub-view
   if (showRequest) {
     return (
       <>
@@ -244,7 +242,6 @@ export default function ClubSelection() {
     );
   }
 
-  // Main search view
   return (
     <>
       <Stack.Screen
@@ -257,69 +254,57 @@ export default function ClubSelection() {
         }}
       />
 
-      <KeyboardAvoidingView
+      <FlatList
         style={{ flex: 1, backgroundColor: semanticColors.primaryBackground[scheme] }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        {/* Results */}
-        <FlatList
-          data={organizations}
-          keyExtractor={(item) => item.id}
-          renderItem={renderOrg}
-          contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={
-            isLoading ? (
-              <ActivityIndicator style={styles.loader} color={colors.accentGreen} />
-            ) : (
-              <Text
-                style={[styles.emptyText, { color: semanticColors.labelSecondary[scheme] }]}
-              >
-                Aucun club trouve
-              </Text>
-            )
-          }
-          ListHeaderComponent={
-            <View
-              style={[
-                styles.searchContainer,
-                {
-                  backgroundColor: semanticColors.cardBackground[scheme],
-                  borderColor: semanticColors.borderColor[scheme],
-                },
-              ]}
+        data={organizations}
+        keyExtractor={(item) => item.id}
+        renderItem={renderOrg}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          isLoading ? (
+            <ActivityIndicator style={styles.loader} color={colors.accentGreen} />
+          ) : (
+            <Text
+              style={[styles.emptyText, { color: semanticColors.labelSecondary[scheme] }]}
             >
-              <Search size={18} color={semanticColors.labelTertiary[scheme]} strokeWidth={1.5} />
-              <TextInput
-                value={query}
-                onChangeText={setQuery}
-                placeholder="Rechercher un club..."
-                placeholderTextColor={semanticColors.labelTertiary[scheme]}
-                style={[styles.searchInput, { color: semanticColors.labelPrimary[scheme] }]}
-                autoFocus
-                returnKeyType="search"
-              />
-              {query.length > 0 && (
-                <Pressable onPress={() => setQuery("")} hitSlop={8}>
-                  <X size={16} color={semanticColors.labelTertiary[scheme]} strokeWidth={2} />
-                </Pressable>
-              )}
-            </View>
-          }
-          ListFooterComponent={
-            <Pressable
-              onPress={() => setShowRequest(true)}
-              style={({ pressed }) => [
-                styles.requestRow,
-                pressed ? { opacity: 0.6 } : undefined,
-              ]}
-            >
-              <Text style={styles.requestText}>Proposer mon club</Text>
-              <ChevronRight size={16} color={colors.accentGreen} strokeWidth={2} />
-            </Pressable>
-          }
-        />
-      </KeyboardAvoidingView>
+              Aucun club trouve
+            </Text>
+          )
+        }
+        ListHeaderComponent={
+          <GlassView style={styles.searchContainer}>
+            <Search size={18} color={semanticColors.labelTertiary[scheme]} strokeWidth={1.5} />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Rechercher un club..."
+              placeholderTextColor={semanticColors.labelTertiary[scheme]}
+              style={[styles.searchInput, { color: semanticColors.labelPrimary[scheme] }]}
+              autoFocus
+              returnKeyType="search"
+            />
+            {query.length > 0 && (
+              <Pressable onPress={() => setQuery("")} hitSlop={8}>
+                <X size={16} color={semanticColors.labelTertiary[scheme]} strokeWidth={2} />
+              </Pressable>
+            )}
+          </GlassView>
+        }
+        ListFooterComponent={
+          <Pressable
+            onPress={() => setShowRequest(true)}
+            style={({ pressed }) => [
+              styles.requestRow,
+              pressed && styles.orgCardPressed,
+            ]}
+          >
+            <Text style={styles.requestText}>Proposer mon club</Text>
+            <ChevronRight size={16} color={colors.accentGreen} strokeWidth={2} />
+          </Pressable>
+        }
+      />
     </>
   );
 }
@@ -332,7 +317,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     height: 40,
     borderRadius: radii.sm,
-    borderWidth: 0.5,
     gap: 8,
   },
   searchInput: {
@@ -342,13 +326,22 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: spacing.horizontal,
+    gap: 8,
+    paddingTop: 4,
   },
-  orgRow: {
+  orgCardWrapper: {
+    borderRadius: radii.md,
+  },
+  orgCardPressed: {
+    transform: [{ scale: 0.98 }],
+  },
+  orgCard: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
+    paddingHorizontal: 14,
     gap: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderRadius: radii.md,
   },
   orgLogo: {
     width: 40,

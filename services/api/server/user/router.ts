@@ -21,7 +21,13 @@ userRouter.get("/preferences", getPreferences);
 userRouter.get("/search", zValidator("query", searchUsersValidator), searchUsers);
 userRouter.post(
   "/complete-onboarding",
-  zValidator("json", completeOnboardingValidator),
+  zValidator("json", completeOnboardingValidator, (result, c) => {
+    if (!result.success) {
+      console.log("[complete-onboarding] Validation error:", JSON.stringify(result.error.issues, null, 2));
+      console.log("[complete-onboarding] Received body:", JSON.stringify(result.data));
+      return c.json({ error: "ValidationError", issues: result.error.issues }, 400);
+    }
+  }),
   completeOnboarding,
 );
 userRouter.put("/profile", zValidator("json", updateProfileValidator), updateProfile);

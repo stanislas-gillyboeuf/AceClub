@@ -29,8 +29,8 @@ import { db } from "../../db";
 import { userChallenge } from "../../db/schema/challenge/schema";
 import { userStreak } from "../../db/schema/streak/schema";
 import { eq, lt, and, ne, isNull, or } from "drizzle-orm";
-import { sendPushNotification } from "../../services/apns";
-import { sendNotificationToUser } from "../../services/apns/notification-service";
+import { sendPushNotification } from "../../services/expo-push";
+import { sendNotificationToUser } from "../../services/expo-push/notification-service";
 
 type CronTask =
   | "assign-weekly-challenges"

@@ -32,6 +32,7 @@ export default function Onboarding() {
 
   // PIN
   const [isPinVerified, setIsPinVerified] = useState(false);
+  const [verifiedPin, setVerifiedPin] = useState<string | null>(null);
   const [pinError, setPinError] = useState<string | null>(null);
 
   // Submit
@@ -57,13 +58,13 @@ export default function Onboarding() {
     }
   }, [currentStep, selectedOrganization, isPinVerified, selectedSport, selectedSkillLevel, phoneNumber]);
 
-  const goNext = useCallback(async () => {
+  const goNext = async () => {
     if (currentStep < TOTAL_STEPS - 1) {
       setCurrentStep((s) => s + 1);
     } else {
       await handleSubmit();
     }
-  }, [currentStep]);
+  };
 
   const goBack = useCallback(() => {
     if (currentStep > 1) {
@@ -83,23 +84,27 @@ export default function Onboarding() {
           "profile.jpg",
           "image/jpeg"
         );
-        imageUrl = result.url;
+        imageUrl = result.imageUrl;
       }
 
       const cleanPhone = "+33" + phoneNumber.replace(/\D/g, "");
 
-      await completeOnboarding.mutateAsync({
+      const payload = {
         organizationId: selectedOrganization.id,
         sport: selectedSport,
         skillLevel: selectedSkillLevel,
         phoneNumber: cleanPhone,
-        imageUrl,
-        pin: selectedOrganization.pinEnabled ? undefined : null,
-      });
+        ...(imageUrl && { imageUrl }),
+        ...(verifiedPin && { pin: verifiedPin }),
+      };
+      console.log("[onboarding] Sending payload:", JSON.stringify(payload, null, 2));
+
+      await completeOnboarding.mutateAsync(payload);
 
       await authClient.updateUser({ onboardingCompleted: true });
       router.replace("/(tabs)/feed");
-    } catch (error) {
+    } catch (error: any) {
+      console.log("[onboarding] Error:", error.message ?? error);
       Alert.alert("Erreur", "Une erreur est survenue. Reessaie.");
     } finally {
       setIsSubmitting(false);
@@ -110,8 +115,9 @@ export default function Onboarding() {
     setSelectedOrganization(org);
   }, []);
 
-  const handlePinVerified = useCallback(() => {
+  const handlePinVerified = useCallback((pin: string) => {
     setIsPinVerified(true);
+    setVerifiedPin(pin);
     setPinError(null);
   }, []);
 

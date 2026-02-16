@@ -7,16 +7,19 @@ import {
   Text,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { GlassView } from "expo-glass-effect";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
-import { Plus, ArrowUp, Mic, Trash2 } from "lucide-react-native";
+import { Image, ArrowUp, Mic, Trash2 } from "lucide-react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   runOnJS,
+  interpolate,
 } from "react-native-reanimated";
+import { useReanimatedKeyboardAnimation } from "react-native-keyboard-controller";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
 import { InputBarReplyPreview } from "./ReplyPreview";
@@ -41,6 +44,7 @@ export function ChatBottomBar({
 }: ChatBottomBarProps) {
   const scheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const { progress: keyboardProgress } = useReanimatedKeyboardAnimation();
   const [text, setText] = useState("");
   const inputRef = useRef<TextInput>(null);
   const hasText = text.trim().length > 0;
@@ -134,28 +138,28 @@ export function ChatBottomBar({
     transform: [{ translateX: recorderOffset.value }],
   }));
 
+  // Animate bottom padding: full safe area when keyboard closed, minimal when open
+  const animatedWrapperStyle = useAnimatedStyle(() => ({
+    paddingBottom: interpolate(
+      keyboardProgress.value,
+      [0, 1],
+      [Math.max(insets.bottom, 8), 8],
+    ),
+  }));
+
   return (
-    <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+    <Animated.View style={[styles.wrapper, animatedWrapperStyle]}>
       {replyingTo && (
         <InputBarReplyPreview message={replyingTo} onCancel={onCancelReply} />
       )}
       <View style={styles.container}>
-        {/* Plus button for image picker */}
         <Pressable onPress={handlePickImage} style={styles.plusButton}>
-          <View style={[styles.plusCircle, { backgroundColor: scheme === "dark" ? "#38383A" : "#C7C7CC" }]}>
-            <Plus size={18} color={scheme === "dark" ? colors.white : colors.white} strokeWidth={2.5} />
-          </View>
+          <GlassView style={styles.plusCircle}>
+            <Image size={18} color={semanticColors.labelPrimary[scheme]} strokeWidth={2} />
+          </GlassView>
         </Pressable>
 
-        {/* Input area */}
-        <View
-          style={[
-            styles.inputRow,
-            {
-              backgroundColor: scheme === "dark" ? "#1C1C1E" : "#F2F2F7",
-            },
-          ]}
-        >
+        <GlassView style={styles.inputRow}>
           {recorder.isRecording ? (
             <View style={styles.recordingIndicator}>
               <Trash2 size={18} color={colors.red500} />
@@ -182,17 +186,15 @@ export function ChatBottomBar({
             />
           )}
 
-          {/* Send / Mic button inside input row */}
           {hasText ? (
             <Pressable onPress={handleSendText} style={styles.sendButtonInline}>
-              <View style={styles.sendCircle}>
+              <GlassView style={styles.sendCircle} tintColor={colors.accentGreen}>
                 <ArrowUp size={18} color={colors.white} strokeWidth={2.5} />
-              </View>
+              </GlassView>
             </Pressable>
           ) : null}
-        </View>
+        </GlassView>
 
-        {/* Mic button when no text (outside input) */}
         {!hasText && (
           <GestureDetector gesture={combinedGesture}>
             <Animated.View style={[styles.micButton, buttonScale, buttonOffset]}>
@@ -201,7 +203,7 @@ export function ChatBottomBar({
           </GestureDetector>
         )}
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -215,11 +217,13 @@ const styles = StyleSheet.create({
   wrapper: {
     paddingHorizontal: 8,
     paddingTop: 6,
+      backgroundColor: "transparent",
   },
   container: {
     flexDirection: "row",
     alignItems: "flex-end",
     gap: 6,
+    backgroundColor: "transparent",
   },
   plusButton: {
     paddingBottom: 4,
@@ -255,7 +259,6 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
   },

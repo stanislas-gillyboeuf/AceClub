@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { GlassView } from "expo-glass-effect";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -97,14 +98,13 @@ export default function DiscoverScreen() {
     >
       {!isDiscoveryRestricted && (
         <View style={styles.filterBar}>
-          <Pressable
-            style={[styles.filterButton, { backgroundColor: semanticColors.cardBackground[scheme] }]}
-            onPress={() => setShowRadiusMenu(true)}
-          >
-            <SlidersHorizontal size={16} color={colors.accentGreen} strokeWidth={2} />
-            <Text style={[styles.filterText, { color: semanticColors.labelPrimary[scheme] }]}>
-              {selectedRadius ? `${selectedRadius} km` : "Tous"}
-            </Text>
+          <Pressable onPress={() => setShowRadiusMenu(true)}>
+            <GlassView style={styles.filterButton}>
+              <SlidersHorizontal size={16} color={colors.accentGreen} strokeWidth={2} />
+              <Text style={[styles.filterText, { color: semanticColors.labelPrimary[scheme] }]}>
+                {selectedRadius ? `${selectedRadius} km` : "Tous"}
+              </Text>
+            </GlassView>
           </Pressable>
         </View>
       )}
@@ -150,12 +150,7 @@ export default function DiscoverScreen() {
         onRequestClose={() => setShowRadiusMenu(false)}
       >
         <Pressable style={styles.menuOverlay} onPress={() => setShowRadiusMenu(false)}>
-          <View
-            style={[
-              styles.menuContainer,
-              { backgroundColor: semanticColors.cardBackground[scheme] },
-            ]}
-          >
+          <GlassView style={styles.menuContainer}>
             <Text style={[styles.menuTitle, { color: semanticColors.labelPrimary[scheme] }]}>
               Rayon de recherche
             </Text>
@@ -186,7 +181,7 @@ export default function DiscoverScreen() {
                 )}
               </Pressable>
             ))}
-          </View>
+          </GlassView>
         </Pressable>
       </Modal>
     </GestureHandlerRootView>
@@ -215,11 +210,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
   },
   filterText: {
     fontSize: 14,
@@ -237,11 +227,6 @@ const styles = StyleSheet.create({
     maxWidth: 300,
     borderRadius: 16,
     padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 24,
-    elevation: 10,
   },
   menuTitle: {
     fontSize: 17,

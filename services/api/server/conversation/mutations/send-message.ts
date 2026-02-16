@@ -10,7 +10,7 @@ import { user } from "../../../db/schema/auth/schema";
 import { eq, and, ne, sql } from "drizzle-orm";
 import { ulid } from "ulid";
 import { redis, CHAT_CHANNEL } from "../../../lib/redis";
-import { sendNotificationToUser } from "../../../services/apns/notification-service";
+import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
 import { isUserConnectedWs } from "../../ws/bun-chat-handler";
 
 export const sendMessage = async (c: Context<HonoContext>) => {

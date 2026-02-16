@@ -8,7 +8,7 @@ export default function ChatLayout() {
         name="[conversationId]"
         options={{
           title: "",
-          headerBlurEffect: "systemMaterial",
+          headerTransparent: true,
         }}
       />
       <Stack.Screen
@@ -18,7 +18,6 @@ export default function ChatLayout() {
           title: "Nouveau message",
           sheetGrabberVisible: true,
           headerTransparent: true,
-
         }}
       />
     </Stack>

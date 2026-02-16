@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import { GlassView } from "expo-glass-effect";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -232,27 +233,29 @@ export function DiscoverCardStack({
       {/* Action buttons */}
       <View style={[styles.actionButtons, { paddingBottom: insets.bottom + 12 }]}>
         <Pressable
-          style={[styles.passButton, { backgroundColor: semanticColors.cardBackground[scheme] }]}
           onPress={handlePassPress}
           disabled={!topCard || isSwiping}
         >
-          <X
-            size={24}
-            color={!topCard || isSwiping ? semanticColors.labelTertiary[scheme] : semanticColors.labelSecondary[scheme]}
-            strokeWidth={2.5}
-          />
+          <GlassView style={styles.passButton}>
+            <X
+              size={24}
+              color={!topCard || isSwiping ? semanticColors.labelTertiary[scheme] : semanticColors.labelSecondary[scheme]}
+              strokeWidth={2.5}
+            />
+          </GlassView>
         </Pressable>
 
         <Pressable
-          style={[styles.likeButton, { backgroundColor: colors.accentGreen }]}
           onPress={handleLikePress}
           disabled={!topCard || isSwiping}
         >
-          <MaterialCommunityIcons
-            name="tennis"
-            size={30}
-            color={!topCard || isSwiping ? "rgba(255,255,255,0.5)" : "#FFFFFF"}
-          />
+          <GlassView style={styles.likeButton} tintColor={colors.accentGreen}>
+            <MaterialCommunityIcons
+              name="tennis"
+              size={30}
+              color={!topCard || isSwiping ? "rgba(255,255,255,0.5)" : "#FFFFFF"}
+            />
+          </GlassView>
         </Pressable>
       </View>
     </View>
@@ -322,11 +325,6 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
   },
   likeButton: {
     width: 72,
@@ -334,10 +332,5 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: colors.accentGreen,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 5,
   },
 });

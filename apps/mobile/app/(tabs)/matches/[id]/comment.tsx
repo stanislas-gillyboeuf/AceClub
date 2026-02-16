@@ -7,7 +7,6 @@ import {
   Alert,
   StyleSheet,
   Platform,
-  KeyboardAvoidingView,
   ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
@@ -136,10 +135,8 @@ export default function CommentScreen() {
         </>
       )}
 
-      <KeyboardAvoidingView
+      <View
         style={[styles.root, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={100}
       >
         <View style={styles.content}>
           <TextInput
@@ -189,7 +186,7 @@ export default function CommentScreen() {
             </View>
           </View>
         )}
-      </KeyboardAvoidingView>
+      </View>
     </>
   );
 }

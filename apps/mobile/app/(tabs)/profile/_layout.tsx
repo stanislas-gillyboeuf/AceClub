@@ -44,7 +44,6 @@ export default function ProfileLayout() {
           title: "Sélectionner un club",
           presentation: "formSheet",
           sheetGrabberVisible: true,
-
         }}
       />
     </Stack>

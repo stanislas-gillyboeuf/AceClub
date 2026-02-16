@@ -55,6 +55,7 @@
       "expo-secure-store",
       "expo-web-browser",
       "expo-audio",
+      "expo-notifications",
       "expo-apple-authentication",
       ["@react-native-google-signin/google-signin", {
         "iosUrlScheme": "com.googleusercontent.apps.131274084335-lv3cs6n1eqajr5letmpgm57alipg51gb"
