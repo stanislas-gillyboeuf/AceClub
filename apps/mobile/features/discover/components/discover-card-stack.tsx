@@ -10,6 +10,7 @@ import Animated, {
   Extrapolation,
 } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { X, HandMetal } from "lucide-react-native";
 import { DiscoverCard } from "./discover-card";
@@ -47,6 +48,7 @@ export function DiscoverCardStack({
   onCreateIntent,
 }: DiscoverCardStackProps) {
   const scheme = useColorScheme();
+  const insets = useSafeAreaInsets();
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
 
@@ -219,7 +221,7 @@ export function DiscoverCardStack({
       </View>
 
       {/* Action buttons */}
-      <View style={styles.actionButtons}>
+      <View style={[styles.actionButtons, { paddingBottom: insets.bottom + 12 }]}>
         <Pressable
           style={[styles.passButton, { backgroundColor: semanticColors.cardBackground[scheme] }]}
           onPress={handlePassPress}
@@ -302,7 +304,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 48,
     paddingHorizontal: 20,
-    paddingBottom: 20,
     paddingTop: 12,
   },
   passButton: {

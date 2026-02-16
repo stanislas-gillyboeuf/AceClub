@@ -94,7 +94,6 @@ export default function DiscoverScreen() {
     <GestureHandlerRootView
       style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
     >
-      {/* Radius filter button */}
       {!isDiscoveryRestricted && (
         <View style={styles.filterBar}>
           <Pressable
