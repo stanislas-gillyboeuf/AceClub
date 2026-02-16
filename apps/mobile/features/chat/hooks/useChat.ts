@@ -1,141 +1,77 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { conversationService } from "@/services/conversation";
-import { e2eeService } from "@/services/e2ee";
-import { e2eeManager, E2EEError } from "@/lib/e2ee-manager";
-import { wsManager } from "@/lib/websocket-manager";
-import type { Conversation, Message } from "@/types/conversation";
-import type { ChatMessage, MessageSendStatus } from "../components/MessageBubble";
-
-function generateId(): string {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
-function apiMessageToChatMessage(msg: any, currentUserId: string): ChatMessage {
-  const senderId = msg.senderId ?? msg.sender?.id ?? "";
-  return {
-    id: msg.id,
-    conversationId: msg.conversationId,
-    senderId,
-    content: msg.content ?? "",
-    type: msg.type ?? msg.messageType ?? "text",
-    isEncrypted: msg.isEncrypted ?? false,
-    clientMessageId: msg.clientMessageId ?? null,
-    attachmentUrl: msg.attachmentUrl ?? null,
-    attachmentDuration: msg.attachmentDuration ?? null,
-    attachmentWidth: msg.attachmentWidth ?? null,
-    attachmentHeight: msg.attachmentHeight ?? null,
-    createdAt: msg.createdAt,
-    sender: msg.sender ?? null,
-    isFromMe: msg.isFromMe ?? senderId === currentUserId,
-    sendStatus: "sent" as MessageSendStatus,
-  };
-}
-
-// Module-level flag: public key only needs to be uploaded once per app session
-let localKeyUploaded = false;
+import type { Conversation } from "@/types/conversation";
+import type { ChatMessage } from "../types";
+import { useMessages } from "./useMessages";
+import { useE2EE } from "./useE2EE";
+import { useMessageSend, apiMessageToChatMessage } from "./useMessageSend";
+import { useChatWebSocket } from "./useChatWebSocket";
+import { useReactions } from "./useReactions";
+import { useReplyState } from "./useReplyState";
 
 export function useChat(conversation: Conversation, currentUserId: string) {
   const queryClient = useQueryClient();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSending, setIsSending] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isOtherUserTyping, setIsOtherUserTyping] = useState(false);
-  const [hasMoreMessages, setHasMoreMessages] = useState(true);
-  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const participantPublicKeyRef = useRef<string | null>(null);
-  const messagesRef = useRef(messages);
-  messagesRef.current = messages;
 
-  // Ensure local key pair exists and is uploaded to server
-  const ensureE2EEReady = useCallback(async () => {
-    await e2eeManager.init(); // Generates key pair if none exists
+  const msgState = useMessages();
+  const e2ee = useE2EE(conversation);
+  const reply = useReplyState();
 
-    // Upload our public key to server (once per session)
-    if (!localKeyUploaded && e2eeManager.publicKeyBase64) {
-      try {
-        await e2eeService.uploadPublicKey({ publicKey: e2eeManager.publicKeyBase64 });
-        localKeyUploaded = true;
-      } catch {
-        // Non-blocking — will retry on next conversation open
-      }
-    }
-  }, []);
+  const send = useMessageSend(conversation, currentUserId, {
+    addOptimistic: msgState.addOptimistic,
+    confirmMessage: msgState.confirmMessage,
+    failMessage: msgState.failMessage,
+    encryptContent: e2ee.encryptContent,
+  });
 
-  // Pre-fetch participant's public key for E2EE
-  const prefetchPublicKey = useCallback(async () => {
-    if (participantPublicKeyRef.current) return;
-    if (conversation.type !== "direct" && conversation.type !== "match") return;
-    const otherUserId = conversation.otherParticipants[0]?.user?.id;
-    if (!otherUserId) return;
+  const ws = useChatWebSocket(conversation, currentUserId, {
+    addIncoming: msgState.addIncoming,
+    mergeMessages: msgState.mergeMessages,
+    markAllAsRead: msgState.markAllAsRead,
+    updateMessageReactions: msgState.updateMessageReactions,
+    messagesRef: msgState.messagesRef,
+    decryptMessage: e2ee.decryptMessage,
+    retryFailedMessage: send.retryFailedMessage,
+  });
 
-    try {
-      const response = await e2eeService.getPublicKey(otherUserId);
-      participantPublicKeyRef.current = response.publicKey;
-    } catch {
-      // Other user has no E2EE keys yet — encryption/decryption disabled for now
-    }
-  }, [conversation]);
+  const reactions = useReactions(conversation.id, currentUserId, {
+    updateMessageReactions: msgState.updateMessageReactions,
+  });
 
-  // Decrypt a message if needed
-  const decryptIfNeeded = useCallback(
-    async (msg: ChatMessage): Promise<ChatMessage> => {
-      if (!msg.isEncrypted || !msg.content) return msg;
-      try {
-        const theirKey = participantPublicKeyRef.current;
-        if (!theirKey) {
-          return { ...msg, content: "[Message chiffré - impossible à déchiffrer]" };
-        }
-        const key = await e2eeManager.deriveConversationKey(theirKey, msg.conversationId);
-        const decrypted = await e2eeManager.decryptMessage(msg.content, key);
-        return { ...msg, content: decrypted };
-      } catch {
-        return { ...msg, content: "[Message chiffré - impossible à déchiffrer]" };
-      }
-    },
-    [],
-  );
+  // Use refs to hold latest function references, so callbacks stay stable
+  const e2eeRef = useRef(e2ee);
+  e2eeRef.current = e2ee;
+  const setErrorMessageRef = useRef(send.setErrorMessage);
+  setErrorMessageRef.current = send.setErrorMessage;
 
-  // Load messages
+  // Load messages — stable reference (only depends on conversation.id + currentUserId)
   const loadMessages = useCallback(async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
-
     try {
-      await ensureE2EEReady();
-      await prefetchPublicKey();
+      await e2eeRef.current.ensureReady();
+      await e2eeRef.current.prefetchPublicKey();
 
       const loaded = await conversationService.listMessages(conversation.id);
       const chatMessages = await Promise.all(
         loaded
           .map((m) => apiMessageToChatMessage(m, currentUserId))
-          .map((m) => decryptIfNeeded(m)),
+          .map((m) => e2eeRef.current.decryptMessage(m)),
       );
 
-      setMessages(chatMessages);
-      setHasMoreMessages(loaded.length >= 50);
-
-      // Mark as read
+      msgState.setMessages(chatMessages);
+      msgState.setHasMoreMessages(loaded.length >= 50);
       conversationService.markRead(conversation.id).catch(() => {});
     } catch (error) {
-      setErrorMessage((error as Error).message);
-    } finally {
-      setIsLoading(false);
+      setErrorMessageRef.current((error as Error).message);
     }
-  }, [conversation.id, currentUserId, ensureE2EEReady, prefetchPublicKey, decryptIfNeeded]);
+  }, [conversation.id, currentUserId, msgState.setMessages, msgState.setHasMoreMessages]);
 
   // Load more (pagination)
   const loadMoreMessages = useCallback(async () => {
-    if (!hasMoreMessages || isLoading) return;
-    const oldest = messagesRef.current[messagesRef.current.length - 1];
+    if (!msgState.hasMoreMessages) return;
+    const oldest =
+      msgState.messagesRef.current[msgState.messagesRef.current.length - 1];
     if (!oldest) return;
 
-    setIsLoading(true);
     try {
       const older = await conversationService.listMessages(conversation.id, {
         before: oldest.createdAt,
@@ -143,384 +79,140 @@ export function useChat(conversation: Conversation, currentUserId: string) {
       });
 
       if (older.length === 0) {
-        setHasMoreMessages(false);
+        msgState.setHasMoreMessages(false);
       } else {
         const chatMessages = await Promise.all(
           older
             .map((m) => apiMessageToChatMessage(m, currentUserId))
-            .map((m) => decryptIfNeeded(m)),
+            .map((m) => e2eeRef.current.decryptMessage(m)),
         );
-        setMessages((prev) => [...prev, ...chatMessages]);
+        msgState.mergeMessages(chatMessages);
       }
     } catch (error) {
-      setErrorMessage((error as Error).message);
-    } finally {
-      setIsLoading(false);
+      setErrorMessageRef.current((error as Error).message);
     }
-  }, [conversation.id, currentUserId, hasMoreMessages, isLoading, decryptIfNeeded]);
-
-  // Send text message
-  const sendMessage = useCallback(
-    async (content: string) => {
-      const trimmed = content.trim();
-      if (!trimmed) return;
-
-      const clientMessageId = generateId();
-      const optimistic: ChatMessage = {
-        id: clientMessageId,
-        conversationId: conversation.id,
-        senderId: currentUserId,
-        content: trimmed,
-        type: "text",
-        isEncrypted: false,
-        clientMessageId,
-        createdAt: new Date().toISOString(),
-        isFromMe: true,
-        sendStatus: "sending",
-      };
-
-      setMessages((prev) => [optimistic, ...prev]);
-      setIsSending(true);
-
-      try {
-        // Encrypt if possible
-        let finalContent = trimmed;
-        let isEncrypted = false;
-
-        const shouldEncrypt =
-          (conversation.type === "direct" || conversation.type === "match") &&
-          e2eeManager.hasKeyPair &&
-          conversation.otherParticipants[0]?.user?.id;
-
-        if (shouldEncrypt) {
-          try {
-            const otherUserId = conversation.otherParticipants[0].user.id;
-            let theirKey = participantPublicKeyRef.current;
-            if (!theirKey) {
-              const response = await e2eeService.getPublicKey(otherUserId);
-              theirKey = response.publicKey;
-              participantPublicKeyRef.current = theirKey;
-            }
-            const key = await e2eeManager.deriveConversationKey(theirKey, conversation.id);
-            finalContent = await e2eeManager.encryptMessage(trimmed, key);
-            isEncrypted = true;
-          } catch {
-            // Fallback to unencrypted
-          }
-        }
-
-        const sent = await conversationService.sendMessage(conversation.id, {
-          content: finalContent,
-          clientMessageId,
-          isEncrypted,
-          type: "text",
-        });
-
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.clientMessageId === clientMessageId
-              ? {
-                  ...apiMessageToChatMessage(sent, currentUserId),
-                  content: trimmed, // Keep plaintext for display
-                  sendStatus: "sent" as MessageSendStatus,
-                }
-              : m,
-          ),
-        );
-      } catch (error) {
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.clientMessageId === clientMessageId
-              ? { ...m, sendStatus: "failed" as MessageSendStatus }
-              : m,
-          ),
-        );
-        setErrorMessage((error as Error).message);
-      } finally {
-        setIsSending(false);
-      }
-    },
-    [conversation, currentUserId],
-  );
-
-  // Send voice message
-  const sendVoiceMessage = useCallback(
-    async (fileUri: string, duration: number) => {
-      const clientMessageId = generateId();
-      const durationInt = Math.ceil(duration);
-
-      const optimistic: ChatMessage = {
-        id: clientMessageId,
-        conversationId: conversation.id,
-        senderId: currentUserId,
-        content: "",
-        type: "voice",
-        isEncrypted: false,
-        clientMessageId,
-        createdAt: new Date().toISOString(),
-        isFromMe: true,
-        sendStatus: "sending",
-        attachmentDuration: durationInt,
-      };
-
-      setMessages((prev) => [optimistic, ...prev]);
-      setIsSending(true);
-
-      try {
-        const uploaded = await conversationService.uploadAttachment(
-          conversation.id,
-          fileUri,
-          `${clientMessageId}.m4a`,
-          "audio/m4a",
-        );
-
-        const sent = await conversationService.sendMessage(conversation.id, {
-          content: "",
-          clientMessageId,
-          type: "voice",
-          attachmentUrl: uploaded.url,
-          attachmentDuration: durationInt,
-        });
-
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.clientMessageId === clientMessageId
-              ? { ...apiMessageToChatMessage(sent, currentUserId), sendStatus: "sent" as MessageSendStatus }
-              : m,
-          ),
-        );
-      } catch (error) {
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.clientMessageId === clientMessageId
-              ? { ...m, sendStatus: "failed" as MessageSendStatus }
-              : m,
-          ),
-        );
-        setErrorMessage((error as Error).message);
-      } finally {
-        setIsSending(false);
-      }
-    },
-    [conversation, currentUserId],
-  );
-
-  // Send image message
-  const sendImageMessage = useCallback(
-    async (fileUri: string, width: number, height: number) => {
-      const clientMessageId = generateId();
-
-      const optimistic: ChatMessage = {
-        id: clientMessageId,
-        conversationId: conversation.id,
-        senderId: currentUserId,
-        content: "",
-        type: "image",
-        isEncrypted: false,
-        clientMessageId,
-        createdAt: new Date().toISOString(),
-        isFromMe: true,
-        sendStatus: "sending",
-        attachmentUrl: fileUri, // Show local preview
-        attachmentWidth: width,
-        attachmentHeight: height,
-      };
-
-      setMessages((prev) => [optimistic, ...prev]);
-      setIsSending(true);
-
-      try {
-        const uploaded = await conversationService.uploadAttachment(
-          conversation.id,
-          fileUri,
-          `${clientMessageId}.jpg`,
-          "image/jpeg",
-        );
-
-        const sent = await conversationService.sendMessage(conversation.id, {
-          content: "",
-          clientMessageId,
-          type: "image",
-          attachmentUrl: uploaded.url,
-          attachmentWidth: width,
-          attachmentHeight: height,
-        });
-
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.clientMessageId === clientMessageId
-              ? { ...apiMessageToChatMessage(sent, currentUserId), sendStatus: "sent" as MessageSendStatus }
-              : m,
-          ),
-        );
-      } catch (error) {
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.clientMessageId === clientMessageId
-              ? { ...m, sendStatus: "failed" as MessageSendStatus }
-              : m,
-          ),
-        );
-        setErrorMessage((error as Error).message);
-      } finally {
-        setIsSending(false);
-      }
-    },
-    [conversation, currentUserId],
-  );
+  }, [conversation.id, currentUserId, msgState.hasMoreMessages, msgState.messagesRef, msgState.setHasMoreMessages, msgState.mergeMessages]);
 
   // Delete message
   const deleteMessage = useCallback(
     async (message: ChatMessage) => {
-      setMessages((prev) => prev.filter((m) => m.id !== message.id));
-
+      msgState.removeMessage(message.id);
       try {
         await conversationService.deleteMessage(conversation.id, message.id);
       } catch (error) {
-        // Restore on failure
-        setMessages((prev) => {
-          const restored = [...prev, message];
-          restored.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-          return restored;
-        });
-        setErrorMessage((error as Error).message);
+        msgState.restoreMessage(message);
+        setErrorMessageRef.current((error as Error).message);
       }
     },
-    [conversation.id],
+    [conversation.id, msgState.removeMessage, msgState.restoreMessage],
   );
 
-  // Retry failed message
-  const retryFailedMessage = useCallback(
-    async (message: ChatMessage) => {
-      if (message.sendStatus !== "failed") return;
-      setMessages((prev) => prev.filter((m) => m.id !== message.id));
-      await sendMessage(message.content);
+  // Send with reply support
+  const sendMessage = useCallback(
+    (content: string) => {
+      const replyToId = reply.replyingTo?.id;
+      const replyTo = reply.replyingTo
+        ? {
+            id: reply.replyingTo.id,
+            senderId: reply.replyingTo.senderId,
+            senderName:
+              reply.replyingTo.sender?.name || "Unknown",
+            content: reply.replyingTo.content.substring(0, 100),
+            messageType: reply.replyingTo.type,
+          }
+        : undefined;
+
+      send.sendTextMessage(content, replyToId, replyTo);
+      reply.clearReply();
     },
-    [sendMessage],
+    [send.sendTextMessage, reply.replyingTo, reply.clearReply],
   );
 
-  // Send typing indicator
-  const sendTypingIndicator = useCallback(() => {
-    wsManager.sendTypingIndicator(conversation.id);
-  }, [conversation.id]);
-
-  // WebSocket listener
-  useEffect(() => {
-    const unsubscribe = wsManager.subscribe(async (event) => {
-      switch (event.type) {
-        case "reconnected": {
-          // Fetch missed messages
-          conversationService
-            .listMessages(conversation.id)
-            .then(async (recent) => {
-              const existingIds = new Set(messagesRef.current.map((m) => m.id));
-              const toDecrypt = recent
-                .filter((m) => !existingIds.has(m.id))
-                .map((m) => apiMessageToChatMessage(m, currentUserId));
-              if (toDecrypt.length === 0) return;
-              const newMsgs = await Promise.all(toDecrypt.map((m) => decryptIfNeeded(m)));
-              setMessages((prev) => {
-                const merged = [...newMsgs, ...prev];
-                merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-                return merged;
-              });
-            })
-            .catch(() => {});
-
-          // Retry failed messages
-          const failed = messagesRef.current.filter((m) => m.sendStatus === "failed" && m.isFromMe);
-          for (const msg of failed) {
-            retryFailedMessage(msg);
+  const sendVoiceMessage = useCallback(
+    (fileUri: string, duration: number) => {
+      const replyToId = reply.replyingTo?.id;
+      const replyTo = reply.replyingTo
+        ? {
+            id: reply.replyingTo.id,
+            senderId: reply.replyingTo.senderId,
+            senderName:
+              reply.replyingTo.sender?.name || "Unknown",
+            content: reply.replyingTo.content.substring(0, 100),
+            messageType: reply.replyingTo.type,
           }
-          break;
-        }
+        : undefined;
 
-        case "newMessage": {
-          const msg = event.message;
-          if (msg.conversationId !== conversation.id) break;
+      send.sendVoiceMessage(fileUri, duration, replyToId, replyTo);
+      reply.clearReply();
+    },
+    [send.sendVoiceMessage, reply.replyingTo, reply.clearReply],
+  );
 
-          // Dedup by clientMessageId
-          if (msg.clientMessageId && messagesRef.current.some((m) => m.clientMessageId === msg.clientMessageId)) {
-            break;
+  const sendImageMessage = useCallback(
+    (fileUri: string, width: number, height: number) => {
+      const replyToId = reply.replyingTo?.id;
+      const replyTo = reply.replyingTo
+        ? {
+            id: reply.replyingTo.id,
+            senderId: reply.replyingTo.senderId,
+            senderName:
+              reply.replyingTo.sender?.name || "Unknown",
+            content: reply.replyingTo.content.substring(0, 100),
+            messageType: reply.replyingTo.type,
           }
-          // Dedup by id
-          if (messagesRef.current.some((m) => m.id === msg.id)) break;
+        : undefined;
 
-          let chatMsg = apiMessageToChatMessage(msg, currentUserId);
-          chatMsg = await decryptIfNeeded(chatMsg);
-          setMessages((prev) => [chatMsg, ...prev]);
-
-          // Mark as read
-          conversationService.markRead(conversation.id).catch(() => {});
-          break;
-        }
-
-        case "typing": {
-          if (event.conversationId !== conversation.id) break;
-          const isOther = conversation.otherParticipants.some((p) => p.user.id === event.userId);
-          if (!isOther) break;
-
-          setIsOtherUserTyping(true);
-          if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
-          typingTimerRef.current = setTimeout(() => setIsOtherUserTyping(false), 3000);
-          break;
-        }
-
-        case "messageRead": {
-          if (event.conversationId !== conversation.id) break;
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.isFromMe && m.sendStatus === "sent" ? { ...m, sendStatus: "read" as MessageSendStatus } : m,
-            ),
-          );
-          break;
-        }
-      }
-    });
-
-    return () => {
-      unsubscribe();
-      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
-    };
-  }, [conversation, currentUserId, decryptIfNeeded, retryFailedMessage]);
+      send.sendImageMessage(fileUri, width, height, replyToId, replyTo);
+      reply.clearReply();
+    },
+    [send.sendImageMessage, reply.replyingTo, reply.clearReply],
+  );
 
   // Mute / Delete conversation
   const toggleMute = useCallback(async () => {
     try {
-      await conversationService.muteConversation(conversation.id, !conversation.isMuted);
+      await conversationService.muteConversation(
+        conversation.id,
+        !conversation.isMuted,
+      );
       queryClient.invalidateQueries({ queryKey: ["conversation", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["conversation", conversation.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["conversation", conversation.id],
+      });
     } catch (error) {
-      setErrorMessage((error as Error).message);
+      setErrorMessageRef.current((error as Error).message);
     }
-  }, [conversation, queryClient]);
+  }, [conversation.id, conversation.isMuted, queryClient]);
 
   const deleteConversation = useCallback(async () => {
     try {
       await conversationService.deleteConversation(conversation.id);
       queryClient.invalidateQueries({ queryKey: ["conversation", "list"] });
     } catch (error) {
-      setErrorMessage((error as Error).message);
+      setErrorMessageRef.current((error as Error).message);
     }
   }, [conversation.id, queryClient]);
 
   return {
-    messages,
-    isLoading,
-    isSending,
-    errorMessage,
-    isOtherUserTyping,
-    hasMoreMessages,
+    messages: msgState.messages,
+    isOtherUserTyping: ws.isOtherUserTyping,
+    hasMoreMessages: msgState.hasMoreMessages,
     loadMessages,
     loadMoreMessages,
     sendMessage,
     sendVoiceMessage,
     sendImageMessage,
     deleteMessage,
-    retryFailedMessage,
-    sendTypingIndicator,
+    retryFailedMessage: send.retryFailedMessage,
+    sendTypingIndicator: ws.sendTypingIndicator,
     toggleMute,
     deleteConversation,
-    setErrorMessage,
+    errorMessage: send.errorMessage,
+    setErrorMessage: send.setErrorMessage,
+    // New: reply & reactions
+    replyingTo: reply.replyingTo,
+    setReplyingTo: reply.setReplyingTo,
+    clearReply: reply.clearReply,
+    toggleReaction: reactions.toggleReaction,
   };
 }

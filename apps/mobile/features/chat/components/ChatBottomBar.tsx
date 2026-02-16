@@ -19,12 +19,16 @@ import Animated, {
 } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
+import { InputBarReplyPreview } from "./ReplyPreview";
+import type { ChatMessage } from "../types";
 
 interface ChatBottomBarProps {
   onSendText: (text: string) => void;
   onSendVoice: (fileUri: string, duration: number) => void;
   onSendImage: (fileUri: string, width: number, height: number) => void;
   onTyping: () => void;
+  replyingTo: ChatMessage | null;
+  onCancelReply: () => void;
 }
 
 export function ChatBottomBar({
@@ -32,6 +36,8 @@ export function ChatBottomBar({
   onSendVoice,
   onSendImage,
   onTyping,
+  replyingTo,
+  onCancelReply,
 }: ChatBottomBarProps) {
   const scheme = useColorScheme();
   const insets = useSafeAreaInsets();
@@ -130,6 +136,9 @@ export function ChatBottomBar({
 
   return (
     <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+      {replyingTo && (
+        <InputBarReplyPreview message={replyingTo} onCancel={onCancelReply} />
+      )}
       <View style={styles.container}>
         {/* Plus button for image picker */}
         <Pressable onPress={handlePickImage} style={styles.plusButton}>

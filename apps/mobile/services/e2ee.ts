@@ -9,7 +9,7 @@ export const e2eeService = {
     api.get<KeyBackupResponse>("/e2ee/key-backup"),
 
   uploadPublicKey: (data: UploadKeysRequest) =>
-    api.post<void>("/e2ee/public-key", data),
+    api.post<void>("/e2ee/keys", data),
 
   uploadKeyBackup: (data: UploadKeyBackupRequest) =>
     api.post<void>("/e2ee/key-backup", data),

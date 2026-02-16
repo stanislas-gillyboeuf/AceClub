@@ -9,6 +9,7 @@ export const sendMessageValidator = z.object({
   attachmentDuration: z.number().int().optional(),
   attachmentWidth: z.number().int().optional(),
   attachmentHeight: z.number().int().optional(),
+  replyToId: z.string().optional(),
 });
 
 export const listMessagesValidator = z.object({
@@ -22,4 +23,12 @@ export const muteConversationValidator = z.object({
 
 export const findOrCreateConversationValidator = z.object({
   participantId: z.string().min(1),
+});
+
+export const addReactionValidator = z.object({
+  emoji: z.string().min(1).max(50),
+});
+
+export const removeReactionValidator = z.object({
+  emoji: z.string().min(1).max(50),
 });

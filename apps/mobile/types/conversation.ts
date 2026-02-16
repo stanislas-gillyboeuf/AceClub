@@ -32,6 +32,21 @@ export interface ConversationParticipant {
   user: ParticipantUser;
 }
 
+export interface ReplyTo {
+  id: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+  messageType: string;
+}
+
+export interface ReactionGroup {
+  emoji: string;
+  count: number;
+  users: { id: string; name: string }[];
+  hasReacted: boolean;
+}
+
 export interface Message {
   id: string;
   conversationId: string;
@@ -46,6 +61,9 @@ export interface Message {
   attachmentHeight?: number | null;
   createdAt: string;
   sender?: { id: string; name: string; image?: string | null } | null;
+  replyToId?: string | null;
+  replyTo?: ReplyTo | null;
+  reactions?: ReactionGroup[];
 }
 
 export interface Conversation {
@@ -70,6 +88,7 @@ export interface SendMessageRequest {
   attachmentDuration?: number | null;
   attachmentWidth?: number | null;
   attachmentHeight?: number | null;
+  replyToId?: string;
 }
 
 export interface UploadAttachmentResponse {

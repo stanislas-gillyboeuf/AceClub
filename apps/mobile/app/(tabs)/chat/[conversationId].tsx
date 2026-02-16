@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import {
   View,
   FlatList,
@@ -7,6 +7,7 @@ import {
   Pressable,
   Text,
   Alert,
+  Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -17,11 +18,13 @@ import { Avatar } from "@/components/ui/avatar";
 import { MessageBubble } from "@/features/chat/components/MessageBubble";
 import { ChatBottomBar } from "@/features/chat/components/ChatBottomBar";
 import { TypingIndicator } from "@/features/chat/components/TypingIndicator";
+import { MessageContextMenu } from "@/features/chat/components/MessageContextMenu";
 import { useChat } from "@/features/chat/hooks/useChat";
 import { wsManager } from "@/lib/websocket-manager";
 import { authClient } from "@/lib/auth-client";
-import type { ChatMessage, GroupPosition } from "@/features/chat/components/MessageBubble";
+import type { ChatMessage, GroupPosition } from "@/features/chat/types";
 import type { Conversation } from "@/types/conversation";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 function getDisplayName(conversation: Conversation): string {
   if (conversation.name) return conversation.name;
@@ -91,9 +94,9 @@ function formatTimeSeparator(dateString: string): string {
 function formatDeliveryStatus(status: string): string {
   switch (status) {
     case "sending":
-      return "Envoi…";
+      return "Envoi\u2026";
     case "sent":
-      return "Envoyé";
+      return "Envoy\u00e9";
     case "read":
       return "Lu";
     default:
@@ -131,6 +134,7 @@ function ChatContent({
   const scheme = useColorScheme();
   const router = useRouter();
   const flatListRef = useRef<FlatList>(null);
+  const [contextMenuMessage, setContextMenuMessage] = useState<ChatMessage | null>(null);
 
   const {
     messages,
@@ -148,6 +152,11 @@ function ChatContent({
     deleteConversation,
     errorMessage,
     setErrorMessage,
+    // New
+    replyingTo,
+    setReplyingTo,
+    clearReply,
+    toggleReaction,
   } = useChat(conversation, currentUserId);
 
   // Load messages on mount and connect WS
@@ -169,7 +178,7 @@ function ChatContent({
   const handleProfilePress = useCallback(() => {
     Alert.alert(displayName, undefined, [
       {
-        text: conversation.isMuted ? "Réactiver" : "Mettre en sourdine",
+        text: conversation.isMuted ? "R\u00e9activer" : "Mettre en sourdine",
         onPress: toggleMute,
       },
       {
@@ -190,6 +199,27 @@ function ChatContent({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     },
     [sendMessage],
+  );
+
+  const handleContextMenuReply = useCallback(
+    (msg: ChatMessage) => {
+      setReplyingTo(msg);
+    },
+    [setReplyingTo],
+  );
+
+  const handleContextMenuDelete = useCallback(
+    (msg: ChatMessage) => {
+      deleteMessage(msg);
+    },
+    [deleteMessage],
+  );
+
+  const handleContextMenuReaction = useCallback(
+    (messageId: string, emoji: string) => {
+      toggleReaction(messageId, emoji);
+    },
+    [toggleReaction],
   );
 
   const renderMessage = useCallback(
@@ -213,6 +243,9 @@ function ChatContent({
             groupPosition={groupPosition}
             onRetry={() => retryFailedMessage(item)}
             onDelete={() => deleteMessage(item)}
+            onLongPress={() => setContextMenuMessage(item)}
+            onSwipeReply={() => setReplyingTo(item)}
+            onToggleReaction={(emoji) => toggleReaction(item.id, emoji)}
           />
           {showDeliveryStatus && (
             <Text style={[styles.deliveryStatus, { color: semanticColors.labelSecondary[scheme] }]}>
@@ -222,7 +255,7 @@ function ChatContent({
         </View>
       );
     },
-    [messages, scheme, retryFailedMessage, deleteMessage],
+    [messages, scheme, retryFailedMessage, deleteMessage, setReplyingTo, toggleReaction],
   );
 
   const renderFooter = useCallback(() => {
@@ -239,6 +272,16 @@ function ChatContent({
       <Stack.Screen
         options={{
           headerBlurEffect: scheme === "dark" ? "systemMaterialDark" : "systemMaterial",
+          headerLeft:
+            Platform.OS === "android"
+              ? () => (
+                  <View style={styles.androidToolbar}>
+                    <Pressable onPress={() => router.back()} hitSlop={8}>
+                      <MaterialIcons name="close" size={24} />
+                    </Pressable>
+                  </View>
+                )
+              : undefined,
           headerTitle: () => (
             <Pressable onPress={handleProfilePress} style={styles.headerTitle}>
               <Avatar imageUrl={avatarUrl} name={displayName} size={28} />
@@ -252,6 +295,11 @@ function ChatContent({
           ),
         }}
       />
+       {Platform.OS === "ios" && (
+        <Stack.Toolbar placement="left">
+          <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} />
+        </Stack.Toolbar>
+      )}
 
       <FlatList
         automaticallyAdjustsScrollIndicatorInsets
@@ -276,6 +324,17 @@ function ChatContent({
         onSendVoice={sendVoiceMessage}
         onSendImage={sendImageMessage}
         onTyping={sendTypingIndicator}
+        replyingTo={replyingTo}
+        onCancelReply={clearReply}
+      />
+
+      <MessageContextMenu
+        message={contextMenuMessage}
+        visible={contextMenuMessage !== null}
+        onClose={() => setContextMenuMessage(null)}
+        onReply={handleContextMenuReply}
+        onDelete={handleContextMenuDelete}
+        onReaction={handleContextMenuReaction}
       />
     </View>
   );
@@ -289,6 +348,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  androidToolbar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
   headerTitle: {
     flexDirection: "row",
