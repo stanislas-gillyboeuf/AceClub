@@ -10,7 +10,7 @@ interface CommentsCardProps {
   currentUserId: string;
   isParticipant: boolean;
   onAddComment: () => void;
-  onEditComment: () => void;
+  onEditComment: (comment: MatchComment) => void;
 }
 
 function formatCommentDate(dateStr: string): string {
@@ -90,7 +90,7 @@ function CommentRow({
 }: {
   comment: MatchComment;
   currentUserId: string;
-  onEditComment: () => void;
+  onEditComment: (comment: MatchComment) => void;
   scheme: "light" | "dark";
 }) {
   const wasEdited = comment.updatedAt !== comment.createdAt;
@@ -98,7 +98,7 @@ function CommentRow({
 
   return (
     <Pressable
-      onPress={isOwn ? onEditComment : undefined}
+      onPress={isOwn ? () => onEditComment(comment) : undefined}
       style={styles.commentRow}
     >
       <Avatar

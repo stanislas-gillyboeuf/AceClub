@@ -82,11 +82,7 @@ export default function NewConversationScreen() {
           ]}
           disabled={isCreating}
         >
-          <Avatar
-            imageUrl={item.user.image}
-            name={item.user.name}
-            size={50}
-          />
+          <Avatar imageUrl={item.user.image} name={item.user.name} size={50} />
           <View style={styles.memberInfo}>
             <Text
               style={[styles.memberName, { color: semanticColors.labelPrimary[scheme] }]}
@@ -118,38 +114,18 @@ export default function NewConversationScreen() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
+    <>
       <Stack.Screen
         options={{
           title: "Nouveau message",
           presentation: "modal",
           headerLeft: () => (
-            <Pressable onPress={() => router.back()}>
+            <Pressable onPress={() => router.dismiss()}>
               <Text style={{ color: "#007AFF", fontSize: 17 }}>Annuler</Text>
             </Pressable>
           ),
         }}
       />
-
-      <View
-        style={[
-          styles.searchContainer,
-          {
-            backgroundColor: scheme === "dark" ? "#1C1C1E" : "#E5E5EA",
-          },
-        ]}
-      >
-        <Search size={18} color={semanticColors.labelSecondary[scheme]} />
-        <TextInput
-          style={[styles.searchInput, { color: semanticColors.labelPrimary[scheme] }]}
-          placeholder="Rechercher un membre"
-          placeholderTextColor={semanticColors.labelSecondary[scheme]}
-          value={searchText}
-          onChangeText={setSearchText}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-      </View>
 
       {isCreating && (
         <View style={styles.creatingOverlay}>
@@ -157,33 +133,53 @@ export default function NewConversationScreen() {
         </View>
       )}
 
-      {isLoading ? (
-        <View style={styles.centered}>
-          <ActivityIndicator color={colors.accentGreen} />
-        </View>
-      ) : filteredMembers.length === 0 ? (
-        <EmptyState
-          icon="Users"
-          title="Aucun membre"
-          description={
-            searchText
-              ? "Aucun membre ne correspond à votre recherche."
-              : "Aucun membre disponible pour démarrer une conversation."
-          }
-          containerStyle={styles.emptyState}
-        />
-      ) : (
-        <FlatList
-          contentInsetAdjustmentBehavior="automatic"
-          data={filteredMembers}
-          keyExtractor={(item) => item.id}
-          renderItem={renderMember}
-          ItemSeparatorComponent={renderSeparator}
-          contentContainerStyle={styles.listContent}
-          keyboardShouldPersistTaps="handled"
-        />
-      )}
-    </View>
+      <FlatList
+        style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
+        data={filteredMembers}
+        keyExtractor={(item) => item.id}
+        renderItem={renderMember}
+        ItemSeparatorComponent={renderSeparator}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+        ListHeaderComponent={
+          <View
+            style={[
+              styles.searchContainer,
+              { backgroundColor: scheme === "dark" ? "#1C1C1E" : "#E5E5EA" },
+            ]}
+          >
+            <Search size={18} color={semanticColors.labelSecondary[scheme]} />
+            <TextInput
+              style={[styles.searchInput, { color: semanticColors.labelPrimary[scheme] }]}
+              placeholder="Rechercher un membre"
+              placeholderTextColor={semanticColors.labelSecondary[scheme]}
+              value={searchText}
+              onChangeText={setSearchText}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
+        }
+        ListEmptyComponent={
+          isLoading ? (
+            <View style={styles.centered}>
+              <ActivityIndicator color={colors.accentGreen} />
+            </View>
+          ) : (
+            <EmptyState
+              icon="Users"
+              title="Aucun membre"
+              description={
+                searchText
+                  ? "Aucun membre ne correspond à votre recherche."
+                  : "Aucun membre disponible pour démarrer une conversation."
+              }
+              containerStyle={styles.emptyState}
+            />
+          )
+        }
+      />
+    </>
   );
 }
 
@@ -195,6 +191,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    paddingVertical: 32,
   },
   searchContainer: {
     flexDirection: "row",
@@ -210,9 +207,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     paddingVertical: 0,
-  },
-  listContent: {
-    paddingBottom: 20,
   },
   memberRow: {
     flexDirection: "row",

@@ -14,8 +14,11 @@ export default function ChatLayout() {
       <Stack.Screen
         name="new"
         options={{
-          presentation: "modal",
+          presentation: "formSheet",
           title: "Nouveau message",
+          sheetGrabberVisible: true,
+          headerTransparent: true,
+
         }}
       />
     </Stack>

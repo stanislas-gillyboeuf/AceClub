@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as AppleAuthentication from "expo-apple-authentication";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { GoogleSignin } from "@/lib/google-signin";
 import { authClient } from "@/lib/auth-client";
 import { colors, radii, spacing, sizes } from "@/constants/theme";
 import GoogleLogo from "@/features/auth/components/google-logo";

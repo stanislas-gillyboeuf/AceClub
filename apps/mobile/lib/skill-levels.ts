@@ -32,10 +32,10 @@ export const tennisLevels: SkillLevel[] = [
 ];
 
 export const padelLevels: SkillLevel[] = [
-  { value: "debutant", displayName: "Débutant" },
-  { value: "intermediaire", displayName: "Intermédiaire" },
-  { value: "avance", displayName: "Avancé" },
-  { value: "expert", displayName: "Expert" },
+  { value: "Débutant", displayName: "Débutant" },
+  { value: "Intermédiaire", displayName: "Intermédiaire" },
+  { value: "Avancé", displayName: "Avancé" },
+  { value: "Expert", displayName: "Expert" },
 ];
 
 export function getSkillLevels(sport: Sport): SkillLevel[] {

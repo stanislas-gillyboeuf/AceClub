@@ -47,7 +47,7 @@ export function ProfileHeaderCard({
     .filter(Boolean)
     .join(" - ");
 
-  const progressPercent = level ? Math.min(level.progressPercent * 100, 100) : 0;
+  const progressPercent = level ? Math.min(level.progressPercent, 100) : 0;
 
   return (
     <Card>

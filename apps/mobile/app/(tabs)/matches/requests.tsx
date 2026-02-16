@@ -33,13 +33,13 @@ export default function MatchRequests() {
 
         if (result.conversationId) {
           // Dismiss the modal first, then navigate to chat
-          router.back();
+          router.dismiss();
           // Small delay to allow modal dismiss animation before navigating
           setTimeout(() => {
             router.push(`/(tabs)/chat`);
           }, 300);
         } else {
-          router.back();
+          router.dismiss();
         }
       } catch {
         Alert.alert("Erreur", "Impossible d'accepter la demande. Reessaye.");
@@ -124,6 +124,7 @@ export default function MatchRequests() {
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />
         }
+        contentInsetAdjustmentBehavior="automatic"
         style={{ backgroundColor: semanticColors.primaryBackground[scheme] }}
       />
     </>

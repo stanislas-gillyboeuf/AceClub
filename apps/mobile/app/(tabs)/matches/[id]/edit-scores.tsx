@@ -112,7 +112,7 @@ export default function EditScores() {
     updateScores.mutate(
       { id: matchDetail.match.id, data },
       {
-        onSuccess: () => router.back(),
+        onSuccess: () => router.dismiss(),
         onError: (err) => Alert.alert("Erreur", err.message ?? "Impossible de sauvegarder les scores."),
       }
     );
@@ -133,7 +133,7 @@ export default function EditScores() {
           headerLeft:
             Platform.OS === "android"
               ? () => (
-                  <Pressable onPress={() => router.back()} disabled={isSaving}>
+                  <Pressable onPress={() => router.dismiss()} disabled={isSaving}>
                     <MaterialIcons name="close" size={24} color={colors.accentGreen} />
                   </Pressable>
                 )
@@ -154,7 +154,7 @@ export default function EditScores() {
           <Stack.Toolbar placement="left">
             <Stack.Toolbar.Button
               icon="xmark"
-              onPress={() => router.back()}
+              onPress={() => router.dismiss()}
               tintColor={colors.accentGreen}
             />
           </Stack.Toolbar>

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -12,7 +12,8 @@ import Animated, {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
-import { X, HandMetal } from "lucide-react-native";
+import { X } from "lucide-react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { DiscoverCard } from "./discover-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { colors, semanticColors } from "@/constants/theme";
@@ -53,6 +54,13 @@ export function DiscoverCardStack({
   const translateY = useSharedValue(0);
 
   const topCard = items.length > 0 ? items[0] : null;
+  const topCardId = topCard?.intent.id;
+
+  // Reset position when the top card changes (after swipe removal)
+  useEffect(() => {
+    translateX.value = 0;
+    translateY.value = 0;
+  }, [topCardId, translateX, translateY]);
 
   const handleSwipeComplete = useCallback(
     (direction: "left" | "right") => {
@@ -119,13 +127,14 @@ export function DiscoverCardStack({
 
   const glowAnimatedStyle = useAnimatedStyle(() => {
     const progress = Math.min(Math.abs(translateX.value) / SWIPE_THRESHOLD, 1);
+    const alpha = Math.round(progress * 0.8 * 1000) / 1000;
     const isRight = translateX.value > 0;
 
     return {
       borderWidth: progress * 4,
       borderColor: isRight
-        ? `rgba(34, 197, 94, ${progress * 0.8})`
-        : `rgba(239, 68, 68, ${progress * 0.8})`,
+        ? `rgba(34, 197, 94, ${alpha})`
+        : `rgba(239, 68, 68, ${alpha})`,
       borderRadius: 24,
     };
   });
@@ -239,10 +248,10 @@ export function DiscoverCardStack({
           onPress={handleLikePress}
           disabled={!topCard || isSwiping}
         >
-          <HandMetal
-            size={28}
+          <MaterialCommunityIcons
+            name="tennis"
+            size={30}
             color={!topCard || isSwiping ? "rgba(255,255,255,0.5)" : "#FFFFFF"}
-            strokeWidth={2}
           />
         </Pressable>
       </View>
@@ -278,6 +287,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
+    overflow: "hidden",
   },
   stackedCard: {
     position: "absolute",

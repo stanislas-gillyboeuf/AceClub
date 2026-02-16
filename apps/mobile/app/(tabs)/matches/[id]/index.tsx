@@ -81,7 +81,7 @@ export default function MatchDetail() {
   };
 
   const handleComment = () => {
-    Alert.alert("Bientôt disponible", "Les commentaires arrivent prochainement.");
+    router.push(`/matches/${id}/comment`);
   };
 
   const handleDelete = () => {
@@ -92,7 +92,7 @@ export default function MatchDetail() {
         style: "destructive",
         onPress: () => {
           deleteMatch.mutate(id, {
-            onSuccess: () => router.back(),
+            onSuccess: () => router.dismiss(),
           });
         },
       },
@@ -144,7 +144,7 @@ export default function MatchDetail() {
           headerLeft:
             Platform.OS === "android"
               ? () => (
-                  <Pressable onPress={() => router.back()}>
+                  <Pressable onPress={() => router.dismiss()}>
                     <MaterialIcons name="close" size={24} color={colors.accentGreen} />
                   </Pressable>
                 )
@@ -153,7 +153,7 @@ export default function MatchDetail() {
       />
       {Platform.OS === "ios" && (
         <Stack.Toolbar placement="left">
-          <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} tintColor={colors.accentGreen} />
+          <Stack.Toolbar.Button icon="xmark" onPress={() => router.dismiss()} tintColor={colors.accentGreen} />
         </Stack.Toolbar>
       )}
 
@@ -227,7 +227,7 @@ export default function MatchDetail() {
             currentUserId={currentUserId}
             isParticipant={isParticipant}
             onAddComment={handleComment}
-            onEditComment={handleComment}
+            onEditComment={() => handleComment()}
           />
         )}
       </ScrollView>

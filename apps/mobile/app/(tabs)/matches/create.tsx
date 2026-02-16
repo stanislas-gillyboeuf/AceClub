@@ -176,7 +176,7 @@ export default function CreateMatch() {
       {
         onSuccess: () => {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          router.back();
+          router.dismiss();
         },
         onError: (err) => {
           Alert.alert("Erreur", err.message ?? "Impossible de creer le match.");
@@ -206,7 +206,7 @@ export default function CreateMatch() {
             Platform.OS === "android"
               ? () => (
                   <Pressable
-                    onPress={() => router.back()}
+                    onPress={() => router.dismiss()}
                     disabled={isCreating}
                   >
                     <Text style={{ color: colors.accentGreen, fontSize: 16 }}>
@@ -245,7 +245,7 @@ export default function CreateMatch() {
           <Stack.Toolbar placement="left">
             <Stack.Toolbar.Button
               icon="xmark"
-              onPress={() => router.back()}
+              onPress={() => router.dismiss()}
               tintColor={colors.accentGreen}
             />
           </Stack.Toolbar>

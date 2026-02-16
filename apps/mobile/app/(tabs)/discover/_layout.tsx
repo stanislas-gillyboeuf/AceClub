@@ -5,7 +5,7 @@ export default function DiscoverLayout() {
     <Stack>
       <Stack.Screen
         name="index"
-        options={{ title: "Trouver un partenaire", headerLargeTitle: true }}
+        options={{ title: "Trouver un partenaire", headerLargeTitle: true, headerTransparent: true }}
       />
       <Stack.Screen
         name="create-intent"

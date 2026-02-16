@@ -261,38 +261,12 @@ export default function ClubSelection() {
         style={{ flex: 1, backgroundColor: semanticColors.primaryBackground[scheme] }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        {/* Search bar */}
-        <View
-          style={[
-            styles.searchContainer,
-            {
-              backgroundColor: semanticColors.cardBackground[scheme],
-              borderColor: semanticColors.borderColor[scheme],
-            },
-          ]}
-        >
-          <Search size={18} color={semanticColors.labelTertiary[scheme]} strokeWidth={1.5} />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Rechercher un club..."
-            placeholderTextColor={semanticColors.labelTertiary[scheme]}
-            style={[styles.searchInput, { color: semanticColors.labelPrimary[scheme] }]}
-            autoFocus
-            returnKeyType="search"
-          />
-          {query.length > 0 && (
-            <Pressable onPress={() => setQuery("")} hitSlop={8}>
-              <X size={16} color={semanticColors.labelTertiary[scheme]} strokeWidth={2} />
-            </Pressable>
-          )}
-        </View>
-
         {/* Results */}
         <FlatList
           data={organizations}
           keyExtractor={(item) => item.id}
           renderItem={renderOrg}
+          contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             isLoading ? (
@@ -304,6 +278,33 @@ export default function ClubSelection() {
                 Aucun club trouve
               </Text>
             )
+          }
+          ListHeaderComponent={
+            <View
+              style={[
+                styles.searchContainer,
+                {
+                  backgroundColor: semanticColors.cardBackground[scheme],
+                  borderColor: semanticColors.borderColor[scheme],
+                },
+              ]}
+            >
+              <Search size={18} color={semanticColors.labelTertiary[scheme]} strokeWidth={1.5} />
+              <TextInput
+                value={query}
+                onChangeText={setQuery}
+                placeholder="Rechercher un club..."
+                placeholderTextColor={semanticColors.labelTertiary[scheme]}
+                style={[styles.searchInput, { color: semanticColors.labelPrimary[scheme] }]}
+                autoFocus
+                returnKeyType="search"
+              />
+              {query.length > 0 && (
+                <Pressable onPress={() => setQuery("")} hitSlop={8}>
+                  <X size={16} color={semanticColors.labelTertiary[scheme]} strokeWidth={2} />
+                </Pressable>
+              )}
+            </View>
           }
           ListFooterComponent={
             <Pressable
@@ -327,7 +328,6 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginHorizontal: spacing.horizontal,
     marginBottom: 12,
     paddingHorizontal: 12,
     height: 40,

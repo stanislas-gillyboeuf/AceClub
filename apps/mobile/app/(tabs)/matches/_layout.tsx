@@ -40,6 +40,15 @@ export default function MatchesLayout() {
           headerTransparent: true,
         }}
       />
+      <Stack.Screen
+        name="[id]/comment"
+        options={{
+          presentation: "formSheet",
+          sheetGrabberVisible: true,
+          title: "Commentaire",
+          headerTransparent: true,
+        }}
+      />
     </Stack>
   );
 }

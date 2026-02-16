@@ -174,6 +174,8 @@ export default function Progression() {
         </Stack.Toolbar>
       )}
 
+
+
       <Animated.FlatList
         data={sections}
         keyExtractor={getItemKey}

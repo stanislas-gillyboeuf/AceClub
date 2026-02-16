@@ -10,6 +10,7 @@ import {
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { SlidersHorizontal, Check } from "lucide-react-native";
 import { DiscoverCardStack } from "@/features/discover/components/discover-card-stack";
 import { DiscoverDetailSheet } from "@/features/discover/components/discover-detail-sheet";
@@ -29,6 +30,7 @@ const RADIUS_OPTIONS: { label: string; value: number | undefined }[] = [
 export default function DiscoverScreen() {
   const scheme = useColorScheme();
   const router = useRouter();
+  const headerHeight = useHeaderHeight();
   const {
     items,
     isLoading,
@@ -46,8 +48,6 @@ export default function DiscoverScreen() {
 
   const [selectedItem, setSelectedItem] = useState<MatchIntentWithUser | null>(null);
   const [showRadiusMenu, setShowRadiusMenu] = useState(false);
-
-  // Request location permission and get current position
   useEffect(() => {
     if (isDiscoveryRestricted) return;
 
@@ -93,7 +93,7 @@ export default function DiscoverScreen() {
 
   return (
     <GestureHandlerRootView
-      style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
+      style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme], paddingTop: headerHeight }]}
     >
       {!isDiscoveryRestricted && (
         <View style={styles.filterBar}>
@@ -121,7 +121,6 @@ export default function DiscoverScreen() {
         onCreateIntent={handleCreateIntent}
       />
 
-      {/* Detail sheet modal */}
       <Modal
         visible={selectedItem !== null}
         animationType="slide"
@@ -144,7 +143,6 @@ export default function DiscoverScreen() {
         )}
       </Modal>
 
-      {/* Radius filter menu modal */}
       <Modal
         visible={showRadiusMenu}
         animationType="fade"

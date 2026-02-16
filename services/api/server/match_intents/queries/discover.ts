@@ -227,8 +227,17 @@ export const discover = async (c: Context<HonoContext>) => {
       .orderBy(desc(scoreExpressionRaw), desc(matchIntent.createdAt))
       .limit(limit + 1);
 
-    const hasMore = rows.length > limit;
-    const slice = hasMore ? rows.slice(0, limit) : rows;
+    // Deduplicate by intent id (LEFT JOIN on member can produce duplicates
+    // when a user belongs to multiple organizations)
+    const seen = new Set<string>();
+    const uniqueRows = rows.filter((row) => {
+      if (seen.has(row.id)) return false;
+      seen.add(row.id);
+      return true;
+    });
+
+    const hasMore = uniqueRows.length > limit;
+    const slice = hasMore ? uniqueRows.slice(0, limit) : uniqueRows;
     const nextCursor = hasMore && slice.length > 0 ? slice[slice.length - 1].id : null;
 
     const data = slice.map((row) => ({

@@ -5,10 +5,10 @@ export const uploadService = {
     uri: string,
     fileName: string,
     mimeType: string
-  ): Promise<{ url: string }> => {
-    return api.uploadMultipart<{ url: string }>(
+  ): Promise<{ imageUrl: string }> => {
+    return api.uploadMultipart<{ imageUrl: string }>(
       "/upload/user-image",
-      "file",
+      "image",
       uri,
       fileName,
       mimeType

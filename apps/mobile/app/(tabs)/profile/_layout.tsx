@@ -8,7 +8,7 @@ export default function ProfileLayout() {
         name="settings"
         options={{
           title: "Paramètres",
-          presentation: "formSheet",
+          presentation: "fullScreenModal",
           sheetGrabberVisible: true,
           headerTransparent: true,
         }}
@@ -25,28 +25,26 @@ export default function ProfileLayout() {
       <Stack.Screen
         name="e2ee-backup"
         options={{
-          title: "Sauvegarder ma cle",
+          title: "Sauvegarder ma clé",
           presentation: "formSheet",
           sheetGrabberVisible: true,
-          headerTransparent: true,
         }}
       />
       <Stack.Screen
         name="e2ee-recovery"
         options={{
-          title: "Recuperer ma cle",
+          title: "Récupérer ma clé",
           presentation: "formSheet",
           sheetGrabberVisible: true,
-          headerTransparent: true,
         }}
       />
       <Stack.Screen
         name="club-selection"
         options={{
-          title: "Selectionner un club",
+          title: "Sélectionner un club",
           presentation: "formSheet",
           sheetGrabberVisible: true,
-          headerTransparent: true,
+
         }}
       />
     </Stack>

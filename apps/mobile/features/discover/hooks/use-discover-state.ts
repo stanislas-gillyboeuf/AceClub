@@ -52,6 +52,8 @@ export function useDiscoverState() {
       setMatchMessage(null);
       setDidMatch(false);
 
+      const swipeStart = Date.now();
+
       try {
         const result = await swipeMutation.mutateAsync({
           matchIntentId: topCard.intent.id,
@@ -61,6 +63,13 @@ export function useDiscoverState() {
         setDidMatch(result.matchRequest != null);
       } catch {
         // Swipe failed - still remove card
+      }
+
+      // Wait for swipe-out animation to finish (200ms) before removing the card
+      const elapsed = Date.now() - swipeStart;
+      const remaining = 250 - elapsed;
+      if (remaining > 0) {
+        await new Promise((r) => setTimeout(r, remaining));
       }
 
       removeTopCard();

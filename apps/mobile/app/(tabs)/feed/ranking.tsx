@@ -133,7 +133,7 @@ export default function Ranking() {
     else refetchWeekly();
   }, [selectedType, refetchGlobal, refetchOrg, refetchWeekly]);
 
-  const goBack = () => router.back();
+  const goBack = () => router.dismiss();
 
   // Use a unified data structure for rendering
   const isWeekly = selectedType === "weekly";

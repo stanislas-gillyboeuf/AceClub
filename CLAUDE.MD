@@ -58,6 +58,31 @@ Quand tu lances un subagent Explore, copie-colle les instructions sur mgrep de c
 
 ---
 
+# Expo Mobile - Patterns UI
+
+## Listes scrollables
+
+**Ne JAMAIS imbriquer un `FlatList` dans un `ScrollView`** — erreur "VirtualizedLists should never be nested inside plain ScrollViews".
+
+**Ne JAMAIS utiliser un `View` comme conteneur racine d'un écran avec liste** — le contenu passe sous le header natif.
+
+**Pattern correct** (cf. `club-selection.tsx`, `chat/new.tsx`) : utiliser `FlatList` comme conteneur scroll principal avec `contentInsetAdjustmentBehavior="automatic"` pour respecter le header.
+```tsx
+<>
+  <Stack.Screen options={{ ... }} />
+  <FlatList
+    data={items}
+    renderItem={renderItem}
+    ListHeaderComponent={<SearchBar />}
+    ListEmptyComponent={isLoading ? <Loader /> : <EmptyState />}
+    contentInsetAdjustmentBehavior="automatic"
+    keyboardShouldPersistTaps="handled"
+  />
+</>
+```
+
+---
+
 # Architecture iOS - Clean Architecture MVVM
 
 ```

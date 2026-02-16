@@ -64,7 +64,7 @@ export function LevelProgressCard({
           <View
             style={[
               styles.progressFill,
-              { width: `${Math.min(level.progressPercent * 100, 100)}%` },
+              { width: `${Math.min(level.progressPercent, 100)}%` },
             ]}
           />
         </View>
@@ -76,7 +76,7 @@ export function LevelProgressCard({
               { color: semanticColors.labelSecondary[scheme] },
             ]}
           >
-            {level.currentLevelAces}/{level.acesToNextLevel} Aces
+            {level.currentLevelAces}/{level.currentLevelAces + level.acesToNextLevel} Aces
           </Text>
           <Text style={styles.nextLevelText}>
             Niveau {level.level + 1}

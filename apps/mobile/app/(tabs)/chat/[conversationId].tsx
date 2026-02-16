@@ -186,7 +186,7 @@ function ChatContent({
         style: "destructive",
         onPress: () => {
           deleteConversation();
-          router.back();
+          router.dismiss();
         },
       },
       { text: "Annuler", style: "cancel" },
@@ -276,7 +276,7 @@ function ChatContent({
             Platform.OS === "android"
               ? () => (
                   <View style={styles.androidToolbar}>
-                    <Pressable onPress={() => router.back()} hitSlop={8}>
+                    <Pressable onPress={() => router.dismiss()} hitSlop={8}>
                       <MaterialIcons name="close" size={24} />
                     </Pressable>
                   </View>
@@ -297,7 +297,7 @@ function ChatContent({
       />
        {Platform.OS === "ios" && (
         <Stack.Toolbar placement="left">
-          <Stack.Toolbar.Button icon="xmark" onPress={() => router.back()} />
+          <Stack.Toolbar.Button icon="xmark" onPress={() => router.dismiss()} />
         </Stack.Toolbar>
       )}
 

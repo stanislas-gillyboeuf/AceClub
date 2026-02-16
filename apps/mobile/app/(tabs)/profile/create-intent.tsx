@@ -103,7 +103,7 @@ export default function CreateIntent() {
         description: description.trim() || undefined,
       },
       {
-        onSuccess: () => router.back(),
+        onSuccess: () => router.dismiss(),
         onError: () => Alert.alert("Erreur", "Impossible de créer la dispo."),
       }
     );
@@ -115,7 +115,7 @@ export default function CreateIntent() {
         options={{
           title: "Nouvelle dispo",
           headerLeft: () => (
-            <Pressable onPress={() => router.back()} hitSlop={8}>
+            <Pressable onPress={() => router.dismiss()} hitSlop={8}>
               <X size={24} color={semanticColors.labelPrimary[scheme]} strokeWidth={2} />
             </Pressable>
           ),

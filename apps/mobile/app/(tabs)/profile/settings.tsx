@@ -184,7 +184,7 @@ export default function Settings() {
             fileName,
             "image/jpeg"
           );
-          imageUrl = result.url;
+          imageUrl = result.imageUrl;
         } finally {
           setIsUploading(false);
         }
@@ -213,7 +213,7 @@ export default function Settings() {
       setPendingPin(null);
 
       // Go back after a short delay
-      setTimeout(() => router.back(), 500);
+      setTimeout(() => router.dismiss(), 500);
     } catch (e: any) {
       setErrorMessage(e.message ?? "Erreur lors de la mise à jour du profil");
     } finally {
@@ -290,7 +290,7 @@ export default function Settings() {
         options={{
           title: "Paramètres",
           headerLeft: () => (
-            <Pressable onPress={() => router.back()} hitSlop={8}>
+            <Pressable onPress={() => router.dismiss()} hitSlop={8}>
               <X size={24} color={colors.accentGreen} strokeWidth={2} />
             </Pressable>
           ),
