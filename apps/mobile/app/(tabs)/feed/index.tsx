@@ -35,6 +35,7 @@ export default function Feed() {
 
 
   const goToRanking = () => router.push("/(tabs)/feed/ranking");
+  const goToProgression = () => router.push("/(tabs)/feed/progression");
 
 
   const {
@@ -109,7 +110,7 @@ export default function Feed() {
                 <LevelProgressCard
                   level={level}
                   showDetailIndicator
-                  onPress={() => {}}
+                  onPress={goToProgression}
                 />
               ) : null}
             </View>

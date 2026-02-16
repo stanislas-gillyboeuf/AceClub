@@ -8,10 +8,18 @@ export default function FeedLayout() {
         name="ranking"
         options={{
           presentation: "fullScreenModal",
-          title: "Ranking",
-          headerLargeTitle: true
+          title: "Classement",
+          headerLargeTitle: true,
         }}
       />
-      </Stack>
+      <Stack.Screen
+        name="progression"
+        options={{
+          presentation: "fullScreenModal",
+          title: "Progression",
+          headerLargeTitle: true,
+        }}
+      />
+    </Stack>
   );
 }
