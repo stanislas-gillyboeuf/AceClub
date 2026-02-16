@@ -1,6 +1,6 @@
 import { AppState, Platform } from "react-native";
 import * as Network from "expo-network";
-import { getAuthCookie, BASE_URL } from "@/lib/api";
+import { getAuthForWebSocket, BASE_URL } from "@/lib/api";
 import type { Message } from "@/types/conversation";
 
 export type ConnectionState = "disconnected" | "connecting" | "connected" | "reconnecting";
@@ -78,16 +78,19 @@ class WebSocketManager {
     this._connectionState = isReconnect ? "reconnecting" : "connecting";
 
     try {
-      const cookie = await getAuthCookie();
-      if (!cookie) {
+      const auth = await getAuthForWebSocket();
+      if (!auth) {
         this.setConnectionState("disconnected");
         return;
       }
 
-      // Build WS URL from the API base URL
+      // Build WS URL from the API base URL (token preferred over cookie)
       const wsProtocol = BASE_URL.startsWith("https") ? "wss" : "ws";
       const host = BASE_URL.replace(/^https?:\/\//, "");
-      const wsURL = `${wsProtocol}://${host}/ws/chat?cookie=${encodeURIComponent(cookie)}`;
+      const authParam = auth.token
+        ? `token=${encodeURIComponent(auth.token)}`
+        : `cookie=${encodeURIComponent(auth.cookie!)}`;
+      const wsURL = `${wsProtocol}://${host}/ws/chat?${authParam}`;
 
       const ws = new WebSocket(wsURL);
 

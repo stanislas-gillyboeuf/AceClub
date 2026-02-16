@@ -1,35 +1,35 @@
-import * as SecureStore from "expo-secure-store";
+/**
+ * API client for AceClub backend.
+ * Uses cookies (Better Auth Expo) or Bearer token for auth.
+ */
+
 import { Platform } from "react-native";
+import {
+  getAuthHeaders,
+  getAuthForWebSocket,
+  setAuthToken,
+  type WebSocketAuth,
+} from "@/lib/auth-api";
 
 const LOCAL_URL =
   Platform.OS === "android" ? "http://10.0.2.2:3000" : "http://localhost:3000";
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || LOCAL_URL;
+export const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? LOCAL_URL;
 
 export class ApiError extends Error {
-  status: number;
+  readonly status: number;
+
   constructor(status: number, message: string) {
     super(message);
+    this.name = "ApiError";
     this.status = status;
+    Object.setPrototypeOf(this, ApiError.prototype);
   }
 }
 
-async function getAuthCookie(): Promise<string | null> {
-  try {
-    const raw = await SecureStore.getItemAsync("aceclub_cookie");
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Record<
-      string,
-      { value: string; expires?: string }
-    >;
-    return Object.entries(parsed)
-      .filter(([, v]) => !v.expires || new Date(v.expires) > new Date())
-      .map(([key, v]) => `${key}=${v.value}`)
-      .join("; ");
-  } catch {
-    return null;
-  }
-}
+const DEFAULT_FETCH_OPTIONS: RequestInit = {
+  credentials: "omit",
+};
 
 async function request<T>(
   method: string,
@@ -52,18 +52,13 @@ async function request<T>(
     if (qs) url += `?${qs}`;
   }
 
-  const headers: Record<string, string> = {};
-
-  const cookie = await getAuthCookie();
-  if (cookie) {
-    headers["Cookie"] = cookie;
-  }
-
+  const headers = await getAuthHeaders();
   if (options?.body) {
     headers["Content-Type"] = "application/json";
   }
 
   const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
     method,
     headers,
     body: options?.body ? JSON.stringify(options.body) : undefined,
@@ -76,20 +71,22 @@ async function request<T>(
 
   const text = await response.text();
   if (!text) return undefined as T;
-  return JSON.parse(text) as T;
-}
 
-export { getAuthCookie, BASE_URL };
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new ApiError(500, "Invalid JSON response");
+  }
+}
 
 async function uploadMultipart<T>(
   path: string,
   fileField: string,
   fileUri: string,
   fileName: string,
-  mimeType: string,
+  mimeType: string
 ): Promise<T> {
   const url = `${BASE_URL}/api${path}`;
-
   const formData = new FormData();
   formData.append(fileField, {
     uri: fileUri,
@@ -97,13 +94,10 @@ async function uploadMultipart<T>(
     type: mimeType,
   } as unknown as Blob);
 
-  const headers: Record<string, string> = {};
-  const cookie = await getAuthCookie();
-  if (cookie) {
-    headers["Cookie"] = cookie;
-  }
+  const headers = await getAuthHeaders();
 
   const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
     method: "POST",
     headers,
     body: formData,
@@ -116,7 +110,12 @@ async function uploadMultipart<T>(
 
   const text = await response.text();
   if (!text) return undefined as T;
-  return JSON.parse(text) as T;
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new ApiError(500, "Invalid JSON response");
+  }
 }
 
 export const api = {
@@ -139,6 +138,9 @@ export const api = {
     fileField: string,
     fileUri: string,
     fileName: string,
-    mimeType: string,
+    mimeType: string
   ) => uploadMultipart<T>(path, fileField, fileUri, fileName, mimeType),
 };
+
+export { getAuthHeaders, getAuthForWebSocket, setAuthToken };
+export type { WebSocketAuth };
