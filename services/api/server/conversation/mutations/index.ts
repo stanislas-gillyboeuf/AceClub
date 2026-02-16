@@ -5,3 +5,5 @@ export { deleteConversation } from "./delete-conversation";
 export { deleteMessage } from "./delete-message";
 export { findOrCreateConversation } from "./find-or-create";
 export { uploadAttachment } from "./upload-attachment";
+export { addReaction } from "./add-reaction";
+export { removeReaction } from "./remove-reaction";

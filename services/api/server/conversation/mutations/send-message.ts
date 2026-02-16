@@ -21,7 +21,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
 
   const conversationId = c.req.param("id");
   const body = await c.req.json();
-  const { content, clientMessageId, isEncrypted, type: messageType, attachmentUrl, attachmentDuration, attachmentWidth, attachmentHeight } = body;
+  const { content, clientMessageId, isEncrypted, type: messageType, attachmentUrl, attachmentDuration, attachmentWidth, attachmentHeight, replyToId } = body;
 
   // Verify user is a participant
   const [myParticipation] = await db
@@ -74,10 +74,38 @@ export const sendMessage = async (c: Context<HonoContext>) => {
       attachmentHeight: attachmentHeight || null,
       clientMessageId,
       isEncrypted: isEncrypted ?? false,
+      replyToId: replyToId || null,
       createdAt: now,
       updatedAt: now,
     })
     .returning();
+
+  // Fetch replied-to message info if replyToId is provided
+  let replyTo = null;
+  if (replyToId) {
+    const [repliedMessage] = await db
+      .select({
+        id: message.id,
+        senderId: message.senderId,
+        senderName: user.name,
+        content: message.content,
+        messageType: message.type,
+      })
+      .from(message)
+      .innerJoin(user, eq(message.senderId, user.id))
+      .where(and(eq(message.id, replyToId), eq(message.conversationId, conversationId)))
+      .limit(1);
+
+    if (repliedMessage) {
+      replyTo = {
+        id: repliedMessage.id,
+        senderId: repliedMessage.senderId,
+        senderName: repliedMessage.senderName || "Unknown",
+        content: repliedMessage.content.substring(0, 100),
+        messageType: repliedMessage.messageType,
+      };
+    }
+  }
 
   // Compute last message preview based on type
   let lastMessagePreview: string | null;
@@ -151,6 +179,8 @@ export const sendMessage = async (c: Context<HonoContext>) => {
       attachmentDuration: attachmentDuration || null,
       attachmentWidth: attachmentWidth || null,
       attachmentHeight: attachmentHeight || null,
+      replyToId: replyToId || null,
+      replyTo,
     },
   };
 
@@ -214,6 +244,8 @@ export const sendMessage = async (c: Context<HonoContext>) => {
       attachmentDuration: attachmentDuration || null,
       attachmentWidth: attachmentWidth || null,
       attachmentHeight: attachmentHeight || null,
+      replyToId: replyToId || null,
+      replyTo,
     },
     201,
   );

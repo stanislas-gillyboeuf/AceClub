@@ -1,0 +1,99 @@
+import { useState, useCallback, useRef, useEffect } from "react";
+import { useDiscover, useSwipe } from "@/hooks/use-match-intent";
+import type { MatchIntentWithUser } from "@/types/match-intent";
+
+interface LocationState {
+  latitude: number | null;
+  longitude: number | null;
+}
+
+export function useDiscoverState() {
+  const [items, setItems] = useState<MatchIntentWithUser[]>([]);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [matchMessage, setMatchMessage] = useState<string | null>(null);
+  const [didMatch, setDidMatch] = useState(false);
+  const [selectedRadius, setSelectedRadius] = useState<number | undefined>(undefined);
+  const [isDiscoveryRestricted, setIsDiscoveryRestricted] = useState(false);
+  const [location, setLocation] = useState<LocationState>({ latitude: null, longitude: null });
+  const cursorRef = useRef<string | undefined>(undefined);
+  const hasMoreRef = useRef(true);
+
+  const swipeMutation = useSwipe();
+
+  const discoverQuery = useDiscover({
+    latitude: isDiscoveryRestricted ? undefined : (location.latitude ?? undefined),
+    longitude: isDiscoveryRestricted ? undefined : (location.longitude ?? undefined),
+    radius: isDiscoveryRestricted ? undefined : selectedRadius,
+    limit: 20,
+  });
+
+  // Sync query results into local items state
+  useEffect(() => {
+    if (discoverQuery.data) {
+      setItems(discoverQuery.data.data);
+      setIsDiscoveryRestricted(discoverQuery.data.isDiscoveryRestricted);
+      cursorRef.current = discoverQuery.data.pagination.nextCursor ?? undefined;
+      hasMoreRef.current = discoverQuery.data.pagination.hasMore;
+    }
+  }, [discoverQuery.data]);
+
+  const topCard = items.length > 0 ? items[0] : null;
+
+  const removeTopCard = useCallback(() => {
+    setItems((prev) => prev.slice(1));
+    setMatchMessage(null);
+    setDidMatch(false);
+  }, []);
+
+  const performSwipe = useCallback(
+    async (action: "like" | "pass") => {
+      if (!topCard || isSwiping) return;
+      setIsSwiping(true);
+      setMatchMessage(null);
+      setDidMatch(false);
+
+      try {
+        const result = await swipeMutation.mutateAsync({
+          matchIntentId: topCard.intent.id,
+          action,
+        });
+        setMatchMessage(result.message ?? null);
+        setDidMatch(result.matchRequest != null);
+      } catch {
+        // Swipe failed - still remove card
+      }
+
+      removeTopCard();
+      setIsSwiping(false);
+    },
+    [topCard, isSwiping, swipeMutation, removeTopCard]
+  );
+
+  const like = useCallback(() => performSwipe("like"), [performSwipe]);
+  const pass = useCallback(() => performSwipe("pass"), [performSwipe]);
+
+  const updateLocation = useCallback((lat: number, lng: number) => {
+    setLocation({ latitude: lat, longitude: lng });
+  }, []);
+
+  const refresh = useCallback(async () => {
+    await discoverQuery.refetch();
+  }, [discoverQuery]);
+
+  return {
+    items,
+    isLoading: discoverQuery.isLoading,
+    isSwiping,
+    matchMessage,
+    didMatch,
+    isDiscoveryRestricted,
+    selectedRadius,
+    setSelectedRadius,
+    topCard,
+    like,
+    pass,
+    updateLocation,
+    refresh,
+    isRefreshing: discoverQuery.isFetching && !discoverQuery.isLoading,
+  };
+}

@@ -1,4 +1,4 @@
-import { conversation, conversationParticipant, message } from "./schema";
+import { conversation, conversationParticipant, message, messageReaction } from "./schema";
 
 export type Conversation = typeof conversation.$inferSelect;
 export type NewConversation = typeof conversation.$inferInsert;
@@ -8,3 +8,6 @@ export type NewConversationParticipant = typeof conversationParticipant.$inferIn
 
 export type Message = typeof message.$inferSelect;
 export type NewMessage = typeof message.$inferInsert;
+
+export type MessageReaction = typeof messageReaction.$inferSelect;
+export type NewMessageReaction = typeof messageReaction.$inferInsert;

@@ -7,6 +7,7 @@ import { phoneNumber } from "better-auth/plugins";
 import { user as userTable, member as memberTable } from "./db/schema/auth/schema";
 import { eq } from "drizzle-orm";
 import { awardPremiersPasBadge } from "./server/reward/services/badge-service";
+import { expo } from "@better-auth/expo";
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -113,14 +114,23 @@ export const auth = betterAuth({
     "http://localhost:3001",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:3001",
+    "http://10.0.2.2:3000",
     "aceclub://",
+    "mobile://",
     "https://ace-club-production.up.railway.app",
     "https://ace-club.app",
     "https://appleid.apple.com",
     process.env.NGROK_URL || "",
+    ...(process.env.NODE_ENV === "development" ? [
+      "exp://192.168.1.23:8081",
+      "exp://",
+      "exp://**",
+      "exp://192.168.*.*:*/**",
+    ] : []),
   ].filter(Boolean),
 
   plugins: [
+    expo(),
     bearer(),
     admin(),
     organization({
