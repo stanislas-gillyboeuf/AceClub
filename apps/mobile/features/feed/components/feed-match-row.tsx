@@ -1,0 +1,241 @@
+import { View, Text, StyleSheet } from "react-native";
+import { Calendar, Clock } from "lucide-react-native";
+import { Avatar } from "@/components/ui/avatar";
+import { BadgePill } from "@/components/ui/badge-pill";
+import { Card } from "@/components/ui/card";
+import { PlayerView } from "@/components/ui/player-view";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { colors, semanticColors } from "@/constants/theme";
+import {
+  formatMatchDate,
+  formatMatchScore,
+  formatMatchDuration,
+  getHomeParticipant,
+  getAwayParticipant,
+} from "@/lib/format";
+import type { MatchWithParticipants } from "@/types/match";
+
+interface FeedMatchRowProps {
+  match: MatchWithParticipants;
+  currentUserId: string;
+  onPress?: () => void;
+}
+
+export function FeedMatchRow({
+  match,
+  currentUserId,
+  onPress,
+}: FeedMatchRowProps) {
+  const scheme = useColorScheme();
+
+  const home = getHomeParticipant(match);
+  const away = getAwayParticipant(match);
+
+  const currentUserWon =
+    match.participants.find((p) => p.userId === currentUserId)?.isWinner ??
+    false;
+
+  const score = formatMatchScore(match);
+  const duration = formatMatchDuration(match);
+  const date = formatMatchDate(match);
+
+  const sortedComments = [...(match.comments ?? [])]
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
+    .slice(0, 2);
+  const totalComments = match.comments?.length ?? 0;
+  const hasMoreComments = totalComments > 2;
+
+  return (
+    <Card onPress={onPress}>
+      {/* Header: date + badge */}
+      <View style={styles.headerRow}>
+        <View style={styles.dateRow}>
+          <Calendar size={14} color={colors.accentGreen} strokeWidth={2} />
+          <Text
+            style={[
+              styles.dateText,
+              { color: semanticColors.labelSecondary[scheme] },
+            ]}
+          >
+            {date}
+          </Text>
+        </View>
+        <BadgePill
+          label={currentUserWon ? "Victoire" : "Défaite"}
+          variant={currentUserWon ? "success" : "danger"}
+        />
+      </View>
+
+      {/* Players row */}
+      <View style={styles.playersSection}>
+        <View style={styles.playersLeft}>
+          <PlayerView
+            name={home?.user?.name ?? "N/A"}
+            imageUrl={home?.user?.image}
+            avatarSize={40}
+            isWinner={home?.isWinner ?? false}
+          />
+          <Text
+            style={[
+              styles.vsText,
+              { color: semanticColors.labelSecondary[scheme] },
+            ]}
+          >
+            vs
+          </Text>
+          <PlayerView
+            name={away?.user?.name ?? "N/A"}
+            imageUrl={away?.user?.image}
+            avatarSize={40}
+            isWinner={away?.isWinner ?? false}
+          />
+        </View>
+
+        <View style={styles.scoreSection}>
+          <Text
+            style={[
+              styles.scoreText,
+              { color: semanticColors.labelPrimary[scheme] },
+            ]}
+          >
+            {score}
+          </Text>
+          {duration && (
+            <View style={styles.durationRow}>
+              <Clock
+                size={10}
+                color={semanticColors.labelSecondary[scheme]}
+                strokeWidth={2}
+              />
+              <Text
+                style={[
+                  styles.durationText,
+                  { color: semanticColors.labelSecondary[scheme] },
+                ]}
+              >
+                {duration}
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
+
+      {/* Comments preview */}
+      {sortedComments.length > 0 && (
+        <View style={styles.commentsSection}>
+          <View
+            style={[
+              styles.divider,
+              { backgroundColor: semanticColors.divider[scheme] },
+            ]}
+          />
+          {sortedComments.map((comment) => (
+            <View key={comment.id} style={styles.commentRow}>
+              <Avatar
+                imageUrl={comment.user?.image}
+                name={comment.user?.name ?? "?"}
+                size={24}
+              />
+              <Text
+                style={[
+                  styles.commentText,
+                  { color: semanticColors.labelPrimary[scheme] },
+                ]}
+                numberOfLines={2}
+              >
+                <Text style={styles.commentAuthor}>
+                  {comment.user?.name ?? "?"}{" "}
+                </Text>
+                {comment.content}
+              </Text>
+            </View>
+          ))}
+          {hasMoreComments && (
+            <Text
+              style={[
+                styles.moreComments,
+                { color: semanticColors.labelSecondary[scheme] },
+              ]}
+            >
+              Voir les {totalComments} commentaires
+            </Text>
+          )}
+        </View>
+      )}
+    </Card>
+  );
+}
+
+const styles = StyleSheet.create({
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  dateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  dateText: {
+    fontSize: 15,
+  },
+  playersSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  playersLeft: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  vsText: {
+    fontSize: 15,
+  },
+  scoreSection: {
+    alignItems: "flex-end",
+    gap: 4,
+  },
+  scoreText: {
+    fontSize: 20,
+    fontWeight: "700",
+    fontVariant: ["tabular-nums"],
+  },
+  durationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  durationText: {
+    fontSize: 12,
+  },
+  commentsSection: {
+    marginTop: 12,
+    gap: 8,
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginBottom: 4,
+  },
+  commentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  commentText: {
+    fontSize: 12,
+    flex: 1,
+  },
+  commentAuthor: {
+    fontWeight: "600",
+  },
+  moreComments: {
+    fontSize: 12,
+  },
+});

@@ -1,9 +1,9 @@
 import type { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { conversationParticipant, message } from "../../../db/schema/conversation/schema";
+import { conversationParticipant, message, messageReaction } from "../../../db/schema/conversation/schema";
 import { user } from "../../../db/schema/auth/schema";
-import { eq, and, desc, lt } from "drizzle-orm";
+import { eq, and, desc, lt, inArray } from "drizzle-orm";
 
 export const listMessages = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user");
@@ -58,6 +58,7 @@ export const listMessages = async (c: Context<HonoContext>) => {
       attachmentDuration: message.attachmentDuration,
       attachmentWidth: message.attachmentWidth,
       attachmentHeight: message.attachmentHeight,
+      replyToId: message.replyToId,
     })
     .from(message)
     .innerJoin(user, eq(message.senderId, user.id))
@@ -65,25 +66,101 @@ export const listMessages = async (c: Context<HonoContext>) => {
     .orderBy(desc(message.createdAt))
     .limit(limit);
 
+  // Batch-fetch replied-to messages
+  const replyToIds = messages
+    .map((m) => m.replyToId)
+    .filter((id): id is string => id !== null);
+
+  const replyToMap = new Map<string, { id: string; senderId: string; senderName: string | null; content: string; messageType: string }>();
+
+  if (replyToIds.length > 0) {
+    const repliedMessages = await db
+      .select({
+        id: message.id,
+        senderId: message.senderId,
+        senderName: user.name,
+        content: message.content,
+        messageType: message.type,
+      })
+      .from(message)
+      .innerJoin(user, eq(message.senderId, user.id))
+      .where(inArray(message.id, replyToIds));
+
+    for (const rm of repliedMessages) {
+      replyToMap.set(rm.id, rm);
+    }
+  }
+
+  // Batch-fetch reactions for all messages
+  const messageIds = messages.map((m) => m.id);
+  const reactionsMap = new Map<string, { emoji: string; count: number; users: { id: string; name: string }[]; hasReacted: boolean }[]>();
+
+  if (messageIds.length > 0) {
+    const reactions = await db
+      .select({
+        id: messageReaction.id,
+        messageId: messageReaction.messageId,
+        emoji: messageReaction.emoji,
+        userId: messageReaction.userId,
+        userName: user.name,
+      })
+      .from(messageReaction)
+      .innerJoin(user, eq(messageReaction.userId, user.id))
+      .where(inArray(messageReaction.messageId, messageIds));
+
+    // Group reactions by message, then by emoji
+    for (const r of reactions) {
+      if (!reactionsMap.has(r.messageId)) {
+        reactionsMap.set(r.messageId, []);
+      }
+      const groups = reactionsMap.get(r.messageId)!;
+      let group = groups.find((g) => g.emoji === r.emoji);
+      if (!group) {
+        group = { emoji: r.emoji, count: 0, users: [], hasReacted: false };
+        groups.push(group);
+      }
+      group.count++;
+      group.users.push({ id: r.userId, name: r.userName || "Unknown" });
+      if (r.userId === currentUser.id) {
+        group.hasReacted = true;
+      }
+    }
+  }
+
   return c.json(
-    messages.map((msg) => ({
-      id: msg.id,
-      conversationId: msg.conversationId,
-      sender: {
-        id: msg.senderId,
-        name: msg.senderName,
-        image: msg.senderImage,
-      },
-      content: msg.content,
-      createdAt: msg.createdAt.toISOString(),
-      clientMessageId: msg.clientMessageId,
-      isFromMe: msg.senderId === currentUser.id,
-      isEncrypted: msg.isEncrypted,
-      messageType: msg.messageType,
-      attachmentUrl: msg.attachmentUrl,
-      attachmentDuration: msg.attachmentDuration,
-      attachmentWidth: msg.attachmentWidth,
-      attachmentHeight: msg.attachmentHeight,
-    })),
+    messages.map((msg) => {
+      const repliedTo = msg.replyToId ? replyToMap.get(msg.replyToId) : null;
+
+      return {
+        id: msg.id,
+        conversationId: msg.conversationId,
+        sender: {
+          id: msg.senderId,
+          name: msg.senderName,
+          image: msg.senderImage,
+        },
+        content: msg.content,
+        createdAt: msg.createdAt.toISOString(),
+        clientMessageId: msg.clientMessageId,
+        isFromMe: msg.senderId === currentUser.id,
+        isEncrypted: msg.isEncrypted,
+        messageType: msg.messageType,
+        attachmentUrl: msg.attachmentUrl,
+        attachmentDuration: msg.attachmentDuration,
+        attachmentWidth: msg.attachmentWidth,
+        attachmentHeight: msg.attachmentHeight,
+        replyToId: msg.replyToId,
+        replyTo: repliedTo
+          ? {
+              id: repliedTo.id,
+              senderId: repliedTo.senderId,
+              senderName: repliedTo.senderName || "Unknown",
+              content: repliedTo.content.substring(0, 100),
+              messageType: repliedTo.messageType,
+            }
+          : null,
+        reactions: reactionsMap.get(msg.id) || [],
+      };
+    }),
   );
 };
