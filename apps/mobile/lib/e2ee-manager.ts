@@ -1,361 +1,302 @@
+import * as Crypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import { Buffer } from "buffer";
 
+// Polyfill crypto.getRandomValues — @noble/curves internally loads @noble/hashes
+// which captures globalThis.crypto at module-load time
+if (typeof globalThis.crypto === "undefined")
+  (globalThis as any).crypto = {} as Crypto;
+if (!(globalThis.crypto as any).getRandomValues)
+  (globalThis.crypto as any).getRandomValues = Crypto.getRandomValues;
+
+// x25519 ECDH — no native Expo alternative for elliptic curve key exchange
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { x25519 } = require("@noble/curves/ed25519");
+
 const SECURE_STORE_KEY = "e2ee_private_key";
-const E2EE_INFO = "aceclub-e2ee-v1";
-const E2EE_BACKUP_INFO = "aceclub-e2ee-backup-v1";
+const E2EE_INFO = new TextEncoder().encode("aceclub-e2ee-v1");
+const BACKUP_INFO = new TextEncoder().encode("aceclub-e2ee-backup-v1");
+const GCM_TAG_LENGTH = 16;
+const SHA256_BLOCK = 64;
+const SHA256_OUT = 32;
 
-// Polyfill for crypto in React Native
-function getRandomBytes(length: number): Uint8Array {
-  const bytes = new Uint8Array(length);
-  // Use expo-crypto if available, fallback to Math.random-based (for dev)
-  // In production, this should use a CSPRNG
-  if (typeof globalThis.crypto !== "undefined" && globalThis.crypto.getRandomValues) {
-    globalThis.crypto.getRandomValues(bytes);
-  } else {
-    for (let i = 0; i < length; i++) {
-      bytes[i] = Math.floor(Math.random() * 256);
-    }
+// --- Helpers ---
+
+function toBase64(bytes: Uint8Array): string {
+  return Buffer.from(bytes).toString("base64");
+}
+
+function fromBase64(str: string): Uint8Array {
+  return new Uint8Array(Buffer.from(str, "base64"));
+}
+
+function randomBytes(length: number): Uint8Array {
+  return Crypto.getRandomBytes(length);
+}
+
+function concat(...arrays: Uint8Array[]): Uint8Array {
+  const total = arrays.reduce((sum, a) => sum + a.length, 0);
+  const result = new Uint8Array(total);
+  let offset = 0;
+  for (const arr of arrays) {
+    result.set(arr, offset);
+    offset += arr.length;
   }
-  return bytes;
+  return result;
 }
 
-// Minimal Curve25519 / X25519 key agreement implementation
-// Uses the SubtleCrypto API available in React Native Hermes engine with JSI
+// --- Crypto primitives (expo-crypto native) ---
 
-async function generateKeyPair(): Promise<{ privateKey: Uint8Array; publicKey: Uint8Array }> {
-  // Use Web Crypto API for X25519 key generation if available
-  // Fallback: generate raw Curve25519 keypair
-  try {
-    const keyPair = await crypto.subtle.generateKey(
-      { name: "X25519" },
-      true,
-      ["deriveBits"]
-    );
-    const privateKeyBuffer = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-    const publicKeyBuffer = await crypto.subtle.exportKey("raw", keyPair.publicKey);
-    return {
-      privateKey: new Uint8Array(privateKeyBuffer),
-      publicKey: new Uint8Array(publicKeyBuffer),
-    };
-  } catch {
-    // If X25519 not supported, use ECDH with P-256 as fallback
-    // This won't be compatible with iOS Curve25519 but provides a working implementation
-    const keyPair = await crypto.subtle.generateKey(
-      { name: "ECDH", namedCurve: "P-256" },
-      true,
-      ["deriveBits"]
-    );
-    const privateKeyBuffer = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-    const publicKeyBuffer = await crypto.subtle.exportKey("raw", keyPair.publicKey);
-    return {
-      privateKey: new Uint8Array(privateKeyBuffer),
-      publicKey: new Uint8Array(publicKeyBuffer),
-    };
+async function sha256(data: Uint8Array): Promise<Uint8Array> {
+  const buf = await Crypto.digest(Crypto.CryptoDigestAlgorithm.SHA256, new Uint8Array(data));
+  return new Uint8Array(buf);
+}
+
+async function hmacSha256(key: Uint8Array, msg: Uint8Array): Promise<Uint8Array> {
+  let k = key;
+  if (k.length > SHA256_BLOCK) k = await sha256(k);
+  if (k.length < SHA256_BLOCK) {
+    const padded = new Uint8Array(SHA256_BLOCK);
+    padded.set(k);
+    k = padded;
   }
-}
-
-async function importPrivateKey(rawKey: Uint8Array): Promise<CryptoKey> {
-  try {
-    return await crypto.subtle.importKey(
-      "pkcs8",
-      rawKey,
-      { name: "X25519" },
-      false,
-      ["deriveBits"]
-    );
-  } catch {
-    return await crypto.subtle.importKey(
-      "pkcs8",
-      rawKey,
-      { name: "ECDH", namedCurve: "P-256" },
-      false,
-      ["deriveBits"]
-    );
+  const ipad = new Uint8Array(SHA256_BLOCK);
+  const opad = new Uint8Array(SHA256_BLOCK);
+  for (let i = 0; i < SHA256_BLOCK; i++) {
+    ipad[i] = k[i] ^ 0x36;
+    opad[i] = k[i] ^ 0x5c;
   }
+  const inner = await sha256(concat(ipad, msg));
+  return sha256(concat(opad, inner));
 }
 
-async function importPublicKey(rawKey: Uint8Array): Promise<CryptoKey> {
-  try {
-    return await crypto.subtle.importKey(
-      "raw",
-      rawKey,
-      { name: "X25519" },
-      false,
-      []
-    );
-  } catch {
-    return await crypto.subtle.importKey(
-      "raw",
-      rawKey,
-      { name: "ECDH", namedCurve: "P-256" },
-      false,
-      []
-    );
-  }
-}
-
-async function deriveSharedSecret(
-  privateKey: CryptoKey,
-  publicKey: CryptoKey
-): Promise<ArrayBuffer> {
-  const algorithmName = (privateKey.algorithm as any).name ?? "X25519";
-  return await crypto.subtle.deriveBits(
-    { name: algorithmName, public: publicKey },
-    privateKey,
-    256
-  );
-}
-
-async function hkdfDerive(
-  inputKeyMaterial: ArrayBuffer,
+// HKDF-SHA256 (RFC 5869)
+async function hkdf(
+  ikm: Uint8Array,
   salt: Uint8Array,
-  info: string
-): Promise<ArrayBuffer> {
-  const baseKey = await crypto.subtle.importKey(
-    "raw",
-    inputKeyMaterial,
-    "HKDF",
-    false,
-    ["deriveBits"]
-  );
-
-  return await crypto.subtle.deriveBits(
-    {
-      name: "HKDF",
-      hash: "SHA-256",
-      salt,
-      info: new TextEncoder().encode(info),
-    },
-    baseKey,
-    256
-  );
-}
-
-async function aesGcmEncrypt(
-  data: Uint8Array,
-  key: ArrayBuffer
-): Promise<{ nonce: Uint8Array; ciphertext: Uint8Array }> {
-  const aesKey = await crypto.subtle.importKey("raw", key, "AES-GCM", false, ["encrypt"]);
-  const nonce = getRandomBytes(12);
-  const encrypted = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv: nonce },
-    aesKey,
-    data
-  );
-  return { nonce, ciphertext: new Uint8Array(encrypted) };
-}
-
-async function aesGcmDecrypt(
-  ciphertext: Uint8Array,
-  nonce: Uint8Array,
-  key: ArrayBuffer
+  info: Uint8Array,
+  length: number,
 ): Promise<Uint8Array> {
-  const aesKey = await crypto.subtle.importKey("raw", key, "AES-GCM", false, ["decrypt"]);
-  const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: nonce },
-    aesKey,
-    ciphertext
+  const prk = await hmacSha256(
+    salt.length > 0 ? salt : new Uint8Array(SHA256_OUT),
+    ikm,
   );
-  return new Uint8Array(decrypted);
+  const n = Math.ceil(length / SHA256_OUT);
+  const okm = new Uint8Array(n * SHA256_OUT);
+  let prev = new Uint8Array(0);
+  for (let i = 1; i <= n; i++) {
+    prev = await hmacSha256(prk, concat(prev, info, new Uint8Array([i] as unknown as Uint8Array)));
+    okm.set(prev, (i - 1) * SHA256_OUT);
+  }
+  return okm.slice(0, length);
 }
 
-// Key derivation from passphrase (mirrors iOS SHA256 + HKDF approach)
-async function deriveKeyFromPassphrase(
-  passphrase: string,
-  salt: Uint8Array
-): Promise<ArrayBuffer> {
-  const passphraseData = new TextEncoder().encode(passphrase);
-
-  // Concatenate passphrase + salt, then SHA-256
-  const combined = new Uint8Array(passphraseData.length + salt.length);
-  combined.set(passphraseData, 0);
-  combined.set(salt, passphraseData.length);
-  const hash = await crypto.subtle.digest("SHA-256", combined);
-
-  // HKDF with backup info
-  return await hkdfDerive(hash, salt, E2EE_BACKUP_INFO);
-}
-
-// Conversation key cache
-const conversationKeyCache = new Map<string, ArrayBuffer>();
+// --- E2EE Manager ---
 
 class E2EEManager {
-  private privateKeyRaw: Uint8Array | null = null;
-  private publicKeyRaw: Uint8Array | null = null;
+  private privateKey: Uint8Array | null = null;
+  private publicKey: Uint8Array | null = null;
+  private conversationKeyCache: Map<string, Uint8Array> = new Map();
+  private initialized = false;
 
-  async initialize(): Promise<void> {
-    await this.loadKeyPairFromStore();
-  }
-
-  get hasKeys(): boolean {
-    return this.privateKeyRaw !== null && this.publicKeyRaw !== null;
+  get hasKeyPair(): boolean {
+    return this.privateKey !== null && this.publicKey !== null;
   }
 
   get publicKeyBase64(): string | null {
-    if (!this.publicKeyRaw) return null;
-    return Buffer.from(this.publicKeyRaw).toString("base64");
+    return this.publicKey ? toBase64(this.publicKey) : null;
   }
 
-  // --- Key Storage ---
+  async init(): Promise<void> {
+    if (this.initialized) return;
+    await this.loadKeyPairFromStore();
+    if (!this.hasKeyPair) {
+      this.generateKeyPair();
+    }
+    this.initialized = true;
+  }
 
-  private async saveKeyPairToStore(): Promise<void> {
-    if (!this.privateKeyRaw) return;
-    const encoded = Buffer.from(this.privateKeyRaw).toString("base64");
-    await SecureStore.setItemAsync(SECURE_STORE_KEY, encoded);
+  generateKeyPair(): { privateKey: Uint8Array; publicKey: Uint8Array } {
+    const privKey = randomBytes(32);
+    const pubKey = x25519.getPublicKey(privKey);
+    this.privateKey = privKey;
+    this.publicKey = pubKey;
+    this.savePrivateKeyToStore(privKey);
+    return { privateKey: privKey, publicKey: pubKey };
+  }
+
+  private async savePrivateKeyToStore(key: Uint8Array): Promise<void> {
+    try {
+      await SecureStore.setItemAsync(SECURE_STORE_KEY, toBase64(key));
+    } catch (error) {
+      console.warn("[E2EE] Failed to save private key:", error);
+    }
   }
 
   private async loadKeyPairFromStore(): Promise<void> {
     try {
-      const encoded = await SecureStore.getItemAsync(SECURE_STORE_KEY);
-      if (!encoded) return;
-      this.privateKeyRaw = new Uint8Array(Buffer.from(encoded, "base64"));
-      // Derive public key from private key
-      const keyPair = await importPrivateKey(this.privateKeyRaw);
-      // For simplicity, we store both raw keys
-      // Public key needs to be derived from the key pair
-      // This is handled during generation
+      const stored = await SecureStore.getItemAsync(SECURE_STORE_KEY);
+      if (!stored) return;
+      const privKey = fromBase64(stored);
+      if (privKey.length !== 32) return;
+      this.privateKey = privKey;
+      this.publicKey = x25519.getPublicKey(privKey);
     } catch {
-      // Key not found or corrupted
+      // Key not found or invalid
     }
   }
 
   async deleteKeyPair(): Promise<void> {
-    this.privateKeyRaw = null;
-    this.publicKeyRaw = null;
-    conversationKeyCache.clear();
-    await SecureStore.deleteItemAsync(SECURE_STORE_KEY);
+    try {
+      await SecureStore.deleteItemAsync(SECURE_STORE_KEY);
+    } catch {
+      // Ignore
+    }
+    this.privateKey = null;
+    this.publicKey = null;
+    this.conversationKeyCache.clear();
   }
-
-  // --- Key Generation ---
-
-  async generateKeys(): Promise<{ publicKey: string }> {
-    const keyPair = await generateKeyPair();
-    this.privateKeyRaw = keyPair.privateKey;
-    this.publicKeyRaw = keyPair.publicKey;
-    await this.saveKeyPairToStore();
-    // Also save public key raw separately for lookup
-    await SecureStore.setItemAsync(
-      `${SECURE_STORE_KEY}_pub`,
-      Buffer.from(this.publicKeyRaw).toString("base64")
-    );
-    return { publicKey: Buffer.from(this.publicKeyRaw).toString("base64") };
-  }
-
-  // --- Conversation Key Derivation ---
 
   async deriveConversationKey(
     theirPublicKeyBase64: string,
-    conversationId: string
-  ): Promise<ArrayBuffer> {
-    const cached = conversationKeyCache.get(conversationId);
+    conversationId: string,
+  ): Promise<Uint8Array> {
+    const cached = this.conversationKeyCache.get(conversationId);
     if (cached) return cached;
 
-    if (!this.privateKeyRaw) {
-      throw new E2EEError("noPrivateKey", "Clé privée introuvable");
+    if (!this.privateKey) {
+      throw new E2EEError("noPrivateKey", "Aucune clé privée trouvée");
     }
 
-    const theirPublicKeyRaw = new Uint8Array(Buffer.from(theirPublicKeyBase64, "base64"));
-    const privateKey = await importPrivateKey(this.privateKeyRaw);
-    const publicKey = await importPublicKey(theirPublicKeyRaw);
-    const sharedSecret = await deriveSharedSecret(privateKey, publicKey);
+    const theirPublicKey = fromBase64(theirPublicKeyBase64);
+    const sharedSecret = x25519.getSharedSecret(this.privateKey, theirPublicKey);
 
     const salt = new TextEncoder().encode(conversationId);
-    const derivedKey = await hkdfDerive(sharedSecret, salt, E2EE_INFO);
+    const derivedKey = await hkdf(sharedSecret, salt, E2EE_INFO, 32);
 
-    conversationKeyCache.set(conversationId, derivedKey);
+    this.conversationKeyCache.set(conversationId, derivedKey);
     return derivedKey;
   }
 
-  // --- Message Encryption/Decryption ---
+  clearConversationKeyCache(): void {
+    this.conversationKeyCache.clear();
+  }
 
-  async encryptMessage(
-    plaintext: string,
-    theirPublicKeyBase64: string,
-    conversationId: string
-  ): Promise<string> {
-    const key = await this.deriveConversationKey(theirPublicKeyBase64, conversationId);
-    const data = new TextEncoder().encode(plaintext);
-    const { nonce, ciphertext } = await aesGcmEncrypt(data, key);
+  async encryptMessage(plaintext: string, key: Uint8Array): Promise<string> {
+    const plaintextBytes = new TextEncoder().encode(plaintext);
+    const nonce = randomBytes(12);
 
-    const payload = {
+    const aesKey = await Crypto.AESEncryptionKey.import(key);
+    const sealed = await Crypto.aesEncryptAsync(plaintextBytes, aesKey, {
+      nonce: { bytes: nonce },
+      tagLength: GCM_TAG_LENGTH,
+    });
+
+    const ciphertextWithTag = await sealed.ciphertext({ includeTag: true });
+    const payload = JSON.stringify({
       v: 1,
-      n: Buffer.from(nonce).toString("base64"),
-      c: Buffer.from(ciphertext).toString("base64"),
-    };
-    return JSON.stringify(payload);
+      n: toBase64(nonce),
+      c: toBase64(ciphertextWithTag as Uint8Array),
+    });
+    return toBase64(new TextEncoder().encode(payload));
   }
 
   async decryptMessage(
-    encryptedPayload: string,
-    theirPublicKeyBase64: string,
-    conversationId: string
+    encryptedContent: string,
+    key: Uint8Array,
   ): Promise<string> {
-    const key = await this.deriveConversationKey(theirPublicKeyBase64, conversationId);
+    const jsonBytes = fromBase64(encryptedContent);
+    const payload = JSON.parse(new TextDecoder().decode(jsonBytes));
 
-    const payload = JSON.parse(encryptedPayload);
-    if (payload.v !== 1) {
-      throw new E2EEError("decryptionFailed", "Version de chiffrement non supportée");
+    if (payload.v !== 1 || !payload.n || !payload.c) {
+      throw new E2EEError("decryptionFailed", "Format de message invalide");
     }
 
-    const nonce = new Uint8Array(Buffer.from(payload.n, "base64"));
-    const ciphertext = new Uint8Array(Buffer.from(payload.c, "base64"));
-    const decrypted = await aesGcmDecrypt(ciphertext, nonce, key);
+    const nonce = fromBase64(payload.n);
+    const ciphertextAndTag = fromBase64(payload.c);
+
+    const sealed = Crypto.AESSealedData.fromParts(
+      nonce,
+      ciphertextAndTag,
+      GCM_TAG_LENGTH,
+    );
+    const aesKey = await Crypto.AESEncryptionKey.import(key);
+    const decrypted = await Crypto.aesDecryptAsync(sealed, aesKey, {
+      output: "bytes",
+    });
 
     return new TextDecoder().decode(decrypted);
   }
 
-  // --- Backup / Recovery ---
-
   async encryptPrivateKeyWithPassphrase(
-    passphrase: string
+    passphrase: string,
   ): Promise<{ encryptedKey: string; salt: string }> {
-    if (!this.privateKeyRaw) {
-      throw new E2EEError("noPrivateKey", "Clé privée introuvable");
+    if (!this.privateKey) {
+      throw new E2EEError("noPrivateKey", "Aucune clé privée trouvée");
     }
 
-    const salt = getRandomBytes(32);
-    const derivedKey = await deriveKeyFromPassphrase(passphrase, salt);
-    const { nonce, ciphertext } = await aesGcmEncrypt(this.privateKeyRaw, derivedKey);
+    const salt = randomBytes(32);
+    const derivedKey = await this.deriveKeyFromPassphrase(passphrase, salt);
 
-    // Combine nonce + ciphertext (matches iOS SealedBox format)
-    const combined = new Uint8Array(nonce.length + ciphertext.length);
-    combined.set(nonce, 0);
-    combined.set(ciphertext, nonce.length);
+    const nonce = randomBytes(12);
+    const aesKey = await Crypto.AESEncryptionKey.import(derivedKey);
+    const sealed = await Crypto.aesEncryptAsync(this.privateKey, aesKey, {
+      nonce: { bytes: nonce },
+      tagLength: GCM_TAG_LENGTH,
+    });
+
+    const ciphertextWithTag = (await sealed.ciphertext({
+      includeTag: true,
+    })) as Uint8Array;
+    const combined = concat(nonce, ciphertextWithTag);
 
     return {
-      encryptedKey: Buffer.from(combined).toString("base64"),
-      salt: Buffer.from(salt).toString("base64"),
+      encryptedKey: toBase64(combined),
+      salt: toBase64(salt),
     };
   }
 
   async restorePrivateKeyFromBackup(
     encryptedKey: string,
     salt: string,
-    passphrase: string
+    passphrase: string,
   ): Promise<void> {
-    const saltBytes = new Uint8Array(Buffer.from(salt, "base64"));
-    const derivedKey = await deriveKeyFromPassphrase(passphrase, saltBytes);
+    const encryptedData = fromBase64(encryptedKey);
+    const saltData = fromBase64(salt);
 
-    const combined = new Uint8Array(Buffer.from(encryptedKey, "base64"));
-    // Split nonce (12 bytes) and ciphertext
-    const nonce = combined.slice(0, 12);
-    const ciphertext = combined.slice(12);
+    const derivedKey = await this.deriveKeyFromPassphrase(passphrase, saltData);
 
-    const privateKeyRaw = await aesGcmDecrypt(ciphertext, nonce, derivedKey);
+    const nonce = encryptedData.slice(0, 12);
+    const ciphertextAndTag = encryptedData.slice(12);
 
-    this.privateKeyRaw = privateKeyRaw;
-    conversationKeyCache.clear();
-    await this.saveKeyPairToStore();
+    const sealed = Crypto.AESSealedData.fromParts(
+      nonce,
+      ciphertextAndTag,
+      GCM_TAG_LENGTH,
+    );
+    const aesKey = await Crypto.AESEncryptionKey.import(derivedKey);
+    const keyData = (await Crypto.aesDecryptAsync(sealed, aesKey, {
+      output: "bytes",
+    })) as Uint8Array;
 
-    // Try to derive public key and store it
-    try {
-      const keyObj = await importPrivateKey(privateKeyRaw);
-      // Store that we have restored
-      await SecureStore.setItemAsync(`${SECURE_STORE_KEY}_restored`, "true");
-    } catch {
-      // Key restored but public key derivation may need regeneration
+    if (keyData.length !== 32) {
+      throw new E2EEError("invalidBackupData", "Données de backup invalides");
     }
+
+    this.privateKey = keyData;
+    this.publicKey = x25519.getPublicKey(keyData);
+    this.savePrivateKeyToStore(keyData);
+    this.conversationKeyCache.clear();
+  }
+
+  private async deriveKeyFromPassphrase(
+    passphrase: string,
+    salt: Uint8Array,
+  ): Promise<Uint8Array> {
+    const passphraseBytes = new TextEncoder().encode(passphrase);
+    const combined = concat(passphraseBytes, salt);
+    const hash = await sha256(combined);
+    return hkdf(hash, salt, BACKUP_INFO, 32);
   }
 }
 
@@ -364,7 +305,6 @@ export class E2EEError extends Error {
   constructor(code: string, message: string) {
     super(message);
     this.code = code;
-    this.name = "E2EEError";
   }
 }
 

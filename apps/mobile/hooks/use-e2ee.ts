@@ -13,7 +13,7 @@ export function useE2EEBackup() {
     setError(null);
     setSuccess(false);
     try {
-      await e2eeManager.initialize();
+      await e2eeManager.init();
       const { encryptedKey, salt } = await e2eeManager.encryptPrivateKeyWithPassphrase(passphrase);
       await e2eeService.uploadKeyBackup({
         encryptedPrivateKey: encryptedKey,

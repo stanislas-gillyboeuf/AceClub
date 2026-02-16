@@ -76,23 +76,28 @@ export async function authenticateWebSocket(
 ): Promise<{ userId: string; token: string } | null> {
   const url = new URL(req.url);
   const token = url.searchParams.get("token");
+  const cookie = url.searchParams.get("cookie");
 
-  if (!token) {
-    console.log("[WS] No token provided");
+  if (!token && !cookie) {
+    console.log("[WS] No token or cookie provided");
     return null;
   }
 
   try {
     const headers = new Headers();
-    headers.set("Authorization", `Bearer ${token}`);
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    } else if (cookie) {
+      headers.set("Cookie", cookie);
+    }
     const session = await auth.api.getSession({ headers });
 
     if (!session || !session.user) {
-      console.log("[WS] Invalid token");
+      console.log("[WS] Invalid token/cookie");
       return null;
     }
 
-    return { userId: session.user.id, token };
+    return { userId: session.user.id, token: token || cookie! };
   } catch (error) {
     console.error("[WS] Auth error:", error);
     return null;

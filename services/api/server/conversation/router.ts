@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import type { HonoContext } from "../../types/hono";
 import { zValidator } from "@hono/zod-validator";
 import { requireAuth } from "../../middleware/auth";
-import { sendMessageValidator, muteConversationValidator, findOrCreateConversationValidator } from "./validators";
-import { sendMessage, markRead, muteConversation, deleteConversation, deleteMessage, findOrCreateConversation, uploadAttachment } from "./mutations";
+import { sendMessageValidator, muteConversationValidator, findOrCreateConversationValidator, addReactionValidator, removeReactionValidator } from "./validators";
+import { sendMessage, markRead, muteConversation, deleteConversation, deleteMessage, findOrCreateConversation, uploadAttachment, addReaction, removeReaction } from "./mutations";
 import { listConversations, getConversation, listMessages } from "./queries";
 
 export const conversationRouter = new Hono<HonoContext>();
@@ -41,6 +41,12 @@ conversationRouter.post(
 
 // Delete (soft) a message (only sender can delete)
 conversationRouter.delete("/:id/message/:messageId", deleteMessage);
+
+// Add a reaction to a message
+conversationRouter.post("/:id/message/:messageId/reaction", zValidator("json", addReactionValidator), addReaction);
+
+// Remove a reaction from a message
+conversationRouter.delete("/:id/message/:messageId/reaction", zValidator("json", removeReactionValidator), removeReaction);
 
 // Delete (soft) a conversation for the current user
 conversationRouter.delete("/:id", deleteConversation);

@@ -91,11 +91,35 @@ export const message = pgTable(
     clientMessageId: text("client_message_id"),
     // E2EE: whether the message content is encrypted
     isEncrypted: boolean("is_encrypted").notNull().default(false),
+    // Reply to another message
+    replyToId: text("reply_to_id"),
   },
   (table) => [
     index("message_conversationId_idx").on(table.conversationId),
     index("message_senderId_idx").on(table.senderId),
     index("message_conversationId_createdAt_idx").on(table.conversationId, table.createdAt),
     index("message_clientMessageId_idx").on(table.clientMessageId),
+    index("message_replyToId_idx").on(table.replyToId),
+  ],
+);
+
+export const messageReaction = pgTable(
+  "message_reaction",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    messageId: text("message_id")
+      .notNull()
+      .references(() => message.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    emoji: text("emoji").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("message_reaction_messageId_idx").on(table.messageId),
+    uniqueIndex("message_reaction_unique").on(table.messageId, table.userId, table.emoji),
   ],
 );
