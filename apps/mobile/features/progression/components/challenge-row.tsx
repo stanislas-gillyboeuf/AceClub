@@ -21,14 +21,14 @@ interface ChallengeRowProps {
 export function ChallengeRow({ challenge }: ChallengeRowProps) {
   const scheme = useColorScheme();
   const progress = getChallengeProgressPercent(
-    challenge.currentValue,
+    challenge.currentProgress,
     challenge.targetValue
   );
   const statusColor = getChallengeStatusColor(challenge.status, colors.accentGreen);
   const difficultyColor = getDifficultyColor(challenge.difficulty);
   const isCompleted = challenge.status === "completed";
   const isExpired = challenge.status === "expired";
-  const timeRemaining = getChallengeTimeRemaining(challenge.endDate);
+  const timeRemaining = getChallengeTimeRemaining(challenge.expiresAt);
 
   return (
     <Card style={isCompleted || isExpired ? { opacity: 0.7 } : undefined}>
@@ -56,7 +56,7 @@ export function ChallengeRow({ challenge }: ChallengeRowProps) {
         </View>
         <View style={styles.rewardBadge}>
           <Text style={styles.rewardText}>
-            +{formatAces(challenge.reward)} Aces
+            +{formatAces(challenge.acesReward)} Aces
           </Text>
         </View>
       </View>
@@ -82,7 +82,7 @@ export function ChallengeRow({ challenge }: ChallengeRowProps) {
               { color: semanticColors.labelSecondary[scheme] },
             ]}
           >
-            {challenge.currentValue}/{challenge.targetValue}
+            {challenge.currentProgress}/{challenge.targetValue}
           </Text>
           {isCompleted ? (
             <View style={styles.completedRow}>

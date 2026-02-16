@@ -87,7 +87,8 @@ export function matchDetailToMatchWithParticipants(detail: MatchDetail): MatchWi
   };
 }
 
-export function formatAces(count: number): string {
+export function formatAces(count: number | undefined | null): string {
+  if (count == null) return "0";
   if (count >= 1000) {
     const k = count / 1000;
     return `${k % 1 === 0 ? k.toFixed(0) : k.toFixed(1)}k`;

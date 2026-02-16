@@ -4,19 +4,16 @@ export type ChallengeStatus = "active" | "completed" | "expired";
 
 export interface Challenge {
   id: string;
-  templateId: string;
-  userId: string;
+  code: string;
   type: string;
   difficulty: string;
   status: string;
   title: string;
   description: string;
   targetValue: number;
-  currentValue: number;
-  reward: number;
-  startDate: string;
-  endDate: string;
-  completedAt?: string | null;
+  currentProgress: number;
+  acesReward: number;
+  expiresAt: string;
 }
 
 export interface ChallengesResponse {

@@ -3,7 +3,7 @@ import type { ChallengesResponse, ChallengeTemplate } from "@/types/challenge";
 
 export const challengeService = {
   getMyChallenges: () =>
-    api.get<ChallengesResponse>("/challenge/me"),
+    api.get<ChallengesResponse>("/challenge"),
 
   getChallengeTemplates: () =>
     api.get<ChallengeTemplate[]>("/challenge/templates"),
