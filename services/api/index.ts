@@ -39,9 +39,9 @@ app.use(
 
       return null;
     },
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "Cookie"],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    exposeHeaders: ["Content-Length", "Authorization"],
+    exposeHeaders: ["Content-Length", "Authorization", "Set-Cookie", "set-auth-token"],
     maxAge: 600,
     credentials: true,
   }),

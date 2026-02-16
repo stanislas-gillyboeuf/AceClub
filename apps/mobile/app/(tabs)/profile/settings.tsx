@@ -30,6 +30,7 @@ import { useMe, usePreferences, useUpdateProfile } from "@/hooks/use-user";
 import { useDeleteAccount } from "@/hooks/use-e2ee";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { authClient } from "@/lib/auth-client";
+import { clearAuthData } from "@/lib/auth-api";
 import { uploadService } from "@/services/upload";
 import { getSkillLevels } from "@/lib/skill-levels";
 
@@ -234,6 +235,7 @@ export default function Settings() {
             try {
               await deleteAccount.mutateAsync();
               await authClient.signOut();
+              await clearAuthData();
               router.replace("/(auth)/sign-in");
             } catch {
               Alert.alert("Erreur", "Impossible de supprimer le compte.");

@@ -23,6 +23,7 @@ import { useUserInvitations, useAcceptInvitation, useRejectInvitation } from "@/
 import { useMatches } from "@/hooks/use-match";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { authClient } from "@/lib/auth-client";
+import { clearAuthData } from "@/lib/auth-api";
 
 import { ProfileHeaderCard } from "@/features/profile/components/profile-header-card";
 import { ProfileBadgeSection } from "@/features/profile/components/profile-badge-section";
@@ -187,6 +188,7 @@ export default function Profile() {
           style: "destructive",
           onPress: async () => {
             await authClient.signOut();
+            await clearAuthData();
             router.replace("/(auth)/sign-in");
           },
         },

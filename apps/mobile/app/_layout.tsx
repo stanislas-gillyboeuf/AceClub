@@ -6,7 +6,6 @@ import "react-native-reanimated";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { AuthTokenSync } from "@/lib/auth-token-sync";
 
 GoogleSignin.configure({
   iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
@@ -18,7 +17,6 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
-          <AuthTokenSync />
           <Slot />
           <StatusBar style="auto" />
         </SafeAreaProvider>

@@ -1,82 +1,33 @@
 /**
  * Auth utilities for API requests.
- * Supports cookies (Better Auth Expo) and Bearer token.
+ * Strategy: cookies (Better Auth Expo plugin) primary, bearer token fallback.
+ * Bearer token is captured globally via fetchOptions.onSuccess in auth-client.ts.
  */
 
 import * as SecureStore from "expo-secure-store";
 import { authClient } from "@/lib/auth-client";
 
 const BEARER_TOKEN_KEY = "aceclub_bearer_token";
-const COOKIE_STORAGE_KEY = "aceclub_cookie";
-
-/** AuthClient extended by @better-auth/expo with getCookie */
-interface AuthClientWithCookie {
-  getCookie?: () => string;
-}
-
-function getCookieFromAuthClient(): string | null {
-  const client = authClient as AuthClientWithCookie;
-  const cookie = client.getCookie?.();
-  if (!cookie?.trim()) return null;
-  return cookie.trim().replace(/^;\s*/, "");
-}
-
-function getCookieFromSecureStore(): string | null {
-  try {
-    const raw = SecureStore.getItem(COOKIE_STORAGE_KEY);
-    if (!raw) return null;
-
-    const parsed = JSON.parse(raw) as Record<string, { value: string; expires?: string }>;
-    const now = Date.now();
-
-    return Object.entries(parsed)
-      .filter(([, v]) => !v.expires || new Date(v.expires).getTime() > now)
-      .map(([key, v]) => `${key}=${v.value}`)
-      .join("; ")
-      .trim() || null;
-  } catch {
-    return null;
-  }
-}
-
-async function getBearerToken(): Promise<string | null> {
-  return SecureStore.getItemAsync(BEARER_TOKEN_KEY);
-}
 
 /**
- * Returns auth headers for API requests.
- * Order: cookies (authClient) → Bearer token → legacy SecureStore cookies.
+ * Returns auth headers for custom API requests.
+ * 1. Try cookies from authClient.getCookie() (Better Auth Expo plugin)
+ * 2. Fall back to bearer token from SecureStore (captured via fetchOptions.onSuccess)
  */
 export async function getAuthHeaders(): Promise<Record<string, string>> {
-  const headers: Record<string, string> = {};
-
-  const cookie = getCookieFromAuthClient() ?? getCookieFromSecureStore();
-  if (cookie) {
-    headers["Cookie"] = cookie;
-    return headers;
+  // 1. Try cookie from expo plugin
+  const cookie = (authClient as { getCookie?: () => string }).getCookie?.();
+  if (cookie?.trim()) {
+    return { Cookie: cookie.trim().replace(/^;\s*/, "") };
   }
 
-  const bearerToken = await getBearerToken();
-  if (bearerToken) {
-    headers["Authorization"] = `Bearer ${bearerToken}`;
+  // 2. Fall back to bearer token
+  const token = await SecureStore.getItemAsync(BEARER_TOKEN_KEY);
+  if (token) {
+    return { Authorization: `Bearer ${token}` };
   }
 
-  return headers;
-}
-
-/**
- * Auth params for WebSocket connection.
- */
-export type WebSocketAuth = { token: string } | { cookie: string };
-
-export async function getAuthForWebSocket(): Promise<WebSocketAuth | null> {
-  const cookie = getCookieFromAuthClient() ?? getCookieFromSecureStore();
-  if (cookie) return { cookie };
-
-  const bearerToken = await getBearerToken();
-  if (bearerToken) return { token: bearerToken };
-
-  return null;
+  return {};
 }
 
 export async function setAuthToken(token: string | null): Promise<void> {
@@ -85,4 +36,21 @@ export async function setAuthToken(token: string | null): Promise<void> {
   } else {
     await SecureStore.deleteItemAsync(BEARER_TOKEN_KEY);
   }
+}
+
+export async function clearAuthData(): Promise<void> {
+  await SecureStore.deleteItemAsync(BEARER_TOKEN_KEY);
+}
+
+/** Auth params for WebSocket connection. */
+export type WebSocketAuth = { token: string } | { cookie: string };
+
+export async function getAuthForWebSocket(): Promise<WebSocketAuth | null> {
+  const cookie = (authClient as { getCookie?: () => string }).getCookie?.();
+  if (cookie?.trim()) return { cookie: cookie.trim().replace(/^;\s*/, "") };
+
+  const token = await SecureStore.getItemAsync(BEARER_TOKEN_KEY);
+  if (token) return { token };
+
+  return null;
 }

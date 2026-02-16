@@ -12,8 +12,18 @@ const LOCAL_URL = Platform.OS === "android"
     : "http://localhost:3000";
 const API_URL = process.env.EXPO_PUBLIC_API_URL || LOCAL_URL;
 
+const BEARER_TOKEN_KEY = "aceclub_bearer_token";
+
 export const authClient = createAuthClient({
     baseURL: API_URL,
+    fetchOptions: {
+        onSuccess: (ctx) => {
+            const authToken = ctx.response.headers.get("set-auth-token");
+            if (authToken) {
+                SecureStore.setItemAsync(BEARER_TOKEN_KEY, authToken);
+            }
+        },
+    },
     plugins: [
         expoClient({
             scheme: "aceclub",
