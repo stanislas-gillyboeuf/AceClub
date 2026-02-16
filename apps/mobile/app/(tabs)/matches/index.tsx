@@ -5,13 +5,12 @@ import {
   View,
   Platform,
   Pressable,
-  Alert,
   SectionList,
   RefreshControl,
   StyleSheet,
 } from "react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { radii, semanticColors, spacing } from "@/constants/theme";
+import { colors, radii, semanticColors, spacing } from "@/constants/theme";
 import { useInfiniteMatches } from "@/hooks/use-match";
 import { MatchRow } from "@/features/matches/components/match-row";
 import { MatchRowSkeleton } from "@/features/matches/components/match-row-skeleton";
@@ -48,7 +47,7 @@ export default function Matches() {
   );
 
   const onCreateMatch = () => {
-    Alert.alert("Créer un match", "Bientôt disponible !");
+    router.push("/matches/create");
   };
 
   const onOpenRequests = () => {
@@ -87,10 +86,10 @@ export default function Matches() {
               ? () => (
                   <View style={styles.androidToolbar}>
                     <Pressable onPress={onOpenRequests}>
-                      <MaterialIcons name="mail-outline" size={24} />
+                      <MaterialIcons name="mail-outline" size={24} color={colors.accentGreen} />
                     </Pressable>
                     <Pressable onPress={onCreateMatch}>
-                      <MaterialIcons name="add" size={24} />
+                      <MaterialIcons name="add" size={24} color={colors.accentGreen} />
                     </Pressable>
                   </View>
                 )
@@ -100,10 +99,10 @@ export default function Matches() {
       {Platform.OS === "ios" && (
         <>
           <Stack.Toolbar placement="left">
-            <Stack.Toolbar.Button icon="plus" onPress={onCreateMatch} />
+            <Stack.Toolbar.Button icon="plus" onPress={onCreateMatch} tintColor={colors.accentGreen} />
           </Stack.Toolbar>
           <Stack.Toolbar placement="right">
-            <Stack.Toolbar.Button icon="envelope.badge" onPress={onOpenRequests} />
+            <Stack.Toolbar.Button icon="envelope.badge" onPress={onOpenRequests} tintColor={colors.accentGreen} />
           </Stack.Toolbar>
         </>
       )}

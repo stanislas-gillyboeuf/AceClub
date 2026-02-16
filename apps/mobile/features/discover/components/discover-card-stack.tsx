@@ -168,13 +168,13 @@ export function DiscoverCardStack({
             <EmptyState
               icon="UsersRound"
               title="Plus de profils pour l'instant"
-              description="Reviens plus tard pour d\u00e9couvrir de nouveaux joueurs de ton club."
+              description="Reviens plus tard pour découvrir de nouveaux joueurs de ton club."
             />
             <Pressable
               style={[styles.createButton, { backgroundColor: colors.accentGreen }]}
               onPress={onCreateIntent}
             >
-              <Text style={styles.createButtonText}>Cr\u00e9er une annonce</Text>
+              <Text style={styles.createButtonText}>Créer une annonce</Text>
             </Pressable>
           </View>
         ) : (

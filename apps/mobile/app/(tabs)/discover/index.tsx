@@ -6,10 +6,10 @@ import {
   Modal,
   ActivityIndicator,
   StyleSheet,
-  Alert,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as Location from "expo-location";
+import { useRouter } from "expo-router";
 import { SlidersHorizontal, Check } from "lucide-react-native";
 import { DiscoverCardStack } from "@/features/discover/components/discover-card-stack";
 import { DiscoverDetailSheet } from "@/features/discover/components/discover-detail-sheet";
@@ -28,6 +28,7 @@ const RADIUS_OPTIONS: { label: string; value: number | undefined }[] = [
 
 export default function DiscoverScreen() {
   const scheme = useColorScheme();
+  const router = useRouter();
   const {
     items,
     isLoading,
@@ -70,8 +71,8 @@ export default function DiscoverScreen() {
   }, []);
 
   const handleCreateIntent = useCallback(() => {
-    Alert.alert("Cr\u00e9er une annonce", "Cette fonctionnalit\u00e9 sera bient\u00f4t disponible.");
-  }, []);
+    router.push("/(tabs)/discover/create-intent");
+  }, [router]);
 
   const handleRadiusSelect = useCallback(
     (value: number | undefined) => {

@@ -114,7 +114,7 @@ export default function Profile() {
   const matchIntents = intentsData?.data ?? [];
   const primaryOrg = orgs?.[0] ?? null;
   const pendingInvitations = (invitations ?? []).filter((i) => i.status === "pending");
-  const badges = badgesData?.badges ?? [];
+  const badges = (badgesData?.badges ?? []).map((b) => ({ ...b, isUnlocked: true }));
   const totalBadges = allBadgesData?.badges?.length ?? 0;
 
   const matchStats = useMemo(() => {
@@ -221,7 +221,7 @@ export default function Profile() {
             Platform.OS === "android"
               ? () => (
                   <Pressable onPress={openSettings} hitSlop={8}>
-                    <MaterialIcons name="settings" size={24} color={semanticColors.labelPrimary[scheme]} />
+                    <MaterialIcons name="settings" size={24} color={colors.accentGreen} />
                   </Pressable>
                 )
               : undefined,
@@ -230,7 +230,7 @@ export default function Profile() {
 
       {Platform.OS === "ios" && (
         <Stack.Toolbar placement="right">
-          <Stack.Toolbar.Button icon="gearshape" onPress={openSettings} />
+          <Stack.Toolbar.Button icon="gearshape" onPress={openSettings} tintColor={colors.accentGreen} />
         </Stack.Toolbar>
       )}
 

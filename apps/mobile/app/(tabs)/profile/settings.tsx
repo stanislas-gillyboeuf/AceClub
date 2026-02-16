@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
   Platform,
   KeyboardAvoidingView,
 } from "react-native";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, useFocusEffect } from "expo-router";
 import {
   Building2,
   Dumbbell,
@@ -39,9 +39,7 @@ import { SettingsRow } from "@/components/ui/settings-row";
 import { ToggleRow } from "@/components/ui/toggle-row";
 import { RadioGroup } from "@/components/ui/radio-group";
 import { EditableAvatar } from "@/features/settings/components/editable-avatar";
-import { ClubSelectionModal } from "@/features/settings/components/club-selection-modal";
-import { E2EEBackupModal } from "@/features/settings/components/e2ee-backup-modal";
-import { E2EERecoveryModal } from "@/features/settings/components/e2ee-recovery-modal";
+import { consumePendingClubSelection } from "@/lib/pending-club-selection";
 
 import { colors, semanticColors, spacing, radii } from "@/constants/theme";
 import type { Sport } from "@/types/common";
@@ -79,11 +77,6 @@ export default function Settings() {
   // Toggles
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [locationEnabled, setLocationEnabled] = useState(false);
-
-  // Modals
-  const [showClubModal, setShowClubModal] = useState(false);
-  const [showE2EEBackup, setShowE2EEBackup] = useState(false);
-  const [showE2EERecovery, setShowE2EERecovery] = useState(false);
 
   // Delete account
   const deleteAccount = useDeleteAccount();
@@ -160,12 +153,16 @@ export default function Settings() {
     setSelectedImageUri(asset.uri);
   };
 
-  // Club selection
-  const handleClubSelect = (org: Organization, pin?: string) => {
-    setSelectedOrganization(org);
-    if (pin) setPendingPin(pin);
-    setShowClubModal(false);
-  };
+  // Consume pending club selection when returning from club-selection screen
+  useFocusEffect(
+    useCallback(() => {
+      const selection = consumePendingClubSelection();
+      if (selection) {
+        setSelectedOrganization(selection.organization);
+        if (selection.pin) setPendingPin(selection.pin);
+      }
+    }, [])
+  );
 
   // Save
   const handleSave = async () => {
@@ -292,7 +289,7 @@ export default function Settings() {
           title: "Paramètres",
           headerLeft: () => (
             <Pressable onPress={() => router.back()} hitSlop={8}>
-              <X size={24} color={semanticColors.labelPrimary[scheme]} strokeWidth={2} />
+              <X size={24} color={colors.accentGreen} strokeWidth={2} />
             </Pressable>
           ),
           headerRight: () => (
@@ -377,7 +374,7 @@ export default function Settings() {
             <SettingsRow
               icon={<Building2 size={20} color={colors.accentGreen} strokeWidth={1.5} />}
               label={selectedOrganization?.name ?? "Sélectionner un club"}
-              onPress={() => setShowClubModal(true)}
+              onPress={() => router.push({ pathname: "/(tabs)/profile/club-selection", params: { selectedId: selectedOrganization?.id ?? "" } })}
             />
           </SectionCard>
 
@@ -442,7 +439,7 @@ export default function Settings() {
             <SettingsRow
               icon={<Shield size={20} color={colors.accentGreen} strokeWidth={1.5} />}
               label="Sauvegarder ma clé"
-              onPress={() => setShowE2EEBackup(true)}
+              onPress={() => router.push("/(tabs)/profile/e2ee-backup")}
             />
             <View
               style={[styles.divider, { backgroundColor: semanticColors.divider[scheme] }]}
@@ -450,7 +447,7 @@ export default function Settings() {
             <SettingsRow
               icon={<KeyRound size={20} color={colors.accentGreen} strokeWidth={1.5} />}
               label="Récupérer ma clé"
-              onPress={() => setShowE2EERecovery(true)}
+              onPress={() => router.push("/(tabs)/profile/e2ee-recovery")}
             />
           </SectionCard>
 
@@ -486,21 +483,6 @@ export default function Settings() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Modals */}
-      <ClubSelectionModal
-        visible={showClubModal}
-        onDismiss={() => setShowClubModal(false)}
-        onSelect={handleClubSelect}
-        selectedId={selectedOrganization?.id}
-      />
-      <E2EEBackupModal
-        visible={showE2EEBackup}
-        onDismiss={() => setShowE2EEBackup(false)}
-      />
-      <E2EERecoveryModal
-        visible={showE2EERecovery}
-        onDismiss={() => setShowE2EERecovery(false)}
-      />
     </>
   );
 }

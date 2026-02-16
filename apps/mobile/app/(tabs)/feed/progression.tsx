@@ -25,7 +25,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SkeletonRow } from "@/components/ui/skeleton";
 
-import { semanticColors, spacing } from "@/constants/theme";
+import { colors, semanticColors, spacing } from "@/constants/theme";
 import type { Badge as BadgeType } from "@/types/reward";
 
 export default function Progression() {
@@ -161,7 +161,7 @@ export default function Progression() {
             Platform.OS === "android"
               ? () => (
                   <Pressable onPress={goBack}>
-                    <MaterialIcons name="close" size={24} color="green" />
+                    <MaterialIcons name="close" size={24} color={colors.accentGreen} />
                   </Pressable>
                 )
               : undefined,
@@ -170,7 +170,7 @@ export default function Progression() {
 
       {Platform.OS === "ios" && (
         <Stack.Toolbar placement="right">
-          <Stack.Toolbar.Button icon="xmark" onPress={goBack} tintColor="green" />
+          <Stack.Toolbar.Button icon="xmark" onPress={goBack} tintColor={colors.accentGreen} />
         </Stack.Toolbar>
       )}
 

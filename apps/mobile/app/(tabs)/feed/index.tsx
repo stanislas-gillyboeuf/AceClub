@@ -24,7 +24,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SkeletonRow } from "@/components/ui/skeleton";
 
-import { semanticColors, spacing } from "@/constants/theme";
+import { colors, semanticColors, spacing } from "@/constants/theme";
 
 export default function Feed() {
   const scheme = useColorScheme();
@@ -75,7 +75,7 @@ export default function Feed() {
             Platform.OS === "android"
               ? () => (
                   <Pressable onPress={goToRanking}>
-                    <MaterialIcons name="emoji-events" size={24} />
+                    <MaterialIcons name="emoji-events" size={24} color={colors.accentGreen} />
                   </Pressable>
                 )
               : undefined,
@@ -84,7 +84,7 @@ export default function Feed() {
 
       {Platform.OS === "ios" && (
         <Stack.Toolbar placement="right">
-          <Stack.Toolbar.Button icon="trophy" onPress={goToRanking} />
+          <Stack.Toolbar.Button icon="trophy" onPress={goToRanking} tintColor={colors.accentGreen} />
         </Stack.Toolbar>
       )}
 

@@ -14,6 +14,15 @@ export default function MatchesLayout() {
         }}
       />
       <Stack.Screen
+        name="create"
+        options={{
+          presentation: "formSheet",
+          sheetGrabberVisible: true,
+          title: "Nouveau match",
+          headerTransparent: true,
+        }}
+      />
+      <Stack.Screen
         name="[id]/index"
         options={{
           presentation: "fullScreenModal",

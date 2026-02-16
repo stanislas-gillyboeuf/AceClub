@@ -22,6 +22,33 @@ export default function ProfileLayout() {
           headerTransparent: true,
         }}
       />
+      <Stack.Screen
+        name="e2ee-backup"
+        options={{
+          title: "Sauvegarder ma cle",
+          presentation: "formSheet",
+          sheetGrabberVisible: true,
+          headerTransparent: true,
+        }}
+      />
+      <Stack.Screen
+        name="e2ee-recovery"
+        options={{
+          title: "Recuperer ma cle",
+          presentation: "formSheet",
+          sheetGrabberVisible: true,
+          headerTransparent: true,
+        }}
+      />
+      <Stack.Screen
+        name="club-selection"
+        options={{
+          title: "Selectionner un club",
+          presentation: "formSheet",
+          sheetGrabberVisible: true,
+          headerTransparent: true,
+        }}
+      />
     </Stack>
   );
 }
