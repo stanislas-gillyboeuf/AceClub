@@ -25,6 +25,8 @@ import {
   X,
 } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as Notifications from "expo-notifications";
+import * as Location from "expo-location";
 
 import { useMe, usePreferences, useUpdateProfile } from "@/hooks/use-user";
 import { useDeleteAccount } from "@/hooks/use-e2ee";
@@ -75,9 +77,29 @@ export default function Settings() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Toggles
+  // Toggles — synced with real OS permissions
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [locationEnabled, setLocationEnabled] = useState(false);
+
+  const checkPermissions = useCallback(async () => {
+    const { status: notifStatus } = await Notifications.getPermissionsAsync();
+    setNotificationsEnabled(notifStatus === "granted");
+
+    const { status: locStatus } = await Location.getForegroundPermissionsAsync();
+    setLocationEnabled(locStatus === "granted");
+  }, []);
+
+  // Check on mount
+  useEffect(() => {
+    checkPermissions();
+  }, [checkPermissions]);
+
+  // Re-check when returning from OS settings
+  useFocusEffect(
+    useCallback(() => {
+      checkPermissions();
+    }, [checkPermissions])
+  );
 
   // Delete account
   const deleteAccount = useDeleteAccount();
@@ -249,9 +271,19 @@ export default function Settings() {
   // Notifications toggle
   const handleNotificationsToggle = async (value: boolean) => {
     if (value) {
-      setNotificationsEnabled(true);
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status === "granted") {
+        setNotificationsEnabled(true);
+      } else {
+        // Permission denied — open OS settings
+        if (Platform.OS === "ios") {
+          Linking.openURL("app-settings:");
+        } else {
+          Linking.openSettings();
+        }
+      }
     } else {
-      // Can't disable programmatically, open settings
+      // Can't revoke programmatically — open OS settings
       if (Platform.OS === "ios") {
         Linking.openURL("app-settings:");
       } else {
@@ -263,7 +295,16 @@ export default function Settings() {
   // Location toggle
   const handleLocationToggle = async (value: boolean) => {
     if (value) {
-      setLocationEnabled(true);
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === "granted") {
+        setLocationEnabled(true);
+      } else {
+        if (Platform.OS === "ios") {
+          Linking.openURL("app-settings:");
+        } else {
+          Linking.openSettings();
+        }
+      }
     } else {
       if (Platform.OS === "ios") {
         Linking.openURL("app-settings:");

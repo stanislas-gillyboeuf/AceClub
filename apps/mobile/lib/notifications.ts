@@ -1,13 +1,11 @@
-import * as Notifications from "expo-notifications";
-import * as Device from "expo-device";
 import { Platform } from "react-native";
-import { router } from "expo-router";
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
+import { router } from "expo-router";
 
-// Configure foreground notification display
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
     shouldShowBanner: true,
@@ -15,35 +13,61 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export async function requestPermissions(): Promise<boolean> {
+function handleRegistrationError(errorMessage: string) {
+  alert(errorMessage);
+  throw new Error(errorMessage);
+}
+
+export async function registerForPushNotificationsAsync() {
+  if (Platform.OS === "android") {
+    await Notifications.setNotificationChannelAsync("default", {
+      name: "default",
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: "#FF231F7C",
+    });
+  }
+
   if (!Device.isDevice) {
-    console.log("[Notifications] Must use physical device for push notifications");
-    return false;
+    handleRegistrationError("Must use physical device for push notifications");
+    return;
   }
 
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  if (existingStatus === "granted") return true;
+  let finalStatus = existingStatus;
+  if (existingStatus !== "granted") {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+  if (finalStatus !== "granted") {
+    handleRegistrationError("Permission not granted to get push token!");
+    return;
+  }
 
-  const { status } = await Notifications.requestPermissionsAsync();
-  return status === "granted";
-}
+  const projectId =
+    Constants?.expoConfig?.extra?.eas?.projectId ??
+    Constants?.easConfig?.projectId;
+  if (!projectId) {
+    handleRegistrationError("Project ID not found");
+  }
 
-export async function getExpoPushToken(): Promise<string | null> {
   try {
-    const projectId =
-      Constants.expoConfig?.extra?.eas?.projectId ?? "55848fd1-bd32-4e6d-bd4b-d8d2066fcdc6";
-
-    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
-    console.log("[Notifications] Expo push token:", tokenData.data);
-    return tokenData.data;
-  } catch (error) {
-    console.error("[Notifications] Failed to get push token:", error);
-    return null;
+    const pushTokenString = (
+      await Notifications.getExpoPushTokenAsync({ projectId })
+    ).data;
+    console.log(pushTokenString);
+    return pushTokenString;
+  } catch (e: unknown) {
+    handleRegistrationError(`${e}`);
   }
 }
 
-function handleNotificationResponse(response: Notifications.NotificationResponse) {
-  const data = response.notification.request.content.data as Record<string, string> | undefined;
+function handleNotificationResponse(
+  response: Notifications.NotificationResponse
+) {
+  const data = response.notification.request.content.data as
+    | Record<string, string>
+    | undefined;
   if (!data?.type) {
     router.navigate("/(tabs)/feed");
     return;
@@ -79,14 +103,21 @@ function handleNotificationResponse(response: Notifications.NotificationResponse
 }
 
 export function setupNotificationListeners(): () => void {
-  const foregroundSub = Notifications.addNotificationReceivedListener((notification) => {
-    console.log("[Notifications] Foreground notification:", notification.request.content.title);
-  });
+  const foregroundSub = Notifications.addNotificationReceivedListener(
+    (notification) => {
+      console.log(
+        "[Notifications] Foreground notification:",
+        notification.request.content.title
+      );
+    }
+  );
 
-  const responseSub = Notifications.addNotificationResponseReceivedListener((response) => {
-    console.log("[Notifications] User tapped notification");
-    handleNotificationResponse(response);
-  });
+  const responseSub = Notifications.addNotificationResponseReceivedListener(
+    (response) => {
+      console.log("[Notifications] User tapped notification");
+      handleNotificationResponse(response);
+    }
+  );
 
   return () => {
     foregroundSub.remove();
