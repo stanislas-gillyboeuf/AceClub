@@ -25,7 +25,6 @@ export default function TabLayout() {
     return <Redirect href="/(onboarding)" />;
   }
 
-  // Hide tab bar when inside a conversation
   const isInConversation =
     segments.length >= 3 &&
     segments[1] === "chat" &&
@@ -33,7 +32,7 @@ export default function TabLayout() {
     segments[2] !== "index";
 
   return (
-    <NativeTabs tintColor={colors.accentGreen} hidden={isInConversation}>
+    <NativeTabs tintColor={colors.accentGreen} hidden={isInConversation} minimizeBehavior="onScrollDown" >
       <NativeTabs.Trigger name="feed">
         <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
         <NativeTabs.Trigger.Label>Feed</NativeTabs.Trigger.Label>

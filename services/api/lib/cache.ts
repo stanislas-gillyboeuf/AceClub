@@ -20,6 +20,10 @@ export const CacheKeys = {
   // E2EE
   e2eePublicKey: (userId: string) => `e2ee:pubkey:${userId}`,
 
+  // Conversation enrichment
+  convParticipants: (conversationId: string) => `conv:participants:${conversationId}`,
+  userEnrichment: (userId: string) => `user:enrichment:${userId}`,
+
   // Prefixes for bulk invalidation
   PREFIX_LEADERBOARD_GLOBAL: "leaderboard:global:",
   PREFIX_LEADERBOARD_WEEKLY: "leaderboard:weekly:",
@@ -54,6 +58,17 @@ export async function cacheDel(key: string): Promise<void> {
   } catch {
     // Silently fail
   }
+}
+
+/**
+ * Cache-through helper: returns cached value if available, otherwise runs fetcher and caches result.
+ */
+export async function cached<T>(key: string, ttlSeconds: number, fetcher: () => Promise<T>): Promise<T> {
+  const hit = await cacheGet<T>(key);
+  if (hit !== null) return hit;
+  const data = await fetcher();
+  await cacheSet(key, data, ttlSeconds);
+  return data;
 }
 
 export async function cacheInvalidatePrefix(prefix: string): Promise<void> {

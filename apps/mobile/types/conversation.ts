@@ -76,6 +76,7 @@ export interface Conversation {
   createdAt: string;
   unreadCount: number;
   isMuted: boolean;
+  encryptionKey?: string | null;
   otherParticipants: ConversationParticipant[];
 }
 

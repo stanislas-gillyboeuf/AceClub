@@ -6,9 +6,9 @@ import {
 } from "@/lib/encryption";
 import type { ChatMessage } from "../types";
 
-export function useEncryption(conversationId: string) {
-  const keyRef = useRef<string | null>(null);
-  const fetchAttemptedRef = useRef(false);
+export function useEncryption(conversationId: string, conversationKey?: string | null) {
+  const keyRef = useRef<string | null>(conversationKey ?? null);
+  const fetchAttemptedRef = useRef(!!conversationKey);
 
   const fetchKey = useCallback(async () => {
     if (keyRef.current || fetchAttemptedRef.current) return;
@@ -22,6 +22,8 @@ export function useEncryption(conversationId: string) {
   }, [conversationId]);
 
   const ensureReady = useCallback(async () => {
+    // If key was provided via conversation data, no fetch needed
+    if (keyRef.current) return;
     await fetchKey();
   }, [fetchKey]);
 
