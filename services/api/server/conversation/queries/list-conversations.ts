@@ -7,7 +7,7 @@ import { userLevel } from "../../../db/schema/level/schema";
 import { userBadge, badge, userTitle, title } from "../../../db/schema/reward/schema";
 import { userStreak } from "../../../db/schema/streak/schema";
 import { eq, and, desc, ne, inArray, sql } from "drizzle-orm";
-import { cached, CacheKeys, CacheTTL } from "../../../lib/cache";
+import { cacheGet, cacheSet, CacheKeys, CacheTTL } from "../../../lib/cache";
 
 export const listConversations = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user");
@@ -142,7 +142,24 @@ interface UserEnrichment {
 async function fetchBatchEnrichments(
   userIds: string[],
 ): Promise<Map<string, UserEnrichment>> {
-  // Fetch all enrichment data in parallel — 5 queries total for ALL users
+  const map = new Map<string, UserEnrichment>();
+  const uncachedIds: string[] = [];
+
+  // Check Redis cache for each user's enrichment data
+  await Promise.all(
+    userIds.map(async (userId) => {
+      const hit = await cacheGet<UserEnrichment>(CacheKeys.userEnrichment(userId));
+      if (hit) {
+        map.set(userId, hit);
+      } else {
+        uncachedIds.push(userId);
+      }
+    }),
+  );
+
+  if (uncachedIds.length === 0) return map;
+
+  // Fetch enrichment data only for uncached users — 5 queries total
   const [levelsData, titlesData, badgesData, streaksData, rankingsData] = await Promise.all([
     db
       .select({
@@ -151,7 +168,7 @@ async function fetchBatchEnrichments(
         totalAces: userLevel.totalAces,
       })
       .from(userLevel)
-      .where(inArray(userLevel.userId, userIds)),
+      .where(inArray(userLevel.userId, uncachedIds)),
 
     db
       .select({
@@ -162,7 +179,7 @@ async function fetchBatchEnrichments(
       })
       .from(userTitle)
       .innerJoin(title, eq(userTitle.titleId, title.id))
-      .where(inArray(userTitle.userId, userIds)),
+      .where(inArray(userTitle.userId, uncachedIds)),
 
     db
       .select({
@@ -175,7 +192,7 @@ async function fetchBatchEnrichments(
       })
       .from(userBadge)
       .innerJoin(badge, eq(userBadge.badgeId, badge.id))
-      .where(inArray(userBadge.userId, userIds))
+      .where(inArray(userBadge.userId, uncachedIds))
       .orderBy(desc(userBadge.unlockedAt)),
 
     db
@@ -185,7 +202,7 @@ async function fetchBatchEnrichments(
         longestStreak: userStreak.longestStreak,
       })
       .from(userStreak)
-      .where(inArray(userStreak.userId, userIds)),
+      .where(inArray(userStreak.userId, uncachedIds)),
 
     // Rankings — single query with correlated subquery for global rank
     db
@@ -194,20 +211,19 @@ async function fetchBatchEnrichments(
         rank: sql<number>`(SELECT count(*) + 1 FROM user_level WHERE total_aces > ${userLevel.totalAces})`,
       })
       .from(userLevel)
-      .where(inArray(userLevel.userId, userIds)),
+      .where(inArray(userLevel.userId, uncachedIds)),
   ]);
 
-  // Build map per userId
-  const map = new Map<string, UserEnrichment>();
-
-  for (const userId of userIds) {
+  // Build enrichment for uncached users and cache each
+  const cachePromises: Promise<void>[] = [];
+  for (const userId of uncachedIds) {
     const level = levelsData.find((l) => l.odUserId === userId);
     const equippedTitle = titlesData.find((t) => t.odUserId === userId);
     const userBadgesArr = badgesData.filter((b) => b.odUserId === userId).slice(0, 3);
     const streak = streaksData.find((s) => s.odUserId === userId);
     const ranking = rankingsData.find((r) => r.odUserId === userId);
 
-    map.set(userId, {
+    const enrichment: UserEnrichment = {
       level: level?.currentLevel || 1,
       totalAces: level?.totalAces || 0,
       title: equippedTitle
@@ -226,8 +242,14 @@ async function fetchBatchEnrichments(
       currentStreak: streak?.currentStreak || 0,
       longestStreak: streak?.longestStreak || 0,
       globalRank: ranking?.rank ? Number(ranking.rank) : null,
-    });
+    };
+
+    map.set(userId, enrichment);
+    cachePromises.push(cacheSet(CacheKeys.userEnrichment(userId), enrichment, CacheTTL.SHORT));
   }
+
+  // Cache all in parallel (fire-and-forget, best-effort)
+  await Promise.all(cachePromises);
 
   return map;
 }
