@@ -93,8 +93,7 @@ export interface SendMessageRequest {
 }
 
 export interface UploadAttachmentResponse {
-  url: string;
-  key: string;
+  attachmentUrl: string;
 }
 
 export interface FindOrCreateConversationResponse {

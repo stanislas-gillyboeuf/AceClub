@@ -22,6 +22,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     confirmMessage: msgState.confirmMessage,
     failMessage: msgState.failMessage,
     encryptContent: e2ee.encryptContent,
+    onSendSuccess: () => queryClient.invalidateQueries({ queryKey: ["conversation", "list"] }),
   });
 
   const ws = useChatWebSocket(conversation, currentUserId, {
@@ -32,6 +33,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     messagesRef: msgState.messagesRef,
     decryptMessage: e2ee.decryptMessage,
     retryFailedMessage: send.retryFailedMessage,
+    invalidateConversationList: () => queryClient.invalidateQueries({ queryKey: ["conversation", "list"] }),
   });
 
   const reactions = useReactions(conversation.id, currentUserId, {
@@ -58,7 +60,9 @@ export function useChat(conversation: Conversation, currentUserId: string) {
 
       msgState.setMessages(chatMessages);
       msgState.setHasMoreMessages(loaded.length >= 50);
-      conversationService.markRead(conversation.id).catch(() => {});
+      conversationService.markRead(conversation.id)
+        .then(() => queryClient.invalidateQueries({ queryKey: ["conversation", "list"] }))
+        .catch(() => {});
     } catch (error) {
       setErrorMessageRef.current((error as Error).message);
     }
