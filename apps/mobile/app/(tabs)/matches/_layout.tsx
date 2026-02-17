@@ -14,12 +14,15 @@ export default function MatchesLayout() {
         }}
       />
       <Stack.Screen
-        name="create"
+        name="create/index"
         options={{
           presentation: "formSheet",
           sheetGrabberVisible: true,
           title: "Nouveau match",
           headerTransparent: true,
+          sheetAllowedDetents: [0.6, 0.85, 1],
+          contentStyle: { flex: 1, backgroundColor: "transparent" },
+
         }}
       />
       <Stack.Screen
@@ -29,6 +32,7 @@ export default function MatchesLayout() {
           sheetGrabberVisible: false,
           title: "Détails du match",
           headerTransparent: true,
+
         }}
       />
       <Stack.Screen

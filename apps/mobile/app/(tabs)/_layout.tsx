@@ -1,4 +1,4 @@
-import { Redirect, useSegments } from "expo-router";
+import { Redirect } from "expo-router";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { colors } from "@/constants/theme";
 import { authClient } from "@/lib/auth-client";
@@ -7,7 +7,6 @@ import { usePushNotifications } from "@/hooks/use-push-notifications";
 export default function TabLayout() {
   const { data: session } = authClient.useSession();
   const isReady = !!session && !!(session.user as any).onboardingCompleted;
-  const segments = useSegments();
 
   usePushNotifications(isReady);
 
@@ -19,15 +18,8 @@ export default function TabLayout() {
     return <Redirect href="/(onboarding)" />;
   }
 
-  // Hide tab bar when inside a conversation
-  const isInConversation =
-    segments.length >= 3 &&
-    segments[1] === "chat" &&
-    segments[2] !== "new" &&
-    segments[2] !== "index";
-
   return (
-    <NativeTabs tintColor={colors.accentGreen} hidden={isInConversation}>
+    <NativeTabs tintColor={colors.accentGreen}>
       <NativeTabs.Trigger name="feed">
         <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
         <NativeTabs.Trigger.Label>Feed</NativeTabs.Trigger.Label>

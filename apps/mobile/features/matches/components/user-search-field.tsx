@@ -110,7 +110,7 @@ export function UserSearchField({
             )}
           </View>
           <Pressable onPress={handleClear} hitSlop={8}>
-            <X size={20} color={semanticColors.labelSecondary[scheme]} />
+            <X size={20} color={colors.accentGreen} />
           </Pressable>
         </View>
       </View>

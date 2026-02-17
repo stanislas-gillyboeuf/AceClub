@@ -6,7 +6,6 @@ import {
   Pressable,
   ActivityIndicator,
   Text,
-  TextInput,
   Alert,
 } from "react-native";
 import { useRouter, Stack } from "expo-router";
@@ -16,7 +15,7 @@ import { colors, semanticColors } from "@/constants/theme";
 import { Avatar } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { authClient } from "@/lib/auth-client";
-import { ChevronRight, Search } from "lucide-react-native";
+import { ChevronRight, X} from "lucide-react-native";
 import { conversationService } from "@/services/conversation";
 import type { Member } from "@/types/organization";
 
@@ -60,7 +59,7 @@ export default function NewConversationScreen() {
       setIsCreating(true);
       try {
         const result = await conversationService.findOrCreateConversation(member.userId);
-        router.replace(`/(tabs)/chat/${result.conversationId}`);
+        router.replace(`/conversation/${result.conversationId}`);
       } catch {
         Alert.alert("Erreur", "Impossible de créer la conversation");
       } finally {
@@ -118,10 +117,13 @@ export default function NewConversationScreen() {
       <Stack.Screen
         options={{
           title: "Nouveau message",
-          presentation: "modal",
+          headerSearchBarOptions: {
+            placeholder: "Rechercher un membre",
+            onChangeText: (e) => setSearchText(e.nativeEvent.text),
+          },
           headerLeft: () => (
             <Pressable onPress={() => router.dismiss()}>
-              <Text style={{ color: "#007AFF", fontSize: 17 }}>Annuler</Text>
+              <X size={20} color={colors.accentGreen} />
             </Pressable>
           ),
         }}
@@ -141,25 +143,6 @@ export default function NewConversationScreen() {
         ItemSeparatorComponent={renderSeparator}
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
-        ListHeaderComponent={
-          <View
-            style={[
-              styles.searchContainer,
-              { backgroundColor: scheme === "dark" ? "#1C1C1E" : "#E5E5EA" },
-            ]}
-          >
-            <Search size={18} color={semanticColors.labelSecondary[scheme]} />
-            <TextInput
-              style={[styles.searchInput, { color: semanticColors.labelPrimary[scheme] }]}
-              placeholder="Rechercher un membre"
-              placeholderTextColor={semanticColors.labelSecondary[scheme]}
-              value={searchText}
-              onChangeText={setSearchText}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </View>
-        }
         ListEmptyComponent={
           isLoading ? (
             <View style={styles.centered}>
@@ -192,21 +175,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 32,
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 16,
-    marginVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    height: 38,
-    gap: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    paddingVertical: 0,
   },
   memberRow: {
     flexDirection: "row",

@@ -34,12 +34,12 @@ import type { Conversation } from "@/types/conversation";
 const HEADER_HEIGHT = 44;
 
 export default function ChatScreen() {
-  const { conversationId } = useLocalSearchParams<{ conversationId: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const scheme = useColorScheme();
   const { data: session } = authClient.useSession();
   const currentUserId = session?.user?.id ?? "";
 
-  const { data: conversation, isLoading: isConversationLoading } = useConversation(conversationId);
+  const { data: conversation, isLoading: isConversationLoading } = useConversation(id);
 
   if (isConversationLoading || !conversation) {
     return (
