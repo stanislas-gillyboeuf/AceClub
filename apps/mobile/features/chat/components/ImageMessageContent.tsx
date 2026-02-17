@@ -26,6 +26,7 @@ export function ImageMessageContent({ message }: ImageMessageContentProps) {
       <Pressable onPress={() => setShowFullScreen(true)} style={styles.wrapper}>
         <View style={[styles.imageContainer, { width: imageWidth, height: imageHeight }]}>
           <Image
+            key={message.attachmentUrl}
             source={{ uri: message.attachmentUrl }}
             style={[styles.image, { width: imageWidth, height: imageHeight }]}
             contentFit="cover"
@@ -48,6 +49,7 @@ export function ImageMessageContent({ message }: ImageMessageContentProps) {
             <X size={24} color={colors.white} />
           </Pressable>
           <Image
+            key={message.attachmentUrl}
             source={{ uri: message.attachmentUrl }}
             style={styles.fullScreenImage}
             contentFit="contain"

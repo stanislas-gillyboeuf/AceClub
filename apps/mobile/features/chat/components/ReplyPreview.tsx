@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { X } from "lucide-react-native";
-import Animated, { FadeIn, FadeOut, SlideInDown } from "react-native-reanimated";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
 import type { ChatMessage } from "../types";
@@ -64,7 +64,7 @@ export function InputBarReplyPreview({
 
   return (
     <Animated.View
-      entering={SlideInDown.springify().damping(20).stiffness(200)}
+      entering={FadeIn.duration(150)}
       exiting={FadeOut.duration(150)}
       style={[
         styles.inputBar,

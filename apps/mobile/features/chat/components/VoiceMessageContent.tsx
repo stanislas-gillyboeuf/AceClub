@@ -1,8 +1,14 @@
+import { useMemo } from "react";
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from "react-native";
 import { colors, semanticColors } from "@/constants/theme";
 import { Play, Pause } from "lucide-react-native";
 import type { ChatMessage } from "./MessageBubble";
 import { useAudioPlayer } from "../hooks/useAudioPlayer";
+
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
 
 interface VoiceMessageContentProps {
   message: ChatMessage;
@@ -18,8 +24,19 @@ function formatDuration(seconds: number | null | undefined): string {
 export function VoiceMessageContent({ message }: VoiceMessageContentProps) {
   const { isPlaying, isLoading, progress, togglePlayback } = useAudioPlayer(message.id);
   const isFromMe = message.isFromMe;
-  const tintColor = isFromMe ? colors.white : "#007AFF";
+  const tintColor = isFromMe ? colors.white : colors.accentGreen;
   const secondaryColor = isFromMe ? "rgba(255,255,255,0.8)" : semanticColors.labelSecondary.light;
+
+  // Deterministic waveform heights based on message.id — avoids re-render jitter
+  const barHeights = useMemo(() => {
+    let seed = 0;
+    for (let i = 0; i < message.id.length; i++) {
+      seed += message.id.charCodeAt(i);
+    }
+    return Array.from({ length: 20 }, (_, i) =>
+      4 + Math.sin(i * 0.8) * 10 + seededRandom(seed + i) * 4,
+    );
+  }, [message.id]);
 
   const handlePress = () => {
     if (message.attachmentUrl) {
@@ -40,7 +57,7 @@ export function VoiceMessageContent({ message }: VoiceMessageContentProps) {
       </Pressable>
 
       <View style={styles.waveform}>
-        {Array.from({ length: 20 }).map((_, i) => {
+        {barHeights.map((h, i) => {
           const filled = progress > i / 20;
           return (
             <View
@@ -48,7 +65,7 @@ export function VoiceMessageContent({ message }: VoiceMessageContentProps) {
               style={[
                 styles.waveBar,
                 {
-                  height: 4 + Math.sin(i * 0.8) * 10 + Math.random() * 4,
+                  height: h,
                   backgroundColor: filled ? tintColor : `${tintColor}40`,
                 },
               ]}

@@ -35,11 +35,11 @@ export function useAudioRecorder() {
     }
   }, [recorder]);
 
-  const stop = useCallback((): RecordingResult | null => {
+  const stop = useCallback(async (): Promise<RecordingResult | null> => {
     const uri = recorder.uri;
     const durationSecs = (Date.now() - startTimeRef.current) / 1000;
 
-    recorder.stop(); // Fire and forget
+    await recorder.stop();
 
     if (!uri || durationSecs < 0.5) {
       return null;

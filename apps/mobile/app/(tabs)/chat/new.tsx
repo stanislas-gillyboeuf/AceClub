@@ -15,7 +15,7 @@ import { colors, semanticColors } from "@/constants/theme";
 import { Avatar } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { authClient } from "@/lib/auth-client";
-import { ChevronRight, X} from "lucide-react-native";
+import { ChevronRight, X } from "lucide-react-native";
 import { conversationService } from "@/services/conversation";
 import type { Member } from "@/types/organization";
 
