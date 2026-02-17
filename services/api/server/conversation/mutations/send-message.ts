@@ -21,7 +21,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
 
   const conversationId = c.req.param("id");
   const body = await c.req.json();
-  const { content, clientMessageId, isEncrypted, type: messageType, attachmentUrl, attachmentDuration, attachmentWidth, attachmentHeight, replyToId } = body;
+  const { content, clientMessageId, isEncrypted, type: messageType, attachmentUrl, attachmentDuration, attachmentWidth, attachmentHeight, replyToId, plaintextPreview } = body;
 
   // Verify user is a participant
   const [myParticipation] = await db
@@ -109,14 +109,12 @@ export const sendMessage = async (c: Context<HonoContext>) => {
 
   // Compute last message preview based on type
   let lastMessagePreview: string | null;
-  if (isEncrypted) {
-    lastMessagePreview = null;
-  } else if (msgType === "voice") {
+  if (msgType === "voice") {
     lastMessagePreview = "Message vocal";
   } else if (msgType === "image") {
     lastMessagePreview = "Photo";
   } else {
-    lastMessagePreview = (content || "").substring(0, 100);
+    lastMessagePreview = plaintextPreview || (content || "").substring(0, 100);
   }
 
   // Update conversation with last message info
@@ -208,7 +206,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
           userId: participant.userId,
           type: "new_message",
           title: sender?.name || "Nouveau message",
-          body: isEncrypted ? "Nouveau message" : (msgType === "voice" ? "Message vocal" : msgType === "image" ? "Photo" : (content || "").substring(0, 100)),
+          body: msgType === "voice" ? "Message vocal" : msgType === "image" ? "Photo" : (plaintextPreview || (content || "").substring(0, 100)),
           referenceId: conversationId,
           referenceType: "conversation",
           data: {

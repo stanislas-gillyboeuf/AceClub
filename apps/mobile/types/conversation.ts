@@ -89,6 +89,7 @@ export interface SendMessageRequest {
   attachmentWidth?: number | null;
   attachmentHeight?: number | null;
   replyToId?: string;
+  plaintextPreview?: string;
 }
 
 export interface UploadAttachmentResponse {

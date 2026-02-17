@@ -5,6 +5,7 @@ import { matchRequest, matchIntent, match, matchParticipant, user } from "../../
 import { conversation, conversationParticipant } from "../../../db/schema/conversation/schema";
 import { and, eq, ne, sql } from "drizzle-orm";
 import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
+import { generateConversationKey } from "../../conversation/lib/generate-key";
 
 export const acceptRequest = async (c: Context<HonoContext>) => {
   try {
@@ -63,6 +64,7 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
         .insert(conversation)
         .values({
           type: "match",
+          encryptionKey: generateConversationKey(),
         })
         .returning();
 

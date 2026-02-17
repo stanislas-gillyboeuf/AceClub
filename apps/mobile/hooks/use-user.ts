@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userService } from "@/services/user";
+import { api } from "@/lib/api";
 import type { CompleteOnboardingRequest, UpdateProfileRequest, CreateGhostRequest } from "@/types/user";
 
 export function useMe() {
@@ -49,5 +50,13 @@ export function useUpdateProfile() {
 export function useCreateGhost() {
   return useMutation({
     mutationFn: (data: CreateGhostRequest) => userService.createGhost(data),
+  });
+}
+
+export function useDeleteAccount() {
+  return useMutation({
+    mutationFn: async () => {
+      return api.delete<void>("/user/me");
+    },
   });
 }

@@ -23,24 +23,6 @@ export default function ProfileLayout() {
         }}
       />
       <Stack.Screen
-        name="e2ee-backup"
-        options={{
-          title: "Sauvegarder ma clé",
-          presentation: "formSheet",
-          sheetGrabberVisible: true,
-          headerTransparent: true,
-        }}
-      />
-      <Stack.Screen
-        name="e2ee-recovery"
-        options={{
-          title: "Récupérer ma clé",
-          presentation: "formSheet",
-          sheetGrabberVisible: true,
-          headerTransparent: true,
-        }}
-      />
-      <Stack.Screen
         name="club-selection"
         options={{
           title: "Sélectionner un club",
