@@ -49,6 +49,7 @@ export function ChatHeader({
     <Stack.Screen
       options={{
         headerTransparent: Platform.OS === "ios",
+        scrollEdgeEffects: { top: "hidden" },
         headerLeft: () => (
           <Pressable onPress={() => router.back()} hitSlop={8} style={styles.backButton}>
             {Platform.OS === "ios" ? (
@@ -80,7 +81,6 @@ const styles = StyleSheet.create({
     height: 30,
     alignItems: "center",
     justifyContent: "center",
-    marginLeft: -8,
   },
   headerTitle: {
     flexDirection: "row",

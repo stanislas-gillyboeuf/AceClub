@@ -21,7 +21,6 @@ export default function MatchesLayout() {
           title: "Nouveau match",
           headerTransparent: true,
           sheetAllowedDetents: [0.6, 0.85, 1],
-          contentStyle: { flex: 1, backgroundColor: "transparent" },
 
         }}
       />

@@ -21,7 +21,7 @@ export function EmptyState({ icon, title, description, containerStyle }: EmptySt
   return (
     <View style={[styles.container, containerStyle]}>
       <IconComponent size={48} color={iconColor} strokeWidth={1.5} />
-      <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>
+      <Text style={[styles.title, { color: semanticColors.labelSecondary[scheme] }]}>
         {title}
       </Text>
       <Text style={[styles.description, { color: semanticColors.labelSecondary[scheme] }]}>
@@ -35,9 +35,9 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 48,
-    paddingHorizontal: 32,
-    gap: 8,
+    paddingVertical:12,
+    paddingHorizontal: 12,
+    gap: 12,
   },
   title: {
     fontSize: 17,

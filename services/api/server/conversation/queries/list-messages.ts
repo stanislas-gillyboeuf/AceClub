@@ -18,22 +18,6 @@ export const listMessages = async (c: Context<HonoContext>) => {
   const limit = Math.min(Math.max(parseInt(limitParam || "50", 10), 1), 100);
   const before = beforeParam ? new Date(beforeParam) : undefined;
 
-  // Check if user is a participant
-  const [myParticipation] = await db
-    .select()
-    .from(conversationParticipant)
-    .where(
-      and(
-        eq(conversationParticipant.conversationId, conversationId),
-        eq(conversationParticipant.userId, currentUser.id),
-      ),
-    )
-    .limit(1);
-
-  if (!myParticipation) {
-    return c.json({ error: "Forbidden", message: "Not a participant" }, 403);
-  }
-
   // Build query conditions
   const conditions = [eq(message.conversationId, conversationId), eq(message.isDeleted, false)];
 
@@ -41,30 +25,46 @@ export const listMessages = async (c: Context<HonoContext>) => {
     conditions.push(lt(message.createdAt, before));
   }
 
-  // Get messages with sender info
-  const messages = await db
-    .select({
-      id: message.id,
-      conversationId: message.conversationId,
-      senderId: message.senderId,
-      senderName: user.name,
-      senderImage: user.image,
-      content: message.content,
-      createdAt: message.createdAt,
-      clientMessageId: message.clientMessageId,
-      isEncrypted: message.isEncrypted,
-      messageType: message.type,
-      attachmentUrl: message.attachmentUrl,
-      attachmentDuration: message.attachmentDuration,
-      attachmentWidth: message.attachmentWidth,
-      attachmentHeight: message.attachmentHeight,
-      replyToId: message.replyToId,
-    })
-    .from(message)
-    .innerJoin(user, eq(message.senderId, user.id))
-    .where(and(...conditions))
-    .orderBy(desc(message.createdAt))
-    .limit(limit);
+  // Run participation check and message fetch in parallel
+  const [participationResult, messages] = await Promise.all([
+    db
+      .select({ id: conversationParticipant.id })
+      .from(conversationParticipant)
+      .where(
+        and(
+          eq(conversationParticipant.conversationId, conversationId),
+          eq(conversationParticipant.userId, currentUser.id),
+        ),
+      )
+      .limit(1),
+    db
+      .select({
+        id: message.id,
+        conversationId: message.conversationId,
+        senderId: message.senderId,
+        senderName: user.name,
+        senderImage: user.image,
+        content: message.content,
+        createdAt: message.createdAt,
+        clientMessageId: message.clientMessageId,
+        isEncrypted: message.isEncrypted,
+        messageType: message.type,
+        attachmentUrl: message.attachmentUrl,
+        attachmentDuration: message.attachmentDuration,
+        attachmentWidth: message.attachmentWidth,
+        attachmentHeight: message.attachmentHeight,
+        replyToId: message.replyToId,
+      })
+      .from(message)
+      .innerJoin(user, eq(message.senderId, user.id))
+      .where(and(...conditions))
+      .orderBy(desc(message.createdAt))
+      .limit(limit),
+  ]);
+
+  if (participationResult.length === 0) {
+    return c.json({ error: "Forbidden", message: "Not a participant" }, 403);
+  }
 
   // Batch-fetch replied-to messages
   const replyToIds = messages

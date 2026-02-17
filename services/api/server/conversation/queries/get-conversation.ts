@@ -17,49 +17,53 @@ export const getConversation = async (c: Context<HonoContext>) => {
 
   const conversationId = c.req.param("id");
 
-  // Check if user is a participant
-  const [myParticipation] = await db
-    .select()
-    .from(conversationParticipant)
-    .where(
-      and(
-        eq(conversationParticipant.conversationId, conversationId),
-        eq(conversationParticipant.userId, currentUser.id),
+  // Run participation check + conversation details + other participants in parallel
+  const [participationResult, convResult, otherParticipants] = await Promise.all([
+    db
+      .select({
+        id: conversationParticipant.id,
+        unreadCount: conversationParticipant.unreadCount,
+        isMuted: conversationParticipant.isMuted,
+      })
+      .from(conversationParticipant)
+      .where(
+        and(
+          eq(conversationParticipant.conversationId, conversationId),
+          eq(conversationParticipant.userId, currentUser.id),
+        ),
+      )
+      .limit(1),
+    db
+      .select()
+      .from(conversation)
+      .where(eq(conversation.id, conversationId))
+      .limit(1),
+    db
+      .select({
+        id: conversationParticipant.id,
+        odUserId: user.id,
+        userName: user.name,
+        userImage: user.image,
+      })
+      .from(conversationParticipant)
+      .innerJoin(user, eq(conversationParticipant.userId, user.id))
+      .where(
+        and(
+          eq(conversationParticipant.conversationId, conversationId),
+          ne(conversationParticipant.userId, currentUser.id),
+        ),
       ),
-    )
-    .limit(1);
+  ]);
 
+  const myParticipation = participationResult[0];
   if (!myParticipation) {
     return c.json({ error: "Forbidden", message: "Not a participant" }, 403);
   }
 
-  // Get conversation details
-  const [conv] = await db
-    .select()
-    .from(conversation)
-    .where(eq(conversation.id, conversationId))
-    .limit(1);
-
+  const conv = convResult[0];
   if (!conv) {
     return c.json({ error: "NotFound", message: "Conversation not found" }, 404);
   }
-
-  // Get other participants with basic info
-  const otherParticipants = await db
-    .select({
-      id: conversationParticipant.id,
-      odUserId: user.id,
-      userName: user.name,
-      userImage: user.image,
-    })
-    .from(conversationParticipant)
-    .innerJoin(user, eq(conversationParticipant.userId, user.id))
-    .where(
-      and(
-        eq(conversationParticipant.conversationId, conversationId),
-        ne(conversationParticipant.userId, currentUser.id),
-      ),
-    );
 
   // Build enriched participants with per-user caching
   const enrichedParticipants = await enrichParticipants(otherParticipants);

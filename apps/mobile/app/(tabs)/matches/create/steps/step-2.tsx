@@ -116,41 +116,6 @@ export default function Step2() {
       ListHeaderComponent={
         <View style={styles.headerContainer}>
           <StepProgress />
-
-          {awayUser && (
-            <Pressable
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setAwayUser(null);
-              }}
-              style={({ pressed }) => [
-                styles.selectedRow,
-                pressed && { transform: [{ scale: 0.98 }] },
-              ]}
-            >
-              <GlassView
-                style={styles.memberCard}
-                tintColor={`${colors.accentGreen}20`}
-              >
-                <Avatar imageUrl={awayUser.image} name={awayUser.name} size={46} />
-                <View style={styles.memberInfo}>
-                  <Text
-                    style={[styles.memberName, { color: semanticColors.labelPrimary[scheme] }]}
-                    numberOfLines={1}
-                  >
-                    {awayUser.name}
-                  </Text>
-                  <Text style={[styles.selectedLabel, { color: semanticColors.labelSecondary[scheme] }]}>
-                    Adversaire sélectionné
-                  </Text>
-                </View>
-                <View style={styles.checkCircle}>
-                  <Check size={14} color="#fff" strokeWidth={3} />
-                </View>
-              </GlassView>
-            </Pressable>
-          )}
-
           <GlassView style={styles.searchBar}>
             <Search size={18} color={semanticColors.labelSecondary[scheme]} />
             <TextInput
@@ -207,6 +172,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 100,
+    gap: 12,
   },
   headerContainer: {
     gap: 12,

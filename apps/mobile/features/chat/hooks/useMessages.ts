@@ -6,6 +6,8 @@ export function useMessages() {
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
+  const hasMoreMessagesRef = useRef(hasMoreMessages);
+  hasMoreMessagesRef.current = hasMoreMessages;
 
   const addOptimistic = useCallback((msg: ChatMessage) => {
     setMessages((prev) => [msg, ...prev]);
@@ -110,6 +112,7 @@ export function useMessages() {
     hasMoreMessages,
     setHasMoreMessages,
     messagesRef,
+    hasMoreMessagesRef,
     addOptimistic,
     confirmMessage,
     failMessage,

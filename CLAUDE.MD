@@ -1,5 +1,13 @@
 
+# CLAUDE - Guide de l'agent de recherche de code
+Il faut que tu penses scalablement. Ne me donne pas une réponse unique à une question qui touche plusieurs parties du codebase. Si la question est complexe, divise-la en plusieurs questions plus simples et lance plusieurs mgrep. Le but est d'avoir des réponses précises et actionnables, pas une réponse vague qui couvre tout le codebase. 
 
+
+# Components - Expo Mobile
+Il faut que tu rendes le code lisible et compréhensible, séparé en composants. Les composants sont générique ou spécifiques à une feature, mais ils ne doivent jamais être un mélange des deux. Si tu vois un composant qui fait 2-3 choses différentes, c'est un signal que tu dois le refactorer en plusieurs composants plus simples.
+
+# Scalabilité
+Si tu vois une logique qui est répétée dans plusieurs composants, c'est un signal que tu dois l'extraire dans un composant générique réutilisable. Par exemple, si tu vois plusieurs écrans avec une barre de recherche qui ont des styles similaires, tu peux créer un composant `SearchBar` générique que tu réutilises partout.
 
 # mgrep - Ton assistant de recherche de code
 

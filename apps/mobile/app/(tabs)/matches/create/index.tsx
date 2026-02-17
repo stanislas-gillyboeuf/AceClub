@@ -189,7 +189,7 @@ export default function CreateMatch() {
         </View>
       ) : (
         <ScrollView
-          style={{ backgroundColor: semanticColors.primaryBackground[scheme] }}
+          style={{ backgroundColor: semanticColors.primaryBackground[scheme], flex: 1 }}
           contentContainerStyle={styles.scrollContent}
           contentInsetAdjustmentBehavior="automatic"
           keyboardDismissMode="on-drag"
