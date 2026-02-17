@@ -1,5 +1,4 @@
 import { useCallback, useRef } from "react";
-import { conversationService } from "@/services/conversation";
 import {
   encryptMessage,
   decryptMessage,
@@ -8,24 +7,10 @@ import type { ChatMessage } from "../types";
 
 export function useEncryption(conversationId: string, conversationKey?: string | null) {
   const keyRef = useRef<string | null>(conversationKey ?? null);
-  const fetchAttemptedRef = useRef(!!conversationKey);
-
-  const fetchKey = useCallback(async () => {
-    if (keyRef.current || fetchAttemptedRef.current) return;
-    fetchAttemptedRef.current = true;
-    try {
-      const { key } = await conversationService.getConversationKey(conversationId);
-      keyRef.current = key;
-    } catch {
-      // No key available (legacy conversation)
-    }
-  }, [conversationId]);
 
   const ensureReady = useCallback(async () => {
-    // If key was provided via conversation data, no fetch needed
-    if (keyRef.current) return;
-    await fetchKey();
-  }, [fetchKey]);
+    // Key is already provided via getConversation response — no separate fetch needed
+  }, []);
 
   const encryptContent = useCallback(
     async (
@@ -78,7 +63,6 @@ export function useEncryption(conversationId: string, conversationKey?: string |
 
   return {
     ensureReady,
-    prefetchPublicKey: fetchKey, // Alias for backward compat during transition
     encryptContent,
     decryptMessage: decryptMsg,
   };

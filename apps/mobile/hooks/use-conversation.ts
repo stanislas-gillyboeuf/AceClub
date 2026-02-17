@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { conversationService } from "@/services/conversation";
-import type { SendMessageRequest } from "@/types/conversation";
+import type { Conversation, SendMessageRequest } from "@/types/conversation";
 
 export function useConversations() {
   return useQuery({
@@ -42,8 +42,13 @@ export function useMarkRead() {
   return useMutation({
     mutationFn: (conversationId: string) => conversationService.markRead(conversationId),
     onSuccess: (_, conversationId) => {
-      queryClient.invalidateQueries({ queryKey: ["conversation", conversationId] });
-      queryClient.invalidateQueries({ queryKey: ["conversation", "list"] });
+      // Optimistically update unread count instead of re-fetching the whole list
+      queryClient.setQueryData<Conversation[]>(["conversation", "list"], (old) => {
+        if (!old) return old;
+        return old.map((c) =>
+          c.id === conversationId ? { ...c, unreadCount: 0 } : c,
+        );
+      });
     },
   });
 }

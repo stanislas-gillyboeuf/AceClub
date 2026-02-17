@@ -17,7 +17,6 @@ export default function Stepper() {
 
   if (!StepComponent || currentStep >= totalSteps) return null;
 
-  // Step 2 (opponent) manages its own FlatList + StepProgress
   if (currentStep === 1) {
     return <StepComponent />;
   }

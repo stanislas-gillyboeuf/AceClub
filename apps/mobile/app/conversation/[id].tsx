@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef, useState, useMemo } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import {
   View,
   FlatList,
@@ -20,8 +20,8 @@ import { ChatHeader } from "@/features/chat/components/ChatHeader";
 import { TypingIndicator } from "@/features/chat/components/TypingIndicator";
 import { MessageContextMenu } from "@/features/chat/components/MessageContextMenu";
 import {
-  getMessageGroupPosition,
-  shouldShowTimeSeparator,
+  getMessageGroupPositionInverted,
+  shouldShowTimeSeparatorInverted,
   formatTimeSeparator,
   formatDeliveryStatus,
 } from "@/features/chat/utils/message-helpers";
@@ -35,7 +35,6 @@ const HEADER_HEIGHT = 44;
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const scheme = useColorScheme();
   const { data: session } = authClient.useSession();
   const currentUserId = session?.user?.id ?? "";
 
@@ -64,8 +63,8 @@ function ChatContent({
   const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList>(null);
   const [contextMenuMessage, setContextMenuMessage] = useState<ChatMessage | null>(null);
-  const isNearBottom = useRef(true);
-  const hasInitiallyScrolled = useRef(false);
+  const isLoadingMoreRef = useRef(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   const {
     messages,
@@ -89,32 +88,10 @@ function ChatContent({
     toggleReaction,
   } = useChat(conversation, currentUserId);
 
-  // Reverse messages: oldest first for non-inverted FlatList
-  const reversedMessages = useMemo(() => [...messages].reverse(), [messages]);
-
   useEffect(() => {
-    loadMessages();
+    loadMessages().finally(() => setIsInitialLoading(false));
     wsManager.connect();
   }, [loadMessages]);
-
-  const [isListReady, setIsListReady] = useState(false);
-
-  // Initial scroll to bottom — triggered when content is first laid out
-  const handleContentSizeChange = useCallback((_w: number, h: number) => {
-    if (!hasInitiallyScrolled.current && reversedMessages.length > 0 && h > 0) {
-      hasInitiallyScrolled.current = true;
-      flatListRef.current?.scrollToEnd({ animated: false });
-      // Reveal list after scroll command is dispatched
-      requestAnimationFrame(() => setIsListReady(true));
-    }
-  }, [reversedMessages.length]);
-
-  useEffect(() => {
-    if (!hasInitiallyScrolled.current || reversedMessages.length === 0) return;
-    if (isNearBottom.current) {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }
-  }, [reversedMessages.length]);
 
   useEffect(() => {
     if (errorMessage) {
@@ -122,18 +99,15 @@ function ChatContent({
     }
   }, [errorMessage, setErrorMessage]);
 
-  const handleScroll = useCallback(
-    (e: { nativeEvent: { contentOffset: { y: number }; contentSize: { height: number }; layoutMeasurement: { height: number } } }) => {
-      const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
-      isNearBottom.current =
-        contentOffset.y >= contentSize.height - layoutMeasurement.height - 100;
-
-      if (contentOffset.y < 200 && hasMoreMessages) {
-        loadMoreMessages();
-      }
-    },
-    [hasMoreMessages, loadMoreMessages],
-  );
+  const handleLoadMore = useCallback(async () => {
+    if (isLoadingMoreRef.current) return;
+    isLoadingMoreRef.current = true;
+    try {
+      await loadMoreMessages();
+    } finally {
+      isLoadingMoreRef.current = false;
+    }
+  }, [loadMoreMessages]);
 
   const handleSendText = useCallback(
     (text: string) => {
@@ -166,11 +140,10 @@ function ChatContent({
 
   const renderMessage = useCallback(
     ({ item, index }: { item: ChatMessage; index: number }) => {
-      const groupPosition = getMessageGroupPosition(reversedMessages, index);
-      const showSeparator = shouldShowTimeSeparator(reversedMessages, index);
-
+      const groupPosition = getMessageGroupPositionInverted(messages, index);
+      const showSeparator = shouldShowTimeSeparatorInverted(messages, index);
       const showDeliveryStatus =
-        index === reversedMessages.length - 1 && item.isFromMe && item.sendStatus !== "failed";
+        index === 0 && item.isFromMe && item.sendStatus !== "failed";
 
       return (
         <View>
@@ -196,17 +169,17 @@ function ChatContent({
         </View>
       );
     },
-    [reversedMessages, scheme, retryFailedMessage, deleteMessage, setReplyingTo, toggleReaction],
+    [messages, scheme, retryFailedMessage, deleteMessage, setReplyingTo, toggleReaction],
   );
 
-  const renderListHeader = useCallback(() => {
-    if (!hasMoreMessages || reversedMessages.length === 0) return null;
+  const renderLoadMore = useCallback(() => {
+    if (!hasMoreMessages || messages.length === 0) return null;
     return (
       <View style={styles.loadMore}>
         <ActivityIndicator color={colors.accentGreen} />
       </View>
     );
-  }, [hasMoreMessages, reversedMessages.length]);
+  }, [hasMoreMessages, messages.length]);
 
   const topInset = insets.top + HEADER_HEIGHT;
 
@@ -223,25 +196,33 @@ function ChatContent({
         behavior="padding"
         keyboardVerticalOffset={0}
       >
+        {isInitialLoading && (
+          <View style={styles.messagesLoading}>
+            <ActivityIndicator color={colors.accentGreen} />
+          </View>
+        )}
         <FlatList
-          style={{ flex: 1, opacity: isListReady ? 1 : 0 }}
+          style={{ flex: 1 }}
           contentInsetAdjustmentBehavior="never"
+          inverted
           ref={flatListRef}
-          data={reversedMessages}
+          data={messages}
           keyExtractor={(item) => item.id}
           renderItem={renderMessage}
           contentContainerStyle={[
             styles.messagesList,
-            { paddingTop: topInset, paddingBottom: 8 },
+            // Inverted flips padding: paddingTop → visual bottom, paddingBottom → visual top
+            { paddingTop: 8, paddingBottom: topInset },
           ]}
-          scrollIndicatorInsets={{ top: topInset }}
-          ListHeaderComponent={renderListHeader}
-          onScroll={handleScroll}
-          onContentSizeChange={handleContentSizeChange}
-          scrollEventThrottle={16}
-          maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+          scrollIndicatorInsets={{ bottom: topInset }}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderLoadMore}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive"
+          maxToRenderPerBatch={15}
+          windowSize={11}
+          initialNumToRender={20}
         />
 
         {isOtherUserTyping && <TypingIndicator />}
@@ -278,8 +259,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   messagesList: {
-    flexGrow: 1,
-    justifyContent: "flex-end" as const,
     paddingHorizontal: 16,
   },
   timeSeparator: {
@@ -294,6 +273,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
     marginBottom: 4,
     paddingRight: 4,
+  },
+  messagesLoading: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1,
   },
   loadMore: {
     paddingVertical: 16,

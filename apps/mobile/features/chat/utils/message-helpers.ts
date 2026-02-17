@@ -66,6 +66,44 @@ export function formatTimeSeparator(dateString: string): string {
   return `${date.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} ${time}`;
 }
 
+// For inverted FlatList: data is newest-first (index 0 = newest)
+// Older message is at index + 1, newer is at index - 1
+export function getMessageGroupPositionInverted(
+  messages: ChatMessage[],
+  index: number,
+): GroupPosition {
+  const message = messages[index];
+  const older = index < messages.length - 1 ? messages[index + 1] : null;
+  const newer = index > 0 ? messages[index - 1] : null;
+
+  const isSameSenderAsNewer =
+    newer &&
+    newer.senderId === message.senderId &&
+    Math.abs(new Date(message.createdAt).getTime() - new Date(newer.createdAt).getTime()) < 60000;
+
+  const isSameSenderAsOlder =
+    older &&
+    older.senderId === message.senderId &&
+    Math.abs(new Date(message.createdAt).getTime() - new Date(older.createdAt).getTime()) < 60000;
+
+  if (isSameSenderAsNewer && isSameSenderAsOlder) return "middle";
+  if (isSameSenderAsNewer && !isSameSenderAsOlder) return "first";
+  if (!isSameSenderAsNewer && isSameSenderAsOlder) return "last";
+  return "single";
+}
+
+export function shouldShowTimeSeparatorInverted(
+  messages: ChatMessage[],
+  index: number,
+): boolean {
+  const older = index < messages.length - 1 ? messages[index + 1] : null;
+  if (!older) return true;
+  const diff = Math.abs(
+    new Date(messages[index].createdAt).getTime() - new Date(older.createdAt).getTime(),
+  );
+  return diff > 300000;
+}
+
 export function formatDeliveryStatus(status: string): string {
   switch (status) {
     case "sending":

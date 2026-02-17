@@ -14,39 +14,54 @@ export function useChat(conversation: Conversation, currentUserId: string) {
   const queryClient = useQueryClient();
 
   const msgState = useMessages();
+  const {
+    messages,
+    setMessages,
+    hasMoreMessages,
+    setHasMoreMessages,
+    messagesRef,
+    hasMoreMessagesRef,
+    addOptimistic,
+    confirmMessage,
+    failMessage,
+    removeMessage,
+    restoreMessage,
+    addIncoming,
+    mergeMessages,
+    markAllAsRead,
+    updateMessageReactions,
+  } = msgState;
   const e2ee = useEncryption(conversation.id, conversation.encryptionKey);
   const reply = useReplyState();
 
   const send = useMessageSend(conversation, currentUserId, {
-    addOptimistic: msgState.addOptimistic,
-    confirmMessage: msgState.confirmMessage,
-    failMessage: msgState.failMessage,
+    addOptimistic,
+    confirmMessage,
+    failMessage,
     encryptContent: e2ee.encryptContent,
     onSendSuccess: () => queryClient.invalidateQueries({ queryKey: ["conversation", "list"] }),
   });
 
   const ws = useChatWebSocket(conversation, currentUserId, {
-    addIncoming: msgState.addIncoming,
-    mergeMessages: msgState.mergeMessages,
-    markAllAsRead: msgState.markAllAsRead,
-    updateMessageReactions: msgState.updateMessageReactions,
-    messagesRef: msgState.messagesRef,
+    addIncoming,
+    mergeMessages,
+    markAllAsRead,
+    updateMessageReactions,
+    messagesRef,
     decryptMessage: e2ee.decryptMessage,
     retryFailedMessage: send.retryFailedMessage,
     invalidateConversationList: () => queryClient.invalidateQueries({ queryKey: ["conversation", "list"] }),
   });
 
   const reactions = useReactions(conversation.id, currentUserId, {
-    updateMessageReactions: msgState.updateMessageReactions,
+    updateMessageReactions,
   });
 
-  // Use refs to hold latest function references, so callbacks stay stable
   const e2eeRef = useRef(e2ee);
   e2eeRef.current = e2ee;
   const setErrorMessageRef = useRef(send.setErrorMessage);
   setErrorMessageRef.current = send.setErrorMessage;
 
-  // Load messages — stable reference (only depends on conversation.id + currentUserId)
   const loadMessages = useCallback(async () => {
     try {
       await e2eeRef.current.ensureReady();
@@ -58,21 +73,27 @@ export function useChat(conversation: Conversation, currentUserId: string) {
           .map((m) => e2eeRef.current.decryptMessage(m)),
       );
 
-      msgState.setMessages(chatMessages);
-      msgState.setHasMoreMessages(loaded.length >= 20);
+      setMessages(chatMessages);
+      setHasMoreMessages(loaded.length >= 20);
       conversationService.markRead(conversation.id)
-        .then(() => queryClient.invalidateQueries({ queryKey: ["conversation", "list"] }))
-        .catch(() => {});
+        .then(() => {
+          queryClient.setQueryData<Conversation[]>(["conversation", "list"], (old) => {
+            if (!old) return old;
+            return old.map((c) =>
+              c.id === conversation.id ? { ...c, unreadCount: 0 } : c,
+            );
+          });
+        })
+        .catch(() => { });
     } catch (error) {
       setErrorMessageRef.current((error as Error).message);
     }
-  }, [conversation.id, currentUserId, msgState.setMessages, msgState.setHasMoreMessages]);
+  }, [conversation.id, currentUserId, setMessages, setHasMoreMessages, queryClient]);
 
-  // Load more (pagination)
   const loadMoreMessages = useCallback(async () => {
-    if (!msgState.hasMoreMessages) return;
+    if (!hasMoreMessagesRef.current) return;
     const oldest =
-      msgState.messagesRef.current[msgState.messagesRef.current.length - 1];
+      messagesRef.current[messagesRef.current.length - 1];
     if (!oldest) return;
 
     try {
@@ -82,32 +103,35 @@ export function useChat(conversation: Conversation, currentUserId: string) {
       });
 
       if (older.length === 0) {
-        msgState.setHasMoreMessages(false);
+        setHasMoreMessages(false);
       } else {
         const chatMessages = await Promise.all(
           older
             .map((m) => apiMessageToChatMessage(m, currentUserId))
             .map((m) => e2eeRef.current.decryptMessage(m)),
         );
-        msgState.mergeMessages(chatMessages);
+        mergeMessages(chatMessages);
+        if (older.length < 50) {
+          setHasMoreMessages(false);
+        }
       }
     } catch (error) {
       setErrorMessageRef.current((error as Error).message);
     }
-  }, [conversation.id, currentUserId, msgState.hasMoreMessages, msgState.messagesRef, msgState.setHasMoreMessages, msgState.mergeMessages]);
+  }, [conversation.id, currentUserId, hasMoreMessagesRef, messagesRef, setHasMoreMessages, mergeMessages]);
 
   // Delete message
   const deleteMessage = useCallback(
     async (message: ChatMessage) => {
-      msgState.removeMessage(message.id);
+      removeMessage(message.id);
       try {
         await conversationService.deleteMessage(conversation.id, message.id);
       } catch (error) {
-        msgState.restoreMessage(message);
+        restoreMessage(message);
         setErrorMessageRef.current((error as Error).message);
       }
     },
-    [conversation.id, msgState.removeMessage, msgState.restoreMessage],
+    [conversation.id, removeMessage, restoreMessage],
   );
 
   // Send with reply support
@@ -197,9 +221,9 @@ export function useChat(conversation: Conversation, currentUserId: string) {
   }, [conversation.id, queryClient]);
 
   return {
-    messages: msgState.messages,
+    messages,
     isOtherUserTyping: ws.isOtherUserTyping,
-    hasMoreMessages: msgState.hasMoreMessages,
+    hasMoreMessages,
     loadMessages,
     loadMoreMessages,
     sendMessage,
@@ -212,7 +236,6 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     deleteConversation,
     errorMessage: send.errorMessage,
     setErrorMessage: send.setErrorMessage,
-    // New: reply & reactions
     replyingTo: reply.replyingTo,
     setReplyingTo: reply.setReplyingTo,
     clearReply: reply.clearReply,
