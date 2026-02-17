@@ -4,7 +4,7 @@ import { conversationService } from "@/services/conversation";
 import type { Conversation } from "@/types/conversation";
 import type { ChatMessage } from "../types";
 import { useMessages } from "./useMessages";
-import { useE2EE } from "./useE2EE";
+import { useEncryption } from "./useEncryption";
 import { useMessageSend, apiMessageToChatMessage } from "./useMessageSend";
 import { useChatWebSocket } from "./useChatWebSocket";
 import { useReactions } from "./useReactions";
@@ -14,7 +14,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
   const queryClient = useQueryClient();
 
   const msgState = useMessages();
-  const e2ee = useE2EE(conversation);
+  const e2ee = useEncryption(conversation.id);
   const reply = useReplyState();
 
   const send = useMessageSend(conversation, currentUserId, {
@@ -48,7 +48,6 @@ export function useChat(conversation: Conversation, currentUserId: string) {
   const loadMessages = useCallback(async () => {
     try {
       await e2eeRef.current.ensureReady();
-      await e2eeRef.current.prefetchPublicKey();
 
       const loaded = await conversationService.listMessages(conversation.id);
       const chatMessages = await Promise.all(

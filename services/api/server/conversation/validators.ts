@@ -10,6 +10,7 @@ export const sendMessageValidator = z.object({
   attachmentWidth: z.number().int().optional(),
   attachmentHeight: z.number().int().optional(),
   replyToId: z.string().optional(),
+  plaintextPreview: z.string().max(100).optional(),
 });
 
 export const listMessagesValidator = z.object({

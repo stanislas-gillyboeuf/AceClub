@@ -91,6 +91,7 @@ export function useMessageSend(
           isEncrypted,
           type: "text",
           replyToId,
+          plaintextPreview: isEncrypted ? trimmed.substring(0, 100) : undefined,
         });
 
         confirmMessage(clientMessageId, {

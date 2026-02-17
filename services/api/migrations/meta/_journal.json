@@ -92,6 +92,13 @@
       "when": 1771198330132,
       "tag": "0013_melted_speedball",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1771323467783,
+      "tag": "0014_typical_lethal_legion",
+      "breakpoints": true
     }
   ]
 }
