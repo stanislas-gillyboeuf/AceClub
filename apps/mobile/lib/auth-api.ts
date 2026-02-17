@@ -38,8 +38,18 @@ export async function setAuthToken(token: string | null): Promise<void> {
   }
 }
 
+/**
+ * Clears ALL local auth data:
+ * - Bearer token
+ * - Expo client cookies (workaround for better-auth/better-auth#5868)
+ * - Expo client cached session data
+ */
 export async function clearAuthData(): Promise<void> {
-  await SecureStore.deleteItemAsync(BEARER_TOKEN_KEY);
+  await Promise.all([
+    SecureStore.deleteItemAsync(BEARER_TOKEN_KEY),
+    SecureStore.deleteItemAsync("aceclub_cookie"),
+    SecureStore.deleteItemAsync("aceclub_session_data"),
+  ]);
 }
 
 /** Auth params for WebSocket connection. */

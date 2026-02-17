@@ -24,6 +24,7 @@ import { useMatches } from "@/hooks/use-match";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { authClient } from "@/lib/auth-client";
 import { clearAuthData } from "@/lib/auth-api";
+import { queryClient } from "@/lib/query-client";
 
 import { ProfileHeaderCard } from "@/features/profile/components/profile-header-card";
 import { ProfileBadgeSection } from "@/features/profile/components/profile-badge-section";
@@ -176,7 +177,11 @@ export default function Profile() {
     [rejectInvitation]
   );
 
-  // Sign out
+  // Sign out — workaround for better-auth/better-auth#5868
+  // The Expo plugin doesn't always delete the server session, so we:
+  // 1. Call sign-out with bearer token to ensure server-side session deletion
+  // 2. Clear all local auth data (cookies + bearer token)
+  // 3. Reset React Query cache to avoid stale data from the old user
   const handleSignOut = () => {
     Alert.alert(
       "Déconnexion",
@@ -187,8 +192,13 @@ export default function Profile() {
           text: "Déconnexion",
           style: "destructive",
           onPress: async () => {
-            await authClient.signOut();
+            try {
+              await authClient.signOut();
+            } catch {
+              // Ignore sign-out errors — we clear local data anyway
+            }
             await clearAuthData();
+            queryClient.clear();
             router.replace("/(auth)/sign-in");
           },
         },

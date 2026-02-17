@@ -29,7 +29,7 @@ export async function registerForPushNotificationsAsync() {
   }
 
   if (!Device.isDevice) {
-    handleRegistrationError("Must use physical device for push notifications");
+    console.warn("[PushNotifications] Must use physical device for push notifications");
     return;
   }
 
