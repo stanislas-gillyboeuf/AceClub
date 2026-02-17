@@ -122,3 +122,10 @@ export const verifyPinValidator = z.object({
 export const listUserOrganizationsValidator = z.object({
   userId: z.string(),
 });
+
+export const searchMembersValidator = z.object({
+  organizationId: z.string(),
+  search: z.string().optional(),
+  limit: z.coerce.number().min(1).max(50).optional().default(20),
+  offset: z.coerce.number().min(0).optional().default(0),
+});

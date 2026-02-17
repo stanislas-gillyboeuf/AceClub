@@ -7,7 +7,7 @@ import {
   message,
 } from "../../../db/schema/conversation/schema";
 import { user } from "../../../db/schema/auth/schema";
-import { eq, and, ne, sql } from "drizzle-orm";
+import { eq, and, ne, sql, inArray } from "drizzle-orm";
 import { ulid } from "ulid";
 import { redis, CHAT_CHANNEL } from "../../../lib/redis";
 import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
@@ -144,17 +144,17 @@ export const sendMessage = async (c: Context<HonoContext>) => {
       ),
     );
 
-  // Increment unread count for other participants and restore if deleted
-  for (const participant of otherParticipants) {
+  // Batch increment unread count for all other participants in a single query
+  const otherParticipantIds = otherParticipants.map((p) => p.id);
+  if (otherParticipantIds.length > 0) {
     await db
       .update(conversationParticipant)
       .set({
         unreadCount: sql`${conversationParticipant.unreadCount} + 1`,
-        // Restore conversation if it was deleted (new message brings it back)
         isDeleted: false,
         deletedAt: null,
       })
-      .where(eq(conversationParticipant.id, participant.id));
+      .where(inArray(conversationParticipant.id, otherParticipantIds));
   }
 
   // Prepare message payload for WebSocket broadcast
@@ -182,46 +182,46 @@ export const sendMessage = async (c: Context<HonoContext>) => {
     },
   };
 
-  // Broadcast via Redis to all server instances
+  // Broadcast via Redis to all server instances (parallel)
   if (redis) {
-    for (const participant of otherParticipants) {
-      await redis.publish(
-        CHAT_CHANNEL,
-        JSON.stringify({
-          userId: participant.userId,
-          payload: messagePayload,
-        }),
-      );
-    }
+    await Promise.all(
+      otherParticipants.map((participant) =>
+        redis.publish(
+          CHAT_CHANNEL,
+          JSON.stringify({
+            userId: participant.userId,
+            payload: messagePayload,
+          }),
+        ),
+      ),
+    );
   }
 
-  for (const participant of otherParticipants) {
-    if (!participant.isMuted) {
-      if (isUserConnectedWs(participant.userId)) {
-        continue;
-      }
-
-      try {
-        await sendNotificationToUser({
+  // Fire-and-forget push notifications (don't block response)
+  const notifBody = msgType === "voice" ? "Message vocal" : msgType === "image" ? "Photo" : (plaintextPreview || (content || "").substring(0, 100));
+  Promise.all(
+    otherParticipants
+      .filter((p) => !p.isMuted && !isUserConnectedWs(p.userId))
+      .map((participant) =>
+        sendNotificationToUser({
           userId: participant.userId,
           type: "new_message",
           title: sender?.name || "Nouveau message",
-          body: msgType === "voice" ? "Message vocal" : msgType === "image" ? "Photo" : (plaintextPreview || (content || "").substring(0, 100)),
+          body: notifBody,
           referenceId: conversationId,
           referenceType: "conversation",
           data: {
             conversationId,
             messageId: newMessage.id,
           },
-        });
-      } catch (error) {
-        console.error(
-          `[SendMessage] Failed to send push notification to user ${participant.userId}:`,
-          error,
-        );
-      }
-    }
-  }
+        }).catch((error) =>
+          console.error(
+            `[SendMessage] Failed to send push notification to user ${participant.userId}:`,
+            error,
+          ),
+        ),
+      ),
+  ).catch(() => {});
 
   return c.json(
     {
