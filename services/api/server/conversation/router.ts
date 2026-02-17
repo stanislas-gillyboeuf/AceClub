@@ -4,7 +4,7 @@ import { zValidator } from "@hono/zod-validator";
 import { requireAuth } from "../../middleware/auth";
 import { sendMessageValidator, muteConversationValidator, findOrCreateConversationValidator, addReactionValidator, removeReactionValidator } from "./validators";
 import { sendMessage, markRead, muteConversation, deleteConversation, deleteMessage, findOrCreateConversation, uploadAttachment, addReaction, removeReaction } from "./mutations";
-import { listConversations, getConversation, listMessages } from "./queries";
+import { listConversations, getConversation, listMessages, getConversationKey } from "./queries";
 
 export const conversationRouter = new Hono<HonoContext>();
 
@@ -19,6 +19,9 @@ conversationRouter.post("/find-or-create", zValidator("json", findOrCreateConver
 
 // Get a specific conversation
 conversationRouter.get("/:id", getConversation);
+
+// Get the encryption key for a conversation
+conversationRouter.get("/:id/key", getConversationKey);
 
 // List messages in a conversation (paginated)
 conversationRouter.get("/:id/messages", listMessages);

@@ -29,6 +29,8 @@ export const conversation = pgTable(
     lastMessageAt: timestamp("last_message_at"),
     lastMessagePreview: text("last_message_preview"),
     lastMessageSenderId: text("last_message_sender_id"),
+    // Server-side encryption key (AES-256, base64-encoded)
+    encryptionKey: text("encryption_key"),
   },
   (table) => [index("conversation_lastMessageAt_idx").on(table.lastMessageAt)],
 );

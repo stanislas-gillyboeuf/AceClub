@@ -17,8 +17,6 @@ import {
   Dumbbell,
   Bell,
   MapPin,
-  Shield,
-  KeyRound,
   FileText,
   Hand,
   Trash2,
@@ -28,8 +26,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as Notifications from "expo-notifications";
 import * as Location from "expo-location";
 
-import { useMe, usePreferences, useUpdateProfile } from "@/hooks/use-user";
-import { useDeleteAccount } from "@/hooks/use-e2ee";
+import { useMe, usePreferences, useUpdateProfile, useDeleteAccount } from "@/hooks/use-user";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { authClient } from "@/lib/auth-client";
 import { clearAuthData } from "@/lib/auth-api";
@@ -476,23 +473,6 @@ export default function Settings() {
               description="Permet de trouver des joueurs proches de vous"
               value={locationEnabled}
               onValueChange={handleLocationToggle}
-            />
-          </SectionCard>
-
-          {/* E2EE */}
-          <SectionCard title="Chiffrement de bout en bout">
-            <SettingsRow
-              icon={<Shield size={20} color={colors.accentGreen} strokeWidth={1.5} />}
-              label="Sauvegarder ma clé"
-              onPress={() => router.push("/(tabs)/profile/e2ee-backup")}
-            />
-            <View
-              style={[styles.divider, { backgroundColor: semanticColors.divider[scheme] }]}
-            />
-            <SettingsRow
-              icon={<KeyRound size={20} color={colors.accentGreen} strokeWidth={1.5} />}
-              label="Récupérer ma clé"
-              onPress={() => router.push("/(tabs)/profile/e2ee-recovery")}
             />
           </SectionCard>
 

@@ -8,6 +8,7 @@ import {
 import { user } from "../../../db/schema/auth/schema";
 import { eq, and } from "drizzle-orm";
 import { ulid } from "ulid";
+import { generateConversationKey } from "../lib/generate-key";
 
 export const findOrCreateConversation = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user");
@@ -91,6 +92,7 @@ export const findOrCreateConversation = async (c: Context<HonoContext>) => {
   await db.insert(conversation).values({
     id: conversationId,
     type: "direct",
+    encryptionKey: generateConversationKey(),
     createdAt: now,
     updatedAt: now,
   });
