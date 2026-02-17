@@ -14,12 +14,14 @@ export default function ProfileLayout() {
         }}
       />
       <Stack.Screen
-        name="create-intent"
+        name="create-intent/index"
         options={{
           title: "Nouvelle dispo",
           presentation: "formSheet",
           sheetGrabberVisible: true,
           headerTransparent: true,
+          sheetAllowedDetents: [0.6, 0.85, 1],
+          contentStyle: { flex: 1, backgroundColor: "transparent" },
         }}
       />
       <Stack.Screen

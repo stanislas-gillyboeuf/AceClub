@@ -14,6 +14,8 @@ export default function DiscoverLayout() {
           presentation: "formSheet",
           sheetGrabberVisible: true,
           headerTransparent: true,
+          sheetAllowedDetents: [0.6, 0.85, 1],
+          contentStyle: { flex: 1, backgroundColor: "transparent" },
         }}
       />
     </Stack>

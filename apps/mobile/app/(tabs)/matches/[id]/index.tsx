@@ -136,7 +136,7 @@ export default function MatchDetail() {
       </View>
     );
   }
-  
+
   return (
     <>
     <Stack.Screen
@@ -152,52 +152,49 @@ export default function MatchDetail() {
         }}
       />
       {Platform.OS === "ios" && (
-        <Stack.Toolbar placement="left">
-          <Stack.Toolbar.Button icon="xmark" onPress={() => router.dismiss()} tintColor={colors.accentGreen} />
-        </Stack.Toolbar>
+        <>
+          <Stack.Toolbar placement="left">
+            <Stack.Toolbar.Button icon="xmark" variant="prominent" onPress={() => router.dismiss()} tintColor={colors.accentGreen} />
+          </Stack.Toolbar>
+
+          {isParticipant && (
+            <Stack.Toolbar placement="bottom">
+              {isScheduled && (
+                <>
+                  <Stack.Toolbar.Button icon="play.fill" variant="prominent" onPress={handleStart} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Spacer />
+                </>
+              )}
+              {isOngoing && (
+                <>
+                  <Stack.Toolbar.Button icon="pencil" variant="prominent" onPress={handleEditScores} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Spacer />
+                </>
+              )}
+              {isOngoing && (
+                <>
+                  <Stack.Toolbar.Button icon="checkmark.circle" variant="prominent" onPress={handleFinish} tintColor={colors.accentOrange} />
+                  <Stack.Toolbar.Spacer />
+                </>
+              )}
+              {isFinished && (
+                <>
+                  <Stack.Toolbar.Button icon="pencil" variant="prominent" onPress={handleEditMatch} tintColor={colors.accentOrange} />
+                  <Stack.Toolbar.Spacer />
+                </>
+              )}
+              {isFinished && !hasUserCommented && (
+                <>
+                  <Stack.Toolbar.Button icon="bubble.left" variant="prominent" onPress={handleComment} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Spacer />
+                </>
+              )}
+              <Stack.Toolbar.Button icon="trash" variant="prominent" onPress={handleDelete} tintColor="#FF3B30" />
+            </Stack.Toolbar>
+          )}
+        </>
       )}
 
-      {isParticipant && (
-        <Stack.Toolbar placement="bottom">
-          {isScheduled && (
-            <>
-            <Stack.Toolbar.Button icon="play.fill" onPress={handleStart} tintColor={colors.accentGreen} />
-            <Stack.Toolbar.Spacer />
-
-            </>
-          )}
-          
-          {isOngoing && (
-            <>
-            <Stack.Toolbar.Button icon="pencil" onPress={handleEditScores} tintColor={colors.accentGreen} />
-            <Stack.Toolbar.Spacer />
-
-            </>
-          )}
-          {isOngoing && (
-            <>
-            <Stack.Toolbar.Button icon="checkmark.circle" onPress={handleFinish} tintColor={colors.accentOrange} />
-            <Stack.Toolbar.Spacer />
-            </>
-          )}
-          {isFinished && (
-            <>
-            <Stack.Toolbar.Button icon="pencil" onPress={handleEditMatch} tintColor={colors.accentOrange} />
-            <Stack.Toolbar.Spacer />
-            </>
-          )}
-          {isFinished && !hasUserCommented && (
-            <>
-            <Stack.Toolbar.Button icon="bubble.left" onPress={handleComment} tintColor={colors.accentGreen} />
-            <Stack.Toolbar.Spacer />
-            </>
-          )}
-          <>
-          <Stack.Toolbar.Button icon="trash" onPress={handleDelete} tintColor="#FF3B30" />
-          </>
-        </Stack.Toolbar>
-      )}
-      
     <View style={[styles.root, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"

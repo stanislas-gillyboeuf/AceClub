@@ -92,13 +92,11 @@ function ChatContent({
   // Reverse messages: oldest first for non-inverted FlatList
   const reversedMessages = useMemo(() => [...messages].reverse(), [messages]);
 
-  // Load messages on mount and connect WS
   useEffect(() => {
     loadMessages();
     wsManager.connect();
   }, [loadMessages]);
 
-  // Hide list until initial scroll to avoid flash at top
   const [isListReady, setIsListReady] = useState(false);
 
   // Initial scroll to bottom — triggered when content is first laid out
@@ -111,7 +109,6 @@ function ChatContent({
     }
   }, [reversedMessages.length]);
 
-  // Auto-scroll for new messages when near bottom (after initial scroll)
   useEffect(() => {
     if (!hasInitiallyScrolled.current || reversedMessages.length === 0) return;
     if (isNearBottom.current) {
@@ -119,14 +116,12 @@ function ChatContent({
     }
   }, [reversedMessages.length]);
 
-  // Error alert
   useEffect(() => {
     if (errorMessage) {
       Alert.alert("Erreur", errorMessage, [{ text: "OK", onPress: () => setErrorMessage(null) }]);
     }
   }, [errorMessage, setErrorMessage]);
 
-  // Track scroll position & load more when near top
   const handleScroll = useCallback(
     (e: { nativeEvent: { contentOffset: { y: number }; contentSize: { height: number }; layoutMeasurement: { height: number } } }) => {
       const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;

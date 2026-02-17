@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors, radii } from "@/constants/theme";
 import type { MatchIntent } from "@/types/match-intent";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface MatchIntentListProps {
   intents: MatchIntent[];
@@ -274,22 +275,10 @@ export function MatchIntentList({
       ) : error ? (
         <Text style={[styles.errorText, { color: colors.red500 }]}>{error}</Text>
       ) : intents.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <View
-            style={[
-              styles.emptyIcon,
-              { backgroundColor: `${colors.accentGreen}12` },
-            ]}
-          >
-            <Calendar size={24} color={colors.accentGreen} strokeWidth={1.5} />
-          </View>
-          <Text style={[styles.emptyTitle, { color: semanticColors.labelSecondary[scheme] }]}>
-            Aucune dispo publiée
-          </Text>
-          <Text style={[styles.emptyDescription, { color: semanticColors.labelTertiary[scheme] }]}>
-            Publie une dispo pour apparaître dans le feed
-          </Text>
-        </View>
+        <EmptyState
+          icon="MessageSquare"
+          title="Aucun match ou entraînement demandé"
+        />
       ) : (
         <View style={styles.list}>
           {intents.map((intent, index) => (

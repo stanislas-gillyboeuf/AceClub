@@ -177,11 +177,6 @@ export default function Profile() {
     [rejectInvitation]
   );
 
-  // Sign out — workaround for better-auth/better-auth#5868
-  // The Expo plugin doesn't always delete the server session, so we:
-  // 1. Call sign-out with bearer token to ensure server-side session deletion
-  // 2. Clear all local auth data (cookies + bearer token)
-  // 3. Reset React Query cache to avoid stale data from the old user
   const handleSignOut = () => {
     Alert.alert(
       "Déconnexion",
