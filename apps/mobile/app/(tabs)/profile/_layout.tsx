@@ -28,6 +28,7 @@ export default function ProfileLayout() {
           title: "Sauvegarder ma clé",
           presentation: "formSheet",
           sheetGrabberVisible: true,
+          headerTransparent: true,
         }}
       />
       <Stack.Screen
@@ -36,6 +37,7 @@ export default function ProfileLayout() {
           title: "Récupérer ma clé",
           presentation: "formSheet",
           sheetGrabberVisible: true,
+          headerTransparent: true,
         }}
       />
       <Stack.Screen

@@ -3,15 +3,14 @@ import {
   View,
   Text,
   TextInput,
+  ScrollView,
   Pressable,
   Alert,
   StyleSheet,
-  Platform,
   ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Trash2 } from "lucide-react-native";
+import { X, Check, Trash2 } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useMatch, useCreateComment, useUpdateComment, useDeleteComment } from "@/hooks/use-match";
 import { useMe } from "@/hooks/use-user";
@@ -93,50 +92,27 @@ export default function CommentScreen() {
       <Stack.Screen
         options={{
           title: isEditing ? "Modifier le commentaire" : "Ajouter un commentaire",
-          headerLeft:
-            Platform.OS === "android"
-              ? () => (
-                  <Pressable onPress={() => router.dismiss()} disabled={isSaving}>
-                    <MaterialIcons name="close" size={24} color={colors.accentGreen} />
-                  </Pressable>
-                )
-              : undefined,
-          headerRight:
-            Platform.OS === "android"
-              ? () => (
-                  <Pressable onPress={handleSubmit} disabled={!canSubmit}>
-                    <MaterialIcons
-                      name="check"
-                      size={24}
-                      color={canSubmit ? colors.accentGreen : colors.gray400}
-                    />
-                  </Pressable>
-                )
-              : undefined,
+          headerLeft: () => (
+            <Pressable onPress={() => router.dismiss()} disabled={isSaving} hitSlop={8}>
+              <X size={24} color={semanticColors.labelPrimary[scheme]} strokeWidth={2} />
+            </Pressable>
+          ),
+          headerRight: () => (
+            <Pressable onPress={handleSubmit} disabled={!canSubmit} hitSlop={8}>
+              <Check
+                size={24}
+                color={canSubmit ? colors.accentGreen : colors.gray400}
+                strokeWidth={2}
+              />
+            </Pressable>
+          ),
         }}
       />
 
-      {Platform.OS === "ios" && (
-        <>
-          <Stack.Toolbar placement="left">
-            <Stack.Toolbar.Button
-              icon="xmark"
-              onPress={() => router.dismiss()}
-              tintColor={colors.accentGreen}
-            />
-          </Stack.Toolbar>
-          <Stack.Toolbar placement="right">
-            <Stack.Toolbar.Button
-              icon="checkmark"
-              onPress={handleSubmit}
-              tintColor={canSubmit ? colors.accentGreen : colors.gray400}
-            />
-          </Stack.Toolbar>
-        </>
-      )}
-
-      <View
+      <ScrollView
         style={[styles.root, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.content}>
           <TextInput
@@ -173,20 +149,20 @@ export default function CommentScreen() {
             )}
           </View>
         </View>
+      </ScrollView>
 
-        {isSaving && (
-          <View style={styles.overlay}>
-            <View style={[styles.overlayCard, {
-              backgroundColor: semanticColors.cardBackground[scheme],
-            }]}>
-              <ActivityIndicator size="small" color={colors.accentGreen} />
-              <Text style={[styles.overlayText, { color: semanticColors.labelSecondary[scheme] }]}>
-                {deleteComment.isPending ? "Suppression..." : "Enregistrement..."}
-              </Text>
-            </View>
+      {isSaving && (
+        <View style={styles.overlay}>
+          <View style={[styles.overlayCard, {
+            backgroundColor: semanticColors.cardBackground[scheme],
+          }]}>
+            <ActivityIndicator size="small" color={colors.accentGreen} />
+            <Text style={[styles.overlayText, { color: semanticColors.labelSecondary[scheme] }]}>
+              {deleteComment.isPending ? "Suppression..." : "Enregistrement..."}
+            </Text>
           </View>
-        )}
-      </View>
+        </View>
+      )}
     </>
   );
 }

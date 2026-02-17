@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
+  ScrollView,
   Pressable,
   StyleSheet,
   ActivityIndicator,
@@ -12,6 +12,7 @@ import { Stack, useRouter } from "expo-router";
 import { X, KeyRound } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useE2EERecovery } from "@/hooks/use-e2ee";
+import { FormField } from "@/components/ui/form-field";
 import { colors, semanticColors, radii, spacing } from "@/constants/theme";
 
 export default function E2EERecovery() {
@@ -43,7 +44,11 @@ export default function E2EERecovery() {
         }}
       />
 
-      <View style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
+      <ScrollView
+        style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.content}>
           <View style={styles.infoBox}>
             <KeyRound size={24} color={colors.accentGreen} strokeWidth={1.5} />
@@ -53,27 +58,14 @@ export default function E2EERecovery() {
             </Text>
           </View>
 
-          <View style={styles.fieldGroup}>
-            <Text style={[styles.fieldLabel, { color: semanticColors.labelSecondary[scheme] }]}>
-              Phrase de passe
-            </Text>
-            <TextInput
-              value={passphrase}
-              onChangeText={setPassphrase}
-              secureTextEntry
-              placeholder="Votre phrase de passe"
-              placeholderTextColor={semanticColors.labelTertiary[scheme]}
-              style={[
-                styles.input,
-                {
-                  color: semanticColors.labelPrimary[scheme],
-                  backgroundColor: scheme === "dark" ? "#1C1C1E" : "#F2F2F7",
-                },
-              ]}
-            />
-          </View>
-
-          {error && <Text style={styles.errorText}>{error}</Text>}
+          <FormField
+            label="Phrase de passe"
+            value={passphrase}
+            onChangeText={setPassphrase}
+            secureTextEntry
+            placeholder="Votre phrase de passe"
+            error={error}
+          />
 
           <Pressable
             onPress={handleSubmit}
@@ -87,7 +79,7 @@ export default function E2EERecovery() {
             )}
           </Pressable>
         </View>
-      </View>
+      </ScrollView>
     </>
   );
 }
@@ -109,23 +101,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     lineHeight: 22,
-  },
-  fieldGroup: {
-    gap: 6,
-  },
-  fieldLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  input: {
-    height: 44,
-    borderRadius: radii.sm,
-    paddingHorizontal: 12,
-    fontSize: 16,
-  },
-  errorText: {
-    fontSize: 14,
-    color: "#ef4444",
   },
   submitButton: {
     height: 52,
