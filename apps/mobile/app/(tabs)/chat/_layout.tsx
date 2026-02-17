@@ -5,19 +5,11 @@ export default function ChatLayout() {
     <Stack>
       <Stack.Screen name="index" options={{ title: "Messages", headerLargeTitle: true }} />
       <Stack.Screen
-        name="[conversationId]"
-        options={{
-          title: "",
-          headerTransparent: true,
-        }}
-      />
-      <Stack.Screen
         name="new"
         options={{
           presentation: "formSheet",
           title: "Nouveau message",
           sheetGrabberVisible: true,
-          headerTransparent: true,
         }}
       />
     </Stack>
