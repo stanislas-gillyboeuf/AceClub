@@ -1,1 +1,1 @@
-export { default } from "../profile/create-intent";
+export { default } from "../profile/create-intent/index";

@@ -71,7 +71,7 @@ export default function ConversationListScreen() {
 
   const handlePress = useCallback(
     (conversation: Conversation) => {
-      router.push(`/(tabs)/chat/${conversation.id}`);
+      router.push(`/conversation/${conversation.id}`);
     },
     [router],
   );

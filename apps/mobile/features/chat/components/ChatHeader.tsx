@@ -38,7 +38,7 @@ export function ChatHeader({
         style: "destructive",
         onPress: () => {
           onDeleteConversation();
-          router.dismiss();
+          router.back();
         },
       },
       { text: "Annuler", style: "cancel" },
@@ -50,11 +50,11 @@ export function ChatHeader({
       options={{
         headerTransparent: Platform.OS === "ios",
         headerLeft: () => (
-          <Pressable onPress={() => router.dismiss()} hitSlop={8} style={styles.closeButton}>
+          <Pressable onPress={() => router.back()} hitSlop={8} style={styles.backButton}>
             {Platform.OS === "ios" ? (
-              <Ionicons name="close" size={22} color={semanticColors.labelPrimary[scheme]} />
+              <Ionicons name="chevron-back" size={28} color={semanticColors.labelPrimary[scheme]} />
             ) : (
-              <MaterialIcons name="close" size={24} color={semanticColors.labelPrimary[scheme]} />
+              <MaterialIcons name="arrow-back" size={24} color={semanticColors.labelPrimary[scheme]} />
             )}
           </Pressable>
         ),
@@ -75,12 +75,12 @@ export function ChatHeader({
 }
 
 const styles = StyleSheet.create({
-  closeButton: {
+  backButton: {
     width: 30,
     height: 30,
-    borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
+    marginLeft: -8,
   },
   headerTitle: {
     flexDirection: "row",

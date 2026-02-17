@@ -14,6 +14,7 @@ export function useAudioPlayer(messageId: string) {
   const player = useExpoAudioPlayer(null);
   const status = useAudioPlayerStatus(player);
   const isMounted = useRef(true);
+  const pendingPlayRef = useRef(false);
 
   const isPlaying = currentPlayingId === messageId && status.playing;
   const progress = status.duration > 0 ? status.currentTime / status.duration : 0;
@@ -29,6 +30,7 @@ export function useAudioPlayer(messageId: string) {
 
   const cleanup = useCallback(() => {
     safePause();
+    pendingPlayRef.current = false;
     if (currentPlayingId === messageId) {
       currentPlayingId = null;
       stopCurrentPlayback = null;
@@ -43,12 +45,20 @@ export function useAudioPlayer(messageId: string) {
     }
   }, [status.didJustFinish, messageId]);
 
-  // Clear loading when audio is loaded
+  // When audio is loaded and we have a pending play, start playback
   useEffect(() => {
-    if (isLoading && status.isLoaded) {
+    if (status.isLoaded && pendingPlayRef.current) {
+      pendingPlayRef.current = false;
+      setIsLoading(false);
+      try {
+        player.play();
+      } catch {
+        cleanup();
+      }
+    } else if (isLoading && status.isLoaded) {
       setIsLoading(false);
     }
-  }, [isLoading, status.isLoaded]);
+  }, [isLoading, status.isLoaded, player, cleanup]);
 
   // Track mount state — cleanup on unmount only resets global state
   // (Expo's useAudioPlayer hook handles native player release)
@@ -89,10 +99,11 @@ export function useAudioPlayer(messageId: string) {
       try {
         await setAudioModeAsync({ playsInSilentMode: true });
 
+        pendingPlayRef.current = true;
         player.replace({ uri: url });
         currentPlayingId = messageId;
         stopCurrentPlayback = cleanup;
-        player.play();
+        // Don't call player.play() here — the useEffect will play once isLoaded
       } catch (error) {
         console.warn("[AudioPlayer] Playback failed:", error);
         setIsLoading(false);

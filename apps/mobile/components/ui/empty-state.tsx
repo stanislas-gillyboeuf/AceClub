@@ -6,7 +6,7 @@ import * as LucideIcons from "lucide-react-native";
 interface EmptyStateProps {
   icon: string;
   title: string;
-  description: string;
+  description?: string;
   containerStyle?: StyleProp<ViewStyle>;
 }
 
@@ -43,6 +43,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "600",
     textAlign: "center",
+    color: "gray",
   },
   description: {
     fontSize: 15,

@@ -168,14 +168,42 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
       referenceType: "match",
       data: {
         matchId: newMatch.id,
+        conversationId: conversationId,
       },
     }).catch((err) => console.error("[ACCEPT REQUEST] Failed to send notification:", err));
+
+    // Fetch conversation details for immediate client navigation
+    const [convDetails] = await db
+      .select({
+        id: conversation.id,
+        type: conversation.type,
+        createdAt: conversation.createdAt,
+        encryptionKey: conversation.encryptionKey,
+      })
+      .from(conversation)
+      .where(eq(conversation.id, conversationId))
+      .limit(1);
 
     return c.json({
       request: updatedRequest,
       match: newMatch,
       requester: requesterInfo ?? null,
       conversationId: conversationId,
+      conversation: convDetails
+        ? {
+            id: convDetails.id,
+            type: convDetails.type,
+            createdAt: convDetails.createdAt.toISOString(),
+            encryptionKey: convDetails.encryptionKey || null,
+            otherParticipant: requesterInfo
+              ? {
+                  id: requesterInfo.id,
+                  name: requesterInfo.name,
+                  image: requesterInfo.image,
+                }
+              : null,
+          }
+        : null,
       message: "Match created successfully!",
     });
   } catch (error) {

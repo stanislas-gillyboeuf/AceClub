@@ -14,7 +14,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
   const queryClient = useQueryClient();
 
   const msgState = useMessages();
-  const e2ee = useEncryption(conversation.id);
+  const e2ee = useEncryption(conversation.id, conversation.encryptionKey);
   const reply = useReplyState();
 
   const send = useMessageSend(conversation, currentUserId, {
@@ -22,6 +22,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     confirmMessage: msgState.confirmMessage,
     failMessage: msgState.failMessage,
     encryptContent: e2ee.encryptContent,
+    onSendSuccess: () => queryClient.invalidateQueries({ queryKey: ["conversation", "list"] }),
   });
 
   const ws = useChatWebSocket(conversation, currentUserId, {
@@ -32,6 +33,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     messagesRef: msgState.messagesRef,
     decryptMessage: e2ee.decryptMessage,
     retryFailedMessage: send.retryFailedMessage,
+    invalidateConversationList: () => queryClient.invalidateQueries({ queryKey: ["conversation", "list"] }),
   });
 
   const reactions = useReactions(conversation.id, currentUserId, {
@@ -49,7 +51,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     try {
       await e2eeRef.current.ensureReady();
 
-      const loaded = await conversationService.listMessages(conversation.id);
+      const loaded = await conversationService.listMessages(conversation.id, { limit: 20 });
       const chatMessages = await Promise.all(
         loaded
           .map((m) => apiMessageToChatMessage(m, currentUserId))
@@ -57,8 +59,10 @@ export function useChat(conversation: Conversation, currentUserId: string) {
       );
 
       msgState.setMessages(chatMessages);
-      msgState.setHasMoreMessages(loaded.length >= 50);
-      conversationService.markRead(conversation.id).catch(() => {});
+      msgState.setHasMoreMessages(loaded.length >= 20);
+      conversationService.markRead(conversation.id)
+        .then(() => queryClient.invalidateQueries({ queryKey: ["conversation", "list"] }))
+        .catch(() => {});
     } catch (error) {
       setErrorMessageRef.current((error as Error).message);
     }
