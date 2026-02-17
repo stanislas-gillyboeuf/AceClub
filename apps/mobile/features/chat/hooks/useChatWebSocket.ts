@@ -16,6 +16,7 @@ interface UseChatWebSocketDeps {
   messagesRef: React.MutableRefObject<ChatMessage[]>;
   decryptMessage: (msg: ChatMessage) => Promise<ChatMessage>;
   retryFailedMessage: (msg: ChatMessage) => Promise<void>;
+  invalidateConversationList: () => void;
 }
 
 export function useChatWebSocket(
@@ -92,7 +93,9 @@ export function useChatWebSocket(
           chatMsg = await d.decryptMessage(chatMsg);
           d.addIncoming(chatMsg);
 
-          conversationService.markRead(conv.id).catch(() => {});
+          conversationService.markRead(conv.id)
+            .then(() => d.invalidateConversationList())
+            .catch(() => {});
           break;
         }
 

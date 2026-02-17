@@ -98,19 +98,24 @@ function ChatContent({
     wsManager.connect();
   }, [loadMessages]);
 
-  // Auto-scroll to bottom
-  useEffect(() => {
-    if (reversedMessages.length === 0) return;
+  // Hide list until initial scroll to avoid flash at top
+  const [isListReady, setIsListReady] = useState(false);
 
-    if (!hasInitiallyScrolled.current) {
+  // Initial scroll to bottom — triggered when content is first laid out
+  const handleContentSizeChange = useCallback((_w: number, h: number) => {
+    if (!hasInitiallyScrolled.current && reversedMessages.length > 0 && h > 0) {
       hasInitiallyScrolled.current = true;
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: false });
-      }, 100);
-    } else if (isNearBottom.current) {
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+      flatListRef.current?.scrollToEnd({ animated: false });
+      // Reveal list after scroll command is dispatched
+      requestAnimationFrame(() => setIsListReady(true));
+    }
+  }, [reversedMessages.length]);
+
+  // Auto-scroll for new messages when near bottom (after initial scroll)
+  useEffect(() => {
+    if (!hasInitiallyScrolled.current || reversedMessages.length === 0) return;
+    if (isNearBottom.current) {
+      flatListRef.current?.scrollToEnd({ animated: true });
     }
   }, [reversedMessages.length]);
 
@@ -224,7 +229,7 @@ function ChatContent({
         keyboardVerticalOffset={0}
       >
         <FlatList
-          style={{ flex: 1 }}
+          style={{ flex: 1, opacity: isListReady ? 1 : 0 }}
           contentInsetAdjustmentBehavior="never"
           ref={flatListRef}
           data={reversedMessages}
@@ -237,6 +242,7 @@ function ChatContent({
           scrollIndicatorInsets={{ top: topInset }}
           ListHeaderComponent={renderListHeader}
           onScroll={handleScroll}
+          onContentSizeChange={handleContentSizeChange}
           scrollEventThrottle={16}
           maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
           keyboardShouldPersistTaps="handled"

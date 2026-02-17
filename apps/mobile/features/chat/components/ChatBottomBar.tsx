@@ -87,11 +87,11 @@ export function ChatBottomBar({
   }, [recorder]);
 
   const finishRecording = useCallback(
-    (cancelled: boolean) => {
+    async (cancelled: boolean) => {
       if (cancelled) {
         recorder.cancel();
       } else {
-        const result = recorder.stop();
+        const result = await recorder.stop();
         if (result) {
           onSendVoice(result.uri, result.duration);
         }

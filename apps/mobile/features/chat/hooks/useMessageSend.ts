@@ -43,6 +43,7 @@ interface UseMessageSendDeps {
   confirmMessage: (clientMessageId: string, confirmed: ChatMessage) => void;
   failMessage: (clientMessageId: string) => void;
   encryptContent: (text: string, conversationId: string) => Promise<{ content: string; isEncrypted: boolean }>;
+  onSendSuccess?: () => void;
 }
 
 export function useMessageSend(
@@ -53,7 +54,7 @@ export function useMessageSend(
   const [isSending, setIsSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { addOptimistic, confirmMessage, failMessage, encryptContent } = deps;
+  const { addOptimistic, confirmMessage, failMessage, encryptContent, onSendSuccess } = deps;
 
   const sendTextMessage = useCallback(
     async (content: string, replyToId?: string, replyTo?: ChatMessage["replyTo"]) => {
@@ -99,6 +100,7 @@ export function useMessageSend(
           content: trimmed, // Keep plaintext
           sendStatus: "sent" as MessageSendStatus,
         });
+        onSendSuccess?.();
       } catch (error) {
         failMessage(clientMessageId);
         setErrorMessage((error as Error).message);
@@ -106,7 +108,7 @@ export function useMessageSend(
         setIsSending(false);
       }
     },
-    [conversation, currentUserId, addOptimistic, confirmMessage, failMessage, encryptContent],
+    [conversation, currentUserId, addOptimistic, confirmMessage, failMessage, encryptContent, onSendSuccess],
   );
 
   const sendVoiceMessage = useCallback(
@@ -145,15 +147,17 @@ export function useMessageSend(
           content: "",
           clientMessageId,
           type: "voice",
-          attachmentUrl: uploaded.url,
+          attachmentUrl: uploaded.attachmentUrl,
           attachmentDuration: durationInt,
           replyToId,
         });
 
         confirmMessage(clientMessageId, {
           ...apiMessageToChatMessage(sent, currentUserId),
+          attachmentUrl: sent.attachmentUrl ?? uploaded.attachmentUrl,
           sendStatus: "sent" as MessageSendStatus,
         });
+        onSendSuccess?.();
       } catch (error) {
         failMessage(clientMessageId);
         setErrorMessage((error as Error).message);
@@ -161,7 +165,7 @@ export function useMessageSend(
         setIsSending(false);
       }
     },
-    [conversation, currentUserId, addOptimistic, confirmMessage, failMessage],
+    [conversation, currentUserId, addOptimistic, confirmMessage, failMessage, onSendSuccess],
   );
 
   const sendImageMessage = useCallback(
@@ -201,7 +205,7 @@ export function useMessageSend(
           content: "",
           clientMessageId,
           type: "image",
-          attachmentUrl: uploaded.url,
+          attachmentUrl: uploaded.attachmentUrl,
           attachmentWidth: width,
           attachmentHeight: height,
           replyToId,
@@ -209,8 +213,12 @@ export function useMessageSend(
 
         confirmMessage(clientMessageId, {
           ...apiMessageToChatMessage(sent, currentUserId),
+          attachmentUrl: sent.attachmentUrl ?? uploaded.attachmentUrl,
+          attachmentWidth: width,
+          attachmentHeight: height,
           sendStatus: "sent" as MessageSendStatus,
         });
+        onSendSuccess?.();
       } catch (error) {
         failMessage(clientMessageId);
         setErrorMessage((error as Error).message);
@@ -218,7 +226,7 @@ export function useMessageSend(
         setIsSending(false);
       }
     },
-    [conversation, currentUserId, addOptimistic, confirmMessage, failMessage],
+    [conversation, currentUserId, addOptimistic, confirmMessage, failMessage, onSendSuccess],
   );
 
   const retryFailedMessage = useCallback(
