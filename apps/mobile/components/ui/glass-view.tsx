@@ -1,4 +1,4 @@
-import { Platform, View, type ViewProps } from "react-native";
+import { Platform, View } from "react-native";
 import { GlassView as ExpoGlassView } from "expo-glass-effect";
 import type { GlassViewProps } from "expo-glass-effect";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -23,7 +23,6 @@ export function GlassView({ style, tintColor, ...rest }: GlassViewProps) {
 function AndroidGlassFallback({
   style,
   tintColor,
-  // strip iOS-only props so they don't end up on <View>
   glassEffectStyle: _ges,
   isInteractive: _ii,
   colorScheme: _cs,
