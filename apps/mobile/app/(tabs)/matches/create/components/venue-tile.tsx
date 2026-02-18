@@ -1,5 +1,5 @@
 import { Pressable, View, Text, Image, StyleSheet } from "react-native";
-import { GlassView } from "expo-glass-effect";
+import { GlassView } from "@/components/ui/glass-view";
 import { Building2, CheckCircle2 } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useColorScheme } from "@/hooks/use-color-scheme";

@@ -1,5 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { GlassView } from "expo-glass-effect";
+import { GlassView } from "@/components/ui/glass-view";
 import * as Haptics from "expo-haptics";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors, radii } from "@/constants/theme";

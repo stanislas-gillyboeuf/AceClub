@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { GlassView } from "expo-glass-effect";
+import { GlassView } from "@/components/ui/glass-view";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import {

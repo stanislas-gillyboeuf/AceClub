@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { GlassView } from "expo-glass-effect";
+import { GlassView } from "@/components/ui/glass-view";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import { useHeaderHeight } from "@react-navigation/elements";

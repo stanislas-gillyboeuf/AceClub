@@ -1,5 +1,5 @@
 import { View, Text, TextInput, StyleSheet } from "react-native";
-import { GlassView } from "expo-glass-effect";
+import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useCreateIntentFormStore } from "@/store/create-intent-form";
 import { semanticColors, radii } from "@/constants/theme";

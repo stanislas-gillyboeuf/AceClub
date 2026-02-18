@@ -10,7 +10,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native";
-import { GlassView } from "expo-glass-effect";
+import { GlassView } from "@/components/ui/glass-view";
 import { Search, X } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors, radii } from "@/constants/theme";

@@ -20,7 +20,7 @@ import { wsManager } from "@/lib/websocket-manager";
 import { SquarePen } from "lucide-react-native";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import Animated, { SharedValue, useAnimatedStyle } from "react-native-reanimated";
-import { GlassView } from "expo-glass-effect";
+import { GlassView } from "@/components/ui/glass-view";
 import type { Conversation } from "@/types/conversation";
 
 function RightActions({
