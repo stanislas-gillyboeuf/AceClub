@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Platform, View } from "react-native";
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { ThemeProvider, DarkTheme, DefaultTheme } from "@react-navigation/native";
@@ -17,6 +18,22 @@ if (GoogleSignin) {
   });
 }
 
+function RootNavigator() {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <SafeAreaView edges={{ flex: 1, paddingTop: Platform.OS === "android" ? insets.top : 0 }}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(onboarding)" />
+        <Stack.Screen name="conversation" />
+        <Stack.Screen name="index" />
+      </Stack>
+    </SafeAreaView>
+  );
+}
+
 export default function RootLayout() {
   const scheme = useColorScheme();
 
@@ -26,13 +43,7 @@ export default function RootLayout() {
         <KeyboardProvider>
           <SafeAreaProvider>
             <ThemeProvider value={scheme === "dark" ? DarkTheme : DefaultTheme}>
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="(auth)" />
-                <Stack.Screen name="(onboarding)" />
-                <Stack.Screen name="conversation" />
-                <Stack.Screen name="index" />
-              </Stack>
+              <RootNavigator />
               <StatusBar style="auto" />
             </ThemeProvider>
           </SafeAreaProvider>

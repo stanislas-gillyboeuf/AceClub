@@ -7,10 +7,14 @@ import {
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
-const LOCAL_URL = Platform.OS === "android"
-    ? "http://10.0.2.2:3000"
-    : "http://localhost:3000";
-const API_URL = process.env.EXPO_PUBLIC_API_URL || LOCAL_URL;
+function getApiUrl() {
+    const envUrl = process.env.EXPO_PUBLIC_API_URL;
+    if (envUrl && Platform.OS === "android") {
+        return envUrl.replace("localhost", "10.0.2.2");
+    }
+    return envUrl || (Platform.OS === "android" ? "http://10.0.2.2:3000" : "http://localhost:3000");
+}
+const API_URL = getApiUrl();
 
 const BEARER_TOKEN_KEY = "aceclub_bearer_token";
 
