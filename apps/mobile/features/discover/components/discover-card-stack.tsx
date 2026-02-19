@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { GlassView } from "expo-glass-effect";
+import { GlassView } from "@/components/ui/glass-view";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,

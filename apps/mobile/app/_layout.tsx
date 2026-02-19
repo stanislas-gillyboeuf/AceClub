@@ -1,12 +1,15 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Platform, View } from "react-native";
+import { SafeAreaProvider, initialWindowMetrics, useSafeAreaInsets } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { ThemeProvider, DarkTheme, DefaultTheme } from "@react-navigation/native";
 import "react-native-reanimated";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
 import { GoogleSignin } from "@/lib/google-signin";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 if (GoogleSignin) {
   GoogleSignin.configure({
@@ -15,20 +18,38 @@ if (GoogleSignin) {
   });
 }
 
+function RootNavigator() {
+  const insets = useSafeAreaInsets();
+  return (
+    <View
+      style={[
+        { flex: 1 },
+        Platform.OS === "android" && { paddingTop: insets.top },
+      ]}
+    >
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(onboarding)" />
+        <Stack.Screen name="conversation" />
+        <Stack.Screen name="index" />
+      </Stack>
+    </View>
+  );
+}
+
 export default function RootLayout() {
+  const scheme = useColorScheme();
+
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <KeyboardProvider>
-          <SafeAreaProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(onboarding)" />
-              <Stack.Screen name="conversation" />
-              <Stack.Screen name="index" />
-            </Stack>
-            <StatusBar style="auto" />
+          <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+            <ThemeProvider value={scheme === "dark" ? DarkTheme : DefaultTheme}>
+              <RootNavigator />
+              <StatusBar style="auto" />
+            </ThemeProvider>
           </SafeAreaProvider>
         </KeyboardProvider>
       </GestureHandlerRootView>

@@ -1,4 +1,7 @@
 import { Stack } from "expo-router";
+import { Platform } from "react-native";
+
+const formSheet = Platform.select({ ios: "formSheet" as const, default: "modal" as const });
 
 export default function ProfileLayout() {
   return (
@@ -9,8 +12,7 @@ export default function ProfileLayout() {
         options={{
           title: "Paramètres",
           presentation: "fullScreenModal",
-          sheetGrabberVisible: true,
-          headerTransparent: true,
+          headerTransparent: Platform.OS === "ios",
         }}
       />
       <Stack.Screen
@@ -28,8 +30,8 @@ export default function ProfileLayout() {
         name="club-selection"
         options={{
           title: "Sélectionner un club",
-          presentation: "formSheet",
-          sheetGrabberVisible: true,
+          presentation: formSheet,
+          sheetGrabberVisible: Platform.OS === "ios",
         }}
       />
     </Stack>

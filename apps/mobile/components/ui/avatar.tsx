@@ -4,11 +4,12 @@ import { colors } from "@/constants/theme";
 
 interface AvatarProps {
   imageUrl?: string | null;
-  name: string;
+  name?: string | null;
   size: number;
 }
 
-function getInitials(name: string): string {
+function getInitials(name?: string | null): string {
+  if (!name) return "?";
   return name
     .split(/\s+/)
     .filter(Boolean)

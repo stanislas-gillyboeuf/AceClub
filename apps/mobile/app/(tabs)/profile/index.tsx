@@ -224,6 +224,7 @@ export default function Profile() {
         options={{
           title: "Profil",
           headerLargeTitle: true,
+          headerStyle: { padding: Platform.OS === "android" ? 8 : undefined },
           headerRight:
             Platform.OS === "android"
               ? () => (

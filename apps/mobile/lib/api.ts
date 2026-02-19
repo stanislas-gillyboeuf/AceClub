@@ -11,10 +11,15 @@ import {
   type WebSocketAuth,
 } from "@/lib/auth-api";
 
-const LOCAL_URL =
-  Platform.OS === "android" ? "http://10.0.2.2:3000" : "http://localhost:3000";
+function getBaseUrl() {
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (envUrl && Platform.OS === "android") {
+    return envUrl.replace("localhost", "10.0.2.2");
+  }
+  return envUrl ?? (Platform.OS === "android" ? "http://10.0.2.2:3000" : "http://localhost:3000");
+}
 
-export const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? LOCAL_URL;
+export const BASE_URL = getBaseUrl();
 
 export class ApiError extends Error {
   readonly status: number;

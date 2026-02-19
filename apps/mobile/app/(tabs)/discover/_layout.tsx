@@ -1,11 +1,14 @@
 import { Stack } from "expo-router";
+import { Platform } from "react-native";
+
+const formSheet = Platform.select({ ios: "formSheet" as const, default: "modal" as const });
 
 export default function DiscoverLayout() {
   return (
     <Stack>
       <Stack.Screen
         name="index"
-        options={{ title: "Trouver un partenaire", headerLargeTitle: true, headerTransparent: true }}
+        options={{ title: "Trouver un partenaire", headerLargeTitle: true, headerTransparent: Platform.OS === "ios" }}
       />
       <Stack.Screen
         name="create-intent"

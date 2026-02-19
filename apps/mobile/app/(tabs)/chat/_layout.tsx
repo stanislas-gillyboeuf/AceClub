@@ -1,4 +1,7 @@
 import { Stack } from "expo-router";
+import { Platform } from "react-native";
+
+const formSheet = Platform.select({ ios: "formSheet" as const, default: "modal" as const });
 
 export default function ChatLayout() {
   return (
@@ -7,7 +10,7 @@ export default function ChatLayout() {
       <Stack.Screen
         name="new"
         options={{
-          presentation: "formSheet",
+          presentation: formSheet,
           title: "Nouveau message",
           sheetGrabberVisible: true,
         }}
