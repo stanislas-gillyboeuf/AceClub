@@ -12,11 +12,7 @@ export const removeParticipant = async (c: Context<HonoContext>) => {
   // @ts-ignore
   const body = c.req.valid("json") as z.infer<typeof removeParticipantValidator>;
 
-  const [eventRecord] = await db
-    .select()
-    .from(event)
-    .where(eq(event.id, body.eventId))
-    .limit(1);
+  const [eventRecord] = await db.select().from(event).where(eq(event.id, body.eventId)).limit(1);
 
   if (!eventRecord) {
     return c.json({ error: "NotFound", message: "Event not found" }, 404);
@@ -31,10 +27,7 @@ export const removeParticipant = async (c: Context<HonoContext>) => {
     .select()
     .from(eventParticipant)
     .where(
-      and(
-        eq(eventParticipant.eventId, body.eventId),
-        eq(eventParticipant.userId, body.userId),
-      ),
+      and(eq(eventParticipant.eventId, body.eventId), eq(eventParticipant.userId, body.userId)),
     )
     .limit(1);
 
@@ -54,10 +47,7 @@ export const removeParticipant = async (c: Context<HonoContext>) => {
       .select()
       .from(eventParticipant)
       .where(
-        and(
-          eq(eventParticipant.eventId, body.eventId),
-          eq(eventParticipant.status, "waitlisted"),
-        ),
+        and(eq(eventParticipant.eventId, body.eventId), eq(eventParticipant.status, "waitlisted")),
       )
       .orderBy(asc(eventParticipant.registeredAt))
       .limit(1);

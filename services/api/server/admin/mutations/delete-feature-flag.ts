@@ -7,11 +7,7 @@ import { eq } from "drizzle-orm";
 export const deleteFeatureFlag = async (c: Context<HonoContext>) => {
   const id = c.req.param("id");
 
-  const [existing] = await db
-    .select()
-    .from(featureFlag)
-    .where(eq(featureFlag.id, id))
-    .limit(1);
+  const [existing] = await db.select().from(featureFlag).where(eq(featureFlag.id, id)).limit(1);
 
   if (!existing) {
     return c.json({ error: "NotFound", message: "Feature flag not found" }, 404);

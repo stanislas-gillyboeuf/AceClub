@@ -12,11 +12,7 @@ export const cancelEvent = async (c: Context<HonoContext>) => {
   // @ts-ignore
   const body = c.req.valid("json") as z.infer<typeof deleteEventValidator>;
 
-  const [existing] = await db
-    .select()
-    .from(event)
-    .where(eq(event.id, body.eventId))
-    .limit(1);
+  const [existing] = await db.select().from(event).where(eq(event.id, body.eventId)).limit(1);
 
   if (!existing) {
     return c.json({ error: "NotFound", message: "Event not found" }, 404);

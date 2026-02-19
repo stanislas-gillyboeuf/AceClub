@@ -17,7 +17,9 @@ export interface PushResponse {
   deviceToken: string;
 }
 
-export async function sendPushNotification(payload: PushNotificationPayload): Promise<PushResponse> {
+export async function sendPushNotification(
+  payload: PushNotificationPayload,
+): Promise<PushResponse> {
   const { deviceToken, title, body, badge, sound, data } = payload;
 
   if (!Expo.isExpoPushToken(deviceToken)) {
@@ -44,7 +46,10 @@ export async function sendPushNotification(payload: PushNotificationPayload): Pr
       return { success: true, deviceToken };
     }
 
-    const errorTicket = ticket as ExpoPushTicket & { message?: string; details?: { error?: string } };
+    const errorTicket = ticket as ExpoPushTicket & {
+      message?: string;
+      details?: { error?: string };
+    };
     const reason = errorTicket.details?.error ?? errorTicket.message ?? "Unknown error";
     console.error(`[ExpoPush] Failed: ${reason}`);
     return { success: false, reason, deviceToken };

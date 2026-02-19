@@ -105,7 +105,11 @@ organizationRouter.post(
 
 // Member queries (accessible to organization members)
 organizationRouter.get("/list-members", zValidator("query", listMembersValidator), listMembers);
-organizationRouter.get("/search-members", zValidator("query", searchMembersValidator), searchMembers);
+organizationRouter.get(
+  "/search-members",
+  zValidator("query", searchMembersValidator),
+  searchMembers,
+);
 organizationRouter.get("/get-active-member", getActiveMember);
 organizationRouter.get("/get-active-member-role", getActiveMemberRole);
 

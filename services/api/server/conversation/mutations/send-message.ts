@@ -21,7 +21,18 @@ export const sendMessage = async (c: Context<HonoContext>) => {
 
   const conversationId = c.req.param("id");
   const body = await c.req.json();
-  const { content, clientMessageId, isEncrypted, type: messageType, attachmentUrl, attachmentDuration, attachmentWidth, attachmentHeight, replyToId, plaintextPreview } = body;
+  const {
+    content,
+    clientMessageId,
+    isEncrypted,
+    type: messageType,
+    attachmentUrl,
+    attachmentDuration,
+    attachmentWidth,
+    attachmentHeight,
+    replyToId,
+    plaintextPreview,
+  } = body;
 
   // Verify user is a participant
   const [myParticipation] = await db
@@ -198,7 +209,12 @@ export const sendMessage = async (c: Context<HonoContext>) => {
   }
 
   // Fire-and-forget push notifications (don't block response)
-  const notifBody = msgType === "voice" ? "Message vocal" : msgType === "image" ? "Photo" : (plaintextPreview || (content || "").substring(0, 100));
+  const notifBody =
+    msgType === "voice"
+      ? "Message vocal"
+      : msgType === "image"
+        ? "Photo"
+        : plaintextPreview || (content || "").substring(0, 100);
   Promise.all(
     otherParticipants
       .filter((p) => !p.isMuted && !isUserConnectedWs(p.userId))

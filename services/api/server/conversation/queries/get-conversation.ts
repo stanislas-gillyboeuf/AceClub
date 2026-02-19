@@ -33,11 +33,7 @@ export const getConversation = async (c: Context<HonoContext>) => {
         ),
       )
       .limit(1),
-    db
-      .select()
-      .from(conversation)
-      .where(eq(conversation.id, conversationId))
-      .limit(1),
+    db.select().from(conversation).where(eq(conversation.id, conversationId)).limit(1),
     db
       .select({
         id: conversationParticipant.id,

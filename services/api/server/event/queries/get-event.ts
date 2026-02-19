@@ -12,11 +12,7 @@ export const getEvent = async (c: Context<HonoContext>) => {
   // @ts-ignore
   const { eventId } = c.req.valid("query") as z.infer<typeof getEventValidator>;
 
-  const [eventRecord] = await db
-    .select()
-    .from(event)
-    .where(eq(event.id, eventId))
-    .limit(1);
+  const [eventRecord] = await db.select().from(event).where(eq(event.id, eventId)).limit(1);
 
   if (!eventRecord) {
     return c.json({ error: "NotFound", message: "Event not found" }, 404);
@@ -25,22 +21,12 @@ export const getEvent = async (c: Context<HonoContext>) => {
   const [participantCount] = await db
     .select({ count: count() })
     .from(eventParticipant)
-    .where(
-      and(
-        eq(eventParticipant.eventId, eventId),
-        eq(eventParticipant.status, "registered"),
-      ),
-    );
+    .where(and(eq(eventParticipant.eventId, eventId), eq(eventParticipant.status, "registered")));
 
   const [userRegistration] = await db
     .select()
     .from(eventParticipant)
-    .where(
-      and(
-        eq(eventParticipant.eventId, eventId),
-        eq(eventParticipant.userId, currentUser.id),
-      ),
-    )
+    .where(and(eq(eventParticipant.eventId, eventId), eq(eventParticipant.userId, currentUser.id)))
     .limit(1);
 
   return c.json({

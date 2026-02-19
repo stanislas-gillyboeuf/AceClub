@@ -121,12 +121,9 @@ export const auth = betterAuth({
     "https://ace-club.app",
     "https://appleid.apple.com",
     process.env.NGROK_URL || "",
-    ...(process.env.NODE_ENV === "development" ? [
-      "exp://192.168.1.23:8081",
-      "exp://",
-      "exp://**",
-      "exp://192.168.*.*:*/**",
-    ] : []),
+    ...(process.env.NODE_ENV === "development"
+      ? ["exp://192.168.1.23:8081", "exp://", "exp://**", "exp://192.168.*.*:*/**"]
+      : []),
   ].filter(Boolean),
 
   plugins: [

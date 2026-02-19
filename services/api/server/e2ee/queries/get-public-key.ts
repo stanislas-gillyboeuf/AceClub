@@ -10,7 +10,9 @@ export const getPublicKey = async (c: Context<HonoContext>) => {
 
   // Try cache first
   const cacheKey = CacheKeys.e2eePublicKey(userId);
-  const cached = await cacheGet<{ userId: string; publicKey: string; keyVersion: number }>(cacheKey);
+  const cached = await cacheGet<{ userId: string; publicKey: string; keyVersion: number }>(
+    cacheKey,
+  );
   if (cached) {
     return c.json(cached);
   }

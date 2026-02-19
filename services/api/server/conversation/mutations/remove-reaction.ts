@@ -1,10 +1,7 @@
 import type { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import {
-  conversationParticipant,
-  messageReaction,
-} from "../../../db/schema/conversation/schema";
+import { conversationParticipant, messageReaction } from "../../../db/schema/conversation/schema";
 import { eq, and, ne } from "drizzle-orm";
 import { redis, CHAT_CHANNEL } from "../../../lib/redis";
 

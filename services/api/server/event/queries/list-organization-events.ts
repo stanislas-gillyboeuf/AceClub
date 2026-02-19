@@ -14,7 +14,10 @@ export const listOrganizationEvents = async (c: Context<HonoContext>) => {
 
   const isOrgAdmin = await assertOrgAdmin(currentUser.id, query.organizationId);
   if (!isOrgAdmin && currentUser.role !== "admin") {
-    return c.json({ error: "Forbidden", message: "Not authorized to view organization events" }, 403);
+    return c.json(
+      { error: "Forbidden", message: "Not authorized to view organization events" },
+      403,
+    );
   }
 
   const conditions: SQL[] = [eq(event.organizationId, query.organizationId)];
@@ -36,12 +39,7 @@ export const listOrganizationEvents = async (c: Context<HonoContext>) => {
       const [participantCount] = await db
         .select({ count: count() })
         .from(eventParticipant)
-        .where(
-          and(
-            eq(eventParticipant.eventId, e.id),
-            eq(eventParticipant.status, "registered"),
-          ),
-        );
+        .where(and(eq(eventParticipant.eventId, e.id), eq(eventParticipant.status, "registered")));
       return { ...e, participantCount: participantCount.count };
     }),
   );

@@ -1,7 +1,11 @@
 import type { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { conversationParticipant, message, messageReaction } from "../../../db/schema/conversation/schema";
+import {
+  conversationParticipant,
+  message,
+  messageReaction,
+} from "../../../db/schema/conversation/schema";
 import { user } from "../../../db/schema/auth/schema";
 import { eq, and, desc, lt, inArray } from "drizzle-orm";
 
@@ -67,11 +71,18 @@ export const listMessages = async (c: Context<HonoContext>) => {
   }
 
   // Batch-fetch replied-to messages
-  const replyToIds = messages
-    .map((m) => m.replyToId)
-    .filter((id): id is string => id !== null);
+  const replyToIds = messages.map((m) => m.replyToId).filter((id): id is string => id !== null);
 
-  const replyToMap = new Map<string, { id: string; senderId: string; senderName: string | null; content: string; messageType: string }>();
+  const replyToMap = new Map<
+    string,
+    {
+      id: string;
+      senderId: string;
+      senderName: string | null;
+      content: string;
+      messageType: string;
+    }
+  >();
 
   if (replyToIds.length > 0) {
     const repliedMessages = await db
@@ -93,7 +104,10 @@ export const listMessages = async (c: Context<HonoContext>) => {
 
   // Batch-fetch reactions for all messages
   const messageIds = messages.map((m) => m.id);
-  const reactionsMap = new Map<string, { emoji: string; count: number; users: { id: string; name: string }[]; hasReacted: boolean }[]>();
+  const reactionsMap = new Map<
+    string,
+    { emoji: string; count: number; users: { id: string; name: string }[]; hasReacted: boolean }[]
+  >();
 
   if (messageIds.length > 0) {
     const reactions = await db

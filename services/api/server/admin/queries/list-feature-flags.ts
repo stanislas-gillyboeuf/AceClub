@@ -1,18 +1,12 @@
 import { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import {
-  featureFlag,
-  organizationFeatureFlag,
-} from "../../../db/schema/feature-flag/schema";
+import { featureFlag, organizationFeatureFlag } from "../../../db/schema/feature-flag/schema";
 import { organization } from "../../../db/schema/auth/schema";
 import { eq } from "drizzle-orm";
 
 export const listFeatureFlags = async (c: Context<HonoContext>) => {
-  const flags = await db
-    .select()
-    .from(featureFlag)
-    .orderBy(featureFlag.createdAt);
+  const flags = await db.select().from(featureFlag).orderBy(featureFlag.createdAt);
 
   const overrides = await db
     .select({
@@ -25,10 +19,7 @@ export const listFeatureFlags = async (c: Context<HonoContext>) => {
       organizationName: organization.name,
     })
     .from(organizationFeatureFlag)
-    .leftJoin(
-      organization,
-      eq(organizationFeatureFlag.organizationId, organization.id),
-    );
+    .leftJoin(organization, eq(organizationFeatureFlag.organizationId, organization.id));
 
   const result = flags.map((flag) => ({
     ...flag,

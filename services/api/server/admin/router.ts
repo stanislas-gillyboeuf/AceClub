@@ -163,7 +163,4 @@ adminRouter.post(
   setFeatureFlagOverride,
 );
 
-adminRouter.delete(
-  "/feature-flags/:id/overrides/:orgId",
-  removeFeatureFlagOverride,
-);
+adminRouter.delete("/feature-flags/:id/overrides/:orgId", removeFeatureFlagOverride);

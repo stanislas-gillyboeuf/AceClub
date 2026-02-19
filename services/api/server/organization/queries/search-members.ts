@@ -20,10 +20,7 @@ export const searchMembers = async (c: Context<HonoContext>) => {
   };
 
   // Build conditions
-  const conditions = [
-    eq(member.organizationId, organizationId),
-    ne(member.userId, currentUser.id),
-  ];
+  const conditions = [eq(member.organizationId, organizationId), ne(member.userId, currentUser.id)];
 
   if (search && search.trim().length > 0) {
     conditions.push(ilike(user.name, `%${search.trim()}%`));

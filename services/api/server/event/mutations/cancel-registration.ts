@@ -15,10 +15,7 @@ export const cancelRegistration = async (c: Context<HonoContext>) => {
     .select()
     .from(eventParticipant)
     .where(
-      and(
-        eq(eventParticipant.eventId, body.eventId),
-        eq(eventParticipant.userId, currentUser.id),
-      ),
+      and(eq(eventParticipant.eventId, body.eventId), eq(eventParticipant.userId, currentUser.id)),
     )
     .limit(1);
 
@@ -42,10 +39,7 @@ export const cancelRegistration = async (c: Context<HonoContext>) => {
       .select()
       .from(eventParticipant)
       .where(
-        and(
-          eq(eventParticipant.eventId, body.eventId),
-          eq(eventParticipant.status, "waitlisted"),
-        ),
+        and(eq(eventParticipant.eventId, body.eventId), eq(eventParticipant.status, "waitlisted")),
       )
       .orderBy(asc(eventParticipant.registeredAt))
       .limit(1);

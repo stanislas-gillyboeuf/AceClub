@@ -23,9 +23,7 @@ export const removeFeatureFlagOverride = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Override not found" }, 404);
   }
 
-  await db
-    .delete(organizationFeatureFlag)
-    .where(eq(organizationFeatureFlag.id, existing.id));
+  await db.delete(organizationFeatureFlag).where(eq(organizationFeatureFlag.id, existing.id));
 
   return c.json({ success: true });
 };

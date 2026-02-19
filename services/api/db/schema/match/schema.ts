@@ -98,12 +98,7 @@ export const setScore = pgTable(
   ],
 );
 
-export const MatchSensation = pgEnum("match_sensation", [
-  "bad",
-  "average",
-  "good",
-  "great",
-]);
+export const MatchSensation = pgEnum("match_sensation", ["bad", "average", "good", "great"]);
 
 export const matchFeedback = pgTable(
   "match_feedback",

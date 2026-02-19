@@ -22,7 +22,10 @@ export const verifyPin = async (c: Context<HonoContext>) => {
     }
 
     if (!org.pinEnabled || !org.pin) {
-      return c.json({ error: "BadRequest", message: "PIN is not enabled for this organization" }, 400);
+      return c.json(
+        { error: "BadRequest", message: "PIN is not enabled for this organization" },
+        400,
+      );
     }
 
     if (validated.pin !== org.pin) {

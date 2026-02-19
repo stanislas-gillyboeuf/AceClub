@@ -38,12 +38,7 @@ export const listEvents = async (c: Context<HonoContext>) => {
       const [participantCount] = await db
         .select({ count: count() })
         .from(eventParticipant)
-        .where(
-          and(
-            eq(eventParticipant.eventId, e.id),
-            eq(eventParticipant.status, "registered"),
-          ),
-        );
+        .where(and(eq(eventParticipant.eventId, e.id), eq(eventParticipant.status, "registered")));
       return { ...e, participantCount: participantCount.count };
     }),
   );
