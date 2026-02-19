@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Platform, View } from "react-native";
-import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaProvider, initialWindowMetrics, useSafeAreaInsets } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { ThemeProvider, DarkTheme, DefaultTheme } from "@react-navigation/native";
@@ -20,9 +20,13 @@ if (GoogleSignin) {
 
 function RootNavigator() {
   const insets = useSafeAreaInsets();
-
   return (
-    <SafeAreaView edges={{ flex: 1, paddingTop: Platform.OS === "android" ? insets.top : 0 }}>
+    <View
+      style={[
+        { flex: 1 },
+        Platform.OS === "android" && { paddingTop: insets.top },
+      ]}
+    >
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" />
@@ -30,7 +34,7 @@ function RootNavigator() {
         <Stack.Screen name="conversation" />
         <Stack.Screen name="index" />
       </Stack>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -41,7 +45,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <KeyboardProvider>
-          <SafeAreaProvider>
+          <SafeAreaProvider initialMetrics={initialWindowMetrics}>
             <ThemeProvider value={scheme === "dark" ? DarkTheme : DefaultTheme}>
               <RootNavigator />
               <StatusBar style="auto" />
