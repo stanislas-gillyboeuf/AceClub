@@ -26,6 +26,7 @@ function RootNavigator() {
         { flex: 1 },
         Platform.OS === "android" && { paddingTop: insets.top },
       ]}
+      
     >
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
