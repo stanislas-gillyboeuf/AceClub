@@ -8,9 +8,7 @@ import { listUserOrganizationsValidator } from "../validators";
 
 export const listUserOrganizations = async (c: Context<HonoContext>) => {
   // @ts-ignore
-  const { userId } = c.req.valid("query") as z.infer<
-    typeof listUserOrganizationsValidator
-  >;
+  const { userId } = c.req.valid("query") as z.infer<typeof listUserOrganizationsValidator>;
 
   const userMembers = await db
     .select({
@@ -32,10 +30,7 @@ export const listUserOrganizations = async (c: Context<HonoContext>) => {
   const filtered = userMembers.filter((org) => {
     if (!org.metadata) return true;
     try {
-      const meta =
-        typeof org.metadata === "string"
-          ? JSON.parse(org.metadata)
-          : org.metadata;
+      const meta = typeof org.metadata === "string" ? JSON.parse(org.metadata) : org.metadata;
       return !meta.hidden;
     } catch {
       return true;

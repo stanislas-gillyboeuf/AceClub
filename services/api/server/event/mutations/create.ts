@@ -13,7 +13,10 @@ export const createEvent = async (c: Context<HonoContext>) => {
 
   const isOrgAdmin = await assertOrgAdmin(currentUser.id, body.organizationId);
   if (!isOrgAdmin && currentUser.role !== "admin") {
-    return c.json({ error: "Forbidden", message: "Not authorized to create events for this organization" }, 403);
+    return c.json(
+      { error: "Forbidden", message: "Not authorized to create events for this organization" },
+      403,
+    );
   }
 
   const [created] = await db

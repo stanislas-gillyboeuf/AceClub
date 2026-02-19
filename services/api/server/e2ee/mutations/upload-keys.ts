@@ -34,7 +34,11 @@ export const uploadKeys = async (c: Context<HonoContext>) => {
       .where(eq(userE2eeKey.userId, currentUser.id))
       .returning();
 
-    const result = { userId: updated.userId, publicKey: updated.publicKey, keyVersion: updated.keyVersion };
+    const result = {
+      userId: updated.userId,
+      publicKey: updated.publicKey,
+      keyVersion: updated.keyVersion,
+    };
 
     // Invalidate old cache, set new one
     await cacheDel(cacheKey);
@@ -52,7 +56,11 @@ export const uploadKeys = async (c: Context<HonoContext>) => {
     })
     .returning();
 
-  const result = { userId: created.userId, publicKey: created.publicKey, keyVersion: created.keyVersion };
+  const result = {
+    userId: created.userId,
+    publicKey: created.publicKey,
+    keyVersion: created.keyVersion,
+  };
 
   // Warm the cache immediately
   await cacheSet(cacheKey, result, CacheTTL.E2EE_KEY);

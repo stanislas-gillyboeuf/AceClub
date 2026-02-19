@@ -67,10 +67,7 @@ export const uploadAttachment = async (c: Context<HonoContext>) => {
 
   const mimeType = file.type;
   if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
-    return c.json(
-      { error: "BadRequest", message: `Unsupported file type: ${mimeType}` },
-      400,
-    );
+    return c.json({ error: "BadRequest", message: `Unsupported file type: ${mimeType}` }, 400);
   }
 
   const isAudio = mimeType.startsWith("audio/");

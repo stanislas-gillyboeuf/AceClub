@@ -2,8 +2,24 @@ import { Hono } from "hono";
 import type { HonoContext } from "../../types/hono";
 import { zValidator } from "@hono/zod-validator";
 import { requireAuth } from "../../middleware/auth";
-import { sendMessageValidator, muteConversationValidator, findOrCreateConversationValidator, addReactionValidator, removeReactionValidator } from "./validators";
-import { sendMessage, markRead, muteConversation, deleteConversation, deleteMessage, findOrCreateConversation, uploadAttachment, addReaction, removeReaction } from "./mutations";
+import {
+  sendMessageValidator,
+  muteConversationValidator,
+  findOrCreateConversationValidator,
+  addReactionValidator,
+  removeReactionValidator,
+} from "./validators";
+import {
+  sendMessage,
+  markRead,
+  muteConversation,
+  deleteConversation,
+  deleteMessage,
+  findOrCreateConversation,
+  uploadAttachment,
+  addReaction,
+  removeReaction,
+} from "./mutations";
 import { listConversations, getConversation, listMessages, getConversationKey } from "./queries";
 
 export const conversationRouter = new Hono<HonoContext>();
@@ -15,7 +31,11 @@ conversationRouter.use("/*", requireAuth);
 conversationRouter.get("/", listConversations);
 
 // Find or create a direct conversation with a participant
-conversationRouter.post("/find-or-create", zValidator("json", findOrCreateConversationValidator), findOrCreateConversation);
+conversationRouter.post(
+  "/find-or-create",
+  zValidator("json", findOrCreateConversationValidator),
+  findOrCreateConversation,
+);
 
 // Get a specific conversation
 conversationRouter.get("/:id", getConversation);
@@ -46,10 +66,18 @@ conversationRouter.post(
 conversationRouter.delete("/:id/message/:messageId", deleteMessage);
 
 // Add a reaction to a message
-conversationRouter.post("/:id/message/:messageId/reaction", zValidator("json", addReactionValidator), addReaction);
+conversationRouter.post(
+  "/:id/message/:messageId/reaction",
+  zValidator("json", addReactionValidator),
+  addReaction,
+);
 
 // Remove a reaction from a message
-conversationRouter.delete("/:id/message/:messageId/reaction", zValidator("json", removeReactionValidator), removeReaction);
+conversationRouter.delete(
+  "/:id/message/:messageId/reaction",
+  zValidator("json", removeReactionValidator),
+  removeReaction,
+);
 
 // Delete (soft) a conversation for the current user
 conversationRouter.delete("/:id", deleteConversation);

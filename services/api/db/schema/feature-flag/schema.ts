@@ -1,10 +1,4 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  boolean,
-  uniqueIndex,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, uniqueIndex } from "drizzle-orm/pg-core";
 import { organization } from "../auth/schema";
 
 export const featureFlag = pgTable(
@@ -40,10 +34,5 @@ export const organizationFeatureFlag = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  (table) => [
-    uniqueIndex("org_feature_flag_uidx").on(
-      table.featureFlagId,
-      table.organizationId,
-    ),
-  ],
+  (table) => [uniqueIndex("org_feature_flag_uidx").on(table.featureFlagId, table.organizationId)],
 );

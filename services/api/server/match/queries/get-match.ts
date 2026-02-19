@@ -190,16 +190,17 @@ export const getMatch = async (c: Context<HonoContext>) => {
       .where(inArray(member.userId, participantUserIds));
 
     // Group by userId, take first org per user
-    const orgByUser = new Map<string, typeof membershipRows[0]["organization"]>();
+    const orgByUser = new Map<string, (typeof membershipRows)[0]["organization"]>();
     for (const row of membershipRows) {
       if (!orgByUser.has(row.userId)) {
         orgByUser.set(row.userId, row.organization);
       }
     }
 
-    const participantOrganizations = Array.from(orgByUser.entries()).map(
-      ([userId, org]) => ({ userId, organization: org }),
-    );
+    const participantOrganizations = Array.from(orgByUser.entries()).map(([userId, org]) => ({
+      userId,
+      organization: org,
+    }));
 
     return c.json({
       match: foundMatch,

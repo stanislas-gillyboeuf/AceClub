@@ -19,11 +19,7 @@ export const updateVenue = async (c: Context<HonoContext>) => {
     }
 
     // Fetch match
-    const [foundMatch] = await db
-      .select()
-      .from(match)
-      .where(eq(match.id, matchId))
-      .limit(1);
+    const [foundMatch] = await db.select().from(match).where(eq(match.id, matchId)).limit(1);
 
     if (!foundMatch) {
       return c.json({ error: "NotFound", message: "Match not found" }, 404);
@@ -52,10 +48,7 @@ export const updateVenue = async (c: Context<HonoContext>) => {
         .limit(1);
 
       if (!org) {
-        return c.json(
-          { error: "NotFound", message: "Organization not found" },
-          404,
-        );
+        return c.json({ error: "NotFound", message: "Organization not found" }, 404);
       }
     }
 
@@ -92,9 +85,6 @@ export const updateVenue = async (c: Context<HonoContext>) => {
       venueOrganization,
     });
   } catch (error) {
-    return c.json(
-      { error: "Internal server error", message: (error as Error).message },
-      500,
-    );
+    return c.json({ error: "Internal server error", message: (error as Error).message }, 500);
   }
 };

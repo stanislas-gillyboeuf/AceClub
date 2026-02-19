@@ -1,10 +1,7 @@
 import type { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import {
-  conversationParticipant,
-  message,
-} from "../../../db/schema/conversation/schema";
+import { conversationParticipant, message } from "../../../db/schema/conversation/schema";
 import { eq, and } from "drizzle-orm";
 
 export const deleteMessage = async (c: Context<HonoContext>) => {

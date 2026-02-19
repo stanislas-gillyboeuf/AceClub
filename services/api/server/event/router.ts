@@ -45,18 +45,49 @@ eventRouter.use("/*", requireAuth);
 eventRouter.get("/get", zValidator("query", getEventValidator), getEvent);
 eventRouter.get("/list", zValidator("query", listEventsValidator), listEvents);
 eventRouter.get("/list-my-events", zValidator("query", listMyEventsValidator), listMyEvents);
-eventRouter.get("/list-participants", zValidator("query", listParticipantsValidator), listParticipants);
+eventRouter.get(
+  "/list-participants",
+  zValidator("query", listParticipantsValidator),
+  listParticipants,
+);
 eventRouter.post("/register", zValidator("json", registerEventValidator), registerEvent);
-eventRouter.post("/cancel-registration", zValidator("json", cancelRegistrationValidator), cancelRegistration);
+eventRouter.post(
+  "/cancel-registration",
+  zValidator("json", cancelRegistrationValidator),
+  cancelRegistration,
+);
 
 // --- Organizer routes (auth checked in handler via assertOrgAdmin) ---
 eventRouter.post("/create", zValidator("json", createEventValidator), createEvent);
 eventRouter.post("/update", zValidator("json", updateEventValidator), updateEvent);
 eventRouter.post("/cancel", zValidator("json", deleteEventValidator), cancelEvent);
-eventRouter.post("/remove-participant", zValidator("json", removeParticipantValidator), removeParticipant);
-eventRouter.get("/list-organization-events", zValidator("query", listOrganizationEventsValidator), listOrganizationEvents);
+eventRouter.post(
+  "/remove-participant",
+  zValidator("json", removeParticipantValidator),
+  removeParticipant,
+);
+eventRouter.get(
+  "/list-organization-events",
+  zValidator("query", listOrganizationEventsValidator),
+  listOrganizationEvents,
+);
 
 // --- Admin routes ---
-eventRouter.get("/admin-list-events", isAdmin, zValidator("query", adminListEventsValidator), adminListEvents);
-eventRouter.post("/admin-update-status", isAdmin, zValidator("json", updateEventStatusValidator), adminUpdateStatus);
-eventRouter.post("/admin-delete", isAdmin, zValidator("json", deleteEventValidator), adminDeleteEvent);
+eventRouter.get(
+  "/admin-list-events",
+  isAdmin,
+  zValidator("query", adminListEventsValidator),
+  adminListEvents,
+);
+eventRouter.post(
+  "/admin-update-status",
+  isAdmin,
+  zValidator("json", updateEventStatusValidator),
+  adminUpdateStatus,
+);
+eventRouter.post(
+  "/admin-delete",
+  isAdmin,
+  zValidator("json", deleteEventValidator),
+  adminDeleteEvent,
+);

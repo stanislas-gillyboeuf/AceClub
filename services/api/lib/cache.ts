@@ -63,7 +63,11 @@ export async function cacheDel(key: string): Promise<void> {
 /**
  * Cache-through helper: returns cached value if available, otherwise runs fetcher and caches result.
  */
-export async function cached<T>(key: string, ttlSeconds: number, fetcher: () => Promise<T>): Promise<T> {
+export async function cached<T>(
+  key: string,
+  ttlSeconds: number,
+  fetcher: () => Promise<T>,
+): Promise<T> {
   const hit = await cacheGet<T>(key);
   if (hit !== null) return hit;
   const data = await fetcher();

@@ -11,11 +11,7 @@ export const updateFeatureFlag = async (c: Context<HonoContext>) => {
   // @ts-ignore
   const validated = c.req.valid("json") as z.infer<typeof updateFeatureFlagValidator>;
 
-  const [existing] = await db
-    .select()
-    .from(featureFlag)
-    .where(eq(featureFlag.id, id))
-    .limit(1);
+  const [existing] = await db.select().from(featureFlag).where(eq(featureFlag.id, id)).limit(1);
 
   if (!existing) {
     return c.json({ error: "NotFound", message: "Feature flag not found" }, 404);

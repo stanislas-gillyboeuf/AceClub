@@ -1,10 +1,7 @@
 import { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import {
-  featureFlag,
-  organizationFeatureFlag,
-} from "../../../db/schema/feature-flag/schema";
+import { featureFlag, organizationFeatureFlag } from "../../../db/schema/feature-flag/schema";
 import { organization } from "../../../db/schema/auth/schema";
 import { and, eq } from "drizzle-orm";
 import { ulid } from "ulid";
@@ -16,11 +13,7 @@ export const setFeatureFlagOverride = async (c: Context<HonoContext>) => {
   // @ts-ignore
   const validated = c.req.valid("json") as z.infer<typeof setFeatureFlagOverrideValidator>;
 
-  const [flag] = await db
-    .select()
-    .from(featureFlag)
-    .where(eq(featureFlag.id, flagId))
-    .limit(1);
+  const [flag] = await db.select().from(featureFlag).where(eq(featureFlag.id, flagId)).limit(1);
 
   if (!flag) {
     return c.json({ error: "NotFound", message: "Feature flag not found" }, 404);

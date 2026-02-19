@@ -1,10 +1,7 @@
 import type { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import {
-  conversation,
-  conversationParticipant,
-} from "../../../db/schema/conversation/schema";
+import { conversation, conversationParticipant } from "../../../db/schema/conversation/schema";
 import { user } from "../../../db/schema/auth/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { ulid } from "ulid";
@@ -33,10 +30,7 @@ export const findOrCreateConversation = async (c: Context<HonoContext>) => {
     .limit(1);
 
   if (!participant) {
-    return c.json(
-      { error: "NotFound", message: "Participant not found" },
-      404,
-    );
+    return c.json({ error: "NotFound", message: "Participant not found" }, 404);
   }
 
   // Single query: find existing direct conversation between these two users
@@ -70,10 +64,7 @@ export const findOrCreateConversation = async (c: Context<HonoContext>) => {
         ),
       );
 
-    return c.json(
-      { conversationId: existing.conversationId, created: false },
-      200,
-    );
+    return c.json({ conversationId: existing.conversationId, created: false }, 200);
   }
 
   // No existing direct conversation found — create one

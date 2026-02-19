@@ -139,9 +139,7 @@ interface UserEnrichment {
   globalRank: number | null;
 }
 
-async function fetchBatchEnrichments(
-  userIds: string[],
-): Promise<Map<string, UserEnrichment>> {
+async function fetchBatchEnrichments(userIds: string[]): Promise<Map<string, UserEnrichment>> {
   const map = new Map<string, UserEnrichment>();
   const uncachedIds: string[] = [];
 

@@ -120,7 +120,12 @@ export const addReaction = async (c: Context<HonoContext>) => {
     .where(eq(messageReaction.messageId, messageId));
 
   // Group reactions by emoji
-  const groups: { emoji: string; count: number; users: { id: string; name: string }[]; hasReacted: boolean }[] = [];
+  const groups: {
+    emoji: string;
+    count: number;
+    users: { id: string; name: string }[];
+    hasReacted: boolean;
+  }[] = [];
   for (const r of reactions) {
     let group = groups.find((g) => g.emoji === r.emoji);
     if (!group) {
