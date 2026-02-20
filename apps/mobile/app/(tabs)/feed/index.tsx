@@ -125,7 +125,11 @@ export default function Feed() {
                   contentContainerStyle={styles.horizontalScroll}
                 >
                   {ongoingMatches.map((match) => (
-                    <OngoingMatchCard key={match.id} match={match} />
+                    <OngoingMatchCard
+                      key={match.id}
+                      match={match}
+                      onPress={() => router.push(`/(tabs)/matches/${match.id}`)}
+                    />
                   ))}
                 </HorizontalScroll>
               </View>
