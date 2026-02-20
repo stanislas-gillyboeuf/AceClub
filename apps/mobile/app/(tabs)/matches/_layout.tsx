@@ -44,6 +44,16 @@ export default function MatchesLayout() {
         }}
       />
       <Stack.Screen
+        name="[id]/venue-detail"
+        options={{
+          presentation: formSheet,
+          sheetGrabberVisible: Platform.OS === "ios",
+          title: "Lieu",
+          headerTransparent: Platform.OS === "ios",
+          sheetAllowedDetents: [0.45, 0.7],
+        }}
+      />
+      <Stack.Screen
         name="[id]/comment"
         options={{
           presentation: formSheet,
