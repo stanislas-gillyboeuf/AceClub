@@ -14,6 +14,7 @@ import { VenueCard } from "@/features/matches/components/match-detail/venue-card
 import { FeedbackCard } from "@/features/matches/components/match-detail/feedback-card";
 import { CommentsCard } from "@/features/matches/components/match-detail/comments-card";
 import { ElapsedTimerCard } from "@/features/matches/components/match-detail/elapsed-timer-card";
+import { SheetActionBar } from "@/features/matches/components/match-detail/floating-action-bar";
 
 export default function MatchDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -230,6 +231,20 @@ export default function MatchDetail() {
             isParticipant={isParticipant}
             onAddComment={handleComment}
             onEditComment={() => handleComment()}
+          />
+        )}
+
+        {Platform.OS === "android" && (
+          <SheetActionBar
+            matchDetail={matchDetail}
+            currentUserId={currentUserId}
+            isParticipant={isParticipant}
+            onStart={handleStart}
+            onEditScores={handleEditScores}
+            onFinish={handleFinish}
+            onEditMatch={handleEditMatch}
+            onComment={handleComment}
+            onDelete={handleDelete}
           />
         )}
       </ScrollView>
