@@ -12,7 +12,10 @@
       "bundleIdentifier": "dev.aceclub.app",
       "usesAppleSignIn": true,
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Ace Club utilise votre photothèque pour ajouter une photo de profil. Par exemple, vous pouvez choisir une photo existante à afficher sur votre profil joueur.",
+        "NSLocationWhenInUseUsageDescription": "Ace Club utilise votre position pour trouver des courts de tennis et des joueurs proches de vous. Par exemple, pour vous suggérer des partenaires à moins de 5 km de votre position actuelle.",
+        "NSMicrophoneUsageDescription": "Ace Club utilise votre micro pour enregistrer des messages vocaux dans le chat. Par exemple, vous pouvez envoyer un message audio pour organiser un match avec un autre joueur."
       },
       "appleTeamId": "H84TTCMQ42"
     },
