@@ -1,5 +1,5 @@
 import { useMemo, useCallback, useState } from "react";
-import { View, ScrollView, Alert, ActivityIndicator, RefreshControl, StyleSheet, Platform, Pressable } from "react-native";
+import { View, ScrollView, Alert, ActivityIndicator, RefreshControl, StyleSheet, Platform, PlatformColor, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -13,6 +13,7 @@ import { InfoCard } from "@/features/matches/components/match-detail/info-card";
 import { VenueCard } from "@/features/matches/components/match-detail/venue-card";
 import { FeedbackCard } from "@/features/matches/components/match-detail/feedback-card";
 import { CommentsCard } from "@/features/matches/components/match-detail/comments-card";
+import { ElapsedTimerCard } from "@/features/matches/components/match-detail/elapsed-timer-card";
 
 export default function MatchDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -154,7 +155,7 @@ export default function MatchDetail() {
       {Platform.OS === "ios" && (
         <>
           <Stack.Toolbar placement="left">
-            <Stack.Toolbar.Button icon="xmark" variant="prominent" onPress={() => router.dismiss()} tintColor={colors.accentGreen} />
+            <Stack.Toolbar.Button icon="xmark" onPress={() => router.dismiss()} />
           </Stack.Toolbar>
 
           {isParticipant && (
@@ -207,6 +208,10 @@ export default function MatchDetail() {
         }
       >
         <ScoreCard matchDetail={matchDetail} currentUserId={currentUserId} />
+
+        {isOngoing && matchDetail.match.startedAt && (
+          <ElapsedTimerCard startedAt={matchDetail.match.startedAt} />
+        )}
 
         {matchDetail.sets.length > 0 && <SetsCard matchDetail={matchDetail} />}
 

@@ -8,6 +8,7 @@ import {
   Alert,
   StyleSheet,
   Platform,
+  PlatformColor,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -155,7 +156,6 @@ export default function EditScores() {
             <Stack.Toolbar.Button
               icon="xmark"
               onPress={() => router.dismiss()}
-              tintColor={colors.accentGreen}
             />
           </Stack.Toolbar>
           <Stack.Toolbar placement="right">

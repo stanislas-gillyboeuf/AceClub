@@ -105,7 +105,7 @@ export default function Step2() {
 
   return (
     <FlatList
-      style={styles.list}
+      style={[styles.list, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
       data={hasQuery ? results : []}
       keyExtractor={(item) => item.id}
       renderItem={renderUser}
@@ -198,13 +198,6 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     alignItems: "center",
     justifyContent: "center",
-  },
-  selectedRow: {
-    marginHorizontal: 16,
-    borderRadius: radii.lg,
-  },
-  selectedLabel: {
-    fontSize: 13,
   },
   memberRow: {
     marginHorizontal: 16,

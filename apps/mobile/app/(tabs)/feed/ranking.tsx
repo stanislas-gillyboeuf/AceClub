@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import {
   View,
   Platform,
+  PlatformColor,
   Pressable,
   StyleSheet,
   ActivityIndicator,
@@ -163,7 +164,7 @@ export default function Ranking() {
 
       {Platform.OS === "ios" && (
         <Stack.Toolbar placement="right">
-          <Stack.Toolbar.Button icon="xmark" onPress={goBack} tintColor={colors.accentGreen} />
+          <Stack.Toolbar.Button icon="xmark" onPress={goBack} />
         </Stack.Toolbar>
       )}
 

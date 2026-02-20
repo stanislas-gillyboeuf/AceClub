@@ -197,7 +197,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
   if (redis) {
     await Promise.all(
       otherParticipants.map((participant) =>
-        redis.publish(
+        redis?.publish(
           CHAT_CHANNEL,
           JSON.stringify({
             userId: participant.userId,
