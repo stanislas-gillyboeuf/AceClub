@@ -133,12 +133,23 @@ export default function Feed() {
                   ))}
                 </HorizontalScroll>
               </View>
-            )}  
+            )}
+
+            {/* Recent matches section header */}
+            {finishedMatches.length > 0 && (
+              <View style={styles.section}>
+                <SectionHeader title="Matchs récents" />
+              </View>
+            )}
           </View>
         }
         renderItem={({ item }) => (
           <View style={styles.matchRow}>
-            <FeedMatchRow match={item} currentUserId={currentUserId} />
+            <FeedMatchRow
+              match={item}
+              currentUserId={currentUserId}
+              onPress={() => router.push(`/(tabs)/matches/${item.id}`)}
+            />
           </View>
         )}
         ListEmptyComponent={
