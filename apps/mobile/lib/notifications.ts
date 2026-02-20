@@ -102,6 +102,40 @@ function handleNotificationResponse(
   }
 }
 
+// --- Departure reminders ---
+
+export async function scheduleDepartureReminder(
+  matchId: string,
+  scheduledAt: string,
+  travelMinutes: number
+): Promise<boolean> {
+  const matchTime = new Date(scheduledAt).getTime();
+  const marginMs = 10 * 60 * 1000; // 10 min margin
+  const departureTime = matchTime - travelMinutes * 60 * 1000 - marginMs;
+  const now = Date.now();
+
+  if (departureTime <= now) return false;
+
+  await Notifications.scheduleNotificationAsync({
+    identifier: `departure-${matchId}`,
+    content: {
+      title: "Il est temps de partir !",
+      body: "Il est temps de partir pour ton match !",
+      data: { type: "match_reminder", referenceId: matchId },
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date: new Date(departureTime),
+    },
+  });
+
+  return true;
+}
+
+export async function cancelDepartureReminder(matchId: string): Promise<void> {
+  await Notifications.cancelScheduledNotificationAsync(`departure-${matchId}`);
+}
+
 export function setupNotificationListeners(): () => void {
   const foregroundSub = Notifications.addNotificationReceivedListener(
     (notification) => {

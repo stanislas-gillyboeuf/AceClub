@@ -218,7 +218,7 @@ export default function MatchDetail() {
 
         <InfoCard matchDetail={matchDetail} />
 
-        <VenueCard matchDetail={matchDetail} />
+        <VenueCard matchDetail={matchDetail} isParticipant={isParticipant} isScheduled={isScheduled} />
 
         {isFinished && matchDetail.myFeedback && (
           <FeedbackCard feedback={matchDetail.myFeedback} onEdit={handleEditFeedback} />
