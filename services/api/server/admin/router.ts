@@ -33,6 +33,7 @@ import {
   createFeatureFlagValidator,
   updateFeatureFlagValidator,
   setFeatureFlagOverrideValidator,
+  updateMatchAdminValidator,
 } from "./validators";
 import {
   banUser,
@@ -52,6 +53,7 @@ import {
   deleteFeatureFlag,
   setFeatureFlagOverride,
   removeFeatureFlagOverride,
+  updateMatchAdmin,
 } from "./mutations";
 
 export const adminRouter = new Hono<HonoContext>();
@@ -164,3 +166,10 @@ adminRouter.post(
 );
 
 adminRouter.delete("/feature-flags/:id/overrides/:orgId", removeFeatureFlagOverride);
+
+// Match admin
+adminRouter.put(
+  "/update-match",
+  zValidator("json", updateMatchAdminValidator),
+  updateMatchAdmin,
+);

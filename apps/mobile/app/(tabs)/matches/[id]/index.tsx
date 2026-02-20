@@ -216,7 +216,16 @@ export default function MatchDetail() {
 
         {matchDetail.sets.length > 0 && <SetsCard matchDetail={matchDetail} />}
 
-        <InfoCard matchDetail={matchDetail} />
+        <InfoCard
+          matchDetail={matchDetail}
+          isScheduled={isScheduled}
+          onUpdateScheduledDate={(date) => {
+            updateMatch.mutate({
+              id: matchDetail.match.id,
+              data: { scheduledAt: date.toISOString() },
+            });
+          }}
+        />
 
         <VenueCard matchDetail={matchDetail} />
 

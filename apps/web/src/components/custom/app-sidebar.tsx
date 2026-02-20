@@ -7,6 +7,7 @@ import {
   LifeBuoy,
   Users,
   Shield,
+  Swords,
   ToggleRight,
 } from "lucide-react"
 
@@ -40,6 +41,11 @@ const navMain = [
     title: "Organisations",
     url: "/dashboard/organizations",
     icon: Building2,
+  },
+  {
+    title: "Matchs",
+    url: "/dashboard/matches",
+    icon: Swords,
   },
   {
     title: "Feature Flags",

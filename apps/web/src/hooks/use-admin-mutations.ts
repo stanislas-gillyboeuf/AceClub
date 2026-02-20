@@ -305,6 +305,22 @@ export function useSetFeatureFlagOverride() {
   })
 }
 
+export function useUpdateMatchDate() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { matchId: string; scheduledAt: string | null }) =>
+      apiClient("/admin/update-match", {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-matches"] })
+      queryClient.invalidateQueries({ queryKey: ["admin-match-detail"] })
+    },
+  })
+}
+
 export function useRemoveFeatureFlagOverride() {
   const queryClient = useQueryClient()
 
