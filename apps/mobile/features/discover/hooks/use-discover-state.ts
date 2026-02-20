@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useDiscover, useSwipe } from "@/hooks/use-match-intent";
 import type { MatchIntentWithUser } from "@/types/match-intent";
 
@@ -13,25 +13,32 @@ export function useDiscoverState() {
   const [matchMessage, setMatchMessage] = useState<string | null>(null);
   const [didMatch, setDidMatch] = useState(false);
   const [selectedRadius, setSelectedRadius] = useState<number | undefined>(undefined);
-  const [isDiscoveryRestricted, setIsDiscoveryRestricted] = useState(false);
   const [location, setLocation] = useState<LocationState>({ latitude: null, longitude: null });
   const cursorRef = useRef<string | undefined>(undefined);
   const hasMoreRef = useRef(true);
 
   const swipeMutation = useSwipe();
 
-  const discoverQuery = useDiscover({
-    latitude: isDiscoveryRestricted ? undefined : (location.latitude ?? undefined),
-    longitude: isDiscoveryRestricted ? undefined : (location.longitude ?? undefined),
-    radius: isDiscoveryRestricted ? undefined : selectedRadius,
-    limit: 20,
-  });
+  // Stabilize params object to avoid unnecessary query key changes
+  const queryParams = useMemo(
+    () => ({
+      latitude: location.latitude ?? undefined,
+      longitude: location.longitude ?? undefined,
+      radius: selectedRadius,
+      limit: 20,
+    }),
+    [location.latitude, location.longitude, selectedRadius]
+  );
+
+  const discoverQuery = useDiscover(queryParams);
+
+  // isDiscoveryRestricted is read-only from the API — the server handles the flag
+  const isDiscoveryRestricted = discoverQuery.data?.isDiscoveryRestricted ?? false;
 
   // Sync query results into local items state
   useEffect(() => {
     if (discoverQuery.data) {
       setItems(discoverQuery.data.data);
-      setIsDiscoveryRestricted(discoverQuery.data.isDiscoveryRestricted);
       cursorRef.current = discoverQuery.data.pagination.nextCursor ?? undefined;
       hasMoreRef.current = discoverQuery.data.pagination.hasMore;
     }
@@ -85,9 +92,12 @@ export function useDiscoverState() {
     setLocation({ latitude: lat, longitude: lng });
   }, []);
 
+  const refetchRef = useRef(discoverQuery.refetch);
+  refetchRef.current = discoverQuery.refetch;
+
   const refresh = useCallback(async () => {
-    await discoverQuery.refetch();
-  }, [discoverQuery]);
+    await refetchRef.current();
+  }, []);
 
   return {
     items,

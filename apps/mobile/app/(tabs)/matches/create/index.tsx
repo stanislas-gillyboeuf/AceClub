@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  PlatformColor,
   StyleSheet,
 } from "react-native";
 import { Stack, router } from "expo-router";
@@ -175,18 +176,14 @@ export default function CreateMatch() {
           <Stack.Toolbar placement="right">
             <Stack.Toolbar.Button
               icon="xmark"
-              variant="prominent"
               onPress={handleDismiss}
-              tintColor={colors.accentGreen}
             />
           </Stack.Toolbar>
         </>
       )}
 
       {isOpponentStep ? (
-        <View style={[styles.flexContainer, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-          <Stepper />
-        </View>
+        <Stepper />
       ) : (
         <ScrollView
           style={{ backgroundColor: semanticColors.primaryBackground[scheme], flex: 1 }}
