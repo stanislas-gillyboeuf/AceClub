@@ -114,3 +114,8 @@ export const setFeatureFlagOverrideValidator = z.object({
   organizationId: z.string(),
   enabled: z.boolean(),
 });
+
+export const updateMatchAdminValidator = z.object({
+  matchId: z.string().min(1),
+  scheduledAt: z.string().datetime().nullable(),
+});
