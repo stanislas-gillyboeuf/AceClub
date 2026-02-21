@@ -1,23 +1,14 @@
-name: Create Release
+name: Release & Deploy
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version de la release (ex: 1.2.0)'
-        required: true
-        type: string
-      release_notes:
-        description: 'Notes de release (laisser vide pour auto-générer)'
-        required: false
-        type: string
+  release:
+    types: [published]
 
 jobs:
-  release:
+  deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -31,70 +22,47 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION (from tag $TAG)"
+
       - name: Merge dev into main
         run: |
           git checkout main
           git pull origin main
-          git merge origin/dev -m "chore: merge dev into main for release v${{ inputs.version }}"
+          git merge origin/dev -m "chore: merge dev into main for release ${{ steps.version.outputs.tag }}"
 
-      - name: Bump iOS version
+      - name: Update app.json version
         run: |
-          PBXPROJ="apps/ios/AceClub.xcodeproj/project.pbxproj"
+          cd apps/mobile
+          # Update expo.version in app.json
+          jq '.expo.version = "${{ steps.version.outputs.version }}"' app.json > app.json.tmp
+          mv app.json.tmp app.json
+          echo "Updated app.json version to ${{ steps.version.outputs.version }}"
+          cat app.json | jq '.expo.version'
 
-          # Update MARKETING_VERSION to the release version
-          sed -i "s/MARKETING_VERSION = [^;]*/MARKETING_VERSION = ${{ inputs.version }}/" "$PBXPROJ"
-
-          # Increment CURRENT_PROJECT_VERSION (build number)
-          CURRENT_BUILD=$(grep -m1 'CURRENT_PROJECT_VERSION' "$PBXPROJ" | sed 's/[^0-9]*//g')
-          NEW_BUILD=$((CURRENT_BUILD + 1))
-          sed -i "s/CURRENT_PROJECT_VERSION = [0-9]*/CURRENT_PROJECT_VERSION = $NEW_BUILD/g" "$PBXPROJ"
-
-          echo "📱 Version: ${{ inputs.version }} (build $NEW_BUILD)"
-
-      - name: Commit version bump
+      - name: Commit and push
         run: |
-          git add apps/ios/AceClub.xcodeproj/project.pbxproj
-          git commit -m "chore: bump iOS version to ${{ inputs.version }}"
+          git add apps/mobile/app.json
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
           git push origin main
 
-      - name: Create and push tag
+      - name: Move tag to merged commit
         run: |
-          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}"
-          git push origin "v${{ inputs.version }}"
+          git tag -fa "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}" --force
 
-      - name: Generate changelog
-        id: changelog
-        run: |
-          # Récupérer le tag précédent
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-
-          if [ -z "$PREVIOUS_TAG" ]; then
-            echo "Première release - pas de changelog automatique"
-            echo "changelog=Première release 🎉" >> $GITHUB_OUTPUT
-          else
-            echo "Génération du changelog depuis $PREVIOUS_TAG"
-            CHANGELOG=$(git log $PREVIOUS_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
-            # Escape pour GitHub Actions
-            CHANGELOG="${CHANGELOG//'%'/'%25'}"
-            CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
-            CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
-            echo "changelog=$CHANGELOG" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
         with:
-          tag_name: v${{ inputs.version }}
-          name: Release v${{ inputs.version }}
-          body: |
-            ## 🚀 Release v${{ inputs.version }}
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
-            ${{ inputs.release_notes || steps.changelog.outputs.changelog }}
-
-            ---
-            *Release créée automatiquement depuis la branche `dev`*
-          draft: false
-          prerelease: false
-          generate_release_notes: ${{ inputs.release_notes == '' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Trigger EAS deploy workflow
+        working-directory: apps/mobile
+        run: eas workflow:run ../../.eas/workflows/deploy-production.yml --non-interactive

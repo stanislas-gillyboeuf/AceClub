@@ -18,6 +18,9 @@ export const colors = {
   gray500: "#6b7280",
   gray600: "#4b5563",
 
+  // iOS System
+  systemGray: "#8E8E93",
+
   // Feedback
   red50: "#fef2f2",
   red500: "#ef4444",

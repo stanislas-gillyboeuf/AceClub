@@ -181,3 +181,116 @@ export interface FeatureFlag {
 export interface ListFeatureFlagsResponse {
   featureFlags: FeatureFlag[]
 }
+
+export interface MatchParticipant {
+  id: string
+  matchId: string
+  userId: string
+  side: "home" | "away"
+  isWinner: boolean
+  createdAt: string
+  user: {
+    id: string
+    name: string
+    email: string
+    image: string | null
+  } | null
+}
+
+export interface MatchSetScore {
+  participantId: string
+  userId: string
+  side: "home" | "away"
+  games: number
+}
+
+export interface MatchSet {
+  id: string
+  matchId: string
+  setNumber: number
+  createdAt: string
+  scores: MatchSetScore[]
+}
+
+export interface MatchComment {
+  id: string
+  matchId: string
+  userId: string
+  content: string
+  createdAt: string
+  updatedAt: string
+  user: {
+    id: string
+    name: string
+    image: string | null
+  } | null
+}
+
+export interface AdminMatch {
+  id: string
+  createdBy: string
+  conversationId: string | null
+  venueOrganizationId: string | null
+  status: "scheduled" | "ongoing" | "finished"
+  type: "match" | "training"
+  createdAt: string
+  scheduledAt: string | null
+  startedAt: string | null
+  finishedAt: string | null
+  participants: MatchParticipant[]
+  sets: MatchSet[]
+  comments: MatchComment[]
+}
+
+export interface ListMatchesResponse {
+  matches: AdminMatch[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}
+
+export interface AccountDeletionRequest {
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+  clubName: string
+  reason: string | null
+  status: "pending" | "processed" | "rejected"
+  createdAt: string
+  processedAt: string | null
+  processedBy: string | null
+}
+
+export interface ListAccountDeletionRequestsResponse {
+  requests: AccountDeletionRequest[]
+}
+
+export interface MatchDetailResponse {
+  match: Omit<AdminMatch, "participants" | "sets" | "comments">
+  participants: MatchParticipant[]
+  sets: MatchSet[]
+  comments: MatchComment[]
+  myFeedback: unknown
+  venueOrganization: {
+    id: string
+    name: string
+    slug: string
+    logo: string | null
+    address: string | null
+    latitude: number | null
+    longitude: number | null
+  } | null
+  participantOrganizations: {
+    userId: string
+    organization: {
+      id: string
+      name: string
+      slug: string
+      logo: string | null
+    }
+  }[]
+}

@@ -5,7 +5,6 @@ import {
   TextInput,
   Pressable,
   Modal,
-  ActivityIndicator,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -13,6 +12,7 @@ import {
 import { colors, radii } from "@/constants/theme";
 import { X, CheckCircle2 } from "lucide-react-native";
 import { useRequestClub } from "@/hooks/use-organization";
+import Button from "@/components/ui/button";
 
 interface RequestClubModalProps {
   visible: boolean;
@@ -65,9 +65,11 @@ export function RequestClubModal({ visible, onClose }: RequestClubModalProps) {
               <Text style={styles.successText}>
                 Ta demande a bien ete envoyee. Nous te tiendrons informe !
               </Text>
-              <Pressable onPress={handleClose} style={styles.doneButton}>
-                <Text style={styles.doneText}>Fermer</Text>
-              </Pressable>
+              <Button
+                label="Fermer"
+                onPress={handleClose}
+                style={{ marginTop: 8 }}
+              />
             </View>
           ) : (
             <>
@@ -106,23 +108,13 @@ export function RequestClubModal({ visible, onClose }: RequestClubModalProps) {
                 </Text>
               )}
 
-              <Pressable
+              <Button
+                label="Envoyer"
                 onPress={handleSubmit}
-                disabled={
-                  !name.trim() || !city.trim() || requestClub.isPending
-                }
-                style={[
-                  styles.submitButton,
-                  (!name.trim() || !city.trim() || requestClub.isPending) &&
-                    styles.submitButtonDisabled,
-                ]}
-              >
-                {requestClub.isPending ? (
-                  <ActivityIndicator color={colors.white} size="small" />
-                ) : (
-                  <Text style={styles.submitText}>Envoyer</Text>
-                )}
-              </Pressable>
+                disabled={!name.trim() || !city.trim()}
+                loading={requestClub.isPending}
+                style={{ marginTop: 4 }}
+              />
             </>
           )}
         </View>
@@ -188,22 +180,6 @@ const styles = StyleSheet.create({
     color: colors.red500,
     marginBottom: 12,
   },
-  submitButton: {
-    height: 48,
-    borderRadius: radii.md,
-    backgroundColor: colors.accentGreen,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 4,
-  },
-  submitButtonDisabled: {
-    opacity: 0.4,
-  },
-  submitText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.white,
-  },
   successContainer: {
     alignItems: "center",
     paddingVertical: 24,
@@ -214,19 +190,5 @@ const styles = StyleSheet.create({
     color: colors.gray500,
     textAlign: "center",
     lineHeight: 22,
-  },
-  doneButton: {
-    height: 48,
-    borderRadius: radii.md,
-    backgroundColor: colors.accentGreen,
-    alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "stretch",
-    marginTop: 8,
-  },
-  doneText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.white,
   },
 });

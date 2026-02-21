@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet } from "react-native";
+import { useCallback } from "react";
+import { View, Text, Pressable, Platform, StyleSheet } from "react-native";
 import {
   Trophy,
   Dumbbell,
@@ -7,6 +8,8 @@ import {
   CheckCircle,
   Timer,
 } from "lucide-react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors, spacing, radii } from "@/constants/theme";
 import { formatMatchDuration, matchDetailToMatchWithParticipants } from "@/lib/format";
@@ -15,6 +18,8 @@ import type { LucideIcon } from "lucide-react-native";
 
 interface InfoCardProps {
   matchDetail: MatchDetail;
+  isScheduled?: boolean;
+  onUpdateScheduledDate?: (date: Date) => void;
 }
 
 function formatDateFull(dateStr: string): string {
@@ -35,12 +40,14 @@ function getMatchTypeInfo(type: string | null | undefined): { label: string; ico
   return { label: "Match", icon: Trophy, color: "#007AFF" };
 }
 
-export function InfoCard({ matchDetail }: InfoCardProps) {
+export function InfoCard({ matchDetail, isScheduled, onUpdateScheduledDate }: InfoCardProps) {
   const scheme = useColorScheme();
   const { match } = matchDetail;
   const matchAsWP = matchDetailToMatchWithParticipants(matchDetail);
   const duration = formatMatchDuration(matchAsWP);
   const typeInfo = getMatchTypeInfo(match.type);
+
+  const isAndroid = Platform.OS === "android";
 
   const rows: { icon: LucideIcon; label: string; value: string; valueColor?: string }[] = [];
 
@@ -51,7 +58,9 @@ export function InfoCard({ matchDetail }: InfoCardProps) {
     valueColor: typeInfo.color,
   });
 
-  if (match.scheduledAt) {
+  const showDatePicker = isScheduled && !!onUpdateScheduledDate && !!match.scheduledAt;
+
+  if (match.scheduledAt && !showDatePicker) {
     rows.push({ icon: Calendar, label: "Date prévue", value: formatDateFull(match.scheduledAt) });
   }
 
@@ -106,6 +115,60 @@ export function InfoCard({ matchDetail }: InfoCardProps) {
             </View>
           );
         })}
+
+        {showDatePicker && (
+          <View>
+            {rows.length > 0 && (
+              <View style={[styles.divider, { backgroundColor: semanticColors.borderColor[scheme] }]} />
+            )}
+            <View style={styles.row}>
+              <View style={styles.rowLeft}>
+                <Calendar size={14} color={semanticColors.labelTertiary[scheme]} strokeWidth={2} />
+                <Text style={[styles.rowLabel, { color: semanticColors.labelSecondary[scheme] }]}>
+                  Date prévue
+                </Text>
+              </View>
+              {isAndroid ? (
+                <Pressable onPress={() => {
+                  DateTimePickerAndroid.open({
+                    value: new Date(match.scheduledAt!),
+                    mode: "date",
+                    minimumDate: new Date(),
+                    onChange: (_, selectedDate) => {
+                      if (!selectedDate) return;
+                      // After date selection, open time picker
+                      DateTimePickerAndroid.open({
+                        value: selectedDate,
+                        mode: "time",
+                        is24Hour: true,
+                        onChange: (_, selectedTime) => {
+                          if (selectedTime) onUpdateScheduledDate!(selectedTime);
+                        },
+                      });
+                    },
+                  });
+                }}>
+                  <Text style={[styles.rowValue, { color: colors.accentGreen }]}>
+                    {formatDateFull(match.scheduledAt!)}
+                  </Text>
+                </Pressable>
+              ) : (
+                <DateTimePicker
+                  value={new Date(match.scheduledAt!)}
+                  mode="datetime"
+                  display="compact"
+                  minimumDate={new Date()}
+                  onChange={(_, date) => {
+                    if (date) onUpdateScheduledDate!(date);
+                  }}
+                  accentColor={colors.accentGreen}
+                  themeVariant={scheme}
+                  locale="fr-FR"
+                />
+              )}
+            </View>
+          </View>
+        )}
       </View>
     </View>
   );

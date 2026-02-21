@@ -60,9 +60,13 @@
       "expo-audio",
       "expo-notifications",
       "expo-apple-authentication",
-      ["@react-native-google-signin/google-signin", {
-        "iosUrlScheme": "com.googleusercontent.apps.131274084335-lv3cs6n1eqajr5letmpgm57alipg51gb"
-      }]
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.131274084335-lv3cs6n1eqajr5letmpgm57alipg51gb"
+        }
+      ],
+      ["expo-maps", { "requestLocationPermission": true }]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -1,9 +1,10 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { colors, radii } from "@/constants/theme";
-import { Users, Trophy, Calendar, ArrowRight } from "lucide-react-native";
+import { Users, Trophy, Calendar } from "lucide-react-native";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import type { LucideIcon } from "lucide-react-native";
+import Button from "@/components/ui/button";
 
 interface WelcomeStepProps {
   onStart: () => void;
@@ -55,10 +56,7 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
       </View>
 
       <Animated.View entering={FadeInDown.delay(950).duration(500)} style={styles.bottomSection}>
-        <Pressable onPress={onStart} style={styles.startButton}>
-          <Text style={styles.startText}>C'est parti !</Text>
-          <ArrowRight size={20} color={colors.white} />
-        </Pressable>
+        <Button label="C'est parti !" onPress={onStart} />
       </Animated.View>
     </View>
   );
@@ -177,19 +175,5 @@ const styles = StyleSheet.create({
   },
   bottomSection: {
     paddingTop: 8,
-  },
-  startButton: {
-    height: 52,
-    borderRadius: radii.md,
-    backgroundColor: colors.accentGreen,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  startText: {
-    fontSize: 17,
-    fontWeight: "600",
-    color: colors.white,
   },
 });

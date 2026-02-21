@@ -112,6 +112,13 @@ export default function CGUPage() {
               l'Application. AceClub se réserve le droit de suspendre ou de supprimer un compte
               en cas de violation des présentes CGU.
             </p>
+            <p className="text-foreground/80 leading-relaxed mt-4">
+              Vous pouvez également effectuer une{" "}
+              <a href="/delete-account" className="text-primary hover:underline">
+                demande de suppression de compte
+              </a>{" "}
+              directement depuis notre site.
+            </p>
           </section>
 
           <section>

@@ -10,7 +10,10 @@ import type {
   ListOrganizationInvitationsParams,
   ListOrganizationInvitationsResponse,
   ListFeatureFlagsResponse,
+  ListMatchesResponse,
+  MatchDetailResponse,
   UserStats,
+  ListAccountDeletionRequestsResponse,
 } from "@/types/admin"
 
 export function useAdminUsers(params: ListUsersParams) {
@@ -104,5 +107,45 @@ export function useFeatureFlags() {
     queryKey: ["admin-feature-flags"],
     queryFn: () =>
       apiClient<ListFeatureFlagsResponse>("/admin/feature-flags"),
+  })
+}
+
+export function useAdminMatches(params: {
+  status?: string
+  page?: number
+  limit?: number
+}) {
+  const searchParams = new URLSearchParams()
+
+  searchParams.set("participantOnly", "false")
+  if (params.status) searchParams.set("status", params.status)
+  if (params.page) searchParams.set("page", String(params.page))
+  if (params.limit) searchParams.set("limit", String(params.limit))
+
+  const qs = searchParams.toString()
+
+  return useQuery({
+    queryKey: ["admin-matches", params],
+    queryFn: () =>
+      apiClient<ListMatchesResponse>(`/match?${qs}`),
+  })
+}
+
+export function useAdminMatchDetail(matchId: string | undefined) {
+  return useQuery({
+    queryKey: ["admin-match-detail", matchId],
+    queryFn: () =>
+      apiClient<MatchDetailResponse>(`/match/${matchId}`),
+    enabled: !!matchId,
+  })
+}
+
+export function useAccountDeletionRequests() {
+  return useQuery({
+    queryKey: ["admin-deletion-requests"],
+    queryFn: () =>
+      apiClient<ListAccountDeletionRequestsResponse>(
+        "/account-deletion-request/list",
+      ),
   })
 }

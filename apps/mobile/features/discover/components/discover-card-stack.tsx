@@ -20,6 +20,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { colors, semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { MatchIntentWithUser } from "@/types/match-intent";
+import Button from "@/components/ui/button";
 
 const SWIPE_THRESHOLD = 100;
 const MAX_ROTATION = 12;
@@ -180,16 +181,12 @@ export function DiscoverCardStack({
               title="Plus de profils pour l'instant"
               description="Reviens plus tard pour découvrir de nouveaux joueurs de ton club."
             />
-            <Pressable
-              style={[styles.createButton, { backgroundColor: colors.accentGreen }]}
-              onPress={onCreateIntent}
-            >
-              <Text style={styles.createButtonText}>Créer une annonce</Text>
-            </Pressable>
+            <View style={{ alignItems: "center", marginBottom: 12 }}>
+              <Button onPress={onCreateIntent} fullWidth={false} label="Créer une annonce" />
+            </View>
           </View>
         ) : (
           <>
-            {/* Background cards */}
             {items.slice(1, MAX_VISIBLE_CARDS).reverse().map((item, reversedIndex) => {
               const actualIndex = MAX_VISIBLE_CARDS - 1 - reversedIndex;
               const scale = 1 - 0.04 * actualIndex;

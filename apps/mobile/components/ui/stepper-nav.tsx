@@ -1,12 +1,7 @@
-import {
-  View,
-  Text,
-  Pressable,
-  ActivityIndicator,
-  StyleSheet,
-} from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
+import Button from "@/components/ui/button";
 
 interface StepperNavProps {
   canGoPrev: boolean;
@@ -36,7 +31,6 @@ export function StepperNav({
   const scheme = useColorScheme();
 
   const buttonLabel = isLastStep ? lastStepLabel : nextLabel;
-  const disabled = !canProceed || isLoading;
 
   return (
     <View
@@ -45,47 +39,22 @@ export function StepperNav({
         { backgroundColor: semanticColors.primaryBackground[scheme] },
       ]}
     >
-      <Pressable
+      <Button
+        label={buttonLabel}
         onPress={onNext}
-        disabled={disabled}
-        style={({ pressed }) => [
-          styles.primaryButton,
-          { opacity: disabled ? 0.4 : pressed ? 0.85 : 1 },
-        ]}
-      >
-        {isLoading ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <Text style={styles.primaryButtonText}>{buttonLabel}</Text>
-        )}
-      </Pressable>
+        disabled={!canProceed}
+        loading={isLoading}
+      />
 
       {isFirstStep ? (
-        <Pressable onPress={onCancel} style={styles.secondaryButton}>
-          <Text
-            style={[
-              styles.secondaryButtonText,
-              { color: semanticColors.labelSecondary[scheme] },
-            ]}
-          >
-            Annuler
-          </Text>
-        </Pressable>
+        <Button label="Annuler" onPress={onCancel} variant="secondary" />
       ) : (
-        <Pressable
+        <Button
+          label="Retour"
           onPress={onBack}
+          variant="secondary"
           disabled={!canGoPrev}
-          style={styles.secondaryButton}
-        >
-          <Text
-            style={[
-              styles.secondaryButtonText,
-              { color: semanticColors.labelSecondary[scheme] },
-            ]}
-          >
-            Retour
-          </Text>
-        </Pressable>
+        />
       )}
     </View>
   );
@@ -102,25 +71,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 4,
-  },
-  primaryButton: {
-    backgroundColor: colors.accentGreen,
-    height: 52,
-    borderRadius: radii.md,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  primaryButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  secondaryButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 8,
-  },
-  secondaryButtonText: {
-    fontSize: 15,
   },
 });
