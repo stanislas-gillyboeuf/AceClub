@@ -13,6 +13,7 @@ import type {
   ListMatchesResponse,
   MatchDetailResponse,
   UserStats,
+  ListAccountDeletionRequestsResponse,
 } from "@/types/admin"
 
 export function useAdminUsers(params: ListUsersParams) {
@@ -136,5 +137,15 @@ export function useAdminMatchDetail(matchId: string | undefined) {
     queryFn: () =>
       apiClient<MatchDetailResponse>(`/match/${matchId}`),
     enabled: !!matchId,
+  })
+}
+
+export function useAccountDeletionRequests() {
+  return useQuery({
+    queryKey: ["admin-deletion-requests"],
+    queryFn: () =>
+      apiClient<ListAccountDeletionRequestsResponse>(
+        "/account-deletion-request/list",
+      ),
   })
 }

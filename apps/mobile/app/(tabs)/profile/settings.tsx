@@ -19,7 +19,6 @@ import {
   MapPin,
   FileText,
   Hand,
-  Trash2,
   X,
 } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
@@ -41,6 +40,7 @@ import { ToggleRow } from "@/components/ui/toggle-row";
 import { RadioGroup } from "@/components/ui/radio-group";
 import { EditableAvatar } from "@/features/settings/components/editable-avatar";
 import { consumePendingClubSelection } from "@/lib/pending-club-selection";
+import Button from "@/components/ui/button";
 
 import { colors, semanticColors, spacing, radii } from "@/constants/theme";
 import type { Sport } from "@/types/common";
@@ -494,15 +494,11 @@ export default function Settings() {
           </SectionCard>
 
           {/* Danger Zone */}
-          <SectionCard title="Zone dangereuse">
-            <SettingsRow
-              icon={<Trash2 size={20} color="#ef4444" strokeWidth={1.5} />}
-              label="Supprimer mon compte"
-              onPress={handleDeleteAccount}
-              destructive
-              showChevron={false}
-            />
-          </SectionCard>
+          <Button
+            label="Supprimer mon compte"
+            onPress={handleDeleteAccount}
+            variant="destructive"
+          />
 
           <View style={{ height: 40 }} />
         </ScrollView>

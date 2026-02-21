@@ -141,6 +141,12 @@ export default function PrivacyPage() {
             <p className="text-foreground/80 leading-relaxed mt-4">
               Pour exercer ces droits, contactez-nous à : <a href={`mailto:${siteConfig.links.email}`} className="text-primary hover:underline">{siteConfig.links.email}</a>
             </p>
+            <p className="text-foreground/80 leading-relaxed mt-4">
+              Pour exercer votre droit à l'effacement, vous pouvez également effectuer une{" "}
+              <a href="/delete-account" className="text-primary hover:underline">
+                demande de suppression de compte
+              </a>.
+            </p>
           </section>
 
           <section>

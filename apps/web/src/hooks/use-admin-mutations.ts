@@ -334,3 +334,18 @@ export function useRemoveFeatureFlagOverride() {
     },
   })
 }
+
+export function useProcessDeletionRequest() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { requestId: string; status: "processed" | "rejected" }) =>
+      apiClient("/admin/process-deletion-request", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-deletion-requests"] })
+    },
+  })
+}

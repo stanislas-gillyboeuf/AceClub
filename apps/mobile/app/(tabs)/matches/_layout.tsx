@@ -20,10 +20,12 @@ export default function MatchesLayout() {
         name="create/index"
         options={{
           presentation: formSheet,
-          sheetGrabberVisible: Platform.OS === "ios",
           title: "Nouveau match",
-          headerTransparent: true,
-          sheetAllowedDetents: [0.6, 0.85, 1],
+          headerTransparent: Platform.OS === "ios",
+          ...(Platform.OS === "ios" && {
+            sheetGrabberVisible: true,
+            sheetAllowedDetents: [0.6, 0.85, 1],
+          }),
         }}
       />
       <Stack.Screen
@@ -31,7 +33,7 @@ export default function MatchesLayout() {
         options={{
           presentation: "fullScreenModal",
           title: "Détails du match",
-          headerTransparent: true,
+          headerTransparent: Platform.OS === "ios",
         }}
       />
       <Stack.Screen
@@ -47,10 +49,12 @@ export default function MatchesLayout() {
         name="[id]/venue-detail"
         options={{
           presentation: formSheet,
-          sheetGrabberVisible: Platform.OS === "ios",
           title: "Lieu",
           headerTransparent: Platform.OS === "ios",
-          sheetAllowedDetents: [0.45, 0.7],
+          ...(Platform.OS === "ios" && {
+            sheetGrabberVisible: true,
+            sheetAllowedDetents: [0.45, 0.7],
+          }),
         }}
       />
       <Stack.Screen

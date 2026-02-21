@@ -18,6 +18,7 @@ import { useSearchOrganizations, useVerifyPin, useRequestClub } from "@/hooks/us
 import { colors, semanticColors, radii, spacing } from "@/constants/theme";
 import { FormField } from "@/components/ui/form-field";
 import { setPendingClubSelection } from "@/lib/pending-club-selection";
+import Button from "@/components/ui/button";
 import type { Organization } from "@/types/organization";
 
 export default function ClubSelection() {
@@ -175,20 +176,12 @@ export default function ClubSelection() {
             placeholder="Entrez le PIN"
             maxLength={6}
           />
-          <Pressable
+          <Button
+            label="Valider"
             onPress={handlePinSubmit}
-            disabled={pin.length < 4 || verifyPin.isPending}
-            style={[
-              styles.submitButton,
-              { opacity: pin.length < 4 || verifyPin.isPending ? 0.5 : 1 },
-            ]}
-          >
-            {verifyPin.isPending ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.submitButtonText}>Valider</Text>
-            )}
-          </Pressable>
+            disabled={pin.length < 4}
+            loading={verifyPin.isPending}
+          />
         </View>
       </>
     );
@@ -220,23 +213,12 @@ export default function ClubSelection() {
             onChangeText={setRequestCity}
             placeholder="Ex: Paris"
           />
-          <Pressable
+          <Button
+            label="Envoyer la demande"
             onPress={handleRequestSubmit}
-            disabled={!requestName.trim() || !requestCity.trim() || requestClub.isPending}
-            style={[
-              styles.submitButton,
-              {
-                opacity:
-                  !requestName.trim() || !requestCity.trim() || requestClub.isPending ? 0.5 : 1,
-              },
-            ]}
-          >
-            {requestClub.isPending ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.submitButtonText}>Envoyer la demande</Text>
-            )}
-          </Pressable>
+            disabled={!requestName.trim() || !requestCity.trim()}
+            loading={requestClub.isPending}
+          />
         </View>
       </>
     );
@@ -401,17 +383,5 @@ const styles = StyleSheet.create({
   pinDescription: {
     fontSize: 15,
     lineHeight: 22,
-  },
-  submitButton: {
-    height: 52,
-    borderRadius: radii.md,
-    backgroundColor: colors.accentGreen,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  submitButtonText: {
-    color: "#FFFFFF",
-    fontSize: 17,
-    fontWeight: "600",
   },
 });

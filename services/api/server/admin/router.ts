@@ -34,6 +34,7 @@ import {
   updateFeatureFlagValidator,
   setFeatureFlagOverrideValidator,
   updateMatchAdminValidator,
+  processDeletionRequestValidator,
 } from "./validators";
 import {
   banUser,
@@ -54,6 +55,7 @@ import {
   setFeatureFlagOverride,
   removeFeatureFlagOverride,
   updateMatchAdmin,
+  processDeletionRequest,
 } from "./mutations";
 
 export const adminRouter = new Hono<HonoContext>();
@@ -172,4 +174,11 @@ adminRouter.put(
   "/update-match",
   zValidator("json", updateMatchAdminValidator),
   updateMatchAdmin,
+);
+
+// Account deletion requests
+adminRouter.post(
+  "/process-deletion-request",
+  zValidator("json", processDeletionRequestValidator),
+  processDeletionRequest,
 );

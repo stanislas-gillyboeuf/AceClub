@@ -16,3 +16,4 @@ export * from "./delete-feature-flag";
 export * from "./set-feature-flag-override";
 export * from "./remove-feature-flag-override";
 export * from "./update-match";
+export * from "./process-deletion-request";

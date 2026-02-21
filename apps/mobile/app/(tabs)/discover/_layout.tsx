@@ -14,11 +14,13 @@ export default function DiscoverLayout() {
         name="create-intent"
         options={{
           title: "Nouvelle dispo",
-          presentation: "formSheet",
-          sheetGrabberVisible: true,
+          presentation: formSheet,
           headerTransparent: true,
-          sheetAllowedDetents: [0.6, 0.85, 1],
-          contentStyle: { flex: 1, backgroundColor: "transparent" },
+          ...(Platform.OS === "ios" && {
+            sheetGrabberVisible: true,
+            sheetAllowedDetents: [0.6, 0.85, 1],
+            contentStyle: { flex: 1, backgroundColor: "transparent" },
+          }),
         }}
       />
     </Stack>

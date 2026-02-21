@@ -5,7 +5,6 @@ import {
   TextInput,
   Pressable,
   Modal,
-  ActivityIndicator,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -13,6 +12,7 @@ import {
 import { colors, radii } from "@/constants/theme";
 import { X } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
+import Button from "@/components/ui/button";
 
 const PIN_LENGTH = 4;
 
@@ -109,24 +109,19 @@ export function PinModal({
           />
 
           <View style={styles.actions}>
-            <Pressable onPress={onClose} style={styles.cancelButton}>
-              <Text style={styles.cancelText}>Annuler</Text>
-            </Pressable>
-            <Pressable
+            <Button
+              label="Annuler"
+              onPress={onClose}
+              variant="secondary"
+              style={{ flex: 1 }}
+            />
+            <Button
+              label="Valider"
               onPress={handleVerify}
-              disabled={pin.length < PIN_LENGTH || isVerifying}
-              style={[
-                styles.verifyButton,
-                (pin.length < PIN_LENGTH || isVerifying) &&
-                  styles.verifyButtonDisabled,
-              ]}
-            >
-              {isVerifying ? (
-                <ActivityIndicator color={colors.white} size="small" />
-              ) : (
-                <Text style={styles.verifyText}>Valider</Text>
-              )}
-            </Pressable>
+              disabled={pin.length < PIN_LENGTH}
+              loading={isVerifying}
+              style={{ flex: 1 }}
+            />
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -215,35 +210,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     marginTop: 8,
-  },
-  cancelButton: {
-    flex: 1,
-    height: 48,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.gray200,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  cancelText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.gray500,
-  },
-  verifyButton: {
-    flex: 1,
-    height: 48,
-    borderRadius: radii.md,
-    backgroundColor: colors.accentGreen,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  verifyButtonDisabled: {
-    opacity: 0.4,
-  },
-  verifyText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.white,
   },
 });

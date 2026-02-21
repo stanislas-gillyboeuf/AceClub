@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
-  PlatformColor,
   StyleSheet,
 } from "react-native";
 import { Stack, router } from "expo-router";

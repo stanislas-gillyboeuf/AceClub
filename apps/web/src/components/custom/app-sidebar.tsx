@@ -9,6 +9,7 @@ import {
   Shield,
   Swords,
   ToggleRight,
+  UserX,
 } from "lucide-react"
 
 import { NavMain } from "@/components/custom/nav-main"
@@ -51,6 +52,11 @@ const navMain = [
     title: "Feature Flags",
     url: "/dashboard/feature-flags",
     icon: ToggleRight,
+  },
+  {
+    title: "Suppressions",
+    url: "/dashboard/deletion-requests",
+    icon: UserX,
   },
 ]
 

@@ -8,7 +8,6 @@ import Animated, {
   type SharedValue,
 } from "react-native-reanimated";
 import {
-  Plus,
   Trash2,
   Swords,
   Dumbbell,
@@ -19,8 +18,9 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors, radii } from "@/constants/theme";
-import type { MatchIntent } from "@/types/match-intent";
 import { EmptyState } from "@/components/ui/empty-state";
+import Button from "@/components/ui/button";
+import type { MatchIntent } from "@/types/match-intent";
 
 interface MatchIntentListProps {
   intents: MatchIntent[];
@@ -293,21 +293,11 @@ export function MatchIntentList({
           ))}
         </View>
       )}
-
-      {/* Add button */}
-      <Pressable
+      <Button
+        label="Publier une dispo"
         onPress={onCreateNew}
-        style={({ pressed }) => [
-          styles.addButton,
-          {
-            backgroundColor: `${colors.accentGreen}12`,
-            opacity: pressed ? 0.7 : 1,
-          },
-        ]}
-      >
-        <Plus size={18} color={colors.accentGreen} strokeWidth={2} />
-        <Text style={styles.addButtonText}>Publier une dispo</Text>
-      </Pressable>
+        variant="secondary"
+      />
     </Card>
   );
 }
@@ -340,28 +330,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingVertical: 8,
     marginBottom: 12,
-  },
-  emptyContainer: {
-    alignItems: "center",
-    paddingVertical: 16,
-    gap: 6,
-    marginBottom: 4,
-  },
-  emptyIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 4,
-  },
-  emptyTitle: {
-    fontSize: 15,
-    fontWeight: "500",
-  },
-  emptyDescription: {
-    fontSize: 13,
-    textAlign: "center",
   },
   list: {
     marginBottom: 12,
@@ -426,18 +394,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.red500,
     justifyContent: "center",
     alignItems: "center",
-  },
-  addButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    height: 44,
-    borderRadius: radii.sm,
-  },
-  addButtonText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: colors.accentGreen,
   },
 });

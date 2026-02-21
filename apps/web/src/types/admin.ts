@@ -252,6 +252,23 @@ export interface ListMatchesResponse {
   }
 }
 
+export interface AccountDeletionRequest {
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+  clubName: string
+  reason: string | null
+  status: "pending" | "processed" | "rejected"
+  createdAt: string
+  processedAt: string | null
+  processedBy: string | null
+}
+
+export interface ListAccountDeletionRequestsResponse {
+  requests: AccountDeletionRequest[]
+}
+
 export interface MatchDetailResponse {
   match: Omit<AdminMatch, "participants" | "sets" | "comments">
   participants: MatchParticipant[]
