@@ -2,7 +2,7 @@
   "expo": {
     "name": "AceClub",
     "slug": "aceclub",
-    "version": "2.0.1",
+    "version": "2.0.5",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "aceclub",
@@ -66,7 +66,12 @@
           "iosUrlScheme": "com.googleusercontent.apps.131274084335-lv3cs6n1eqajr5letmpgm57alipg51gb"
         }
       ],
-      ["expo-maps", { "requestLocationPermission": true }]
+      [
+        "expo-maps",
+        {
+          "requestLocationPermission": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
