@@ -57,12 +57,27 @@ jobs:
           git tag -fa "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
           git push origin "${{ steps.version.outputs.tag }}" --force
 
+      - name: Check for mobile changes
+        id: mobile_changes
+        run: |
+          # Compare main before merge (HEAD~1) with current HEAD
+          CHANGED=$(git diff --name-only HEAD~1 HEAD -- apps/mobile/ | head -1)
+          if [ -n "$CHANGED" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Mobile changes detected"
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No mobile changes — skipping EAS deploy"
+          fi
+
       - name: Setup EAS
+        if: steps.mobile_changes.outputs.has_changes == 'true'
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Trigger EAS deploy workflow
+        if: steps.mobile_changes.outputs.has_changes == 'true'
         working-directory: apps/mobile
         run: eas workflow:run ../../.eas/workflows/deploy-production.yml --non-interactive
