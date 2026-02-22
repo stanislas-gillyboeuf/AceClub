@@ -6,10 +6,10 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 7;
 
 interface ProgressBarProps {
-  currentStep: number; // 1-5 (steps after welcome)
+  currentStep: number; // 1-7 (steps after welcome)
 }
 
 export function ProgressBar({ currentStep }: ProgressBarProps) {

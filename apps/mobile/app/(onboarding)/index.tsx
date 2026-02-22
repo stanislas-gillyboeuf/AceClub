@@ -15,10 +15,12 @@ import { SportStep } from "@/features/onboarding/components/sport-step";
 import { LevelStep } from "@/features/onboarding/components/level-step";
 import { PhotoStep } from "@/features/onboarding/components/photo-step";
 import { PhoneStep } from "@/features/onboarding/components/phone-step";
+import { NotificationStep } from "@/features/onboarding/components/notification-step";
+import { LocationStep } from "@/features/onboarding/components/location-step";
 import { ProgressBar } from "@/features/onboarding/components/progress-bar";
 import { NavButtons } from "@/features/onboarding/components/nav-buttons";
 
-const TOTAL_STEPS = 6; // 0=welcome, 1=club, 2=sport, 3=level, 4=photo, 5=phone
+const TOTAL_STEPS = 8; // 0=welcome, 1=club, 2=sport, 3=level, 4=photo, 5=phone, 6=notifications, 7=location
 
 export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -53,6 +55,10 @@ export default function Onboarding() {
         return true; // photo is optional
       case 5:
         return phoneNumber.replace(/\D/g, "").length >= 6;
+      case 6:
+        return true; // notifications always skippable
+      case 7:
+        return true; // location always skippable
       default:
         return false;
     }
@@ -175,6 +181,10 @@ export default function Onboarding() {
             onPhoneChange={setPhoneNumber}
           />
         );
+      case 6:
+        return <NotificationStep onComplete={goNext} />;
+      case 7:
+        return <LocationStep onComplete={goNext} />;
       default:
         return null;
     }
@@ -190,11 +200,11 @@ export default function Onboarding() {
 
         <View style={styles.flex}>{renderStep()}</View>
 
-        {currentStep > 0 && (
+        {currentStep > 0 && currentStep <= 5 && (
           <NavButtons
             canGoBack={currentStep > 1}
             canGoNext={canGoNext()}
-            isLastStep={currentStep === TOTAL_STEPS - 1}
+            isLastStep={false}
             isSubmitting={isSubmitting}
             onBack={goBack}
             onNext={goNext}
