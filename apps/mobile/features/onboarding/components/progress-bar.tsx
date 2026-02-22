@@ -2,10 +2,10 @@ import { View, StyleSheet } from "react-native";
 import { colors } from "@/constants/theme";
 import Animated, { useAnimatedStyle, withTiming, Easing } from "react-native-reanimated";
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 7;
 
 interface ProgressBarProps {
-  currentStep: number; // 0-4 (name, club, sport, level, photo)
+  currentStep: number; // 0-6 (name, club, sport, level, photo, notifications, location)
 }
 
 export function ProgressBar({ currentStep }: ProgressBarProps) {

@@ -17,10 +17,12 @@ import { ClubStep } from "@/features/onboarding/components/club-step";
 import { SportStep } from "@/features/onboarding/components/sport-step";
 import { LevelStep } from "@/features/onboarding/components/level-step";
 import { PhotoStep } from "@/features/onboarding/components/photo-step";
+import { NotificationStep } from "@/features/onboarding/components/notification-step";
+import { LocationStep } from "@/features/onboarding/components/location-step";
 import { ProgressBar } from "@/features/onboarding/components/progress-bar";
 import { NavButtons } from "@/features/onboarding/components/nav-buttons";
 
-const TOTAL_STEPS = 5; // 0=name, 1=club, 2=sport, 3=level, 4=photo
+const TOTAL_STEPS = 7; // 0=name, 1=club, 2=sport, 3=level, 4=photo, 5=notifications, 6=location
 
 export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -60,12 +62,10 @@ export default function Onboarding() {
         return "C'est parti";
       case 1:
         return "Valider mon club";
-      case 4:
-        return profileImageUri ? "Commencer à jouer" : "Passer";
       default:
         return "Continuer";
     }
-  }, [currentStep, profileImageUri]);
+  }, [currentStep]);
 
   const canGoNext = useCallback((): boolean => {
     switch (currentStep) {
@@ -79,6 +79,10 @@ export default function Onboarding() {
         return !!selectedSkillLevel;
       case 4:
         return true; // photo is optional
+      case 5:
+        return true; // notifications always skippable
+      case 6:
+        return true; // location always skippable
       default:
         return false;
     }
@@ -191,6 +195,10 @@ export default function Onboarding() {
             firstName={firstName}
           />
         );
+      case 5:
+        return <NotificationStep onComplete={goNext} />;
+      case 6:
+        return <LocationStep onComplete={goNext} />;
       default:
         return null;
     }
@@ -231,14 +239,16 @@ export default function Onboarding() {
             </Animated.View>
           </View>
 
-          <NavButtons
-            canGoBack={currentStep > 0}
-            canGoNext={canGoNext()}
-            label={getButtonLabel()}
-            isSubmitting={isSubmitting}
-            onBack={goBack}
-            onNext={goNext}
-          />
+          {currentStep <= 4 && (
+            <NavButtons
+              canGoBack={currentStep > 0}
+              canGoNext={canGoNext()}
+              label={getButtonLabel()}
+              isSubmitting={isSubmitting}
+              onBack={goBack}
+              onNext={goNext}
+            />
+          )}
         </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
