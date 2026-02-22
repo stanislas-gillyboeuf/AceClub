@@ -1,10 +1,10 @@
 import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
-import { colors, radii } from "@/constants/theme";
-import { BarChart3, Check } from "lucide-react-native";
-import { StepHeader } from "./step-header";
+import { colors } from "@/constants/theme";
+import { Check } from "lucide-react-native";
+import { GlassView } from "@/components/ui/glass-view";
 import { getSkillLevels, type SkillLevel } from "@/lib/skill-levels";
 import type { Sport } from "@/types/common";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated, { FadeIn, withTiming, withDelay } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
 interface LevelStepProps {
@@ -24,15 +24,22 @@ export function LevelStep({ sport, selectedLevel, onSelect }: LevelStepProps) {
 
   return (
     <View style={styles.container}>
-      <StepHeader
-        icon={BarChart3}
-        title="Quel est ton niveau ?"
-        subtitle={
-          isPadel
-            ? "Selectionne ton niveau de padel"
-            : "Selectionne ton classement tennis"
-        }
-      />
+      <View style={styles.header}>
+        <Animated.Text
+          entering={FadeIn.delay(100).duration(400)}
+          style={styles.title}
+        >
+          {`Et en ${isPadel ? "padel" : "tennis"}, quel est ton niveau ?`}
+        </Animated.Text>
+        <Animated.Text
+          entering={FadeIn.delay(250).duration(400)}
+          style={styles.subtitle}
+        >
+          {isPadel
+            ? "Ça nous aide à te trouver les meilleurs matchs."
+            : "Sélectionne ton classement pour des matchs équilibrés."}
+        </Animated.Text>
+      </View>
 
       {isPadel ? (
         <PadelGrid
@@ -69,34 +76,48 @@ function PadelGrid({
         return (
           <Animated.View
             key={level.value}
-            entering={FadeInDown.delay(200 + index * 100).duration(400)}
+            entering={() => {
+              'worklet';
+              const d = 300 + index * 100;
+              return {
+                initialValues: { opacity: 0, transform: [{ scale: 0.96 }] },
+                animations: {
+                  opacity: withDelay(d, withTiming(1, { duration: 350 })),
+                  transform: [{ scale: withDelay(d, withTiming(1, { duration: 400 })) }],
+                },
+              };
+            }}
             style={styles.gridItem}
           >
             <Pressable
               onPress={() => onSelect(level.value)}
-              style={[styles.padelTile, isSelected && styles.padelTileSelected]}
+              style={({ pressed }) => [
+                pressed && { transform: [{ scale: 0.98 }] },
+              ]}
             >
-              {isSelected && (
-                <View style={styles.tileCheck}>
-                  <Check size={12} color={colors.white} />
-                </View>
-              )}
-              <View
-                style={[
-                  styles.padelIconCircle,
-                  isSelected && styles.padelIconCircleSelected,
-                ]}
-              >
-                <Text
+              <GlassView style={styles.padelTile}>
+                {isSelected && (
+                  <View style={styles.tileCheck}>
+                    <Check size={12} color={colors.white} />
+                  </View>
+                )}
+                <View
                   style={[
-                    styles.padelIconText,
-                    isSelected && styles.padelIconTextSelected,
+                    styles.padelIconCircle,
+                    isSelected && styles.padelIconCircleSelected,
                   ]}
                 >
-                  {padelIcons[index]}
-                </Text>
-              </View>
-              <Text style={styles.padelLabel}>{level.displayName}</Text>
+                  <Text
+                    style={[
+                      styles.padelIconText,
+                      isSelected && styles.padelIconTextSelected,
+                    ]}
+                  >
+                    {padelIcons[index]}
+                  </Text>
+                </View>
+                <Text style={styles.padelLabel}>{level.displayName}</Text>
+              </GlassView>
             </Pressable>
           </Animated.View>
         );
@@ -125,27 +146,31 @@ function TennisList({
           <Pressable
             key={level.value}
             onPress={() => onSelect(level.value)}
-            style={[styles.tennisRow, isSelected && styles.tennisRowSelected]}
+            style={({ pressed }) => [
+              pressed && { transform: [{ scale: 0.98 }] },
+            ]}
           >
-            <View
-              style={[
-                styles.tennisDot,
-                isSelected && styles.tennisDotSelected,
-              ]}
-            />
-            <Text
-              style={[
-                styles.tennisLabel,
-                isSelected && styles.tennisLabelSelected,
-              ]}
-            >
-              {level.displayName}
-            </Text>
-            {isSelected && (
-              <View style={styles.tennisCheck}>
-                <Check size={14} color={colors.white} />
-              </View>
-            )}
+            <GlassView style={styles.tennisRow}>
+              <View
+                style={[
+                  styles.tennisDot,
+                  isSelected && styles.tennisDotSelected,
+                ]}
+              />
+              <Text
+                style={[
+                  styles.tennisLabel,
+                  isSelected && styles.tennisLabelSelected,
+                ]}
+              >
+                {level.displayName}
+              </Text>
+              {isSelected && (
+                <View style={styles.tennisCheck}>
+                  <Check size={14} color={colors.white} />
+                </View>
+              )}
+            </GlassView>
           </Pressable>
         );
       })}
@@ -156,6 +181,23 @@ function TennisList({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: "center",
+  },
+  header: {
+    paddingHorizontal: 20,
+    marginBottom: 28,
+  },
+  title: {
+    fontSize: 34,
+    fontWeight: "700",
+    color: colors.black,
+    letterSpacing: 0.37,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 17,
+    color: colors.gray500,
+    lineHeight: 22,
   },
   // Padel grid
   grid: {
@@ -168,22 +210,10 @@ const styles = StyleSheet.create({
     width: "47%",
   },
   padelTile: {
-    backgroundColor: colors.white,
-    borderRadius: radii.lg,
+    borderRadius: 16,
     padding: 20,
     alignItems: "center",
-    borderWidth: 1.5,
-    borderColor: colors.gray100,
     position: "relative",
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  padelTileSelected: {
-    borderColor: colors.accentGreen,
-    backgroundColor: `${colors.accentGreen}08`,
   },
   tileCheck: {
     position: "absolute",
@@ -230,17 +260,10 @@ const styles = StyleSheet.create({
   tennisRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.white,
-    borderRadius: radii.md,
+    borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 16,
     gap: 12,
-    borderWidth: 1,
-    borderColor: colors.gray100,
-  },
-  tennisRowSelected: {
-    borderColor: colors.accentGreen,
-    backgroundColor: `${colors.accentGreen}08`,
   },
   tennisDot: {
     width: 10,

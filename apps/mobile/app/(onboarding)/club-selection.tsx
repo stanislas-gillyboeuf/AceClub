@@ -4,33 +4,34 @@ import {
   Text,
   TextInput,
   FlatList,
+  ScrollView,
   Pressable,
   StyleSheet,
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { Stack, useRouter, useLocalSearchParams } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { GlassView } from "@/components/ui/glass-view";
-import { Search, X, Lock, ChevronRight } from "lucide-react-native";
+import { Search, X, MapPin, Lock } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { useSearchOrganizations, useVerifyPin, useRequestClub } from "@/hooks/use-organization";
+import { useSearchOrganizations, useRequestClub } from "@/hooks/use-organization";
 import { colors, semanticColors, radii, spacing } from "@/constants/theme";
 import { FormField } from "@/components/ui/form-field";
 import { setPendingClubSelection } from "@/lib/pending-club-selection";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, { FadeIn } from "react-native-reanimated";
 import Button from "@/components/ui/button";
 import type { Organization } from "@/types/organization";
 
-export default function ClubSelection() {
+export default function OnboardingClubSelection() {
   const scheme = useColorScheme();
   const router = useRouter();
-  const { selectedId } = useLocalSearchParams<{ selectedId?: string }>();
+  const insets = useSafeAreaInsets();
 
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [offset, setOffset] = useState(0);
-  const [pinOrg, setPinOrg] = useState<Organization | null>(null);
-  const [pin, setPin] = useState("");
   const [showRequest, setShowRequest] = useState(false);
   const [requestName, setRequestName] = useState("");
   const [requestCity, setRequestCity] = useState("");
@@ -41,7 +42,6 @@ export default function ClubSelection() {
     20,
     offset
   );
-  const verifyPin = useVerifyPin();
   const requestClub = useRequestClub();
 
   useEffect(() => {
@@ -63,31 +63,7 @@ export default function ClubSelection() {
   };
 
   const handleOrgPress = (org: Organization) => {
-    if (org.pinEnabled) {
-      setPinOrg(org);
-      setPin("");
-    } else {
-      handleSelect(org);
-    }
-  };
-
-  const handlePinSubmit = () => {
-    if (!pinOrg) return;
-    verifyPin.mutate(
-      { organizationId: pinOrg.id, pin },
-      {
-        onSuccess: (result) => {
-          if (result.valid) {
-            handleSelect(pinOrg!, pin);
-          } else {
-            Alert.alert("PIN incorrect", "Le code PIN est invalide.");
-          }
-        },
-        onError: () => {
-          Alert.alert("Erreur", "Impossible de verifier le PIN.");
-        },
-      }
-    );
+    handleSelect(org);
   };
 
   const handleRequestSubmit = () => {
@@ -108,84 +84,55 @@ export default function ClubSelection() {
     );
   };
 
-  const renderOrg = ({ item }: { item: Organization }) => {
-    const isSelected = item.id === selectedId;
+  const renderOrg = ({ item, index }: { item: Organization; index: number }) => {
     return (
-      <Pressable
-        onPress={() => handleOrgPress(item)}
-        style={({ pressed }) => [
-          styles.orgCardWrapper,
-          pressed && styles.orgCardPressed,
-        ]}
-      >
-        <GlassView style={styles.orgCard}>
-          {item.logo ? (
-            <Image source={{ uri: item.logo }} style={styles.orgLogo} contentFit="cover" />
-          ) : (
-            <View style={styles.orgLogoPlaceholder}>
-              <Text style={styles.orgLogoLetter}>{item.name.charAt(0).toUpperCase()}</Text>
-            </View>
-          )}
-          <View style={styles.orgInfo}>
-            <Text
-              style={[styles.orgName, { color: semanticColors.labelPrimary[scheme] }]}
-              numberOfLines={1}
-            >
-              {item.name}
-            </Text>
-            {item.address && (
+      <Animated.View entering={FadeIn.delay(Math.min(index * 50, 300)).duration(300)}>
+        <Pressable
+          onPress={() => handleOrgPress(item)}
+          style={({ pressed }) => [
+            styles.orgCardWrapper,
+            pressed && styles.orgCardPressed,
+          ]}
+        >
+          <GlassView style={styles.orgCard}>
+            {item.logo ? (
+              <Image source={{ uri: item.logo }} style={styles.orgLogo} contentFit="cover" />
+            ) : (
+              <View style={styles.orgLogoPlaceholder}>
+                <Text style={styles.orgLogoLetter}>{item.name.charAt(0).toUpperCase()}</Text>
+              </View>
+            )}
+            <View style={styles.orgInfo}>
               <Text
-                style={[styles.orgAddress, { color: semanticColors.labelSecondary[scheme] }]}
+                style={[styles.orgName, { color: semanticColors.labelPrimary[scheme] }]}
                 numberOfLines={1}
               >
-                {item.address}
+                {item.name}
               </Text>
+              {item.address ? (
+                <View style={styles.orgAddressRow}>
+                  <MapPin size={12} color={semanticColors.labelSecondary[scheme]} strokeWidth={1.5} />
+                  <Text
+                    style={[styles.orgAddress, { color: semanticColors.labelSecondary[scheme] }]}
+                    numberOfLines={1}
+                  >
+                    {item.address}
+                  </Text>
+                </View>
+              ) : (
+                <Text style={[styles.orgSubtitle, { color: semanticColors.labelSecondary[scheme] }]}>
+                  Club
+                </Text>
+              )}
+            </View>
+            {item.pinEnabled && (
+              <Lock size={14} color={semanticColors.labelTertiary[scheme]} strokeWidth={1.5} />
             )}
-          </View>
-          {item.pinEnabled && (
-            <Lock size={16} color={semanticColors.labelTertiary[scheme]} strokeWidth={1.5} />
-          )}
-          {isSelected && <View style={styles.selectedDot} />}
-        </GlassView>
-      </Pressable>
+          </GlassView>
+        </Pressable>
+      </Animated.View>
     );
   };
-
-  if (pinOrg) {
-    return (
-      <>
-        <Stack.Screen
-          options={{
-            title: "Code PIN requis",
-            headerLeft: () => (
-              <Pressable onPress={() => setPinOrg(null)} hitSlop={8}>
-                <X size={24} color={semanticColors.labelPrimary[scheme]} strokeWidth={2} />
-              </Pressable>
-            ),
-          }}
-        />
-        <View style={[styles.pinContent, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-          <Text style={[styles.pinDescription, { color: semanticColors.labelSecondary[scheme] }]}>
-            Le club "{pinOrg.name}" est protege par un code PIN. Demandez-le a votre club.
-          </Text>
-          <FormField
-            label="Code PIN"
-            value={pin}
-            onChangeText={setPin}
-            keyboardType="number-pad"
-            placeholder="Entrez le PIN"
-            maxLength={6}
-          />
-          <Button
-            label="Valider"
-            onPress={handlePinSubmit}
-            disabled={pin.length < 4}
-            loading={verifyPin.isPending}
-          />
-        </View>
-      </>
-    );
-  }
 
   if (showRequest) {
     return (
@@ -200,7 +147,15 @@ export default function ClubSelection() {
             ),
           }}
         />
-        <View style={[styles.pinContent, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
+        <ScrollView
+          style={{ flex: 1, backgroundColor: semanticColors.primaryBackground[scheme] }}
+          contentContainerStyle={styles.requestContent}
+          contentInsetAdjustmentBehavior="automatic"
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={[styles.requestDescription, { color: semanticColors.labelSecondary[scheme] }]}>
+            Renseigne le nom et la ville de ton club. On l'ajoutera dans les plus brefs delais.
+          </Text>
           <FormField
             label="Nom du club"
             value={requestName}
@@ -219,7 +174,7 @@ export default function ClubSelection() {
             disabled={!requestName.trim() || !requestCity.trim()}
             loading={requestClub.isPending}
           />
-        </View>
+        </ScrollView>
       </>
     );
   }
@@ -243,17 +198,26 @@ export default function ClubSelection() {
         renderItem={renderOrg}
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          { paddingBottom: Math.max(insets.bottom, 16) },
+        ]}
         ListEmptyComponent={
           isLoading ? (
             <ActivityIndicator style={styles.loader} color={colors.accentGreen} />
-          ) : (
-            <Text
-              style={[styles.emptyText, { color: semanticColors.labelSecondary[scheme] }]}
-            >
-              Aucun club trouve
-            </Text>
-          )
+          ) : debouncedQuery.length > 0 ? (
+            <Animated.View entering={FadeIn.duration(350)} style={styles.emptyContainer}>
+              <View style={styles.emptyIconCircle}>
+                <Search size={32} color={colors.accentGreen} strokeWidth={1.5} />
+              </View>
+              <Text style={[styles.emptyTitle, { color: semanticColors.labelPrimary[scheme] }]}>
+                Aucun club trouve
+              </Text>
+              <Text style={[styles.emptySubtitle, { color: semanticColors.labelSecondary[scheme] }]}>
+                Essaie avec un autre nom ou propose ton club ci-dessous.
+              </Text>
+            </Animated.View>
+          ) : null
         }
         ListHeaderComponent={
           <GlassView style={styles.searchContainer}>
@@ -275,16 +239,12 @@ export default function ClubSelection() {
           </GlassView>
         }
         ListFooterComponent={
-          <Pressable
-            onPress={() => setShowRequest(true)}
-            style={({ pressed }) => [
-              styles.requestRow,
-              pressed && styles.orgCardPressed,
-            ]}
-          >
-            <Text style={styles.requestText}>Proposer mon club</Text>
-            <ChevronRight size={16} color={colors.accentGreen} strokeWidth={2} />
-          </Pressable>
+          <View style={styles.fixedFooter}>
+            <Button
+              label="Proposer mon club"
+              onPress={() => setShowRequest(true)}
+            />
+          </View>
         }
       />
     </>
@@ -326,20 +286,20 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
   },
   orgLogo: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   orgLogoPlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: `${colors.accentGreen}15`,
     alignItems: "center",
     justifyContent: "center",
   },
   orgLogoLetter: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "600",
     color: colors.accentGreen,
   },
@@ -349,44 +309,57 @@ const styles = StyleSheet.create({
   },
   orgName: {
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: "600",
+  },
+  orgSubtitle: {
+    fontSize: 13,
+  },
+  orgAddressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   orgAddress: {
     fontSize: 13,
-  },
-  selectedDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.accentGreen,
+    flex: 1,
   },
   loader: {
     paddingVertical: 32,
   },
-  emptyText: {
-    textAlign: "center",
-    paddingVertical: 32,
-    fontSize: 15,
+  emptyContainer: {
+    alignItems: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 32,
+    gap: 8,
   },
-  requestRow: {
-    flexDirection: "row",
+  emptyIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: `${colors.accentGreen}12`,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
-    gap: 4,
+    marginBottom: 8,
   },
-  requestText: {
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  emptySubtitle: {
     fontSize: 15,
-    fontWeight: "500",
-    color: colors.accentGreen,
+    textAlign: "center",
+    lineHeight: 21,
   },
-  pinContent: {
-    flex: 1,
+  fixedFooter: {
+    paddingHorizontal: spacing.horizontal,
+    paddingTop: 12,
+  },
+  requestContent: {
     padding: spacing.horizontal,
     gap: 16,
   },
-  pinDescription: {
+  requestDescription: {
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 21,
   },
 });

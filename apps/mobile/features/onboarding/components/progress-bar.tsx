@@ -1,52 +1,43 @@
 import { View, StyleSheet } from "react-native";
 import { colors } from "@/constants/theme";
-import Animated, {
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
+import Animated, { useAnimatedStyle, withTiming, Easing } from "react-native-reanimated";
 
 const TOTAL_STEPS = 5;
 
 interface ProgressBarProps {
-  currentStep: number; // 1-5 (steps after welcome)
+  currentStep: number; // 0-4 (name, club, sport, level, photo)
 }
 
 export function ProgressBar({ currentStep }: ProgressBarProps) {
+  const progress = (currentStep + 1) / TOTAL_STEPS;
+
+  const fillStyle = useAnimatedStyle(() => ({
+    width: withTiming(`${progress * 100}%` as any, { duration: 350, easing: Easing.out(Easing.cubic) }),
+  }));
+
   return (
     <View style={styles.container}>
-      {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-        <Capsule key={i} filled={i < currentStep} />
-      ))}
+      <View style={styles.track}>
+        <Animated.View style={[styles.fill, fillStyle]} />
+      </View>
     </View>
   );
 }
 
-function Capsule({ filled }: { filled: boolean }) {
-  const animatedStyle = useAnimatedStyle(() => ({
-    backgroundColor: withTiming(filled ? colors.accentGreen : "transparent", {
-      duration: 300,
-    }),
-    borderColor: withTiming(filled ? colors.accentGreen : colors.gray300, {
-      duration: 300,
-    }),
-    transform: [{ scaleY: withSpring(filled ? 1 : 0.9) }],
-  }));
-
-  return <Animated.View style={[styles.capsule, animatedStyle]} />;
-}
-
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    gap: 8,
-    paddingHorizontal: 40,
+    paddingHorizontal: 20,
     paddingVertical: 12,
   },
-  capsule: {
-    flex: 1,
-    height: 6,
-    borderRadius: 3,
-    borderWidth: 1,
+  track: {
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(120, 120, 128, 0.12)",
+    overflow: "hidden",
+  },
+  fill: {
+    height: "100%",
+    borderRadius: 2,
+    backgroundColor: colors.accentGreen,
   },
 });

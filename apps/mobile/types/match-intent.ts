@@ -108,7 +108,6 @@ export interface UserContact {
   id: string;
   name: string;
   image?: string | null;
-  phoneNumber?: string | null;
 }
 
 export interface AcceptMatchRequestResponse {

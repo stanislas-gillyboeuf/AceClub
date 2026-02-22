@@ -20,6 +20,7 @@ import {
   FileText,
   Hand,
   X,
+  Check,
 } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as Notifications from "expo-notifications";
@@ -46,13 +47,6 @@ import { colors, semanticColors, spacing, radii } from "@/constants/theme";
 import type { Sport } from "@/types/common";
 import type { Organization } from "@/types/organization";
 
-const PHONE_ALLOWED_CHARS = /^[+0-9() -]*$/;
-
-function isValidPhone(phone: string): boolean {
-  const digits = phone.replace(/\D/g, "");
-  return digits.length >= 8;
-}
-
 export default function Settings() {
   const scheme = useColorScheme();
   const router = useRouter();
@@ -62,7 +56,6 @@ export default function Settings() {
 
   // Form state
   const [name, setName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
   const [selectedSkillLevel, setSelectedSkillLevel] = useState<string | null>(null);
   const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
@@ -106,7 +99,6 @@ export default function Settings() {
   useEffect(() => {
     if (user) {
       setName(user.name ?? "");
-      setPhoneNumber(user.phoneNumber ?? "");
     }
   }, [user]);
 
@@ -130,7 +122,6 @@ export default function Settings() {
   const originalValues = useMemo(
     () => ({
       name: user?.name ?? "",
-      phoneNumber: user?.phoneNumber ?? "",
       sport: (preferences?.sport as Sport) ?? null,
       skillLevel: preferences?.skillLevel ?? null,
       organizationId: preferences?.organizationId ?? null,
@@ -141,7 +132,6 @@ export default function Settings() {
 
   const hasChanges =
     name !== originalValues.name ||
-    phoneNumber !== originalValues.phoneNumber ||
     selectedSport !== originalValues.sport ||
     selectedSkillLevel !== originalValues.skillLevel ||
     selectedOrganization?.id !== originalValues.organizationId ||
@@ -150,7 +140,6 @@ export default function Settings() {
   const canSave =
     hasChanges &&
     name.trim().length > 0 &&
-    (!phoneNumber || isValidPhone(phoneNumber)) &&
     !isSaving;
 
   // Sport change resets skill level
@@ -159,13 +148,6 @@ export default function Settings() {
     const levels = getSkillLevels(sport);
     if (levels.length > 0) {
       setSelectedSkillLevel(levels[0].value);
-    }
-  };
-
-  // Phone number validation
-  const handlePhoneChange = (text: string) => {
-    if (PHONE_ALLOWED_CHARS.test(text)) {
-      setPhoneNumber(text);
     }
   };
 
@@ -213,10 +195,8 @@ export default function Settings() {
       // Build payload with only defined (non-null) values
       const payload: Record<string, string> = {};
       const trimmedName = name.trim();
-      const trimmedPhone = phoneNumber.trim();
 
       if (trimmedName && trimmedName !== originalValues.name) payload.name = trimmedName;
-      if (trimmedPhone && trimmedPhone !== originalValues.phoneNumber) payload.phoneNumber = trimmedPhone;
       if (selectedSport && selectedSport !== originalValues.sport) payload.sport = selectedSport;
       if (selectedSkillLevel && selectedSkillLevel !== originalValues.skillLevel) payload.skillLevel = selectedSkillLevel;
       if (selectedOrganization?.id && selectedOrganization.id !== originalValues.organizationId) {
@@ -339,14 +319,12 @@ export default function Settings() {
               {isSaving ? (
                 <ActivityIndicator size="small" color={colors.accentGreen} />
               ) : (
-                <Text
-                  style={[
-                    styles.saveButton,
-                    { opacity: canSave ? 1 : 0.4 },
-                  ]}
-                >
-                  Enregistrer
-                </Text>
+                <Check
+                  size={24}
+                  color={colors.accentGreen}
+                  strokeWidth={2.5}
+                  style={{ opacity: canSave ? 1 : 0.4 }}
+                />
               )}
             </Pressable>
           ),
@@ -395,19 +373,6 @@ export default function Settings() {
               onChangeText={setName}
               placeholder="Votre nom"
               autoCapitalize="words"
-            />
-            <View style={{ height: 12 }} />
-            <FormField
-              label="Numéro de téléphone"
-              value={phoneNumber}
-              onChangeText={handlePhoneChange}
-              placeholder="+33 6 12 34 56 78"
-              keyboardType="phone-pad"
-              error={
-                phoneNumber && !isValidPhone(phoneNumber)
-                  ? "Minimum 8 chiffres requis"
-                  : null
-              }
             />
           </SectionCard>
 

@@ -630,6 +630,7 @@ struct ClubSelectionView: View {
                 } else {
                     List {
                         ForEach(viewModel.organizations) { org in
+                            let isSelected = viewModel.selectedOrganization?.id == org.id
                             Button {
                                 if org.pinEnabled {
                                     viewModel.selectOrganization(org)
@@ -638,24 +639,44 @@ struct ClubSelectionView: View {
                                     dismiss()
                                 }
                             } label: {
-                                HStack {
-                                    Text(org.name)
-                                        .foregroundStyle(.primary)
+                                HStack(spacing: 12) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(isSelected ? Theme.tintColor.opacity(0.15) : Theme.borderColor.opacity(0.3))
+                                            .frame(width: 44, height: 44)
 
-                                    if org.pinEnabled {
-                                        Image(systemName: "lock.fill")
+                                        Text(String(org.name.prefix(1)).uppercased())
+                                            .font(.body.weight(.semibold))
+                                            .foregroundStyle(isSelected ? Theme.tintColor : Theme.labelSecondary)
+                                    }
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(org.name)
+                                            .font(.body)
+                                            .foregroundStyle(Theme.labelPrimary)
+                                            .lineLimit(1)
+
+                                        Text("Club")
                                             .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(Theme.labelSecondary)
                                     }
 
                                     Spacer()
 
-                                    if viewModel.selectedOrganization?.id == org.id {
+                                    if org.pinEnabled {
+                                        Image(systemName: "lock.fill")
+                                            .font(.caption)
+                                            .foregroundStyle(Theme.labelTertiary)
+                                    }
+
+                                    if isSelected {
                                         Image(systemName: "checkmark.circle.fill")
+                                            .font(.title3)
                                             .foregroundStyle(Theme.tintColor)
                                     }
                                 }
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                     .listStyle(.insetGrouped)

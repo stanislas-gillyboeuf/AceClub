@@ -21,8 +21,8 @@ export function FormField({ label, error, ...inputProps }: FormFieldProps) {
           styles.input,
           {
             color: semanticColors.labelPrimary[scheme],
-            backgroundColor: scheme === "dark" ? "#1C1C1E" : "#F2F2F7",
-            borderColor: error ? "#ef4444" : "transparent",
+            backgroundColor: semanticColors.cardBackground[scheme],
+            borderColor: error ? "#ef4444" : semanticColors.borderColor[scheme],
           },
         ]}
         placeholderTextColor={semanticColors.labelTertiary[scheme]}

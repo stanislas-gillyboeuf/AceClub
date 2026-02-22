@@ -43,13 +43,7 @@ export const completeOnboardingValidator = z
     organizationId: z.string().min(1, "Organization ID is required"),
     sport: z.enum(["tennis", "padel"]),
     skillLevel: z.string().min(1, "Skill level is required"),
-    phoneNumber: z
-      .string()
-      .trim()
-      .min(1, "Phone number is required")
-      .refine((value) => value.replace(/\D/g, "").length >= 8, {
-        message: "Invalid phone number",
-      }),
+    name: z.string().min(2, "Name must be at least 2 characters"),
     imageUrl: z.string().url("Image must be a valid URL").optional(),
     pin: z.string().length(4).optional(),
   })

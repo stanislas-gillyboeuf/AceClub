@@ -1,18 +1,19 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Image } from "expo-image";
-import { colors, radii } from "@/constants/theme";
+import { colors } from "@/constants/theme";
 import { Camera } from "lucide-react-native";
-import { StepHeader } from "./step-header";
 import { authClient } from "@/lib/auth-client";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
+import Animated, { FadeIn, withTiming, withDelay } from "react-native-reanimated";
 
 interface PhotoStepProps {
   imageUri: string | null;
   onImageSelected: (uri: string) => void;
+  firstName: string;
 }
 
-export function PhotoStep({ imageUri, onImageSelected }: PhotoStepProps) {
+export function PhotoStep({ imageUri, onImageSelected, firstName }: PhotoStepProps) {
   const { data: session } = authClient.useSession();
   const userName = session?.user?.name ?? "U";
 
@@ -30,7 +31,7 @@ export function PhotoStep({ imageUri, onImageSelected }: PhotoStepProps) {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
-      aspect: [1, 1],
+      aspect: [9, 16],
       quality: 0.8,
     });
 
@@ -42,13 +43,34 @@ export function PhotoStep({ imageUri, onImageSelected }: PhotoStepProps) {
 
   return (
     <View style={styles.container}>
-      <StepHeader
-        icon={Camera}
-        title="Ta photo de profil"
-        subtitle="Les autres joueurs pourront te reconnaitre"
-      />
+      <View style={styles.header}>
+        <Animated.Text
+          entering={FadeIn.delay(100).duration(400)}
+          style={styles.title}
+        >
+          {firstName ? `Montre-nous qui tu es, ${firstName}` : "Montre-nous qui tu es"}
+        </Animated.Text>
+        <Animated.Text
+          entering={FadeIn.delay(250).duration(400)}
+          style={styles.subtitle}
+        >
+          Tes futurs partenaires veulent savoir à quoi tu ressembles.
+        </Animated.Text>
+      </View>
 
-      <View style={styles.photoSection}>
+      <Animated.View
+        entering={() => {
+          'worklet';
+          return {
+            initialValues: { opacity: 0, transform: [{ scale: 0.96 }] },
+            animations: {
+              opacity: withDelay(300, withTiming(1, { duration: 350 })),
+              transform: [{ scale: withDelay(300, withTiming(1, { duration: 400 })) }],
+            },
+          };
+        }}
+        style={styles.photoSection}
+      >
         <Pressable onPress={handlePickImage} style={styles.avatarWrapper}>
           {imageUri ? (
             <Image
@@ -72,7 +94,7 @@ export function PhotoStep({ imageUri, onImageSelected }: PhotoStepProps) {
             ? "Appuie pour changer de photo"
             : "Appuie pour choisir une photo"}
         </Text>
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -80,25 +102,41 @@ export function PhotoStep({ imageUri, onImageSelected }: PhotoStepProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: "center",
+  },
+  header: {
+    paddingHorizontal: 20,
+    marginBottom: 28,
+  },
+  title: {
+    fontSize: 34,
+    fontWeight: "700",
+    color: colors.black,
+    letterSpacing: 0.37,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 17,
+    color: colors.gray500,
+    lineHeight: 22,
   },
   photoSection: {
     alignItems: "center",
-    paddingTop: 16,
     gap: 20,
   },
   avatarWrapper: {
     position: "relative",
   },
   avatarImage: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
+    width: 180,
+    height: 320,
+    borderRadius: 20,
     backgroundColor: `${colors.accentGreen}15`,
   },
   avatarPlaceholder: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
+    width: 180,
+    height: 320,
+    borderRadius: 20,
     backgroundColor: `${colors.accentGreen}15`,
     alignItems: "center",
     justifyContent: "center",
@@ -113,8 +151,8 @@ const styles = StyleSheet.create({
   },
   cameraBadge: {
     position: "absolute",
-    bottom: 6,
-    right: 6,
+    bottom: 12,
+    right: 12,
     width: 40,
     height: 40,
     borderRadius: 20,

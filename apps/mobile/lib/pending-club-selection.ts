@@ -13,3 +13,4 @@ export function consumePendingClubSelection(): ClubSelection {
   pending = null;
   return result;
 }
+

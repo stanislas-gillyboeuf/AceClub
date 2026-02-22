@@ -8,16 +8,20 @@ import {
   StyleSheet,
   Platform,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as WebBrowser from "expo-web-browser";
 import * as AppleAuthentication from "expo-apple-authentication";
+import { Ionicons } from "@expo/vector-icons";
 import { GoogleSignin } from "@/lib/google-signin";
 import { authClient } from "@/lib/auth-client";
-import { colors, radii, spacing, sizes } from "@/constants/theme";
+import { colors, radii } from "@/constants/theme";
 import GoogleLogo from "@/features/auth/components/google-logo";
 
 const __DEV__ = process.env.NODE_ENV !== "production";
 
 export default function SignIn() {
+  const insets = useSafeAreaInsets();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -98,9 +102,18 @@ export default function SignIn() {
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={[
+        "#B5502A",
+        "#B5502A",
+        "#6B2E18",
+        "#1C0C08",
+      ]}
+      locations={[0, 0.45, 0.75, 1]}
+      style={styles.container}
+    >
       {/* Spacer top */}
-      <View style={styles.spacer} />
+      <View style={[styles.spacer, { paddingTop: insets.top }]} />
 
       {/* Hero section */}
       <View style={styles.heroSection}>
@@ -112,44 +125,52 @@ export default function SignIn() {
           />
         </View>
 
-        <View style={styles.welcomeText}>
-          <Text style={styles.title}>Bienvenue sur AceClub</Text>
-          <Text style={styles.subtitle}>
-            Trouve des partenaires, organise tes matchs et rejoins ta
-            communaute.
-          </Text>
-        </View>
+        <Text style={styles.appName}>Ace Club</Text>
+        <Text style={styles.subtitle}>
+          Ton compagnon pour le tennis{"\n"}et le padel
+        </Text>
       </View>
 
       {/* Spacer middle */}
       <View style={styles.spacer} />
 
-      {/* Sign in buttons */}
-      <View style={styles.buttonsContainer}>
+      {/* Bottom section */}
+      <View style={styles.bottomSection}>
         {error && (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
 
-        {/* Apple Sign-In (iOS only) */}
-        {Platform.OS === "ios" && (
-          <AppleAuthentication.AppleAuthenticationButton
-            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-            cornerRadius={radii.sm}
-            style={styles.appleButton}
-            onPress={handleAppleSignIn}
-          />
-        )}
+        {/* Sign-in pills */}
+        <View style={styles.pillsRow}>
+          {Platform.OS === "ios" && (
+            <Pressable
+              onPress={handleAppleSignIn}
+              disabled={isLoading}
+              style={({ pressed }) => [
+                styles.pill,
+                pressed && styles.pillPressed,
+              ]}
+            >
+              <Ionicons name="logo-apple" size={20} color={colors.black} />
+              <Text style={styles.pillText}>Apple</Text>
+            </Pressable>
+          )}
 
-        {/* Google Sign-In */}
-        <Pressable onPress={handleGoogleSignIn} disabled={isLoading}>
-          <View style={styles.googleButton}>
+          <Pressable
+            onPress={handleGoogleSignIn}
+            disabled={isLoading}
+            style={({ pressed }) => [
+              styles.pill,
+              pressed && styles.pillPressed,
+              Platform.OS !== "ios" && styles.pillFull,
+            ]}
+          >
             <GoogleLogo size={18} />
-            <Text style={styles.googleButtonText}>Continuer avec Google</Text>
-          </View>
-        </Pressable>
+            <Text style={styles.pillText}>Google</Text>
+          </Pressable>
+        </View>
 
         {/* Dev-only: Email/Password */}
         {__DEV__ && (
@@ -162,7 +183,7 @@ export default function SignIn() {
             <TextInput
               style={styles.devInput}
               placeholder="Email"
-              placeholderTextColor={colors.gray400}
+              placeholderTextColor="rgba(255,255,255,0.5)"
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -171,7 +192,7 @@ export default function SignIn() {
             <TextInput
               style={styles.devInput}
               placeholder="Mot de passe"
-              placeholderTextColor={colors.gray400}
+              placeholderTextColor="rgba(255,255,255,0.5)"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -183,118 +204,113 @@ export default function SignIn() {
             </Pressable>
           </View>
         )}
-      </View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>En continuant, tu acceptes nos</Text>
-        <View style={styles.footerLinks}>
-          <Pressable
-            onPress={() =>
-              WebBrowser.openBrowserAsync("https://ace-club.app/terms")
-            }
-            hitSlop={12}
-          >
-            <Text style={styles.linkText}>Conditions d'utilisation</Text>
-          </Pressable>
-          <Text style={styles.footerText}> et </Text>
-          <Pressable
-            onPress={() =>
-              WebBrowser.openBrowserAsync("https://ace-club.app/privacy")
-            }
-            hitSlop={12}
-          >
-            <Text style={styles.linkText}>Politique de confidentialite</Text>
-          </Pressable>
+        {/* Footer */}
+        <View style={[styles.footer, { paddingBottom: insets.bottom + 8 }]}>
+          <Text style={styles.footerText}>En continuant, tu acceptes nos</Text>
+          <View style={styles.footerLinks}>
+            <Pressable
+              onPress={() =>
+                WebBrowser.openBrowserAsync("https://ace-club.app/terms")
+              }
+              hitSlop={12}
+            >
+              <Text style={styles.linkText}>CGU</Text>
+            </Pressable>
+            <Text style={styles.footerText}> et </Text>
+            <Pressable
+              onPress={() =>
+                WebBrowser.openBrowserAsync("https://ace-club.app/privacy")
+              }
+              hitSlop={12}
+            >
+              <Text style={styles.linkText}>Politique de confidentialité</Text>
+            </Pressable>
+          </View>
         </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
   },
   spacer: {
     flex: 1,
   },
   heroSection: {
     alignItems: "center",
-    gap: 24,
-  },
-  logoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 22,
-    overflow: "hidden",
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  logo: {
-    width: 100,
-    height: 100,
-  },
-  welcomeText: {
-    alignItems: "center",
     gap: 8,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: colors.black,
+  logoContainer: {
+    width: 110,
+    height: 110,
+    borderRadius: 24,
+    overflow: "hidden",
+    marginBottom: 16,
+  },
+  logo: {
+    width: 110,
+    height: 110,
+  },
+  appName: {
+    fontSize: 38,
+    fontWeight: "800",
+    color: colors.white,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
-    color: colors.gray500,
+    fontSize: 17,
+    color: "rgba(255,255,255,0.8)",
     textAlign: "center",
+    lineHeight: 24,
+  },
+  bottomSection: {
     paddingHorizontal: 24,
   },
-  buttonsContainer: {
-    paddingHorizontal: spacing.horizontal,
-    gap: 12,
-  },
   errorContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.red50,
+    backgroundColor: "rgba(255,255,255,0.15)",
     borderRadius: radii.sm,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   errorText: {
-    color: colors.red500,
-    fontSize: 12,
+    color: colors.white,
+    fontSize: 13,
+    textAlign: "center",
   },
-  appleButton: {
-    width: "100%",
-    height: sizes.buttonHeight,
+  pillsRow: {
+    flexDirection: "row",
+    gap: 12,
   },
-  googleButton: {
+  pill: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    height: sizes.buttonHeight,
-    borderRadius: radii.sm,
-    borderWidth: 1,
-    borderColor: colors.gray200,
+    height: 52,
     backgroundColor: colors.white,
-    gap: 12,
+    borderRadius: 26,
+    gap: 10,
   },
-  googleButtonText: {
+  pillPressed: {
+    opacity: 0.85,
+  },
+  pillFull: {
+    flex: 1,
+  },
+  pillText: {
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: "600",
     color: colors.black,
   },
   // Dev section
   devSection: {
     gap: 10,
-    marginTop: 4,
+    marginTop: 16,
   },
   devDivider: {
     flexDirection: "row",
@@ -304,27 +320,27 @@ const styles = StyleSheet.create({
   devDividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.gray200,
+    backgroundColor: "rgba(255,255,255,0.3)",
   },
   devDividerText: {
     fontSize: 11,
     fontWeight: "600",
-    color: colors.accentOrange,
+    color: "rgba(255,255,255,0.6)",
   },
   devInput: {
     height: 44,
     borderRadius: radii.sm,
     borderWidth: 1,
-    borderColor: colors.gray200,
+    borderColor: "rgba(255,255,255,0.3)",
     paddingHorizontal: 14,
     fontSize: 15,
-    color: colors.black,
-    backgroundColor: colors.gray50,
+    color: colors.white,
+    backgroundColor: "rgba(255,255,255,0.1)",
   },
   devButton: {
     height: 44,
     borderRadius: radii.sm,
-    backgroundColor: colors.accentOrange,
+    backgroundColor: "rgba(255,255,255,0.2)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -336,12 +352,11 @@ const styles = StyleSheet.create({
   // Footer
   footer: {
     alignItems: "center",
-    paddingTop: 24,
-    paddingBottom: 16,
+    paddingTop: 20,
   },
   footerText: {
     fontSize: 12,
-    color: colors.gray400,
+    color: "rgba(255,255,255,0.5)",
   },
   footerLinks: {
     flexDirection: "row",
@@ -350,6 +365,7 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: 12,
-    color: colors.accentGreen,
+    color: "rgba(255,255,255,0.7)",
+    textDecorationLine: "underline",
   },
 });
