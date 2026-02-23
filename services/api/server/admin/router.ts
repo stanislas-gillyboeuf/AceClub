@@ -7,6 +7,7 @@ import {
   listUserSessions,
   userStats,
   listOrganizations,
+  getOrganization,
   listOrganizationMembers,
   listOrganizationInvitations,
   listFeatureFlags,
@@ -81,6 +82,8 @@ adminRouter.get(
   zValidator("query", listOrganizationsValidator),
   listOrganizations,
 );
+
+adminRouter.get("/get-organization/:organizationId", getOrganization);
 
 adminRouter.get(
   "/list-organization-members",
