@@ -35,6 +35,7 @@ import {
   setFeatureFlagOverrideValidator,
   updateMatchAdminValidator,
   processDeletionRequestValidator,
+  bulkCreateOrganizationsValidator,
 } from "./validators";
 import {
   banUser,
@@ -56,6 +57,7 @@ import {
   removeFeatureFlagOverride,
   updateMatchAdmin,
   processDeletionRequest,
+  bulkCreateOrganizations,
 } from "./mutations";
 
 export const adminRouter = new Hono<HonoContext>();
@@ -181,4 +183,11 @@ adminRouter.post(
   "/process-deletion-request",
   zValidator("json", processDeletionRequestValidator),
   processDeletionRequest,
+);
+
+// Bulk organization import
+adminRouter.post(
+  "/bulk-create-organizations",
+  zValidator("json", bulkCreateOrganizationsValidator),
+  bulkCreateOrganizations,
 );

@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { Plus } from "lucide-react"
+import { Plus, Upload } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/custom/data-table"
 import { organizationsColumns } from "@/components/custom/organizations-columns"
 import { CreateOrganizationDialog } from "@/components/custom/organization-actions"
+import { BulkImportOrganizationsDialog } from "@/components/custom/bulk-import-organizations-dialog"
 import { useAdminOrganizations } from "@/hooks/use-admin-queries"
 import type { Organization } from "@/types/admin"
 
@@ -19,6 +20,7 @@ export default function OrganizationsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [pageIndex, setPageIndex] = useState(0)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [bulkImportOpen, setBulkImportOpen] = useState(false)
 
   useEffect(() => {
     const timeout = setTimeout(() => setDebouncedSearch(search), 300)
@@ -62,6 +64,10 @@ export default function OrganizationsPage() {
           <Plus className="mr-2 h-4 w-4" />
           Nouvelle organisation
         </Button>
+        <Button variant="outline" onClick={() => setBulkImportOpen(true)}>
+          <Upload className="mr-2 h-4 w-4" />
+          Import FFT
+        </Button>
       </div>
 
       <DataTable
@@ -80,6 +86,11 @@ export default function OrganizationsPage() {
       <CreateOrganizationDialog
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
+      />
+
+      <BulkImportOrganizationsDialog
+        open={bulkImportOpen}
+        onOpenChange={setBulkImportOpen}
       />
     </div>
   )
