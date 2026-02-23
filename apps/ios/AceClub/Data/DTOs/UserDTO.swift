@@ -31,6 +31,8 @@ struct UserDTO: Codable {
     let banExpires: String?
     let onboardingCompleted: Bool?
     let phoneNumber: String?
+    let birthdate: String?
+    let gender: String?
 }
 
 struct ListUsersResponseDTO: Codable {
@@ -88,6 +90,8 @@ struct CompleteOnboardingRequestDTO: Codable {
     let phoneNumber: String
     let imageUrl: String?
     let pin: String?
+    let birthdate: String
+    let gender: String
 }
 
 // MARK: - User Preferences DTOs

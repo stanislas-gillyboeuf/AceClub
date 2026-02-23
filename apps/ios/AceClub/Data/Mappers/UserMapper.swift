@@ -23,7 +23,9 @@ class UserMapper {
             banExpires: userDTO.banExpires,
             onboardingCompleted: userDTO.onboardingCompleted,
             phoneNumber: userDTO.phoneNumber,
-            isGhost: nil
+            isGhost: nil,
+            birthdate: userDTO.birthdate,
+            gender: userDTO.gender
         )
     }
 
@@ -51,7 +53,9 @@ class UserMapper {
             banExpires: nil,
             onboardingCompleted: nil,
             phoneNumber: nil,
-            isGhost: userSearchItemDTO.isGhost
+            isGhost: userSearchItemDTO.isGhost,
+            birthdate: nil,
+            gender: nil
         )
     }
 
@@ -70,7 +74,9 @@ class UserMapper {
             banExpires: nil,
             onboardingCompleted: nil,
             phoneNumber: nil,
-            isGhost: ghostUserDTO.isGhost
+            isGhost: ghostUserDTO.isGhost,
+            birthdate: nil,
+            gender: nil
         )
     }
 

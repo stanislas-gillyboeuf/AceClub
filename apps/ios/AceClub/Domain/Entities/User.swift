@@ -1,5 +1,29 @@
 import Foundation
 
+enum Gender: String, CaseIterable, Identifiable {
+    case male
+    case female
+    case other
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .male: return "Homme"
+        case .female: return "Femme"
+        case .other: return "Autre"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .male: return "figure.stand"
+        case .female: return "figure.stand.dress"
+        case .other: return "figure.wave"
+        }
+    }
+}
+
 struct User: Identifiable {
     let id: String
     let name: String
@@ -15,6 +39,8 @@ struct User: Identifiable {
     let onboardingCompleted: Bool?
     let phoneNumber: String?
     let isGhost: Bool?
+    let birthdate: String?
+    let gender: String?
 
     // MARK: - Derived safe accessors
     /// URL construite à partir de `image` si valide, sinon `nil`.

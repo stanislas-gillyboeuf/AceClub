@@ -36,6 +36,12 @@ struct OnboardingView: View {
                 OnboardingLevelStepView(viewModel: viewModel)
                     .tag(OnboardingViewModel.OnboardingStep.skillLevelSelection)
 
+                OnboardingBirthdateStepView(viewModel: viewModel)
+                    .tag(OnboardingViewModel.OnboardingStep.birthdate)
+
+                OnboardingGenderStepView(viewModel: viewModel)
+                    .tag(OnboardingViewModel.OnboardingStep.gender)
+
                 OnboardingPhotoStepView(viewModel: viewModel)
                     .tag(OnboardingViewModel.OnboardingStep.profilePhoto)
 

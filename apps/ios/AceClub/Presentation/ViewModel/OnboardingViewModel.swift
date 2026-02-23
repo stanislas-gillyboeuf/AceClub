@@ -9,8 +9,10 @@ final class OnboardingViewModel: ObservableObject {
         case clubSelection = 1
         case sportSelection = 2
         case skillLevelSelection = 3
-        case profilePhoto = 4
-        case phoneNumber = 5
+        case birthdate = 4
+        case gender = 5
+        case profilePhoto = 6
+        case phoneNumber = 7
     }
 
     // MARK: - State
@@ -19,6 +21,9 @@ final class OnboardingViewModel: ObservableObject {
     @Published var selectedOrganization: Organization?
     @Published var selectedSport: Sport?
     @Published var selectedSkillLevel: SkillLevel?
+    @Published var selectedBirthdate: Date = Calendar.current.date(byAdding: .year, value: -18, to: Date()) ?? Date()
+    @Published var hasBirthdateBeenSet: Bool = false
+    @Published var selectedGender: Gender?
     @Published var selectedProfileImage: UIImage?
     @Published var isUploadingProfileImage: Bool = false
     @Published var uploadedProfileImageURL: String?
@@ -73,6 +78,10 @@ final class OnboardingViewModel: ObservableObject {
             return selectedSport != nil
         case .skillLevelSelection:
             return selectedSkillLevel != nil
+        case .birthdate:
+            return hasBirthdateBeenSet
+        case .gender:
+            return selectedGender != nil
         case .profilePhoto:
             return selectedProfileImage != nil
         case .phoneNumber:
@@ -208,6 +217,13 @@ final class OnboardingViewModel: ObservableObject {
         clubRequestMessage = nil
     }
 
+    // MARK: - Helpers
+    private var birthdateString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: selectedBirthdate)
+    }
+
     // MARK: - Submit
     func submit() async throws -> User {
         guard let selectedOrganization else {
@@ -219,11 +235,17 @@ final class OnboardingViewModel: ObservableObject {
         guard let selectedSkillLevel else {
             throw NSError(domain: "Onboarding", code: 3, userInfo: [NSLocalizedDescriptionKey: "Veuillez sélectionner un niveau."])
         }
+        guard hasBirthdateBeenSet else {
+            throw NSError(domain: "Onboarding", code: 4, userInfo: [NSLocalizedDescriptionKey: "Veuillez renseigner votre date de naissance."])
+        }
+        guard let selectedGender else {
+            throw NSError(domain: "Onboarding", code: 5, userInfo: [NSLocalizedDescriptionKey: "Veuillez sélectionner votre genre."])
+        }
         guard selectedProfileImage != nil else {
-            throw NSError(domain: "Onboarding", code: 4, userInfo: [NSLocalizedDescriptionKey: "Veuillez ajouter une photo de profil."])
+            throw NSError(domain: "Onboarding", code: 6, userInfo: [NSLocalizedDescriptionKey: "Veuillez ajouter une photo de profil."])
         }
         guard isPhoneNumberValid(phoneNumber) else {
-            throw NSError(domain: "Onboarding", code: 5, userInfo: [NSLocalizedDescriptionKey: "Veuillez renseigner un numéro de téléphone valide."])
+            throw NSError(domain: "Onboarding", code: 7, userInfo: [NSLocalizedDescriptionKey: "Veuillez renseigner un numéro de téléphone valide."])
         }
 
         isSubmitting = true
@@ -243,7 +265,9 @@ final class OnboardingViewModel: ObservableObject {
             skillLevel: selectedSkillLevel.value,
             phoneNumber: phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines),
             imageUrl: uploadedProfileImageURL,
-            pin: selectedOrganization.pinEnabled ? pin : nil
+            pin: selectedOrganization.pinEnabled ? pin : nil,
+            birthdate: birthdateString,
+            gender: selectedGender.rawValue
         )
         return updatedUser
     }

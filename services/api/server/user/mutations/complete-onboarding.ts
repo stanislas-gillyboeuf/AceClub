@@ -84,6 +84,8 @@ export const completeOnboarding = async (c: Context<HonoContext>) => {
     const userUpdate: Record<string, unknown> = {
       onboarding_completed: true,
       name: validated.name,
+      birthdate: validated.birthdate,
+      gender: validated.gender,
     };
     if (validated.imageUrl) {
       userUpdate.image = validated.imageUrl;
@@ -114,5 +116,7 @@ export const completeOnboarding = async (c: Context<HonoContext>) => {
     banExpires: updatedUserRow.banExpires,
     onboardingCompleted: updatedUserRow.onboarding_completed,
     phoneNumber: updatedUserRow.phoneNumber,
+    birthdate: updatedUserRow.birthdate,
+    gender: updatedUserRow.gender,
   });
 };

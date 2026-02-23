@@ -7,6 +7,7 @@ import {
   index,
   uniqueIndex,
   doublePrecision,
+  date,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -28,6 +29,8 @@ export const user = pgTable("user", {
   phoneNumberVerified: boolean("phone_number_verified"),
   onboarding_completed: boolean("onboarding_completed").default(false),
   is_ghost: boolean("is_ghost").default(false),
+  birthdate: date("birthdate"),
+  gender: text("gender"),
 });
 
 export const session = pgTable(

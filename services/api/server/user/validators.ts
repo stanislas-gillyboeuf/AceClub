@@ -46,6 +46,8 @@ export const completeOnboardingValidator = z
     name: z.string().min(2, "Name must be at least 2 characters"),
     imageUrl: z.string().url("Image must be a valid URL").optional(),
     pin: z.string().length(4).optional(),
+    birthdate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Birthdate must be in YYYY-MM-DD format"),
+    gender: z.enum(["male", "female", "other"]),
   })
   .refine(
     (data) => {
@@ -71,6 +73,8 @@ export const updateProfileValidator = z
     sport: z.enum(["tennis", "padel"]).optional(),
     skillLevel: z.string().min(1, "Skill level must not be empty").optional(),
     pin: z.string().length(4).optional(),
+    birthdate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Birthdate must be in YYYY-MM-DD format").optional(),
+    gender: z.enum(["male", "female", "other"]).optional(),
   })
   .refine(
     (data) => {
@@ -81,7 +85,9 @@ export const updateProfileValidator = z
         data.phoneNumber !== undefined ||
         data.organizationId !== undefined ||
         data.sport !== undefined ||
-        data.skillLevel !== undefined
+        data.skillLevel !== undefined ||
+        data.birthdate !== undefined ||
+        data.gender !== undefined
       );
     },
     { message: "At least one field must be provided" },
