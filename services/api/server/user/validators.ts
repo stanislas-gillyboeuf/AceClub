@@ -44,6 +44,8 @@ export const completeOnboardingValidator = z
     sport: z.enum(["tennis", "padel"]),
     skillLevel: z.string().min(1, "Skill level is required"),
     name: z.string().min(2, "Name must be at least 2 characters"),
+    gender: z.enum(["male", "female", "other"]),
+    dateOfBirth: z.string().min(1, "Date of birth is required"),
     imageUrl: z.string().url("Image must be a valid URL").optional(),
     pin: z.string().length(4).optional(),
   })
@@ -70,6 +72,8 @@ export const updateProfileValidator = z
     organizationId: z.string().min(1, "Organization ID must not be empty").optional(),
     sport: z.enum(["tennis", "padel"]).optional(),
     skillLevel: z.string().min(1, "Skill level must not be empty").optional(),
+    gender: z.enum(["male", "female", "other"]).optional(),
+    dateOfBirth: z.string().min(1, "Date of birth must not be empty").optional(),
     pin: z.string().length(4).optional(),
   })
   .refine(
@@ -81,7 +85,9 @@ export const updateProfileValidator = z
         data.phoneNumber !== undefined ||
         data.organizationId !== undefined ||
         data.sport !== undefined ||
-        data.skillLevel !== undefined
+        data.skillLevel !== undefined ||
+        data.gender !== undefined ||
+        data.dateOfBirth !== undefined
       );
     },
     { message: "At least one field must be provided" },

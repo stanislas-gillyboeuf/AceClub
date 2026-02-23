@@ -13,6 +13,8 @@ import type { Organization } from "@/types/organization";
 import type { Sport } from "@/types/common";
 
 import { NameStep } from "@/features/onboarding/components/name-step";
+import { GenderStep } from "@/features/onboarding/components/gender-step";
+import { BirthdateStep } from "@/features/onboarding/components/birthdate-step";
 import { ClubStep } from "@/features/onboarding/components/club-step";
 import { SportStep } from "@/features/onboarding/components/sport-step";
 import { LevelStep } from "@/features/onboarding/components/level-step";
@@ -22,7 +24,16 @@ import { LocationStep } from "@/features/onboarding/components/location-step";
 import { ProgressBar } from "@/features/onboarding/components/progress-bar";
 import { NavButtons } from "@/features/onboarding/components/nav-buttons";
 
-const TOTAL_STEPS = 7; // 0=name, 1=club, 2=sport, 3=level, 4=photo, 5=notifications, 6=location
+type Gender = "male" | "female" | "other";
+
+const TOTAL_STEPS = 9; // 0=name, 1=gender, 2=birthdate, 3=club, 4=sport, 5=level, 6=photo, 7=notifications, 8=location
+
+// Default date: 20 years ago
+const defaultBirthdate = new Date(
+  new Date().getFullYear() - 20,
+  new Date().getMonth(),
+  new Date().getDate()
+);
 
 export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -30,6 +41,8 @@ export default function Onboarding() {
   // Data
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
+  const [dateOfBirth, setDateOfBirth] = useState<Date>(defaultBirthdate);
   const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
   const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
   const [selectedSkillLevel, setSelectedSkillLevel] = useState<string | null>(null);
@@ -60,7 +73,7 @@ export default function Onboarding() {
     switch (currentStep) {
       case 0:
         return "C'est parti";
-      case 1:
+      case 3:
         return "Valider mon club";
       default:
         return "Continuer";
@@ -72,21 +85,25 @@ export default function Onboarding() {
       case 0:
         return firstName.trim().length >= 2;
       case 1:
-        return !!selectedOrganization && (!selectedOrganization.pinEnabled || isPinVerified);
+        return !!selectedGender;
       case 2:
-        return !!selectedSport;
+        return true; // dateOfBirth always has a default value
       case 3:
-        return !!selectedSkillLevel;
+        return !!selectedOrganization && (!selectedOrganization.pinEnabled || isPinVerified);
       case 4:
-        return true; // photo is optional
+        return !!selectedSport;
       case 5:
-        return true; // notifications always skippable
+        return !!selectedSkillLevel;
       case 6:
+        return true; // photo is optional
+      case 7:
+        return true; // notifications always skippable
+      case 8:
         return true; // location always skippable
       default:
         return false;
     }
-  }, [currentStep, firstName, selectedOrganization, isPinVerified, selectedSport, selectedSkillLevel]);
+  }, [currentStep, firstName, selectedGender, selectedOrganization, isPinVerified, selectedSport, selectedSkillLevel]);
 
   const goNext = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -105,7 +122,7 @@ export default function Onboarding() {
   }, [currentStep]);
 
   const handleSubmit = async () => {
-    if (!selectedOrganization || !selectedSport || !selectedSkillLevel) return;
+    if (!selectedOrganization || !selectedSport || !selectedSkillLevel || !selectedGender) return;
 
     setIsSubmitting(true);
     try {
@@ -125,6 +142,8 @@ export default function Onboarding() {
         organizationId: selectedOrganization.id,
         sport: selectedSport,
         skillLevel: selectedSkillLevel,
+        gender: selectedGender,
+        dateOfBirth: dateOfBirth.toISOString().split("T")[0],
         ...(imageUrl && { imageUrl }),
         ...(verifiedPin && { pin: verifiedPin }),
       };
@@ -160,6 +179,21 @@ export default function Onboarding() {
         );
       case 1:
         return (
+          <GenderStep
+            selectedGender={selectedGender}
+            onSelect={setSelectedGender}
+            firstName={firstName}
+          />
+        );
+      case 2:
+        return (
+          <BirthdateStep
+            dateOfBirth={dateOfBirth}
+            onDateChange={setDateOfBirth}
+          />
+        );
+      case 3:
+        return (
           <ClubStep
             firstName={firstName}
             selectedOrganization={selectedOrganization}
@@ -170,7 +204,7 @@ export default function Onboarding() {
             }}
           />
         );
-      case 2:
+      case 4:
         return (
           <SportStep
             selectedSport={selectedSport}
@@ -179,7 +213,7 @@ export default function Onboarding() {
             clubName={selectedOrganization?.name ?? null}
           />
         );
-      case 3:
+      case 5:
         return selectedSport ? (
           <LevelStep
             sport={selectedSport}
@@ -187,7 +221,7 @@ export default function Onboarding() {
             onSelect={setSelectedSkillLevel}
           />
         ) : null;
-      case 4:
+      case 6:
         return (
           <PhotoStep
             imageUri={profileImageUri}
@@ -195,9 +229,9 @@ export default function Onboarding() {
             firstName={firstName}
           />
         );
-      case 5:
+      case 7:
         return <NotificationStep onComplete={goNext} />;
-      case 6:
+      case 8:
         return <LocationStep onComplete={goNext} />;
       default:
         return null;
@@ -239,7 +273,7 @@ export default function Onboarding() {
             </Animated.View>
           </View>
 
-          {currentStep <= 4 && (
+          {currentStep <= 6 && (
             <NavButtons
               canGoBack={currentStep > 0}
               canGoNext={canGoNext()}

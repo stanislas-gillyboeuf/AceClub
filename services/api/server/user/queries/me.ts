@@ -28,6 +28,8 @@ export const me = async (c: Context<HonoContext>) => {
     banExpires: user.banExpires,
     onboardingCompleted: user.onboarding_completed,
     phoneNumber: user.phoneNumber,
+    gender: user.gender,
+    dateOfBirth: user.date_of_birth,
   };
 
   await cacheSet(cacheKey, response, CacheTTL.SHORT);
