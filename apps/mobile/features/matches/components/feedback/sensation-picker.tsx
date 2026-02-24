@@ -30,19 +30,19 @@ export function SensationPicker({ selected, onSelect }: SensationPickerProps) {
               tintColor={isSelected ? colors.accentGreen : undefined}
             >
               <Text style={styles.emoji}>{sensation.emoji}</Text>
-              <Text
-                style={[
-                  styles.label,
-                  {
-                    color: isSelected
-                      ? colors.accentGreen
-                      : semanticColors.labelSecondary[scheme],
-                  },
-                ]}
-              >
-                {sensation.label}
-              </Text>
             </GlassView>
+            <Text
+              style={[
+                styles.label,
+                {
+                  color: isSelected
+                    ? colors.accentGreen
+                    : semanticColors.labelSecondary[scheme],
+                },
+              ]}
+            >
+              {sensation.label}
+            </Text>
           </Pressable>
         );
       })}
@@ -57,21 +57,24 @@ const styles = StyleSheet.create({
   },
   wrapper: {
     flex: 1,
+    alignItems: "center",
   },
   pressed: {
     transform: [{ scale: 0.95 }],
   },
   button: {
     alignItems: "center",
-    gap: 6,
+    justifyContent: "center",
     paddingVertical: 12,
     borderRadius: 12,
+    alignSelf: "stretch",
   },
   emoji: {
     fontSize: 32,
   },
   label: {
     fontSize: 11,
-    fontWeight: "500",
+    fontWeight: "600",
+    marginTop: 6,
   },
 });
