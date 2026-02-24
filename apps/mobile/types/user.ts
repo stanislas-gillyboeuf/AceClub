@@ -11,6 +11,8 @@ export interface User {
   banReason?: string | null;
   banExpires?: string | null;
   onboardingCompleted?: boolean;
+  gender?: "male" | "female" | "other" | null;
+  dateOfBirth?: string | null;
 }
 
 export interface UserSearchItem {
@@ -50,6 +52,8 @@ export interface CompleteOnboardingRequest {
   organizationId: string;
   sport: string;
   skillLevel: string;
+  gender: "male" | "female" | "other";
+  dateOfBirth: string;
   imageUrl?: string | null;
   pin?: string | null;
 }
@@ -60,6 +64,8 @@ export interface UpdateProfileRequest {
   organizationId?: string | null;
   sport?: string | null;
   skillLevel?: string | null;
+  gender?: "male" | "female" | "other" | null;
+  dateOfBirth?: string | null;
   pin?: string | null;
 }
 

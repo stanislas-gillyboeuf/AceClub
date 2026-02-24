@@ -28,6 +28,8 @@ export const user = pgTable("user", {
   phoneNumberVerified: boolean("phone_number_verified"),
   onboarding_completed: boolean("onboarding_completed").default(false),
   is_ghost: boolean("is_ghost").default(false),
+  gender: text("gender"),
+  date_of_birth: text("date_of_birth"),
 });
 
 export const session = pgTable(
