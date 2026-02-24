@@ -9,8 +9,8 @@ interface BirthdateStepProps {
 }
 
 const now = new Date();
-const MIN_AGE = 13;
-const MAX_AGE = 100;
+export const MIN_AGE = 13;
+export const MAX_AGE = 100;
 const maxDate = new Date(now.getFullYear() - MIN_AGE, now.getMonth(), now.getDate());
 const minDate = new Date(now.getFullYear() - MAX_AGE, now.getMonth(), now.getDate());
 
@@ -28,7 +28,7 @@ export function BirthdateStep({ dateOfBirth, onDateChange }: BirthdateStepProps)
           entering={FadeIn.delay(250).duration(400)}
           style={styles.subtitle}
         >
-          Tu dois avoir au moins {MIN_AGE} ans pour utiliser AceClub.
+          {`Tu dois avoir au moins ${MIN_AGE} ans pour utiliser AceClub.`}
         </Animated.Text>
       </View>
 
