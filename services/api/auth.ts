@@ -83,6 +83,18 @@ export const auth = betterAuth({
         defaultValue: false,
         input: true,
       },
+      gender: {
+        type: "string",
+        fieldName: "gender",
+        input: true,
+        required: false,
+      },
+      dateOfBirth: {
+        type: "string",
+        fieldName: "date_of_birth",
+        input: true,
+        required: false,
+      },
     },
     deleteUser: {
       enabled: true,

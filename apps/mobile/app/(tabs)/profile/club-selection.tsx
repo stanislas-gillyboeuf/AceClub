@@ -12,7 +12,7 @@ import {
 import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 import { Image } from "expo-image";
 import { GlassView } from "@/components/ui/glass-view";
-import { Search, X, Building2, Lock, ChevronRight } from "lucide-react-native";
+import { Search, X, Lock, ChevronRight } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useSearchOrganizations, useVerifyPin, useRequestClub } from "@/hooks/use-organization";
 import { colors, semanticColors, radii, spacing } from "@/constants/theme";
@@ -123,7 +123,7 @@ export default function ClubSelection() {
             <Image source={{ uri: item.logo }} style={styles.orgLogo} contentFit="cover" />
           ) : (
             <View style={styles.orgLogoPlaceholder}>
-              <Building2 size={18} color={colors.accentGreen} strokeWidth={1.5} />
+              <Text style={styles.orgLogoLetter}>{item.name.charAt(0).toUpperCase()}</Text>
             </View>
           )}
           <View style={styles.orgInfo}>
@@ -333,10 +333,15 @@ const styles = StyleSheet.create({
   orgLogoPlaceholder: {
     width: 40,
     height: 40,
-    borderRadius: 8,
-    backgroundColor: `${colors.accentGreen}1A`,
+    borderRadius: 20,
+    backgroundColor: `${colors.accentGreen}15`,
     alignItems: "center",
     justifyContent: "center",
+  },
+  orgLogoLetter: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.accentGreen,
   },
   orgInfo: {
     flex: 1,

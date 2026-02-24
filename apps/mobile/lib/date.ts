@@ -11,6 +11,10 @@ export function formatDayKey(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+export function formatDateForAPI(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
 export function formatLongDate(date: Date, locale = "fr-FR"): string {
   const formatter = new Intl.DateTimeFormat(locale, {
     weekday: "long",

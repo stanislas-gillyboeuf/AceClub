@@ -107,6 +107,7 @@ export function useCreateOrganization() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-organizations"] })
+      queryClient.invalidateQueries({ queryKey: ["admin-organization"] })
     },
   })
 }
@@ -131,6 +132,7 @@ export function useUpdateOrganization() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-organizations"] })
+      queryClient.invalidateQueries({ queryKey: ["admin-organization"] })
     },
   })
 }
@@ -146,6 +148,7 @@ export function useDeleteOrganization() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-organizations"] })
+      queryClient.invalidateQueries({ queryKey: ["admin-organization"] })
     },
   })
 }
@@ -199,6 +202,7 @@ export function useToggleOrganizationPin() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-organizations"] })
+      queryClient.invalidateQueries({ queryKey: ["admin-organization"] })
     },
   })
 }
@@ -214,6 +218,7 @@ export function useRegenerateOrganizationPin() {
       }) as Promise<{ pin: string; pinEnabled: boolean }>,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-organizations"] })
+      queryClient.invalidateQueries({ queryKey: ["admin-organization"] })
     },
   })
 }

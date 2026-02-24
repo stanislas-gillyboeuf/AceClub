@@ -24,6 +24,9 @@ export const colors = {
   // Feedback
   red50: "#fef2f2",
   red500: "#ef4444",
+
+  // Surfaces
+  warmBackground: "#FEF7ED",
 } as const;
 
 export const spacing = {

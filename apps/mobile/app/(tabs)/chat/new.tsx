@@ -42,7 +42,7 @@ export default function NewConversationScreen() {
   const members = useMemo(() => {
     if (!membersData?.members) return [];
     return membersData.members.filter(
-      (m) => m.userId !== currentUserId && m.user != null,
+      (m) => m.userId !== currentUserId && m.user != null && m.role !== "owner",
     );
   }, [membersData, currentUserId]);
 

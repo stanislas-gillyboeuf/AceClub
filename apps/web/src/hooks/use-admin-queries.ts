@@ -3,6 +3,7 @@ import { apiClient } from "@/lib/api-client"
 import type {
   ListUsersParams,
   ListUsersResponse,
+  Organization,
   ListOrganizationsParams,
   ListOrganizationsResponse,
   ListOrganizationMembersParams,
@@ -43,6 +44,17 @@ export function useUserStats(userId: string | undefined) {
     queryKey: ["admin-user-stats", userId],
     queryFn: () => apiClient<UserStats>(`/admin/user-stats/${userId}`),
     enabled: !!userId,
+  })
+}
+
+export function useAdminOrganization(organizationId: string) {
+  return useQuery({
+    queryKey: ["admin-organization", organizationId],
+    queryFn: () =>
+      apiClient<{ organization: Organization }>(
+        `/admin/get-organization/${organizationId}`,
+      ),
+    enabled: !!organizationId,
   })
 }
 

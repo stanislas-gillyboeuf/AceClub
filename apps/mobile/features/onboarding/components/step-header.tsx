@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import { colors } from "@/constants/theme";
 import type { LucideIcon } from "lucide-react-native";
-import Animated, { FadeIn, ZoomIn } from "react-native-reanimated";
+import Animated, { FadeIn, withTiming, withDelay } from "react-native-reanimated";
 
 interface StepHeaderProps {
   icon: LucideIcon;
@@ -12,7 +12,19 @@ interface StepHeaderProps {
 export function StepHeader({ icon: Icon, title, subtitle }: StepHeaderProps) {
   return (
     <View style={styles.container}>
-      <Animated.View entering={ZoomIn.duration(400)} style={styles.iconBox}>
+      <Animated.View
+        entering={() => {
+          'worklet';
+          return {
+            initialValues: { opacity: 0, transform: [{ scale: 0.85 }] },
+            animations: {
+              opacity: withTiming(1, { duration: 350 }),
+              transform: [{ scale: withTiming(1, { duration: 400 }) }],
+            },
+          };
+        }}
+        style={styles.iconBox}
+      >
         <Icon size={36} color={colors.accentGreen} />
       </Animated.View>
       <Animated.Text entering={FadeIn.delay(200).duration(400)} style={styles.title}>

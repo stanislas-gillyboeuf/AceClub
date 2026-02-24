@@ -1,19 +1,19 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { colors, radii } from "@/constants/theme";
-import { CircleDot, Check } from "lucide-react-native";
-import { StepHeader } from "./step-header";
+import { colors } from "@/constants/theme";
+import { Check } from "lucide-react-native";
+import { GlassView } from "@/components/ui/glass-view";
 import type { Sport } from "@/types/common";
-import Animated, { FadeInDown, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import Animated, { FadeIn, useAnimatedStyle, withTiming, withDelay } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-
-const SPORT_BLUE = "#3B82F6";
 
 interface SportStepProps {
   selectedSport: Sport | null;
   onSelect: (sport: Sport) => void;
+  firstName: string;
+  clubName: string | null;
 }
 
-export function SportStep({ selectedSport, onSelect }: SportStepProps) {
+export function SportStep({ selectedSport, onSelect, firstName, clubName }: SportStepProps) {
   const handleSelect = (sport: Sport) => {
     Haptics.selectionAsync();
     onSelect(sport);
@@ -21,11 +21,22 @@ export function SportStep({ selectedSport, onSelect }: SportStepProps) {
 
   return (
     <View style={styles.container}>
-      <StepHeader
-        icon={CircleDot}
-        title="Choisis ton sport"
-        subtitle="Tu pourras toujours changer plus tard"
-      />
+      <View style={styles.header}>
+        <Animated.Text
+          entering={FadeIn.delay(100).duration(400)}
+          style={styles.title}
+        >
+          {firstName ? `${firstName}, quel sport pratiques-tu ?` : "Quel sport pratiques-tu ?"}
+        </Animated.Text>
+        <Animated.Text
+          entering={FadeIn.delay(250).duration(400)}
+          style={styles.subtitle}
+        >
+          {clubName
+            ? `On a hâte de te voir sur les terrains de ${clubName}.`
+            : "Tu pourras toujours changer plus tard."}
+        </Animated.Text>
+      </View>
 
       <View style={styles.cards}>
         <SportCard
@@ -33,20 +44,18 @@ export function SportStep({ selectedSport, onSelect }: SportStepProps) {
           label="Tennis"
           subtitle="Balle jaune"
           emoji="🎾"
-          color={colors.accentOrange}
           isSelected={selectedSport === "tennis"}
           onPress={() => handleSelect("tennis")}
-          delay={200}
+          delay={300}
         />
         <SportCard
           sport="padel"
           label="Padel"
           subtitle="Entre 4 murs"
-          emoji="🏸"
-          color={SPORT_BLUE}
+          emoji="🏓"
           isSelected={selectedSport === "padel"}
           onPress={() => handleSelect("padel")}
-          delay={350}
+          delay={450}
         />
       </View>
     </View>
@@ -57,7 +66,6 @@ function SportCard({
   label,
   subtitle,
   emoji,
-  color,
   isSelected,
   onPress,
   delay,
@@ -66,36 +74,48 @@ function SportCard({
   label: string;
   subtitle: string;
   emoji: string;
-  color: string;
   isSelected: boolean;
   onPress: () => void;
   delay: number;
 }) {
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withSpring(isSelected ? 1.02 : 1) }],
+    transform: [{ scale: withTiming(isSelected ? 1.02 : 1, { duration: 200 }) }],
   }));
 
   return (
-    <Animated.View entering={FadeInDown.delay(delay).duration(400)} style={[{ flex: 1 }, animatedStyle]}>
+    <Animated.View
+      entering={() => {
+        'worklet';
+        return {
+          initialValues: { opacity: 0, transform: [{ scale: 0.96 }] },
+          animations: {
+            opacity: withDelay(delay, withTiming(1, { duration: 350 })),
+            transform: [{ scale: withDelay(delay, withTiming(1, { duration: 400 })) }],
+          },
+        };
+      }}
+      style={[{ flex: 1 }, animatedStyle]}
+    >
       <Pressable
         onPress={onPress}
-        style={[
-          styles.card,
-          isSelected && { borderColor: color, borderWidth: 2 },
+        style={({ pressed }) => [
+          pressed && { transform: [{ scale: 0.98 }] },
         ]}
       >
-        {isSelected && (
-          <View style={[styles.checkBadge, { backgroundColor: color }]}>
-            <Check size={14} color={colors.white} />
+        <GlassView style={styles.card}>
+          {isSelected && (
+            <View style={styles.checkBadge}>
+              <Check size={14} color={colors.white} />
+            </View>
+          )}
+
+          <View style={[styles.emojiCircle, isSelected && styles.emojiCircleSelected]}>
+            <Text style={styles.emoji}>{emoji}</Text>
           </View>
-        )}
 
-        <View style={[styles.emojiCircle, { backgroundColor: `${color}15` }]}>
-          <Text style={styles.emoji}>{emoji}</Text>
-        </View>
-
-        <Text style={styles.cardLabel}>{label}</Text>
-        <Text style={styles.cardSubtitle}>{subtitle}</Text>
+          <Text style={styles.cardLabel}>{label}</Text>
+          <Text style={styles.cardSubtitle}>{subtitle}</Text>
+        </GlassView>
       </Pressable>
     </Animated.View>
   );
@@ -104,6 +124,23 @@ function SportCard({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: "center",
+  },
+  header: {
+    paddingHorizontal: 20,
+    marginBottom: 28,
+  },
+  title: {
+    fontSize: 34,
+    fontWeight: "700",
+    color: colors.black,
+    letterSpacing: 0.37,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 17,
+    color: colors.gray500,
+    lineHeight: 22,
   },
   cards: {
     flexDirection: "row",
@@ -111,17 +148,9 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   card: {
-    backgroundColor: colors.white,
-    borderRadius: radii.lg,
+    borderRadius: 16,
     padding: 20,
     alignItems: "center",
-    borderWidth: 1.5,
-    borderColor: colors.gray100,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
     position: "relative",
   },
   checkBadge: {
@@ -131,6 +160,7 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
+    backgroundColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -138,9 +168,13 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
+    backgroundColor: colors.gray100,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 14,
+  },
+  emojiCircleSelected: {
+    backgroundColor: `${colors.accentGreen}12`,
   },
   emoji: {
     fontSize: 36,

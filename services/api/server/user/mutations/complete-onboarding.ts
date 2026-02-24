@@ -9,13 +9,6 @@ import { completeOnboardingValidator } from "../validators";
 import { ulid } from "ulid";
 import { cacheDel, CacheKeys } from "../../../lib/cache";
 
-const normalizePhoneNumber = (raw: string) => {
-  const trimmed = raw.trim();
-  const hasPlus = trimmed.startsWith("+");
-  const digits = trimmed.replace(/\D/g, "");
-  return hasPlus ? `+${digits}` : digits;
-};
-
 export const completeOnboarding = async (c: Context<HonoContext>) => {
   const authUser = c.get("user");
   // @ts-ignore
@@ -51,78 +44,61 @@ export const completeOnboarding = async (c: Context<HonoContext>) => {
     );
   }
 
-  let updatedUserRow: typeof userTable.$inferSelect;
-  try {
-    updatedUserRow = await db.transaction(async (tx) => {
-      await tx
-        .insert(userPreference)
-        .values({
-          userId: authUser!.id,
+  const updatedUserRow = await db.transaction(async (tx) => {
+    await tx
+      .insert(userPreference)
+      .values({
+        userId: authUser!.id,
+        organizationId: validated.organizationId,
+        sport: validated.sport,
+        skillLevel: validated.skillLevel,
+      })
+      .onConflictDoUpdate({
+        target: userPreference.userId,
+        set: {
           organizationId: validated.organizationId,
           sport: validated.sport,
           skillLevel: validated.skillLevel,
-        })
-        .onConflictDoUpdate({
-          target: userPreference.userId,
-          set: {
-            organizationId: validated.organizationId,
-            sport: validated.sport,
-            skillLevel: validated.skillLevel,
-            updatedAt: new Date(),
-          },
-        });
-
-      const [existingMember] = await tx
-        .select({ id: member.id })
-        .from(member)
-        .where(
-          and(eq(member.organizationId, validated.organizationId), eq(member.userId, authUser!.id)),
-        )
-        .limit(1);
-
-      if (!existingMember) {
-        await tx.insert(member).values({
-          id: ulid(),
-          organizationId: validated.organizationId,
-          userId: authUser!.id,
-          role: "member",
-          createdAt: new Date(),
-        });
-      }
-
-      const phoneNumber = normalizePhoneNumber(validated.phoneNumber);
-
-      const userUpdate: Record<string, unknown> = {
-        onboarding_completed: true,
-        phoneNumber,
-        phoneNumberVerified: false,
-      };
-      if (validated.imageUrl) {
-        userUpdate.image = validated.imageUrl;
-      }
-
-      const [updated] = await tx
-        .update(userTable)
-        .set(userUpdate)
-        .where(eq(userTable.id, authUser!.id))
-        .returning();
-
-      return updated;
-    });
-  } catch (error) {
-    const err = error as { code?: string };
-    // Postgres unique_violation
-    if (err?.code === "23505") {
-      return c.json(
-        {
-          error: "Conflict",
-          message: "Phone number already in use",
+          updatedAt: new Date(),
         },
-        409,
-      );
+      });
+
+    const [existingMember] = await tx
+      .select({ id: member.id })
+      .from(member)
+      .where(
+        and(eq(member.organizationId, validated.organizationId), eq(member.userId, authUser!.id)),
+      )
+      .limit(1);
+
+    if (!existingMember) {
+      await tx.insert(member).values({
+        id: ulid(),
+        organizationId: validated.organizationId,
+        userId: authUser!.id,
+        role: "member",
+        createdAt: new Date(),
+      });
     }
-    throw error;
-  }
+
+    const userUpdate: Record<string, unknown> = {
+      onboarding_completed: true,
+      name: validated.name,
+      gender: validated.gender,
+      date_of_birth: validated.dateOfBirth,
+    };
+    if (validated.imageUrl) {
+      userUpdate.image = validated.imageUrl;
+    }
+
+    const [updated] = await tx
+      .update(userTable)
+      .set(userUpdate)
+      .where(eq(userTable.id, authUser!.id))
+      .returning();
+
+    return updated;
+  });
 
   await cacheDel(CacheKeys.userMe(authUser!.id));
 
@@ -140,5 +116,7 @@ export const completeOnboarding = async (c: Context<HonoContext>) => {
     banExpires: updatedUserRow.banExpires,
     onboardingCompleted: updatedUserRow.onboarding_completed,
     phoneNumber: updatedUserRow.phoneNumber,
+    gender: updatedUserRow.gender,
+    dateOfBirth: updatedUserRow.date_of_birth,
   });
 };

@@ -124,3 +124,21 @@ export const processDeletionRequestValidator = z.object({
   requestId: z.string().min(1),
   status: z.enum(["processed", "rejected"]),
 });
+
+export const bulkCreateOrganizationsValidator = z.object({
+  clubs: z
+    .array(
+      z.object({
+        nom: z.string().min(1),
+        clubId: z.string().min(1),
+        ville: z.string().optional(),
+        distance: z.string().optional(),
+        terrainPratiqueLibelle: z.string().optional(),
+        pratiques: z.array(z.string()).optional(),
+        lat: z.number(),
+        lng: z.number(),
+      }),
+    )
+    .min(1)
+    .max(10000),
+});

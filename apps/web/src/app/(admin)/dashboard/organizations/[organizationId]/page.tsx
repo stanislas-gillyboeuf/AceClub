@@ -24,7 +24,7 @@ import {
   CreateInvitationDialog,
 } from "@/components/custom/organization-actions"
 import {
-  useAdminOrganizations,
+  useAdminOrganization,
   useOrganizationMembers,
   useOrganizationInvitations,
 } from "@/hooks/use-admin-queries"
@@ -149,13 +149,9 @@ export default function OrganizationDetailPage() {
   const [pinVisible, setPinVisible] = useState(false)
   const [pinCopied, setPinCopied] = useState(false)
 
-  const { data: orgsData, isLoading: orgLoading } = useAdminOrganizations({
-    searchValue: undefined,
-    limit: 100,
-    offset: 0,
-  })
+  const { data: orgData, isLoading: orgLoading } = useAdminOrganization(organizationId)
 
-  const org = orgsData?.organizations?.find((o) => o.id === organizationId)
+  const org = orgData?.organization
 
   const { data: membersData, isLoading: membersLoading } =
     useOrganizationMembers({

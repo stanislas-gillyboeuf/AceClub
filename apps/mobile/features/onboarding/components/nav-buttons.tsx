@@ -6,7 +6,7 @@ import Button from "@/components/ui/button";
 interface NavButtonsProps {
   canGoBack: boolean;
   canGoNext: boolean;
-  isLastStep: boolean;
+  label: string;
   isSubmitting: boolean;
   onBack: () => void;
   onNext: () => void;
@@ -15,7 +15,7 @@ interface NavButtonsProps {
 export function NavButtons({
   canGoBack,
   canGoNext,
-  isLastStep,
+  label,
   isSubmitting,
   onBack,
   onNext,
@@ -31,7 +31,7 @@ export function NavButtons({
       )}
 
       <Button
-        label={isLastStep ? "Terminer" : "Continuer"}
+        label={label}
         onPress={onNext}
         disabled={!canGoNext}
         loading={isSubmitting}

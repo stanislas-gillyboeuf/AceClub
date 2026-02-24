@@ -152,7 +152,7 @@ private struct OnboardingOrganizationRow: View {
                 ZStack {
                     Circle()
                         .fill(isSelected ? Theme.tintColor.opacity(0.15) : Theme.borderColor.opacity(0.3))
-                        .frame(width: 48, height: 48)
+                        .frame(width: 44, height: 44)
 
                     Text(String(name.prefix(1)).uppercased())
                         .font(.body.weight(.semibold))
@@ -163,6 +163,7 @@ private struct OnboardingOrganizationRow: View {
                     Text(name)
                         .font(.body)
                         .foregroundStyle(isSelected ? Theme.tintColor : Theme.labelPrimary)
+                        .lineLimit(1)
 
                     if pinEnabled {
                         HStack(spacing: 4) {
@@ -172,10 +173,20 @@ private struct OnboardingOrganizationRow: View {
                                 .font(.caption)
                         }
                         .foregroundStyle(pinValidated ? .green : Theme.labelTertiary)
+                    } else {
+                        Text("Club")
+                            .font(.caption)
+                            .foregroundStyle(Theme.labelSecondary)
                     }
                 }
 
                 Spacer()
+
+                if pinEnabled && !pinValidated {
+                    Image(systemName: "lock.fill")
+                        .font(.caption)
+                        .foregroundStyle(Theme.labelTertiary)
+                }
 
                 if isSelected && (!pinEnabled || pinValidated) {
                     Image(systemName: "checkmark.circle.fill")
