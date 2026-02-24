@@ -15,6 +15,7 @@ import { FeedbackCard } from "@/features/matches/components/match-detail/feedbac
 import { CommentsCard } from "@/features/matches/components/match-detail/comments-card";
 import { ElapsedTimerCard } from "@/features/matches/components/match-detail/elapsed-timer-card";
 import { SheetActionBar } from "@/features/matches/components/match-detail/floating-action-bar";
+import { FeedbackCta } from "@/features/matches/components/feedback/feedback-cta";
 
 export default function MatchDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -101,8 +102,8 @@ export default function MatchDetail() {
     ]);
   };
 
-  const handleEditFeedback = () => {
-    Alert.alert("Bientôt disponible", "L'édition des sensations arrive prochainement.");
+  const handleFeedback = () => {
+    router.push(`/matches/${id}/feedback`);
   };
 
   // --- Loading ---
@@ -185,6 +186,12 @@ export default function MatchDetail() {
                   <Stack.Toolbar.Spacer />
                 </>
               )}
+              {isFinished && !matchDetail?.myFeedback && (
+                <>
+                  <Stack.Toolbar.Button icon="face.smiling" variant="prominent" onPress={handleFeedback} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Spacer />
+                </>
+              )}
               {isFinished && !hasUserCommented && (
                 <>
                   <Stack.Toolbar.Button icon="bubble.left" variant="prominent" onPress={handleComment} tintColor={colors.accentGreen} />
@@ -229,8 +236,12 @@ export default function MatchDetail() {
 
         <VenueCard matchDetail={matchDetail} isParticipant={isParticipant} isScheduled={isScheduled} />
 
-        {isFinished && matchDetail.myFeedback && (
-          <FeedbackCard feedback={matchDetail.myFeedback} onEdit={handleEditFeedback} />
+        {isFinished && isParticipant && matchDetail.myFeedback && (
+          <FeedbackCard feedback={matchDetail.myFeedback} onEdit={handleFeedback} />
+        )}
+
+        {isFinished && isParticipant && !matchDetail.myFeedback && (
+          <FeedbackCta onPress={handleFeedback} />
         )}
 
         {isFinished && (

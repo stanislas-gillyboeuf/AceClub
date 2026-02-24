@@ -58,6 +58,15 @@ export default function MatchesLayout() {
         }}
       />
       <Stack.Screen
+        name="[id]/feedback"
+        options={{
+          presentation: formSheet,
+          sheetGrabberVisible: Platform.OS === "ios",
+          title: "Sensations",
+          headerTransparent: Platform.OS === "ios",
+        }}
+      />
+      <Stack.Screen
         name="[id]/comment"
         options={{
           presentation: formSheet,
