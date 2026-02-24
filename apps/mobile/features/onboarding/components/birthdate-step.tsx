@@ -28,7 +28,7 @@ export function BirthdateStep({ dateOfBirth, onDateChange }: BirthdateStepProps)
           entering={FadeIn.delay(250).duration(400)}
           style={styles.subtitle}
         >
-          Tu dois avoir au moins 13 ans pour utiliser AceClub.
+          {`Tu dois avoir au moins ${MIN_AGE} ans pour utiliser AceClub.`}
         </Animated.Text>
       </View>
 
