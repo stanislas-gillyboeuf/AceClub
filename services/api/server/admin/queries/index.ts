@@ -2,6 +2,7 @@ export * from "./list-users";
 export * from "./list-user-sessions";
 export * from "./user-stats";
 export * from "./list-organizations";
+export * from "./get-organization";
 export * from "./list-organization-members";
 export * from "./list-organization-invitations";
 export * from "./list-feature-flags";
