@@ -8,6 +8,7 @@ import * as Haptics from "expo-haptics";
 import { useCompleteOnboarding } from "@/hooks/use-user";
 import { uploadService } from "@/services/upload";
 import { consumePendingClubSelection } from "@/lib/pending-club-selection";
+import { formatDateForAPI } from "@/lib/date";
 import { authClient } from "@/lib/auth-client";
 import type { Organization } from "@/types/organization";
 import type { Sport } from "@/types/common";
@@ -143,7 +144,7 @@ export default function Onboarding() {
         sport: selectedSport,
         skillLevel: selectedSkillLevel,
         gender: selectedGender,
-        dateOfBirth: dateOfBirth.toISOString().split("T")[0],
+        dateOfBirth: formatDateForAPI(dateOfBirth),
         ...(imageUrl && { imageUrl }),
         ...(verifiedPin && { pin: verifiedPin }),
       };
