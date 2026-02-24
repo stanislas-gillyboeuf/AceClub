@@ -9,8 +9,8 @@ interface BirthdateStepProps {
 }
 
 const now = new Date();
-const MIN_AGE = 13;
-const MAX_AGE = 100;
+export const MIN_AGE = 13;
+export const MAX_AGE = 100;
 const maxDate = new Date(now.getFullYear() - MIN_AGE, now.getMonth(), now.getDate());
 const minDate = new Date(now.getFullYear() - MAX_AGE, now.getMonth(), now.getDate());
 
