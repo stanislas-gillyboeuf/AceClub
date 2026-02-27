@@ -11,16 +11,14 @@ import { semanticColors } from "@/constants/theme";
  *   to avoid the transparent fallback.
  */
 export function GlassView({ style, tintColor, ...rest }: GlassViewProps) {
-  if (Platform.OS === "ios") {
+  if (Platform.OS === "ios" && Number(Platform.Version) >= 26) {
     return <ExpoGlassView style={style} tintColor={tintColor} {...rest} />;
   }
 
-  return (
-    <AndroidGlassFallback style={style} tintColor={tintColor} {...rest} />
-  );
+  return <GlassFallback style={style} tintColor={tintColor} {...rest} />;
 }
 
-function AndroidGlassFallback({
+function GlassFallback({
   style,
   tintColor,
   glassEffectStyle: _ges,
