@@ -89,6 +89,16 @@ struct ConversationListView: View {
         if let conversation = viewModel.conversations.first(where: { $0.id == conversationId }) {
             navigationPath.append(conversation)
             deepLinkManager.pendingConversationId = nil
+        } else {
+            // La conversation vient peut-être d'être créée (ex: acceptation de match)
+            // On recharge la liste et on réessaie
+            Task {
+                await viewModel.loadConversations(force: true)
+                if let conversation = viewModel.conversations.first(where: { $0.id == conversationId }) {
+                    navigationPath.append(conversation)
+                    deepLinkManager.pendingConversationId = nil
+                }
+            }
         }
     }
 

@@ -42,7 +42,13 @@ struct RootView: View {
             selection = .chat
             notificationManager.clearPendingDeepLink()
 
-        case "match_request_accepted", "new_match_request", "match_reminder":
+        case "new_match_request":
+            // Ouvrir la sheet des demandes de match
+            deepLinkManager.shouldOpenMatchRequests = true
+            selection = .matches
+            notificationManager.clearPendingDeepLink()
+
+        case "match_request_accepted", "match_reminder":
             // Navigate to match
             deepLinkManager.pendingMatchId = deepLink.referenceId
             selection = .matches

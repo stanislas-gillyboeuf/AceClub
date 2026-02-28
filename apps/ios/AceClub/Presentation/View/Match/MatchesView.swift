@@ -20,6 +20,9 @@ struct MatchesView: View {
     @State private var isLoading = false
     @State private var syncService: MatchSyncService?
     @State private var navigationPath = NavigationPath()
+    @State private var pendingRequestCount: Int = 0
+
+    private let listRequestsUseCase = ListMatchRequestsUseCase()
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -57,6 +60,18 @@ struct MatchesView: View {
                         showingListRequestMatch = true
                     } label: {
                         Image(systemName: "envelope.badge")
+                            .overlay(alignment: .topTrailing) {
+                                if pendingRequestCount > 0 {
+                                    Text("\(pendingRequestCount)")
+                                        .font(.caption2.weight(.bold))
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 5)
+                                        .padding(.vertical, 1)
+                                        .background(Color.red)
+                                        .clipShape(Capsule())
+                                        .offset(x: 8, y: -8)
+                                }
+                            }
                     }
                 }
             }
@@ -70,6 +85,7 @@ struct MatchesView: View {
             }
             .fullScreenCover(isPresented: $showingListRequestMatch) {
                 ListRequestMatch {
+                    Task { await loadPendingRequestCount() }
                 }
             }
             .task {
@@ -78,9 +94,18 @@ struct MatchesView: View {
                     await loadMatches()
                 }
             }
+            .task {
+                await loadPendingRequestCount()
+            }
             .onChange(of: deepLinkManager.pendingMatchId) { _, matchId in
                 if let matchId {
                     navigationPath.append(matchId)
+                }
+            }
+            .onChange(of: deepLinkManager.shouldOpenMatchRequests) { _, shouldOpen in
+                if shouldOpen {
+                    showingListRequestMatch = true
+                    deepLinkManager.shouldOpenMatchRequests = false
                 }
             }
         }
@@ -95,5 +120,14 @@ struct MatchesView: View {
             print("Load matches error: \(error)")
         }
         isLoading = false
+    }
+
+    private func loadPendingRequestCount() async {
+        do {
+            let requests = try await listRequestsUseCase.execute()
+            pendingRequestCount = requests.filter { $0.request.status == .pending }.count
+        } catch {
+            print("Load pending request count error: \(error)")
+        }
     }
 }

@@ -1,8 +1,9 @@
 import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { matchIntent, matchIntentSwipe, matchRequest } from "../../../db/schema";
+import { matchIntent, matchIntentSwipe, matchRequest, user } from "../../../db/schema";
 import { and, eq } from "drizzle-orm";
+import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
 
 export const swipe = async (c: Context<HonoContext>) => {
   try {
@@ -71,6 +72,30 @@ export const swipe = async (c: Context<HonoContext>) => {
           status: "pending",
         })
         .returning();
+
+      // Envoyer une notification push au receveur (propriétaire de l'intent)
+      if (request) {
+        const [requesterInfo] = await db
+          .select({ name: user.name })
+          .from(user)
+          .where(eq(user.id, userId))
+          .limit(1);
+
+        sendNotificationToUser({
+          userId: intent.userId,
+          type: "new_match_request",
+          title: "Nouvelle demande de match 🎾",
+          body: `${requesterInfo?.name ?? "Un joueur"} veut jouer avec toi !`,
+          referenceId: request.id,
+          referenceType: "match_request",
+          data: {
+            matchRequestId: request.id,
+            matchIntentId,
+          },
+        }).catch((err) =>
+          console.error("[SWIPE] Failed to send notification:", err),
+        );
+      }
     }
 
     return c.json({

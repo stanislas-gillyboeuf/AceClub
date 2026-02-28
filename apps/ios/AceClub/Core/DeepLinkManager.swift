@@ -17,6 +17,7 @@ final class DeepLinkManager {
     var pendingMatchId: String?
     var shouldOpenScoreEditor: Bool = false
     var pendingConversationId: String?
+    var shouldOpenMatchRequests: Bool = false
 
     // MARK: - Methods
 
@@ -47,5 +48,6 @@ final class DeepLinkManager {
         pendingMatchId = nil
         shouldOpenScoreEditor = false
         pendingConversationId = nil
+        shouldOpenMatchRequests = false
     }
 }

@@ -20,26 +20,40 @@ struct ListRequestMatch: View {
             Group {
                 if viewModel.isLoading && viewModel.pendingRequests.isEmpty {
                     ProgressView("Chargement des demandes...")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if !viewModel.hasPendingRequests {
                     ContentUnavailableView(
                         "Aucune demande en attente",
-                        systemImage: "envelope.badge",
-                        description: Text("Quand quelqu'un like ton intent de match, tu verras la demande ici.")
+                        systemImage: "tennis.racket",
+                        description: Text("Quand un joueur veut matcher avec toi, sa demande apparaîtra ici.")
                     )
                 } else {
-                    List(viewModel.pendingRequests) { item in
-                        MatchRequestRow(
-                            item: item,
-                            onAccept: { Task { await handleAccept(item: item) } },
-                            onReject: { Task { await viewModel.reject(request: item) } }
-                        )
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(viewModel.pendingRequests) { item in
+                                MatchRequestCard(
+                                    item: item,
+                                    onAccept: { Task { await handleAccept(item: item) } },
+                                    onReject: { Task { await viewModel.reject(request: item) } }
+                                )
+                            }
+                        }
+                        .padding(.horizontal, Theme.paddingHorizontal)
+                        .padding(.top, 8)
+                        .padding(.bottom, 24)
                     }
-                    .listStyle(.insetGrouped)
-                    .scrollContentBackground(.hidden)
                 }
             }
+            .background(Theme.primaryBackground)
             .navigationTitle("Demandes de match")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    if viewModel.hasPendingRequests {
+                        Text("\(viewModel.pendingRequests.count) en attente")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(Theme.tintColor)
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
                         dismiss()
@@ -64,10 +78,8 @@ struct ListRequestMatch: View {
     private func handleAccept(item: MatchRequestWithDetails) async {
         let result = await viewModel.accept(request: item)
         if let result = result, let conversationId = result.conversationId {
-            // Navigate to chat
             onAccepted?()
             dismiss()
-            // Use deep link to navigate to chat after dismiss
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 deepLinkManager.pendingConversationId = conversationId
             }
@@ -78,17 +90,20 @@ struct ListRequestMatch: View {
     }
 }
 
-// MARK: - MatchRequestRow
+// MARK: - MatchRequestCard
 
-struct MatchRequestRow: View {
+struct MatchRequestCard: View {
     let item: MatchRequestWithDetails
     let onAccept: () -> Void
     let onReject: () -> Void
 
+    @State private var isAccepting = false
+    @State private var isRejecting = false
+
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "fr_FR")
+        formatter.dateFormat = "EEEE d MMMM 'à' HH'h'mm"
         return formatter
     }()
 
@@ -96,42 +111,152 @@ struct MatchRequestRow: View {
         item.requester?.name ?? "Joueur inconnu"
     }
 
+    private var requesterInitials: String {
+        item.requester?.initials ?? "??"
+    }
+
     private var dateDescription: String {
         guard let date = item.matchIntent?.date else {
             return "Date à définir"
         }
-        return Self.dateFormatter.string(from: date)
+        return Self.dateFormatter.string(from: date).capitalized
+    }
+
+    private var matchTypeLabel: String {
+        item.matchIntent?.type.displayName ?? "Match"
+    }
+
+    private var matchTypeIcon: String {
+        item.matchIntent?.type.icon ?? "sportscourt"
+    }
+
+    private var timeAgo: String {
+        let interval = Date().timeIntervalSince(item.request.createdAt)
+        if interval < 60 {
+            return "À l'instant"
+        } else if interval < 3600 {
+            let minutes = Int(interval / 60)
+            return "Il y a \(minutes) min"
+        } else if interval < 86400 {
+            let hours = Int(interval / 3600)
+            return "Il y a \(hours)h"
+        } else {
+            let days = Int(interval / 86400)
+            return "Il y a \(days)j"
+        }
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(requesterName)
-                    .font(.headline)
+        VStack(spacing: 0) {
+            // Header: avatar + nom + heure
+            HStack(spacing: 12) {
+                // Avatar
+                if let imageURL = item.requester?.imageURL {
+                    AsyncImage(url: imageURL) { image in
+                        image.resizable().scaledToFill()
+                    } placeholder: {
+                        initialsAvatar
+                    }
+                    .frame(width: 44, height: 44)
+                    .clipShape(Circle())
+                } else {
+                    initialsAvatar
+                        .frame(width: 44, height: 44)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(requesterName) veut jouer avec toi")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.labelPrimary)
+
+                    Text(timeAgo)
+                        .font(.caption)
+                        .foregroundStyle(Theme.labelSecondary)
+                }
+
                 Spacer()
-                Text("Demande")
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Theme.tintColor.opacity(0.15))
-                    .clipShape(Capsule())
             }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
 
-            Text(dateDescription)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            Divider()
+                .padding(.horizontal, 16)
 
-            HStack {
-                Button("Refuser", role: .destructive, action: onReject)
+            // Infos du match
+            HStack(spacing: 16) {
+                // Type
+                Label(matchTypeLabel, systemImage: matchTypeIcon)
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.labelSecondary)
 
                 Spacer()
 
-                Button("Accepter", action: onAccept)
-                    .fontWeight(.semibold)
-                    .buttonStyle(.borderedProminent)
+                // Date
+                Label(dateDescription, systemImage: "calendar")
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.labelSecondary)
             }
-            .padding(.top, 4)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
+            Divider()
+                .padding(.horizontal, 16)
+
+            // Boutons d'action
+            HStack(spacing: 12) {
+                Button {
+                    isRejecting = true
+                    onReject()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "xmark")
+                        Text("Refuser")
+                    }
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color.red.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                .disabled(isAccepting || isRejecting)
+
+                Button {
+                    isAccepting = true
+                    onAccept()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark")
+                        Text("Accepter & discuter")
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Theme.tintColor)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                .disabled(isAccepting || isRejecting)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
-        .padding(.vertical, 8)
+        .background(Theme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(Theme.borderColor, lineWidth: Theme.borderWidthSubtle)
+        }
+    }
+
+    private var initialsAvatar: some View {
+        Circle()
+            .fill(Theme.tintColor.opacity(0.15))
+            .overlay {
+                Text(requesterInitials)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Theme.tintColor)
+            }
     }
 }
