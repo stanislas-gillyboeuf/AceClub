@@ -2,7 +2,7 @@ import { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { event, eventParticipant } from "../../../db/schema/event/schema";
-import { eq, and, count, sql, SQL } from "drizzle-orm";
+import { eq, and, count, sql, SQL, desc } from "drizzle-orm";
 import { z } from "zod";
 import { listOrganizationEventsValidator } from "../validators";
 import { assertOrgAdmin } from "../../../middleware/org-member";
@@ -30,7 +30,7 @@ export const listOrganizationEvents = async (c: Context<HonoContext>) => {
     .select()
     .from(event)
     .where(and(...conditions))
-    .orderBy(event.startDate)
+    .orderBy(desc(event.createdAt))
     .limit(query.limit)
     .offset(query.offset);
 
@@ -40,7 +40,17 @@ export const listOrganizationEvents = async (c: Context<HonoContext>) => {
         .select({ count: count() })
         .from(eventParticipant)
         .where(and(eq(eventParticipant.eventId, e.id), eq(eventParticipant.status, "registered")));
-      return { ...e, participantCount: participantCount.count };
+      const [waitlistCount] = await db
+        .select({ count: count() })
+        .from(eventParticipant)
+        .where(
+          and(eq(eventParticipant.eventId, e.id), eq(eventParticipant.status, "waitlisted")),
+        );
+      return {
+        ...e,
+        participantCount: participantCount.count,
+        waitlistCount: waitlistCount.count,
+      };
     }),
   );
 

@@ -1,5 +1,7 @@
 export { createEvent } from "./create";
 export { updateEvent } from "./update";
+export { updateEventStatus } from "./update-status";
+export { deleteEvent } from "./delete";
 export { cancelEvent } from "./cancel-event";
 export { registerEvent } from "./register";
 export { cancelRegistration } from "./cancel-registration";

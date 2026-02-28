@@ -23,15 +23,24 @@ export const updateEvent = async (c: Context<HonoContext>) => {
     return c.json({ error: "Forbidden", message: "Not authorized to update this event" }, 403);
   }
 
+  if (existing.status === "cancelled") {
+    return c.json({ error: "BadRequest", message: "Cannot update a cancelled event" }, 400);
+  }
+
   const updateData: Record<string, unknown> = {};
   if (body.name !== undefined) updateData.name = body.name;
   if (body.description !== undefined) updateData.description = body.description;
+  if (body.coverImage !== undefined) updateData.coverImage = body.coverImage;
   if (body.startDate !== undefined) updateData.startDate = new Date(body.startDate);
   if (body.endDate !== undefined) updateData.endDate = new Date(body.endDate);
   if (body.address !== undefined) updateData.address = body.address;
+  if (body.latitude !== undefined) updateData.latitude = body.latitude;
+  if (body.longitude !== undefined) updateData.longitude = body.longitude;
   if (body.maxParticipants !== undefined) updateData.maxParticipants = body.maxParticipants;
+  if (body.isFree !== undefined) updateData.isFree = body.isFree;
+  if (body.price !== undefined) updateData.price = body.price;
+  if (body.paymentLink !== undefined) updateData.paymentLink = body.paymentLink;
   if (body.visibility !== undefined) updateData.visibility = body.visibility;
-  if (body.status !== undefined) updateData.status = body.status;
 
   const [updated] = await db
     .update(event)
