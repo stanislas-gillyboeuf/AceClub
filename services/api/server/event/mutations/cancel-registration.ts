@@ -1,8 +1,8 @@
 import { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { eventParticipant } from "../../../db/schema/event/schema";
-import { eq, and, asc } from "drizzle-orm";
+import { event, eventParticipant } from "../../../db/schema/event/schema";
+import { eq, and, asc, count } from "drizzle-orm";
 import { z } from "zod";
 import { cancelRegistrationValidator } from "../validators";
 
@@ -35,6 +35,7 @@ export const cancelRegistration = async (c: Context<HonoContext>) => {
     .where(eq(eventParticipant.id, registration.id));
 
   if (wasRegistered) {
+    // Promote next waitlisted person
     const [nextWaitlisted] = await db
       .select()
       .from(eventParticipant)
@@ -49,6 +50,32 @@ export const cancelRegistration = async (c: Context<HonoContext>) => {
         .update(eventParticipant)
         .set({ status: "registered" })
         .where(eq(eventParticipant.id, nextWaitlisted.id));
+    }
+
+    // If event was full, revert to on_sale since a spot opened
+    const [eventRecord] = await db
+      .select()
+      .from(event)
+      .where(eq(event.id, body.eventId))
+      .limit(1);
+
+    if (eventRecord && eventRecord.status === "full") {
+      const [registeredCount] = await db
+        .select({ count: count() })
+        .from(eventParticipant)
+        .where(
+          and(
+            eq(eventParticipant.eventId, body.eventId),
+            eq(eventParticipant.status, "registered"),
+          ),
+        );
+
+      if (!eventRecord.maxParticipants || registeredCount.count < eventRecord.maxParticipants) {
+        await db
+          .update(event)
+          .set({ status: "on_sale" })
+          .where(eq(event.id, body.eventId));
+      }
     }
   }
 
