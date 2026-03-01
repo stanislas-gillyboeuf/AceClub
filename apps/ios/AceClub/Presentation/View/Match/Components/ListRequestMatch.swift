@@ -3,7 +3,7 @@ import SwiftUI
 struct ListRequestMatch: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(DeepLinkManager.self) private var deepLinkManager
-    @StateObject private var viewModel = MatchRequestsViewModel()
+    @ObservedObject var viewModel: MatchRequestsViewModel
     var onAccepted: (() -> Void)?
 
     @State private var acceptedConversationId: String?

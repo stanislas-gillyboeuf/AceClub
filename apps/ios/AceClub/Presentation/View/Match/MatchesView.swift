@@ -12,6 +12,8 @@ struct MatchesView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(DeepLinkManager.self) private var deepLinkManager
 
+    @ObservedObject var matchRequestsViewModel: MatchRequestsViewModel
+
     @Query(sort: \MatchModel.createdAt, order: .reverse)
     private var matches: [MatchModel]
 
@@ -20,9 +22,6 @@ struct MatchesView: View {
     @State private var isLoading = false
     @State private var syncService: MatchSyncService?
     @State private var navigationPath = NavigationPath()
-    @State private var pendingRequestCount: Int = 0
-
-    private let listRequestsUseCase = ListMatchRequestsUseCase()
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -61,8 +60,8 @@ struct MatchesView: View {
                     } label: {
                         Image(systemName: "envelope.badge")
                             .overlay(alignment: .topTrailing) {
-                                if pendingRequestCount > 0 {
-                                    Text("\(pendingRequestCount)")
+                                if matchRequestsViewModel.pendingRequests.count > 0 {
+                                    Text("\(matchRequestsViewModel.pendingRequests.count)")
                                         .font(.caption2.weight(.bold))
                                         .foregroundStyle(.white)
                                         .padding(.horizontal, 5)
@@ -84,8 +83,7 @@ struct MatchesView: View {
                 .presentationDragIndicator(.visible)
             }
             .fullScreenCover(isPresented: $showingListRequestMatch) {
-                ListRequestMatch {
-                    Task { await loadPendingRequestCount() }
+                ListRequestMatch(viewModel: matchRequestsViewModel) {
                 }
             }
             .task {
@@ -93,9 +91,6 @@ struct MatchesView: View {
                 if matches.isEmpty {
                     await loadMatches()
                 }
-            }
-            .task {
-                await loadPendingRequestCount()
             }
             .onChange(of: deepLinkManager.pendingMatchId) { _, matchId in
                 if let matchId {
@@ -120,14 +115,5 @@ struct MatchesView: View {
             print("Load matches error: \(error)")
         }
         isLoading = false
-    }
-
-    private func loadPendingRequestCount() async {
-        do {
-            let requests = try await listRequestsUseCase.execute()
-            pendingRequestCount = requests.filter { $0.request.status == .pending }.count
-        } catch {
-            print("Load pending request count error: \(error)")
-        }
     }
 }

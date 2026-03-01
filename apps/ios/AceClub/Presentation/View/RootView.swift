@@ -19,6 +19,7 @@ struct RootView: View {
     @StateObject private var invitationViewModel = InvitationViewModel()
     @StateObject private var progressionViewModel = ProgressionViewModel()
     @StateObject private var conversationListViewModel = ConversationListViewModel()
+    @StateObject private var matchRequestsViewModel = MatchRequestsViewModel()
 
     private enum Tab {
         case feed
@@ -43,7 +44,8 @@ struct RootView: View {
             notificationManager.clearPendingDeepLink()
 
         case "new_match_request":
-            // Ouvrir la sheet des demandes de match
+            // Rafraîchir les demandes et ouvrir la sheet
+            Task { await matchRequestsViewModel.loadRequests() }
             deepLinkManager.shouldOpenMatchRequests = true
             selection = .matches
             notificationManager.clearPendingDeepLink()
@@ -69,11 +71,12 @@ struct RootView: View {
                 }
                 .tag(Tab.feed)
 
-            MatchesView()
+            MatchesView(matchRequestsViewModel: matchRequestsViewModel)
                 .tabItem {
                     Label("Matchs", systemImage: "tennis.racket")
                 }
                 .tag(Tab.matches)
+                .badge(matchRequestsViewModel.pendingRequests.count)
 
             ConversationListView(viewModel: conversationListViewModel)
                 .tabItem {
@@ -145,6 +148,9 @@ struct RootView: View {
             } catch {
                 print("[E2EE] Key setup failed: \(error.localizedDescription)")
             }
+        }
+        .task {
+            await matchRequestsViewModel.loadRequests()
         }
     }
 }
