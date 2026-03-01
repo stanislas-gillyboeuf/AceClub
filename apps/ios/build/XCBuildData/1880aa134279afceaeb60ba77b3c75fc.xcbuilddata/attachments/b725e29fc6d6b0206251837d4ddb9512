@@ -1,4 +1,0 @@
-module AppCheckCore {
-umbrella header "/Users/nicolasbecharat/Library/Developer/Xcode/DerivedData/AceClub-ebrouewuepdcauhddyngtvtyxzts/SourcePackages/checkouts/app-check/AppCheckCore/Sources/Public/AppCheckCore/AppCheckCore.h"
-export *
-}

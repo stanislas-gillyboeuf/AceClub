@@ -15,6 +15,8 @@ import type {
   MatchDetailResponse,
   UserStats,
   ListAccountDeletionRequestsResponse,
+  ListEventsParams,
+  ListEventsResponse,
 } from "@/types/admin"
 
 export function useAdminUsers(params: ListUsersParams) {
@@ -149,6 +151,25 @@ export function useAdminMatchDetail(matchId: string | undefined) {
     queryFn: () =>
       apiClient<MatchDetailResponse>(`/match/${matchId}`),
     enabled: !!matchId,
+  })
+}
+
+export function useAdminEvents(params: ListEventsParams) {
+  const searchParams = new URLSearchParams()
+
+  if (params.status) searchParams.set("status", params.status)
+  if (params.organizationId) searchParams.set("organizationId", params.organizationId)
+  if (params.limit) searchParams.set("limit", String(params.limit))
+  if (params.offset) searchParams.set("offset", String(params.offset))
+
+  const qs = searchParams.toString()
+
+  return useQuery({
+    queryKey: ["admin-events", params],
+    queryFn: () =>
+      apiClient<ListEventsResponse>(
+        `/event/admin-list-events${qs ? `?${qs}` : ""}`,
+      ),
   })
 }
 

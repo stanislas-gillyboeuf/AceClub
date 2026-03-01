@@ -38,7 +38,7 @@ export const getEvent = async (c: Context<HonoContext>) => {
       organizationSlug: organization.slug,
     })
     .from(event)
-    .innerJoin(organization, eq(event.organizationId, organization.id))
+    .leftJoin(organization, eq(event.organizationId, organization.id))
     .where(eq(event.id, eventId))
     .limit(1);
 
@@ -46,28 +46,32 @@ export const getEvent = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Event not found" }, 404);
   }
 
-  // Draft events only visible to org admins
+  // Draft events only visible to org admins or platform admins
   if (result.status === "draft") {
-    const [memberRecord] = await db
-      .select()
-      .from(member)
-      .where(
-        and(
-          eq(member.organizationId, result.organizationId),
-          eq(member.userId, currentUser.id),
-        ),
-      )
-      .limit(1);
+    if (result.organizationId) {
+      const [memberRecord] = await db
+        .select()
+        .from(member)
+        .where(
+          and(
+            eq(member.organizationId, result.organizationId),
+            eq(member.userId, currentUser.id),
+          ),
+        )
+        .limit(1);
 
-    if (!memberRecord || !["owner", "admin"].includes(memberRecord.role ?? "")) {
-      if (currentUser.role !== "admin") {
-        return c.json({ error: "NotFound", message: "Event not found" }, 404);
+      if (!memberRecord || !["owner", "admin"].includes(memberRecord.role ?? "")) {
+        if (currentUser.role !== "admin") {
+          return c.json({ error: "NotFound", message: "Event not found" }, 404);
+        }
       }
+    } else if (currentUser.role !== "admin") {
+      return c.json({ error: "NotFound", message: "Event not found" }, 404);
     }
   }
 
   // Organization-only events require membership
-  if (result.visibility === "organization") {
+  if (result.visibility === "organization" && result.organizationId) {
     const [memberRecord] = await db
       .select()
       .from(member)

@@ -121,7 +121,7 @@ export const listEvents = async (c: Context<HonoContext>) => {
       organizationSlug: organization.slug,
     })
     .from(event)
-    .innerJoin(organization, eq(event.organizationId, organization.id))
+    .leftJoin(organization, eq(event.organizationId, organization.id))
     .where(and(...conditions))
     .orderBy(orderClause)
     .limit(fetchLimit);

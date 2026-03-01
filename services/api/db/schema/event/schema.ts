@@ -54,7 +54,6 @@ export const event = pgTable(
       .notNull()
       .references(() => user.id),
     organizationId: text("organization_id")
-      .notNull()
       .references(() => organization.id),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")

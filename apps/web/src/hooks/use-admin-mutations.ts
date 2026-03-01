@@ -340,6 +340,63 @@ export function useRemoveFeatureFlagOverride() {
   })
 }
 
+export function useAdminCreateEvent() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: {
+      name: string
+      description?: string
+      startDate: string
+      endDate: string
+      address?: string
+      maxParticipants?: number
+      isFree?: boolean
+      price?: number
+      paymentLink?: string
+      visibility?: "public" | "organization"
+      organizationId?: string
+    }) =>
+      apiClient("/event/create", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-events"] })
+    },
+  })
+}
+
+export function useAdminUpdateEventStatus() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { eventId: string; status: string }) =>
+      apiClient("/event/admin-update-status", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-events"] })
+    },
+  })
+}
+
+export function useAdminDeleteEvent() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { eventId: string }) =>
+      apiClient("/event/admin-delete", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-events"] })
+    },
+  })
+}
+
 export function useProcessDeletionRequest() {
   const queryClient = useQueryClient()
 

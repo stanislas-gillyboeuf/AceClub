@@ -24,7 +24,7 @@ export const registerEvent = async (c: Context<HonoContext>) => {
   }
 
   // Check visibility: organization-only events require membership
-  if (eventRecord.visibility === "organization") {
+  if (eventRecord.visibility === "organization" && eventRecord.organizationId) {
     const [memberRecord] = await db
       .select()
       .from(member)

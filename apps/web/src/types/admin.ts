@@ -269,6 +269,38 @@ export interface ListAccountDeletionRequestsResponse {
   requests: AccountDeletionRequest[]
 }
 
+export interface AdminEvent {
+  id: string
+  name: string
+  description: string | null
+  coverImage: string | null
+  startDate: string
+  endDate: string
+  address: string | null
+  maxParticipants: number | null
+  isFree: boolean
+  price: number | null
+  visibility: "public" | "organization"
+  status: "draft" | "presale" | "on_sale" | "completed" | "full" | "cancelled" | "archived"
+  userId: string
+  organizationId: string | null
+  createdAt: string
+  updatedAt: string
+  participantCount: number
+}
+
+export interface ListEventsParams {
+  status?: string
+  organizationId?: string
+  limit?: number
+  offset?: number
+}
+
+export interface ListEventsResponse {
+  events: AdminEvent[]
+  total: number
+}
+
 export interface MatchDetailResponse {
   match: Omit<AdminMatch, "participants" | "sets" | "comments">
   participants: MatchParticipant[]

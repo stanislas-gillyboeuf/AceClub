@@ -18,7 +18,9 @@ export const updateEvent = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Event not found" }, 404);
   }
 
-  const isOrgAdmin = await assertOrgAdmin(currentUser.id, existing.organizationId);
+  const isOrgAdmin = existing.organizationId
+    ? await assertOrgAdmin(currentUser.id, existing.organizationId)
+    : false;
   if (!isOrgAdmin && currentUser.role !== "admin") {
     return c.json({ error: "Forbidden", message: "Not authorized to update this event" }, 403);
   }

@@ -1,5 +1,0 @@
-// Release Configuration
-// Variables for production environment
-
-API_BASE_URL = https:/$()/api.ace-club.app/api
-APP_ENV = production

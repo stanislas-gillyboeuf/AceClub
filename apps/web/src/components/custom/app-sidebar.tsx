@@ -3,6 +3,7 @@
 import * as React from "react"
 import {
   Building2,
+  CalendarDays,
   LayoutDashboard,
   LifeBuoy,
   Users,
@@ -47,6 +48,11 @@ const navMain = [
     title: "Matchs",
     url: "/dashboard/matches",
     icon: Swords,
+  },
+  {
+    title: "\u00c9v\u00e9nements",
+    url: "/dashboard/events",
+    icon: CalendarDays,
   },
   {
     title: "Feature Flags",

@@ -167,3 +167,31 @@ export function estimateTravelTime(distanceKm: number): string {
   if (minutes < 1) return "< 1 min";
   return `~${minutes} min`;
 }
+
+/** Group label for event dates: "Aujourd'hui / Vendredi", "Demain / Samedi", "15 mars / Dimanche" */
+export function formatEventDateGroup(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((startOfDate.getTime() - startOfToday.getTime()) / 86400000);
+
+  const weekday = new Intl.DateTimeFormat("fr-FR", { weekday: "long" }).format(date);
+  const capitalizedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+
+  if (diffDays === 0) return `Aujourd'hui / ${capitalizedWeekday}`;
+  if (diffDays === 1) return `Demain / ${capitalizedWeekday}`;
+  if (diffDays === -1) return `Hier / ${capitalizedWeekday}`;
+
+  const dayMonth = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" }).format(date);
+  const capitalizedDayMonth = dayMonth.charAt(0).toUpperCase() + dayMonth.slice(1);
+  return `${capitalizedDayMonth} / ${capitalizedWeekday}`;
+}
+
+/** Format event time range: "15:00 - 18:00" */
+export function formatEventTime(startDate: string, endDate: string): string {
+  const start = new Date(startDate).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const end = new Date(endDate).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  return `${start} - ${end}`;
+}

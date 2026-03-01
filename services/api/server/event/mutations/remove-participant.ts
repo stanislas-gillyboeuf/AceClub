@@ -18,7 +18,9 @@ export const removeParticipant = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Event not found" }, 404);
   }
 
-  const isOrgAdmin = await assertOrgAdmin(currentUser.id, eventRecord.organizationId);
+  const isOrgAdmin = eventRecord.organizationId
+    ? await assertOrgAdmin(currentUser.id, eventRecord.organizationId)
+    : false;
   if (!isOrgAdmin && currentUser.role !== "admin") {
     return c.json({ error: "Forbidden", message: "Not authorized to remove participants" }, 403);
   }
