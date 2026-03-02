@@ -3,40 +3,46 @@ import { Platform } from "react-native";
 
 const formSheet = Platform.select({ ios: "formSheet" as const, default: "modal" as const });
 
-export default function ProfileLayout() {
+export default function AdminLayout() {
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ title: "Profil", headerLargeTitle: true }} />
       <Stack.Screen
-        name="settings"
+        name="index"
         options={{
-          title: "Paramètres",
-          presentation: "fullScreenModal",
-          headerTransparent: Platform.OS === "ios",
+          title: "Administration",
+          headerLargeTitle: true,
         }}
       />
       <Stack.Screen
-        name="create-intent/index"
+        name="create-event"
         options={{
-          title: "Nouvelle dispo",
+          title: "Nouvel event",
           presentation: formSheet,
-          headerTransparent: true,
           ...(Platform.OS === "ios" && {
             sheetGrabberVisible: true,
-            sheetAllowedDetents: [0.6, 0.85, 1],
-            contentStyle: { flex: 1, backgroundColor: "transparent" },
+            sheetAllowedDetents: [0.92, 1],
+          }),
+        }}
+      />
+      <Stack.Screen
+        name="edit-event"
+        options={{
+          title: "Modifier l'event",
+          presentation: formSheet,
+          ...(Platform.OS === "ios" && {
+            sheetGrabberVisible: true,
+            sheetAllowedDetents: [0.92, 1],
           }),
         }}
       />
       <Stack.Screen
         name="club-selection"
         options={{
-          title: "Sélectionner un club",
+          title: "Selectionner un club",
           presentation: formSheet,
           sheetGrabberVisible: Platform.OS === "ios",
         }}
       />
-      <Stack.Screen name="admin" options={{ headerShown: false }} />
     </Stack>
   );
 }

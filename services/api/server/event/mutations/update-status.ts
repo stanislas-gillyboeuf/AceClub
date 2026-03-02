@@ -11,7 +11,7 @@ import type { EventStatus } from "../../../db/schema/event/type";
 const VALID_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
   draft: ["presale", "on_sale", "cancelled"],
   presale: ["on_sale", "cancelled"],
-  on_sale: ["full", "completed", "cancelled"],
+  on_sale: ["full", "completed", "cancelled", "archived"],
   full: ["on_sale", "completed", "cancelled"],
   completed: ["archived"],
   cancelled: [],
@@ -29,7 +29,9 @@ export const updateEventStatus = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Event not found" }, 404);
   }
 
-  const isOrgAdmin = await assertOrgAdmin(currentUser.id, existing.organizationId);
+  const isOrgAdmin = existing.organizationId
+    ? await assertOrgAdmin(currentUser.id, existing.organizationId)
+    : false;
   if (!isOrgAdmin && currentUser.role !== "admin") {
     return c.json(
       { error: "Forbidden", message: "Not authorized to update this event status" },

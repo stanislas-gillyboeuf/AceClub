@@ -12,6 +12,8 @@ export const listEvents = async (c: Context<HonoContext>) => {
   // @ts-ignore
   const query = c.req.valid("query") as z.infer<typeof listEventsValidator>;
 
+  const now = new Date();
+
   // Only show visible events (not draft, not cancelled)
   const conditions: SQL[] = [
     ne(event.status, "draft"),
@@ -67,13 +69,16 @@ export const listEvents = async (c: Context<HonoContext>) => {
     if (query.sortBy === "upcoming") {
       const cursorDate = new Date(query.cursor);
       conditions.push(gt(event.startDate, cursorDate));
+    } else if (query.sortBy === "past") {
+      const cursorDate = new Date(query.cursor);
+      conditions.push(lt(event.startDate, cursorDate));
     } else if (query.sortBy === "recent") {
       conditions.push(lt(event.createdAt, new Date(query.cursor)));
     }
     // For "nearest", cursor is handled differently (distance-based, using offset fallback)
   }
 
-  // Build order clause
+  // Time-based filters + order clause
   let orderClause;
   if (query.sortBy === "nearest" && query.latitude != null && query.longitude != null) {
     const distanceExpr = sql`(
@@ -83,14 +88,16 @@ export const listEvents = async (c: Context<HonoContext>) => {
         + sin(radians(${query.latitude})) * sin(radians(${event.latitude}))
       )
     )`;
-    // Only events with coordinates
     conditions.push(sql`${event.latitude} IS NOT NULL AND ${event.longitude} IS NOT NULL`);
     orderClause = asc(distanceExpr);
   } else if (query.sortBy === "recent") {
     orderClause = desc(event.createdAt);
+  } else if (query.sortBy === "past") {
+    conditions.push(lt(event.startDate, now));
+    orderClause = desc(event.startDate);
   } else {
     // Default: upcoming (soonest first), only future events
-    conditions.push(gte(event.startDate, new Date()));
+    conditions.push(gte(event.startDate, now));
     orderClause = asc(event.startDate);
   }
 
@@ -121,7 +128,7 @@ export const listEvents = async (c: Context<HonoContext>) => {
       organizationSlug: organization.slug,
     })
     .from(event)
-    .innerJoin(organization, eq(event.organizationId, organization.id))
+    .leftJoin(organization, eq(event.organizationId, organization.id))
     .where(and(...conditions))
     .orderBy(orderClause)
     .limit(fetchLimit);

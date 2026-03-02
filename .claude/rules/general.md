@@ -1,21 +1,31 @@
-# AceClub - Conventions Générales
+# AceClub - Conventions Generales
 
 ## Architecture
 
-### iOS - Clean Architecture MVVM
+### Mobile - React Native Expo
 
 ```
-View (SwiftUI)
+Component (React Native)
     ↓
-ViewModel (@MainActor, ObservableObject or @Observable)
+React Query Hook (hooks/)
     ↓
-UseCase (execute() async throws)
+Service (services/)
     ↓
-Repository (concrete class)
+API Client (lib/api.ts)
     ↓
-DataSource (APIClient.shared)
+Backend API
+```
+
+### Web - Next.js
+
+```
+Page / Component
     ↓
-API
+React Query Hook (hooks/)
+    ↓
+API Client (lib/api-client.ts)
+    ↓
+Backend API
 ```
 
 ### API - Hono + Drizzle
@@ -23,7 +33,7 @@ API
 ```
 Router (Hono)
     ↓
-Middleware (auth)
+Middleware (auth, admin, org-member)
     ↓
 Validator (Zod)
     ↓
@@ -34,18 +44,27 @@ Database (Drizzle ORM)
 
 ## Conventions de nommage
 
-### iOS (Swift)
+### Mobile (React Native Expo)
 
 | Type | Convention | Exemple |
 |------|------------|---------|
-| ViewModel | `<Screen>ViewModel` | `ProfileViewModel` |
-| UseCase | `<Action><Domain>UseCase` | `GetMeUseCase` |
-| Repository | `<Domain>Repository` | `UserRepository` |
-| DataSource | `<Domain>APIDataSource` | `AuthAPIDataSource` |
-| DTO | `<Name>DTO` | `UserDTO` |
-| Mapper | `<Name>Mapper` | `UserMapper` |
-| Entity | `<Name>` | `User` |
-| View | `<Screen>View` | `HomeView` |
+| Service | `<domain>.ts` | `services/user.ts` |
+| Hook global | `use-<domain>.ts` | `hooks/use-user.ts` |
+| Hook feature | `use-<action>.ts` | `features/discover/hooks/use-discover-state.ts` |
+| Type | `<domain>.ts` | `types/user.ts` |
+| Store | `<action>-form.ts` | `store/create-match-form.ts` |
+| UI component | kebab-case | `components/ui/glass-view.tsx` |
+| Feature component | PascalCase | `features/chat/components/ChatBottomBar.tsx` |
+
+### Web (Next.js)
+
+| Type | Convention | Exemple |
+|------|------------|---------|
+| Page | `page.tsx` | `app/(admin)/dashboard/users/page.tsx` |
+| Layout | `layout.tsx` | `app/(admin)/layout.tsx` |
+| UI component | kebab-case | `components/ui/button.tsx` |
+| Custom component | kebab-case | `components/custom/data-table.tsx` |
+| Hook | `use-<action>.ts` | `hooks/use-admin-queries.ts` |
 
 ### API (TypeScript)
 
@@ -57,27 +76,48 @@ Database (Drizzle ORM)
 | Route path | `kebab-case` | `/list-users` |
 | JSON keys | `camelCase` | `{ userId: "..." }` |
 
-## Patterns de code récurrents
+## Patterns de code recurrents
 
-### iOS - Chargement async
+### Mobile - React Query hook
 
-```swift
-func loadData() async {
-    isLoading = true
-    errorMessage = nil
-    defer { isLoading = false }
-
-    do {
-        data = try await useCase.execute()
-    } catch is CancellationError {
-        // SwiftUI peut annuler les Tasks - ne rien faire
-    } catch {
-        errorMessage = error.localizedDescription
-    }
+```typescript
+// hooks/use-user.ts
+export function useMe() {
+  return useQuery({
+    queryKey: ["user", "me"],
+    queryFn: () => userService.getMe(),
+    staleTime: 5 * 60 * 1000,
+  });
 }
 ```
 
-### API - Vérification d'existence
+### Mobile - Service
+
+```typescript
+// services/user.ts
+export const userService = {
+  getMe: async () => {
+    const res = await api.get("/user/me");
+    return res.json();
+  },
+};
+```
+
+### Mobile - Mutation avec invalidation
+
+```typescript
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateProfileInput) => userService.updateProfile(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user", "me"] });
+    },
+  });
+}
+```
+
+### API - Verification d'existence
 
 ```typescript
 const [existing] = await db
@@ -91,7 +131,7 @@ if (!existing) {
 }
 ```
 
-### API - Création avec ID
+### API - Creation avec ID
 
 ```typescript
 const [created] = await db
@@ -102,34 +142,53 @@ const [created] = await db
 return c.json(created, 201);
 ```
 
-## Règles importantes
+## Regles importantes
 
-1. **Dépendances** : `Presentation → Domain ← Data` (Domain ne dépend de rien)
-2. **Async/Await** : Utiliser `async/await` partout, pas de callbacks
-3. **Erreurs** : Format API = `{ error: "Type", message: "Description" }`
-4. **IDs** : Utiliser `ulid()` pour générer les identifiants
-5. **Validation** : Zod côté API, types stricts côté iOS
-6. **Tests** : Écrire des tests pour les UseCases et handlers critiques
+1. **Async/Await** : Utiliser `async/await` partout, pas de callbacks
+2. **Erreurs** : Format API = `{ error: "Type", message: "Description" }`
+3. **IDs** : Utiliser `ulid()` pour generer les identifiants
+4. **Validation** : Zod cote API, TypeScript strict cote mobile et web
+5. **Server state** : React Query gere tout le server state (mobile + web)
+6. **Client state** : Zustand uniquement pour formulaires multi-etapes (mobile)
+7. **Imports** : Alias `@/*` sur mobile, relatifs sur web
+8. **Marketing web** : Server Components (pas de `use client`)
+9. **Admin web** : Client Components (`use client` + React Query)
 
 ## Structure des dossiers
 
-### iOS
+### Mobile
 
 ```
-apps/ios/AceClub/
-├── Core/           # App entry point
-├── Data/           # DataSources, DTOs, Mappers, Repositories
-├── Domain/         # Entities, UseCases
-└── Presentation/   # Views, ViewModels
+apps/mobile/
+├── app/            # Expo Router (file-based routing)
+├── components/     # UI components (ui/ for base, feature-specific in features/)
+├── features/       # Feature modules (components/, hooks/, lib/)
+├── hooks/          # Global React Query hooks
+├── services/       # HTTP wrappers par domaine
+├── lib/            # Core utils (api, auth, query-client, websocket)
+├── store/          # Zustand stores
+├── types/          # TypeScript types par domaine
+└── constants/      # Theme, colors
+```
+
+### Web
+
+```
+apps/web/src/
+├── app/            # Next.js App Router ((marketing), (admin), (auth), api)
+├── components/     # UI (ui/ shadcn, custom/ metier, sections/ marketing)
+├── hooks/          # React Query hooks
+├── lib/            # Utils (auth-client, api-client, config)
+└── types/          # TypeScript types
 ```
 
 ### API
 
 ```
 services/api/
-├── db/             # Database schema
-├── middleware/     # Auth, CORS
-├── server/         # Domain routers
+├── db/             # Database schema (15 modules)
+├── middleware/     # Auth, admin, org-member, CORS
+├── server/         # Domain routers (17 domaines)
 │   └── <domain>/   # router.ts, validators.ts, queries/, mutations/
 └── types/          # TypeScript types
 ```

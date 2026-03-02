@@ -1,20 +1,21 @@
--- Migrate existing event status values to new enum values
-UPDATE "event" SET "status" = 'draft' WHERE "status" = 'pending';
-UPDATE "event" SET "status" = 'on_sale' WHERE "status" = 'open';
-UPDATE "event" SET "status" = 'completed' WHERE "status" = 'closed';
-UPDATE "event" SET "status" = 'archived' WHERE "status" = 'archived';
---> statement-breakpoint
+-- First drop default, then convert status column to text so we can update values
+ALTER TABLE "event" ALTER COLUMN "status" DROP DEFAULT;--> statement-breakpoint
 ALTER TABLE "event" ALTER COLUMN "status" SET DATA TYPE text;--> statement-breakpoint
-ALTER TABLE "event" ALTER COLUMN "status" SET DEFAULT 'draft'::text;--> statement-breakpoint
+-- Now migrate existing event status values to new enum values
+UPDATE "event" SET "status" = 'draft' WHERE "status" = 'pending';--> statement-breakpoint
+UPDATE "event" SET "status" = 'on_sale' WHERE "status" = 'open';--> statement-breakpoint
+UPDATE "event" SET "status" = 'completed' WHERE "status" = 'closed';--> statement-breakpoint
+-- Drop old enum and create new one
 DROP TYPE "public"."event_status";--> statement-breakpoint
 CREATE TYPE "public"."event_status" AS ENUM('draft', 'presale', 'on_sale', 'completed', 'full', 'cancelled', 'archived');--> statement-breakpoint
 ALTER TABLE "event" ALTER COLUMN "status" SET DEFAULT 'draft'::"public"."event_status";--> statement-breakpoint
 ALTER TABLE "event" ALTER COLUMN "status" SET DATA TYPE "public"."event_status" USING "status"::"public"."event_status";--> statement-breakpoint
--- Migrate existing visibility values
-UPDATE "event" SET "visibility" = 'public' WHERE "visibility" = 'private';
---> statement-breakpoint
+-- First drop default, then convert visibility column to text so we can update values
+ALTER TABLE "event" ALTER COLUMN "visibility" DROP DEFAULT;--> statement-breakpoint
 ALTER TABLE "event" ALTER COLUMN "visibility" SET DATA TYPE text;--> statement-breakpoint
-ALTER TABLE "event" ALTER COLUMN "visibility" SET DEFAULT 'public'::text;--> statement-breakpoint
+-- Migrate existing visibility values
+UPDATE "event" SET "visibility" = 'public' WHERE "visibility" = 'private';--> statement-breakpoint
+-- Drop old enum and create new one
 DROP TYPE "public"."event_visibility";--> statement-breakpoint
 CREATE TYPE "public"."event_visibility" AS ENUM('public', 'organization');--> statement-breakpoint
 ALTER TABLE "event" ALTER COLUMN "visibility" SET DEFAULT 'public'::"public"."event_visibility";--> statement-breakpoint

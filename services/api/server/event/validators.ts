@@ -19,7 +19,7 @@ export const createEventValidator = z.object({
   price: z.number().int().min(0).optional(),
   paymentLink: z.string().url().optional(),
   visibility: eventVisibilityEnum.optional().default("public"),
-  organizationId: z.string().min(1, "Organization ID is required"),
+  organizationId: z.string().min(1, "Organization is required"),
 });
 
 export const updateEventValidator = z.object({
@@ -61,7 +61,7 @@ export const listEventsValidator = z.object({
   fromDate: z.string().optional(),
   toDate: z.string().optional(),
   sortBy: z
-    .enum(["upcoming", "nearest", "recent"])
+    .enum(["upcoming", "nearest", "recent", "past"])
     .optional()
     .default("upcoming"),
   latitude: z.coerce.number().optional(),

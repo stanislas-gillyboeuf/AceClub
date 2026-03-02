@@ -1,5 +1,0 @@
-// Debug Configuration Example
-// Copy this file to Debug.xcconfig and customize the values
-
-API_BASE_URL = http:/$()/localhost:3000/api
-APP_ENV = development

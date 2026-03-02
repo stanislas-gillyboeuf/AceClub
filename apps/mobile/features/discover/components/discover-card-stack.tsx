@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { GlassView } from "@/components/ui/glass-view";
 import Animated, {
@@ -52,6 +52,7 @@ export function DiscoverCardStack({
 }: DiscoverCardStackProps) {
   const scheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const [cardAreaHeight, setCardAreaHeight] = useState(0);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
 
@@ -173,7 +174,10 @@ export function DiscoverCardStack({
       )}
 
       {/* Card area */}
-      <View style={styles.cardArea}>
+      <View
+        style={styles.cardArea}
+        onLayout={(e) => setCardAreaHeight(e.nativeEvent.layout.height)}
+      >
         {items.length === 0 && !isLoading ? (
           <View style={[styles.emptyContainer, { backgroundColor: semanticColors.cardBackground[scheme] }]}>
             <EmptyState
@@ -204,7 +208,7 @@ export function DiscoverCardStack({
                   ]}
                   pointerEvents="none"
                 >
-                  <DiscoverCard item={item} />
+                  <DiscoverCard item={item} maxHeight={cardAreaHeight || undefined} />
                 </View>
               );
             })}
@@ -217,7 +221,7 @@ export function DiscoverCardStack({
                 >
                   <Pressable onPress={handleCardPress}>
                     <Animated.View style={glowAnimatedStyle}>
-                      <DiscoverCard item={topCard} />
+                      <DiscoverCard item={topCard} maxHeight={cardAreaHeight || undefined} />
                     </Animated.View>
                   </Pressable>
                 </Animated.View>

@@ -19,6 +19,7 @@ import {
   MapPin,
   FileText,
   Hand,
+  Shield,
   X,
   Check,
 } from "lucide-react-native";
@@ -569,6 +570,17 @@ export default function Settings() {
               onPress={openPrivacy}
             />
           </SectionCard>
+
+          {/* Administration (admin only) */}
+          {user?.role === "admin" && (
+            <SectionCard title="Administration">
+              <SettingsRow
+                icon={<Shield size={20} color={colors.accentOrange} strokeWidth={1.5} />}
+                label="Gestion de la plateforme"
+                onPress={() => router.push("/(tabs)/profile/admin")}
+              />
+            </SectionCard>
+          )}
 
           {/* Danger Zone */}
           <Button

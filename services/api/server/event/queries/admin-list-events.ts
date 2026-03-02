@@ -19,13 +19,21 @@ export const adminListEvents = async (c: Context<HonoContext>) => {
     conditions.push(eq(event.organizationId, query.organizationId));
   }
 
-  const events = await db
-    .select()
-    .from(event)
-    .where(conditions.length > 0 ? and(...conditions) : undefined)
-    .orderBy(event.createdAt)
-    .limit(query.limit)
-    .offset(query.offset);
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const [events, [totalResult]] = await Promise.all([
+    db
+      .select()
+      .from(event)
+      .where(whereClause)
+      .orderBy(event.createdAt)
+      .limit(query.limit)
+      .offset(query.offset),
+    db
+      .select({ count: count() })
+      .from(event)
+      .where(whereClause),
+  ]);
 
   const eventsWithCounts = await Promise.all(
     events.map(async (e) => {
@@ -37,5 +45,5 @@ export const adminListEvents = async (c: Context<HonoContext>) => {
     }),
   );
 
-  return c.json(eventsWithCounts);
+  return c.json({ events: eventsWithCounts, total: totalResult.count });
 };

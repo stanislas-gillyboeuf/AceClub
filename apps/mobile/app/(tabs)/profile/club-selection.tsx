@@ -18,13 +18,15 @@ import { useSearchOrganizations, useVerifyPin, useRequestClub } from "@/hooks/us
 import { colors, semanticColors, radii, spacing } from "@/constants/theme";
 import { FormField } from "@/components/ui/form-field";
 import { setPendingClubSelection } from "@/lib/pending-club-selection";
+import { setPendingVenueSelection } from "@/lib/pending-venue-selection";
 import Button from "@/components/ui/button";
 import type { Organization } from "@/types/organization";
 
 export default function ClubSelection() {
   const scheme = useColorScheme();
   const router = useRouter();
-  const { selectedId } = useLocalSearchParams<{ selectedId?: string }>();
+  const { selectedId, mode } = useLocalSearchParams<{ selectedId?: string; mode?: string }>();
+  const isVenueMode = mode === "venue";
 
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -58,7 +60,11 @@ export default function ClubSelection() {
   const organizations = searchData?.organizations ?? [];
 
   const handleSelect = (org: Organization, orgPin?: string) => {
-    setPendingClubSelection({ organization: org, pin: orgPin });
+    if (isVenueMode) {
+      setPendingVenueSelection(org);
+    } else {
+      setPendingClubSelection({ organization: org, pin: orgPin });
+    }
     router.back();
   };
 
