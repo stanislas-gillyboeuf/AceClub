@@ -1,6 +1,6 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { eventService } from "@/services/event";
-import type { CreateEventRequest, UpdateEventRequest, EventStatus } from "@/types/event";
+import type { CreateEventRequest, UpdateEventRequest, EventStatus, EventSortBy } from "@/types/event";
 
 // --- Queries ---
 
@@ -19,7 +19,7 @@ export function useMyEvents(params?: {
 export function useInfiniteEvents(params?: {
   organizationId?: string;
   status?: string;
-  sortBy?: "upcoming" | "nearest" | "recent";
+  sortBy?: EventSortBy;
   latitude?: number;
   longitude?: number;
   limit?: number;

@@ -9,6 +9,8 @@ export type EventStatus =
 
 export type EventVisibility = "public" | "organization";
 
+export type EventSortBy = "upcoming" | "nearest" | "recent" | "past";
+
 export type RegistrationStatus = "registered" | "waitlisted" | "cancelled";
 
 export interface EventSummary {

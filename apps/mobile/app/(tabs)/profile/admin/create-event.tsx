@@ -92,7 +92,7 @@ export default function CreateEvent() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
-      aspect: [16, 9],
+      aspect: [1, 1],
       quality: 0.8,
     });
     if (!result.canceled && result.assets[0]) {
@@ -350,13 +350,20 @@ export default function CreateEvent() {
               color={address ? colors.accentGreen : semanticColors.labelTertiary[scheme]}
               strokeWidth={1.5}
             />
-            <TextInput
-              value={address}
-              onChangeText={setAddress}
-              placeholder="Adresse du lieu (optionnel)"
-              placeholderTextColor={semanticColors.labelTertiary[scheme]}
-              style={[styles.addressInput, { color: semanticColors.labelPrimary[scheme] }]}
-            />
+            <View style={{ flex: 1 }}>
+              <TextInput
+                value={address}
+                onChangeText={setAddress}
+                placeholder="Ajouter une adresse"
+                placeholderTextColor={semanticColors.labelTertiary[scheme]}
+                style={[styles.addressInput, { color: semanticColors.labelPrimary[scheme] }]}
+              />
+              {organization && address === (organization.address ?? "") && address.length > 0 && (
+                <Text style={[styles.addressSubtitle, { color: semanticColors.labelTertiary[scheme] }]}>
+                  Adresse du club
+                </Text>
+              )}
+            </View>
           </View>
         </GlassView>
 
@@ -591,7 +598,7 @@ const styles = StyleSheet.create({
   coverContainer: {
     borderRadius: radii.lg,
     overflow: "hidden",
-    height: 180,
+    aspectRatio: 1,
   },
   coverImage: {
     width: "100%",
@@ -650,6 +657,10 @@ const styles = StyleSheet.create({
   addressInput: {
     fontSize: 16,
     flex: 1,
+  },
+  addressSubtitle: {
+    fontSize: 12,
+    marginTop: 2,
   },
   descriptionInput: {
     fontSize: 16,

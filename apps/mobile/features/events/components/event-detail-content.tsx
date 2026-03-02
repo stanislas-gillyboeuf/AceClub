@@ -1,6 +1,5 @@
-import { View, Text, ScrollView, Pressable, StyleSheet, useWindowDimensions, Alert, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import { GlassView } from "@/components/ui/glass-view";
 import { Avatar } from "@/components/ui/avatar";
 import Button from "@/components/ui/button";
@@ -10,7 +9,6 @@ import {
   Clock,
   MapPin,
   Users,
-  X,
   CalendarDays,
 } from "lucide-react-native";
 import { colors, semanticColors, radii, spacing } from "@/constants/theme";
@@ -20,12 +18,10 @@ import { formatFullDate, formatEventTime } from "@/lib/format";
 
 interface EventDetailContentProps {
   eventId: string;
-  onClose?: () => void;
 }
 
-export function EventDetailContent({ eventId, onClose }: EventDetailContentProps) {
+export function EventDetailContent({ eventId }: EventDetailContentProps) {
   const scheme = useColorScheme();
-  const { width: screenWidth } = useWindowDimensions();
   const { data: event, isLoading } = useEvent(eventId);
   const registerMutation = useRegisterEvent();
   const cancelMutation = useCancelRegistration();
@@ -63,44 +59,20 @@ export function EventDetailContent({ eventId, onClose }: EventDetailContentProps
   return (
     <View style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
       <ScrollView style={{ flex: 1 }} bounces={false} showsVerticalScrollIndicator={false}>
-        {/* Hero image */}
-        <View style={[styles.heroContainer, { width: screenWidth }]}>
+        <View style={styles.content}>
+
           {event.coverImage ? (
             <Image
               source={{ uri: event.coverImage }}
-              style={StyleSheet.absoluteFill}
+              style={styles.coverImage}
               contentFit="cover"
               transition={200}
             />
           ) : (
-            <LinearGradient
-              colors={[`${colors.accentGreen}B3`, `${colors.accentGreen}4D`]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            >
-              <View style={styles.heroPlaceholder}>
-                <CalendarDays size={64} color="rgba(255,255,255,0.6)" strokeWidth={1.5} />
-              </View>
-            </LinearGradient>
+            <View style={[styles.coverPlaceholder, { backgroundColor: semanticColors.skeleton[scheme] }]}>
+              <CalendarDays size={48} color={semanticColors.labelTertiary[scheme]} strokeWidth={1.5} />
+            </View>
           )}
-
-          <LinearGradient
-            colors={["transparent", semanticColors.primaryBackground[scheme]]}
-            style={styles.heroGradient}
-          />
-
-          {/* Close button */}
-          {onClose && (
-            <Pressable onPress={onClose}>
-              <GlassView style={styles.closeButton}>
-                <X size={18} color={semanticColors.labelSecondary[scheme]} strokeWidth={2.5} />
-              </GlassView>
-            </Pressable>
-          )}
-        </View>
-
-        <View style={styles.content}>
           {/* Title */}
           <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>
             {event.name}
@@ -239,39 +211,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  heroContainer: {
-    height: 300,
+  coverImage: {
+    aspectRatio: 1,
+    width: "100%",
+    borderRadius: radii.lg,
     overflow: "hidden",
   },
-  heroPlaceholder: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  heroGradient: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 120,
-  },
-  closeButton: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  coverPlaceholder: {
+    aspectRatio: 1,
+    width: "100%",
+    borderRadius: radii.lg,
     alignItems: "center",
     justifyContent: "center",
   },
   content: {
     paddingHorizontal: spacing.horizontal,
+    paddingTop: 16,
     paddingBottom: 120,
+    gap: 0,
   },
   title: {
     fontSize: 28,
     fontWeight: "700",
+    marginTop: 20,
     marginBottom: 16,
   },
   infoRow: {

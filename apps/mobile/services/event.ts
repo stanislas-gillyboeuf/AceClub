@@ -2,6 +2,7 @@ import { api } from "@/lib/api";
 import type {
   EventDetail,
   EventStatus,
+  EventSortBy,
   ListEventsResponse,
   MyEvent,
   EventParticipant,
@@ -20,7 +21,7 @@ export const eventService = {
     visibility?: string;
     fromDate?: string;
     toDate?: string;
-    sortBy?: "upcoming" | "nearest" | "recent";
+    sortBy?: EventSortBy;
     latitude?: number;
     longitude?: number;
     cursor?: string;
@@ -57,7 +58,7 @@ export const eventService = {
       "/event/admin-list-events",
       params,
     );
-    return res.events;
+    return res?.events ?? [];
   },
 
   updateEvent: (data: UpdateEventRequest) =>

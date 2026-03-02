@@ -11,7 +11,7 @@ import type { EventStatus } from "../../../db/schema/event/type";
 const VALID_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
   draft: ["presale", "on_sale", "cancelled"],
   presale: ["on_sale", "cancelled"],
-  on_sale: ["full", "completed", "cancelled"],
+  on_sale: ["full", "completed", "cancelled", "archived"],
   full: ["on_sale", "completed", "cancelled"],
   completed: ["archived"],
   cancelled: [],

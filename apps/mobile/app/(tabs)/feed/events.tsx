@@ -1,14 +1,14 @@
 import { useState, useMemo, useCallback } from "react";
 import { View, Text, FlatList, StyleSheet, RefreshControl } from "react-native";
 import { Stack, useRouter } from "expo-router";
-import { useMyEvents } from "@/hooks/use-event";
+import { useInfiniteEvents } from "@/hooks/use-event";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { EmptyState } from "@/components/ui/empty-state";
 import { EventRow } from "@/features/events/components/event-row";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { formatEventDateGroup } from "@/lib/format";
 import { semanticColors, spacing } from "@/constants/theme";
-import type { MyEvent } from "@/types/event";
+import type { EventSummary } from "@/types/event";
 
 type TimeTab = "upcoming" | "past";
 
@@ -19,22 +19,28 @@ const TAB_OPTIONS: { value: TimeTab; label: string }[] = [
 
 type ListItem =
   | { type: "header"; key: string; title: string }
-  | { type: "event"; key: string; event: MyEvent };
+  | { type: "event"; key: string; event: EventSummary };
 
 export default function EventsScreen() {
   const scheme = useColorScheme();
   const router = useRouter();
   const [tab, setTab] = useState<TimeTab>("upcoming");
 
-  const { data: events, isLoading, isRefetching, refetch } = useMyEvents({
-    timeFilter: tab,
-    limit: 50,
-  });
+  const {
+    data: eventsData,
+    isLoading,
+    isRefetching,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteEvents({ sortBy: tab, limit: 20 });
 
   const listItems = useMemo<ListItem[]>(() => {
-    if (!events || events.length === 0) return [];
+    const events = eventsData?.pages.flatMap((p) => p.data) ?? [];
+    if (events.length === 0) return [];
 
-    const grouped = new Map<string, MyEvent[]>();
+    const grouped = new Map<string, EventSummary[]>();
     for (const event of events) {
       const groupKey = formatEventDateGroup(event.startDate);
       const group = grouped.get(groupKey);
@@ -53,11 +59,17 @@ export default function EventsScreen() {
       }
     }
     return items;
-  }, [events]);
+  }, [eventsData]);
 
   const onRefresh = useCallback(() => {
     refetch();
   }, [refetch]);
+
+  const onEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const renderItem = useCallback(
     ({ item }: { item: ListItem }) => {
@@ -98,6 +110,8 @@ export default function EventsScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={styles.listContent}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.5}
         ListHeaderComponent={
           <View style={styles.segmentContainer}>
             <SegmentedControl options={TAB_OPTIONS} selected={tab} onSelect={setTab} />
@@ -110,8 +124,8 @@ export default function EventsScreen() {
               title={tab === "upcoming" ? "Aucun evenement a venir" : "Aucun evenement passe"}
               description={
                 tab === "upcoming"
-                  ? "Inscrivez-vous a des evenements pour les voir ici"
-                  : "Vos evenements passes apparaitront ici"
+                  ? "Les evenements a venir apparaitront ici"
+                  : "Les evenements passes apparaitront ici"
               }
             />
           ) : null

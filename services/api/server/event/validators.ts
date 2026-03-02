@@ -61,7 +61,7 @@ export const listEventsValidator = z.object({
   fromDate: z.string().optional(),
   toDate: z.string().optional(),
   sortBy: z
-    .enum(["upcoming", "nearest", "recent"])
+    .enum(["upcoming", "nearest", "recent", "past"])
     .optional()
     .default("upcoming"),
   latitude: z.coerce.number().optional(),

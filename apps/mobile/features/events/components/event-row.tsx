@@ -6,27 +6,30 @@ import { BadgePill } from "@/components/ui/badge-pill";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { formatTime } from "@/lib/format";
 import { colors, semanticColors, radii, spacing } from "@/constants/theme";
-import type { MyEvent } from "@/types/event";
+import type { EventSummary, MyEvent } from "@/types/event";
 
 interface EventRowProps {
-  event: MyEvent;
+  event: EventSummary | MyEvent;
   onPress?: () => void;
 }
 
 export function EventRow({ event, onPress }: EventRowProps) {
   const scheme = useColorScheme();
 
+  const registrationStatus =
+    "registrationStatus" in event ? event.registrationStatus : undefined;
+
   const badgeVariant =
-    event.registrationStatus === "registered"
+    registrationStatus === "registered"
       ? "success"
-      : event.registrationStatus === "waitlisted"
+      : registrationStatus === "waitlisted"
         ? "warning"
         : undefined;
 
   const badgeLabel =
-    event.registrationStatus === "registered"
+    registrationStatus === "registered"
       ? "Inscrit"
-      : event.registrationStatus === "waitlisted"
+      : registrationStatus === "waitlisted"
         ? "Liste d'attente"
         : undefined;
 
