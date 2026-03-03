@@ -57,8 +57,12 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-      <ScrollView style={{ flex: 1 }} bounces={false} showsVerticalScrollIndicator={false}>
+    <>
+      <ScrollView
+        style={[styles.scrollView, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.content}>
 
           {event.coverImage ? (
@@ -198,12 +202,12 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
           />
         ) : null}
       </View>
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scrollView: {
     flex: 1,
   },
   loadingContainer: {
