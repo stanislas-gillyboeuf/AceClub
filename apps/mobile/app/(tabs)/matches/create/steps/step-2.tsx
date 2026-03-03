@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
   View,
   FlatList,
+  ScrollView,
   Text,
   TextInput,
   Pressable,
@@ -9,16 +10,135 @@ import {
   StyleSheet,
 } from "react-native";
 import { GlassView } from "@/components/ui/glass-view";
-import { Search, X, Check } from "lucide-react-native";
+import { Search, X, Check, UserPlus } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { useMe, useSearchUsers } from "@/hooks/use-user";
+import { useMe, useSearchUsers, useCreateGhost } from "@/hooks/use-user";
 import { useCreateMatchFormStore } from "@/store/create-match-form";
 import { Avatar } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { colors, semanticColors, radii } from "@/constants/theme";
 import { StepProgress } from "./step-progress";
 import type { UserSearchItem } from "@/types/user";
+
+function GhostBadge() {
+  return (
+    <View style={styles.ghostBadge}>
+      <Text style={styles.ghostBadgeText}>Externe</Text>
+    </View>
+  );
+}
+
+function GhostForm({
+  initialName,
+  onCreated,
+  onBack,
+  scheme,
+}: {
+  initialName: string;
+  onCreated: (user: UserSearchItem) => void;
+  onBack: () => void;
+  scheme: "light" | "dark";
+}) {
+  const [ghostName, setGhostName] = useState(initialName);
+  const [ghostEmail, setGhostEmail] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const createGhost = useCreateGhost();
+
+  const canSubmit = ghostName.trim().length > 0 && ghostEmail.trim().includes("@");
+
+  const handleSubmit = useCallback(() => {
+    setError(null);
+    createGhost.mutate(
+      { name: ghostName.trim(), email: ghostEmail.trim() },
+      {
+        onSuccess: (ghost) => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          onCreated({
+            id: ghost.id,
+            name: ghost.name,
+            image: ghost.image,
+            isGhost: true,
+          });
+        },
+        onError: (err: any) => {
+          if (err?.status === 409) {
+            setError("Un joueur avec cet email existe déjà.");
+          } else {
+            setError("Erreur lors de la création. Réessayez.");
+          }
+        },
+      },
+    );
+  }, [ghostName, ghostEmail, createGhost, onCreated]);
+
+  return (
+    <View style={styles.ghostFormContainer}>
+      <View style={styles.ghostInputGroup}>
+        <Text style={[styles.ghostLabel, { color: semanticColors.labelSecondary[scheme] }]}>
+          Nom
+        </Text>
+        <GlassView style={styles.ghostInputWrapper}>
+          <TextInput
+            style={[styles.ghostInput, { color: semanticColors.labelPrimary[scheme] }]}
+            placeholder="Nom du joueur"
+            placeholderTextColor={semanticColors.labelSecondary[scheme]}
+            value={ghostName}
+            onChangeText={setGhostName}
+            autoCapitalize="words"
+            autoCorrect={false}
+          />
+        </GlassView>
+      </View>
+
+      <View style={styles.ghostInputGroup}>
+        <Text style={[styles.ghostLabel, { color: semanticColors.labelSecondary[scheme] }]}>
+          Email
+        </Text>
+        <GlassView style={styles.ghostInputWrapper}>
+          <TextInput
+            style={[styles.ghostInput, { color: semanticColors.labelPrimary[scheme] }]}
+            placeholder="email@exemple.com"
+            placeholderTextColor={semanticColors.labelSecondary[scheme]}
+            value={ghostEmail}
+            onChangeText={(text) => {
+              setGhostEmail(text);
+              if (error) setError(null);
+            }}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            textContentType="emailAddress"
+          />
+        </GlassView>
+      </View>
+
+      {error && <Text style={styles.ghostError}>{error}</Text>}
+
+      <Pressable
+        onPress={handleSubmit}
+        disabled={!canSubmit || createGhost.isPending}
+        style={({ pressed }) => [
+          styles.ghostSubmitButton,
+          !canSubmit && styles.ghostSubmitDisabled,
+          pressed && canSubmit && { transform: [{ scale: 0.98 }] },
+        ]}
+      >
+        {createGhost.isPending ? (
+          <ActivityIndicator color="#fff" size="small" />
+        ) : (
+          <Text style={styles.ghostSubmitText}>Ajouter</Text>
+        )}
+      </Pressable>
+
+      <Pressable onPress={onBack} style={styles.ghostBackButton} hitSlop={8}>
+        <Text style={[styles.ghostBackText, { color: semanticColors.labelSecondary[scheme] }]}>
+          Retour à la recherche
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
 
 export default function Step2() {
   const scheme = useColorScheme();
@@ -28,6 +148,7 @@ export default function Step2() {
 
   const [searchText, setSearchText] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [showGhostForm, setShowGhostForm] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   useEffect(() => {
@@ -57,10 +178,19 @@ export default function Step2() {
           id: user.id,
           name: user.name,
           image: user.image,
+          isGhost: user.isGhost,
         });
       }
     },
     [awayUser, setAwayUser],
+  );
+
+  const handleGhostCreated = useCallback(
+    (user: UserSearchItem) => {
+      setAwayUser(user);
+      setShowGhostForm(false);
+    },
+    [setAwayUser],
   );
 
   const renderUser = useCallback(
@@ -81,12 +211,15 @@ export default function Step2() {
           >
             <Avatar imageUrl={item.image} name={item.name} size={46} />
             <View style={styles.memberInfo}>
-              <Text
-                style={[styles.memberName, { color: semanticColors.labelPrimary[scheme] }]}
-                numberOfLines={1}
-              >
-                {item.name}
-              </Text>
+              <View style={styles.memberNameRow}>
+                <Text
+                  style={[styles.memberName, { color: semanticColors.labelPrimary[scheme] }]}
+                  numberOfLines={1}
+                >
+                  {item.name}
+                </Text>
+                {item.isGhost && <GhostBadge />}
+              </View>
             </View>
             {isSelected && (
               <View style={styles.checkCircle}>
@@ -102,6 +235,58 @@ export default function Step2() {
 
   const showLoading = isLoading || isFetching;
   const hasQuery = debouncedQuery.length >= 2;
+
+  const addGhostButton = (
+    <Pressable
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setShowGhostForm(true);
+      }}
+      style={({ pressed }) => [
+        styles.memberRow,
+        pressed && { transform: [{ scale: 0.98 }] },
+      ]}
+    >
+      <GlassView style={styles.memberCard} tintColor={`${colors.accentGreen}15`}>
+        <View style={styles.ghostIcon}>
+          <UserPlus size={22} color={colors.accentGreen} />
+        </View>
+        <View style={styles.memberInfo}>
+          <Text
+            style={[styles.memberName, { color: semanticColors.labelPrimary[scheme] }]}
+            numberOfLines={1}
+          >
+            Ajouter un joueur externe
+          </Text>
+          <Text
+            style={[styles.ghostHint, { color: semanticColors.labelSecondary[scheme] }]}
+            numberOfLines={1}
+          >
+            {"Joueur pas encore sur l'app"}
+          </Text>
+        </View>
+      </GlassView>
+    </Pressable>
+  );
+
+  if (showGhostForm) {
+    return (
+      <ScrollView
+        style={[styles.list, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.ghostScrollContent}
+      >
+        <StepProgress />
+        <GhostForm
+          initialName={searchText.trim()}
+          onCreated={handleGhostCreated}
+          onBack={() => setShowGhostForm(false)}
+          scheme={scheme}
+        />
+      </ScrollView>
+    );
+  }
 
   return (
     <FlatList
@@ -143,17 +328,21 @@ export default function Step2() {
           </GlassView>
         </View>
       }
+      ListFooterComponent={hasQuery && results.length > 0 ? addGhostButton : null}
       ListEmptyComponent={
         showLoading && hasQuery ? (
           <View style={styles.centered}>
             <ActivityIndicator color={colors.accentGreen} />
           </View>
         ) : hasQuery && results.length === 0 ? (
-          <EmptyState
-            icon="Users"
-            title="Aucun joueur"
-            description="Aucun joueur ne correspond à votre recherche."
-          />
+          <View>
+            <EmptyState
+              icon="Users"
+              title="Aucun joueur trouvé"
+              description="Aucun joueur ne correspond à votre recherche."
+            />
+            {addGhostButton}
+          </View>
         ) : (
           <View style={styles.centered}>
             <Text style={[styles.hintText, { color: semanticColors.labelSecondary[scheme] }]}>
@@ -214,9 +403,15 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  memberNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   memberName: {
     fontSize: 17,
     fontWeight: "500",
+    flexShrink: 1,
   },
   checkCircle: {
     width: 26,
@@ -233,5 +428,87 @@ const styles = StyleSheet.create({
   },
   hintText: {
     fontSize: 15,
+  },
+  // Ghost badge
+  ghostBadge: {
+    backgroundColor: `${colors.accentGreen}20`,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  ghostBadgeText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.accentGreen,
+  },
+  // Ghost button in list
+  ghostIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: `${colors.accentGreen}15`,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  ghostHint: {
+    fontSize: 14,
+  },
+  // Ghost form
+  ghostScrollContent: {
+    paddingTop: 8,
+    paddingBottom: 100,
+    gap: 12,
+  },
+  ghostFormContainer: {
+    paddingHorizontal: 16,
+    gap: 16,
+  },
+  ghostBackButton: {
+    alignSelf: "center",
+    paddingVertical: 8,
+  },
+  ghostBackText: {
+    fontSize: 15,
+  },
+  ghostInputGroup: {
+    width: "100%",
+    gap: 4,
+  },
+  ghostLabel: {
+    fontSize: 13,
+    fontWeight: "500",
+    marginLeft: 4,
+  },
+  ghostInputWrapper: {
+    borderRadius: radii.sm,
+    paddingHorizontal: 12,
+    height: 44,
+    justifyContent: "center",
+  },
+  ghostInput: {
+    fontSize: 16,
+    paddingVertical: 0,
+  },
+  ghostError: {
+    fontSize: 13,
+    color: colors.red500,
+    textAlign: "center",
+  },
+  ghostSubmitButton: {
+    backgroundColor: colors.accentGreen,
+    borderRadius: radii.sm,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    marginTop: 8,
+  },
+  ghostSubmitDisabled: {
+    opacity: 0.5,
+  },
+  ghostSubmitText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

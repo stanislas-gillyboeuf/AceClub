@@ -9,6 +9,9 @@ import {
   RefreshControl,
   StyleSheet,
 } from "react-native";
+import { Plus } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, radii, semanticColors, spacing } from "@/constants/theme";
 import { useInfiniteMatches } from "@/hooks/use-match";
@@ -17,10 +20,10 @@ import { MatchRowSkeleton } from "@/features/matches/components/match-row-skelet
 import { MatchDateHeader } from "@/features/matches/components/match-date-header";
 import { buildSections, type MatchSection } from "@/features/matches/components/match-sections";
 import { EmptyState } from "@/components/ui/empty-state";
-
 export default function Matches() {
   const router = useRouter();
   const scheme = useColorScheme();
+  const insets = useSafeAreaInsets();
   const sectionListRef = useRef<SectionList>(null);
   const [hasScrolledToToday, setHasScrolledToToday] = useState(false);
 
@@ -84,35 +87,36 @@ export default function Matches() {
           headerRight:
             Platform.OS === "android"
               ? () => (
-                  <View style={styles.androidToolbar}>
-                    <Pressable onPress={onOpenRequests}>
-                      <MaterialIcons name="mail-outline" size={24} color={colors.accentGreen} />
-                    </Pressable>
-                    <Pressable onPress={onCreateMatch}>
-                      <MaterialIcons name="add" size={24} color={colors.accentGreen} />
-                    </Pressable>
-                  </View>
+                  <Pressable onPress={onOpenRequests}>
+                    <MaterialIcons name="mail-outline" size={24} color={colors.accentGreen} />
+                  </Pressable>
                 )
               : undefined,
         }}
       />
       {Platform.OS === "ios" && (
-        <>
-          <Stack.Toolbar placement="left">
-            <Stack.Toolbar.Button icon="plus" onPress={onCreateMatch} tintColor={colors.accentGreen} />
-          </Stack.Toolbar>
-          <Stack.Toolbar placement="right">
-            <Stack.Toolbar.Button icon="envelope.badge" onPress={onOpenRequests} tintColor={colors.accentGreen} />
-          </Stack.Toolbar>
-        </>
+        <Stack.Toolbar placement="right">
+          <Stack.Toolbar.Button icon="envelope.badge" onPress={onOpenRequests} tintColor={colors.accentGreen} />
+        </Stack.Toolbar>
       )}
     </>
+  );
+
+  const fab = (
+    <Pressable
+      onPress={onCreateMatch}
+      style={({ pressed }) => [styles.fab, { bottom: insets.bottom + 24 }, pressed && styles.fabPressed]}
+    >
+      <GlassView style={styles.fabGlass} tintColor={colors.accentGreen}>
+        <Plus size={28} color={colors.white} />
+      </GlassView>
+    </Pressable>
   );
 
 
   if (isLoading && allMatches.length === 0) {
     return (
-      <>
+      <View style={styles.container}>
         {toolbar}
         <View style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
           <View style={styles.skeletonList}>
@@ -121,14 +125,15 @@ export default function Matches() {
             ))}
           </View>
         </View>
-      </>
+        {fab}
+      </View>
     );
   }
 
 
   if (!isLoading && allMatches.length === 0) {
     return (
-      <>
+      <View style={styles.container}>
         {toolbar}
         <View style={[styles.emptyContainer, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
           <EmptyState
@@ -137,12 +142,13 @@ export default function Matches() {
             description="Tes matchs apparaîtront ici une fois planifiés ou joués."
           />
         </View>
-      </>
+        {fab}
+      </View>
     );
   }
 
   return (
-    <>
+    <View style={styles.container}>
       {toolbar}
       <SectionList
         ref={sectionListRef}
@@ -185,7 +191,8 @@ export default function Matches() {
         contentContainerStyle={styles.listContent}
         style={{ backgroundColor: semanticColors.primaryBackground[scheme] }}
       />
-    </>
+      {fab}
+    </View>
   );
 }
 
@@ -210,9 +217,18 @@ const styles = StyleSheet.create({
   sectionContent: {
     paddingHorizontal: spacing.horizontal,
   },
-  androidToolbar: {
-    flexDirection: "row",
+  fab: {
+    position: "absolute",
+    alignSelf: "center",
+  },
+  fabGlass: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
     alignItems: "center",
-    gap: 16,
+  },
+  fabPressed: {
+    transform: [{ scale: 0.95 }],
   },
 });
