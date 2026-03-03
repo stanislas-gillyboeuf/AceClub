@@ -1,5 +1,8 @@
 import { Platform, View } from "react-native";
-import { GlassView as ExpoGlassView } from "expo-glass-effect";
+import {
+  GlassView as ExpoGlassView,
+  isGlassEffectAPIAvailable,
+} from "expo-glass-effect";
 import type { GlassViewProps } from "expo-glass-effect";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { semanticColors } from "@/constants/theme";
@@ -11,7 +14,7 @@ import { semanticColors } from "@/constants/theme";
  *   to avoid the transparent fallback.
  */
 export function GlassView({ style, tintColor, ...rest }: GlassViewProps) {
-  if (Platform.OS === "ios" && Number(Platform.Version) >= 26) {
+  if (Platform.OS === "ios" && isGlassEffectAPIAvailable()) {
     return <ExpoGlassView style={style} tintColor={tintColor} {...rest} />;
   }
 
@@ -34,9 +37,9 @@ function GlassFallback({
     <View
       style={[
         {
-          backgroundColor: tintColor ? `${tintColor}18` : bg,
-          borderWidth: 1,
-          borderColor: tintColor ? `${tintColor}30` : border,
+          backgroundColor: tintColor ?? bg,
+          borderWidth: tintColor ? 0 : 1,
+          borderColor: tintColor ? undefined : border,
         },
         style,
       ]}

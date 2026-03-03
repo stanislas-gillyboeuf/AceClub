@@ -34,8 +34,8 @@ export default function FeedLayout() {
         name="event-detail"
         options={{
           presentation: formSheet,
-          headerShown: true,
           title: "",
+          headerTransparent: Platform.OS === "ios",
           ...(Platform.OS === "ios" && {
             sheetGrabberVisible: true,
             sheetAllowedDetents: [0.92, 1],

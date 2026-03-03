@@ -45,7 +45,6 @@ export default function DiscoverScreen() {
     like,
     pass,
     updateLocation,
-    refresh,
   } = useDiscoverState();
 
   const [selectedItem, setSelectedItem] = useState<MatchIntentWithUser | null>(null);
@@ -80,9 +79,8 @@ export default function DiscoverScreen() {
     (value: number | undefined) => {
       setSelectedRadius(value);
       setShowRadiusMenu(false);
-      refresh();
     },
-    [setSelectedRadius, refresh]
+    [setSelectedRadius]
   );
 
   if (isLoading && items.length === 0) {
