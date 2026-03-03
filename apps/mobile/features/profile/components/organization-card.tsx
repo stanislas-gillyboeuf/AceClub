@@ -3,7 +3,9 @@ import { Image } from "expo-image";
 import { Building2, ChevronRight } from "lucide-react-native";
 import { Card } from "@/components/ui/card";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { ROLE_LABELS } from "@/features/profile/lib/role-permissions";
 import { colors, semanticColors } from "@/constants/theme";
+import type { MemberRole } from "@/types/common";
 import type { Organization } from "@/types/organization";
 
 interface OrganizationCardProps {
@@ -63,11 +65,7 @@ export function OrganizationCard({
           </Text>
           {memberRole && (
             <Text style={[styles.orgRole, { color: semanticColors.labelSecondary[scheme] }]}>
-              {memberRole === "owner"
-                ? "Propriétaire"
-                : memberRole === "admin"
-                  ? "Administrateur"
-                  : "Membre"}
+              {ROLE_LABELS[memberRole as MemberRole] ?? memberRole}
             </Text>
           )}
         </View>

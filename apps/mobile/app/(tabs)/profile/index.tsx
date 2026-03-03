@@ -29,8 +29,10 @@ import { ProfileBadgeSection } from "@/features/profile/components/profile-badge
 import { MatchIntentList } from "@/features/profile/components/match-intent-list";
 import { OrganizationCard } from "@/features/profile/components/organization-card";
 import { InvitationList } from "@/features/profile/components/invitation-list";
+import { canAccessHub } from "@/features/profile/lib/role-permissions";
 import Button from "@/components/ui/button";
 import { semanticColors, spacing, colors } from "@/constants/theme";
+import type { MemberRole } from "@/types/common";
 import type { MatchWithParticipants } from "@/types/match";
 
 function calculateMatchStats(matches: MatchWithParticipants[], userId: string) {
@@ -285,6 +287,15 @@ export default function Profile() {
           organization={primaryOrg}
           memberRole={memberRole?.role}
         />
+
+        {/* Manage Club — owners and admins only */}
+        {canAccessHub(memberRole?.role as MemberRole) && (
+          <Button
+            label="Gérer le club"
+            onPress={() => router.push("/(tabs)/profile/admin")}
+            variant="secondary"
+          />
+        )}
 
         <View style={{ width: '100%' }}>
         <Button

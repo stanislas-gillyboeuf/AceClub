@@ -36,6 +36,23 @@ export default function AdminLayout() {
         }}
       />
       <Stack.Screen
+        name="org-settings"
+        options={{
+          title: "Paramètres du club",
+          presentation: formSheet,
+          ...(Platform.OS === "ios" && {
+            sheetGrabberVisible: true,
+            sheetAllowedDetents: [0.85, 1],
+          }),
+        }}
+      />
+      <Stack.Screen
+        name="members"
+        options={{
+          title: "Membres",
+        }}
+      />
+      <Stack.Screen
         name="club-selection"
         options={{
           title: "Selectionner un club",

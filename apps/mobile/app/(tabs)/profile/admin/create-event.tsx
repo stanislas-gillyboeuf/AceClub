@@ -32,9 +32,9 @@ import { consumePendingVenueSelection } from "@/lib/pending-venue-selection";
 import { GlassView } from "@/components/ui/glass-view";
 import Button from "@/components/ui/button";
 import { colors, semanticColors, spacing, radii } from "@/constants/theme";
-import { VISIBILITY_OPTIONS } from "@/features/events/lib/event-status";
+import { EVENT_STATUS_CONFIG, VISIBILITY_OPTIONS } from "@/features/events/lib/event-status";
 import { formatShortDate, formatTime } from "@/lib/format";
-import type { EventVisibility } from "@/types/event";
+import type { EventVisibility, EventStatus } from "@/types/event";
 
 export default function CreateEvent() {
   const scheme = useColorScheme();
@@ -52,10 +52,12 @@ export default function CreateEvent() {
     locationLatitude,
     locationLongitude,
     maxParticipants,
+    status,
     visibility,
     isFree,
     price,
     paymentLink,
+    setStatus,
     setName,
     setDescription,
     setCoverImageUri,
@@ -144,6 +146,7 @@ export default function CreateEvent() {
         price: isFree ? undefined : (parseInt(price, 10) || undefined),
         paymentLink: isFree ? undefined : (paymentLink.trim() || undefined),
         visibility,
+        status,
         organizationId: organization!.id,
       });
 
@@ -204,6 +207,41 @@ export default function CreateEvent() {
             placeholderTextColor={semanticColors.labelTertiary[scheme]}
             style={[styles.nameInput, { color: semanticColors.labelPrimary[scheme] }]}
           />
+        </GlassView>
+
+        {/* Status */}
+        <GlassView style={styles.fieldCard}>
+          <Text
+            style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}
+          >
+            STATUT
+          </Text>
+          <View style={styles.statusGrid}>
+            {EVENT_STATUS_CONFIG.map((opt) => {
+              const isActive = status === opt.value;
+              return (
+                <Pressable
+                  key={opt.value}
+                  onPress={() => setStatus(opt.value)}
+                  style={[
+                    styles.statusChip,
+                    isActive && { backgroundColor: `${opt.color}20` },
+                  ]}
+                >
+                  <View style={[styles.statusDot, { backgroundColor: opt.color }]} />
+                  <Text
+                    style={[
+                      styles.statusChipText,
+                      { color: isActive ? opt.color : semanticColors.labelSecondary[scheme] },
+                      isActive && { fontWeight: "700" },
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </GlassView>
 
         {/* Date Section */}
@@ -621,6 +659,28 @@ const styles = StyleSheet.create({
   nameInput: {
     fontSize: 20,
     fontWeight: "600",
+  },
+  statusGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  statusChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 8,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  statusChipText: {
+    fontSize: 13,
+    fontWeight: "500",
   },
   sectionLabel: {
     fontSize: 11,

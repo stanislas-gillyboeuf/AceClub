@@ -58,6 +58,7 @@ export function useMembers(organizationId?: string) {
   return useQuery({
     queryKey: ["organization", "members", organizationId],
     queryFn: () => organizationService.listMembers(organizationId),
+    enabled: !!organizationId,
   });
 }
 
