@@ -8,7 +8,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { Minus, Plus } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { radii } from "@/constants/theme";
+import { radii, semanticColors } from "@/constants/theme";
 import * as Haptics from "expo-haptics";
 
 const SLIDE_DISTANCE = 20;
@@ -69,8 +69,8 @@ export function ScoreStepper({
     }
   };
 
-  const bgColor = scheme === "light" ? "#F2F2F7" : "#1C1C1E";
-  const textColor = scheme === "light" ? "#000" : "#FFF";
+  const bgColor = semanticColors.systemGray6[scheme];
+  const textColor = semanticColors.labelPrimary[scheme];
 
   return (
     <View style={[styles.container, { backgroundColor: bgColor }]}>

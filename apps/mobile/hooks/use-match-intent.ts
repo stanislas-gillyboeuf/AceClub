@@ -33,7 +33,7 @@ export function useCreateMatchIntent() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateMatchIntentRequest) => matchIntentService.createMatchIntent(data),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["match-intent"] });
     },
   });
@@ -43,7 +43,7 @@ export function useSwipe() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: SwipeRequest) => matchIntentService.swipe(data),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["match-intent", "discover"] });
       queryClient.invalidateQueries({ queryKey: ["match-intent", "requests"] });
     },
@@ -54,7 +54,7 @@ export function useAcceptRequest() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => matchIntentService.acceptRequest(id),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["match-intent", "requests"] });
       queryClient.invalidateQueries({ queryKey: ["match", "list"] });
       queryClient.invalidateQueries({ queryKey: ["conversation"] });
@@ -66,7 +66,7 @@ export function useRejectRequest() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => matchIntentService.rejectRequest(id),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["match-intent", "requests"] });
     },
   });
@@ -76,7 +76,7 @@ export function useDeleteMatchIntent() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => matchIntentService.deleteMatchIntent(id),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["match-intent"] });
     },
   });

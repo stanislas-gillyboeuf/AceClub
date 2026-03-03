@@ -29,7 +29,7 @@ export function useCompleteOnboarding() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CompleteOnboardingRequest) => userService.completeOnboarding(data),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["user", "me"] });
       queryClient.invalidateQueries({ queryKey: ["user", "preferences"] });
     },
@@ -40,7 +40,7 @@ export function useUpdateProfile() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: UpdateProfileRequest) => userService.updateProfile(data),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["user", "me"] });
       queryClient.invalidateQueries({ queryKey: ["user", "preferences"] });
     },

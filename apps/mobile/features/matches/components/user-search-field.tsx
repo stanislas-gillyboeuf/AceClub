@@ -131,8 +131,7 @@ export function UserSearchField({
         style={[
           styles.inputContainer,
           {
-            backgroundColor:
-              scheme === "light" ? colors.gray100 : "#1C1C1E",
+            backgroundColor: semanticColors.systemGray6[scheme],
             borderColor: semanticColors.borderColor[scheme],
           },
         ]}

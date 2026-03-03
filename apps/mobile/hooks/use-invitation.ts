@@ -28,7 +28,7 @@ export function useCreateInvitation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateInvitationRequest) => invitationService.createInvitation(data),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["invitation"] });
     },
   });
@@ -38,7 +38,7 @@ export function useAcceptInvitation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (invitationId: string) => invitationService.acceptInvitation(invitationId),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["invitation"] });
       queryClient.invalidateQueries({ queryKey: ["organization"] });
     },
@@ -49,7 +49,7 @@ export function useRejectInvitation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (invitationId: string) => invitationService.rejectInvitation(invitationId),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["invitation"] });
     },
   });
@@ -59,7 +59,7 @@ export function useCancelInvitation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (invitationId: string) => invitationService.cancelInvitation(invitationId),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["invitation"] });
     },
   });

@@ -25,8 +25,7 @@ export function ProgressBar({
         {
           height,
           borderRadius: height / 2,
-          backgroundColor:
-            scheme === "dark" ? "#3A3A3C" : semanticColors.skeleton[scheme],
+          backgroundColor: semanticColors.skeleton[scheme],
         },
         trackStyle,
       ]}
