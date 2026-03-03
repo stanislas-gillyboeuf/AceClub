@@ -10,6 +10,8 @@ import {
   StyleSheet,
 } from "react-native";
 import { Plus } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, radii, semanticColors, spacing } from "@/constants/theme";
 import { useInfiniteMatches } from "@/hooks/use-match";
@@ -18,11 +20,10 @@ import { MatchRowSkeleton } from "@/features/matches/components/match-row-skelet
 import { MatchDateHeader } from "@/features/matches/components/match-date-header";
 import { buildSections, type MatchSection } from "@/features/matches/components/match-sections";
 import { EmptyState } from "@/components/ui/empty-state";
-import { botom}
-
 export default function Matches() {
   const router = useRouter();
   const scheme = useColorScheme();
+  const insets = useSafeAreaInsets();
   const sectionListRef = useRef<SectionList>(null);
   const [hasScrolledToToday, setHasScrolledToToday] = useState(false);
 
@@ -104,9 +105,11 @@ export default function Matches() {
   const fab = (
     <Pressable
       onPress={onCreateMatch}
-      style={({ pressed }) => [styles.fab, pressed && styles.fabPressed, ]}
+      style={({ pressed }) => [styles.fab, { bottom: insets.bottom + 24 }, pressed && styles.fabPressed]}
     >
-      <Plus size={28} color={colors.accentGreen} />
+      <GlassView style={styles.fabGlass} tintColor={colors.accentGreen}>
+        <Plus size={28} color={colors.white} />
+      </GlassView>
     </Pressable>
   );
 
@@ -216,12 +219,12 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: "absolute",
-    bottom: 24,
     alignSelf: "center",
+  },
+  fabGlass: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.accentGreen,
     justifyContent: "center",
     alignItems: "center",
   },
