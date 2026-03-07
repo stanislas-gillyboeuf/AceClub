@@ -78,6 +78,7 @@ export interface CreateEventRequest {
   price?: number;
   paymentLink?: string;
   visibility?: EventVisibility;
+  status?: EventStatus;
   organizationId: string;
 }
 

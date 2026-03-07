@@ -1,16 +1,14 @@
-import { useCallback, useRef } from "react";
-import {
-  encryptMessage,
-  decryptMessage,
-} from "@/lib/encryption";
-import type { ChatMessage } from "../types";
+import { useCallback, useEffect, useRef } from "react";
+import { encryptMessage } from "@/lib/encryption";
 
 export function useEncryption(conversationId: string, conversationKey?: string | null) {
   const keyRef = useRef<string | null>(conversationKey ?? null);
 
-  const ensureReady = useCallback(async () => {
-    // Key is already provided via getConversation response — no separate fetch needed
-  }, []);
+  useEffect(() => {
+    if (conversationKey != null) {
+      keyRef.current = conversationKey;
+    }
+  }, [conversationKey]);
 
   const encryptContent = useCallback(
     async (
@@ -32,38 +30,5 @@ export function useEncryption(conversationId: string, conversationKey?: string |
     [],
   );
 
-  const decryptMsg = useCallback(
-    async (msg: ChatMessage): Promise<ChatMessage> => {
-      if (!msg.isEncrypted || !msg.content) return msg;
-
-      // Try to detect v1 messages (old E2EE format — not valid JSON with v field)
-      try {
-        const parsed = JSON.parse(msg.content);
-        if (parsed.v === 1) {
-          return { ...msg, content: "[Ancien message chiffré]" };
-        }
-      } catch {
-        // Not valid JSON — likely old E2EE format
-        return { ...msg, content: "[Ancien message chiffré]" };
-      }
-
-      if (!keyRef.current) {
-        return { ...msg, content: "[Message chiffré]" };
-      }
-
-      try {
-        const decrypted = await decryptMessage(msg.content, keyRef.current);
-        return { ...msg, content: decrypted };
-      } catch {
-        return { ...msg, content: "[Message chiffré - impossible à déchiffrer]" };
-      }
-    },
-    [],
-  );
-
-  return {
-    ensureReady,
-    encryptContent,
-    decryptMessage: decryptMsg,
-  };
+  return { encryptContent };
 }

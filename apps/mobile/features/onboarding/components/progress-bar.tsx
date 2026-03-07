@@ -2,14 +2,13 @@ import { View, StyleSheet } from "react-native";
 import { colors } from "@/constants/theme";
 import Animated, { useAnimatedStyle, withTiming, Easing } from "react-native-reanimated";
 
-const TOTAL_STEPS = 9;
-
 interface ProgressBarProps {
-  currentStep: number; // 0-8 (name, gender, birthdate, club, sport, level, photo, notifications, location)
+  currentStep: number;
+  totalSteps: number;
 }
 
-export function ProgressBar({ currentStep }: ProgressBarProps) {
-  const progress = (currentStep + 1) / TOTAL_STEPS;
+export function ProgressBar({ currentStep, totalSteps }: ProgressBarProps) {
+  const progress = (currentStep + 1) / totalSteps;
 
   const fillStyle = useAnimatedStyle(() => ({
     width: withTiming(`${progress * 100}%` as any, { duration: 350, easing: Easing.out(Easing.cubic) }),

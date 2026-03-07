@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { Organization } from "@/types/organization";
-import type { EventVisibility } from "@/types/event";
+import type { EventVisibility, EventStatus } from "@/types/event";
 
 interface CreateEventFormState {
   name: string;
@@ -15,10 +15,12 @@ interface CreateEventFormState {
   locationLongitude: number | null;
   maxParticipants: number | null;
   visibility: EventVisibility;
+  status: EventStatus;
   isFree: boolean;
   price: string;
   paymentLink: string;
 
+  setStatus: (status: EventStatus) => void;
   setName: (name: string) => void;
   setDescription: (description: string) => void;
   setCoverImageUri: (uri: string | null) => void;
@@ -59,10 +61,12 @@ export const useCreateEventFormStore = create<CreateEventFormState>((set) => ({
   locationLongitude: null,
   maxParticipants: null,
   visibility: "public",
+  status: "draft",
   isFree: true,
   price: "",
   paymentLink: "",
 
+  setStatus: (status) => set({ status }),
   setName: (name) => set({ name }),
   setDescription: (description) => set({ description }),
   setCoverImageUri: (coverImageUri) => set({ coverImageUri }),
@@ -102,6 +106,7 @@ export const useCreateEventFormStore = create<CreateEventFormState>((set) => ({
       locationLongitude: null,
       maxParticipants: null,
       visibility: "public",
+      status: "draft",
       isFree: true,
       price: "",
       paymentLink: "",

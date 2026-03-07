@@ -48,8 +48,7 @@ export function ChatHeader({
   return (
     <Stack.Screen
       options={{
-        headerTransparent: Platform.OS === "ios",
-        scrollEdgeEffects: { top: "hidden" },
+        headerTransparent: false,
         headerLeft: () => (
           <Pressable onPress={() => router.back()} hitSlop={8} style={styles.backButton}>
             {Platform.OS === "ios" ? (

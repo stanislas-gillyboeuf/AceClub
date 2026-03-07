@@ -59,6 +59,4 @@ export const conversationService = {
       { emoji },
     ),
 
-  getConversationKey: (conversationId: string) =>
-    api.get<{ key: string }>(`/conversation/${conversationId}/key`),
 };
