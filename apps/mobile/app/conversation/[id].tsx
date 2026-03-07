@@ -201,6 +201,7 @@ function ChatContent({
           keyExtractor={(item) => item.id}
           renderItem={renderMessage}
           inverted
+          removeClippedSubviews={false}
           contentInsetAdjustmentBehavior="never"
           contentContainerStyle={styles.messagesList}
           onEndReached={handleLoadMore}
