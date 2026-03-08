@@ -27,7 +27,7 @@ interface CreateEventFormState {
   setStartDate: (date: Date) => void;
   setEndDate: (date: Date) => void;
   setOrganization: (org: Organization | null) => void;
-  setAddress: (text: string) => void;
+  setLocation: (location: { address: string; latitude: number | null; longitude: number | null }) => void;
   setMaxParticipants: (max: number | null) => void;
   setVisibility: (visibility: EventVisibility) => void;
   setIsFree: (isFree: boolean) => void;
@@ -80,11 +80,11 @@ export const useCreateEventFormStore = create<CreateEventFormState>((set) => ({
       locationLatitude: org?.latitude ?? null,
       locationLongitude: org?.longitude ?? null,
     }),
-  setAddress: (address) =>
+  setLocation: ({ address, latitude, longitude }) =>
     set({
       address,
-      locationLatitude: null,
-      locationLongitude: null,
+      locationLatitude: latitude,
+      locationLongitude: longitude,
     }),
   setMaxParticipants: (maxParticipants) => set({ maxParticipants }),
   setVisibility: (visibility) => set({ visibility }),

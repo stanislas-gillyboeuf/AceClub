@@ -36,6 +36,9 @@ export const getEvent = async (c: Context<HonoContext>) => {
       organizationName: organization.name,
       organizationLogo: organization.logo,
       organizationSlug: organization.slug,
+      organizationAddress: organization.address,
+      organizationLatitude: organization.latitude,
+      organizationLongitude: organization.longitude,
     })
     .from(event)
     .leftJoin(organization, eq(event.organizationId, organization.id))
