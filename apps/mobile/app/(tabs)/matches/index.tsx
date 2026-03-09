@@ -19,8 +19,13 @@ import { MatchRow } from "@/features/matches/components/match-row";
 import { MatchRowSkeleton } from "@/features/matches/components/match-row-skeleton";
 import { WeekDateStrip } from "@/features/matches/components/WeekDateStrip";
 import { EmptyState } from "@/components/ui/empty-state";
-import { startOfDay, formatDayKey } from "@/lib/date";
+import { startOfDay, formatDayKey, getMatchDisplayDate } from "@/lib/date";
 import type { MatchWithParticipants } from "@/types/match";
+
+function ItemSeparator() {
+  return <View style={separatorStyle} />;
+}
+const separatorStyle = { height: 12 };
 
 export default function Matches() {
   const router = useRouter();
@@ -28,7 +33,14 @@ export default function Matches() {
   const insets = useSafeAreaInsets();
 
   const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
-  const [weekOffset, setWeekOffset] = useState(0);
+
+  const handleChangeWeek = (direction: -1 | 1) => {
+    setSelectedDate((prev) => {
+      const d = new Date(prev);
+      d.setDate(d.getDate() + direction * 7);
+      return d;
+    });
+  };
 
   const {
     data,
@@ -45,22 +57,18 @@ export default function Matches() {
     [data]
   );
 
-  const matchCountByDay = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const match of allMatches) {
-      const dateStr = match.scheduledAt ?? match.startedAt ?? match.createdAt;
-      const key = formatDayKey(startOfDay(new Date(dateStr)));
-      map.set(key, (map.get(key) ?? 0) + 1);
-    }
-    return map;
-  }, [allMatches]);
-
-  const filteredMatches = useMemo(() => {
+  const { matchCountByDay, filteredMatches } = useMemo(() => {
     const selectedKey = formatDayKey(selectedDate);
-    return allMatches.filter((match) => {
-      const dateStr = match.scheduledAt ?? match.startedAt ?? match.createdAt;
-      return formatDayKey(startOfDay(new Date(dateStr))) === selectedKey;
-    });
+    const map = new Map<string, number>();
+    const filtered: MatchWithParticipants[] = [];
+
+    for (const match of allMatches) {
+      const key = formatDayKey(startOfDay(new Date(getMatchDisplayDate(match))));
+      map.set(key, (map.get(key) ?? 0) + 1);
+      if (key === selectedKey) filtered.push(match);
+    }
+
+    return { matchCountByDay: map, filteredMatches: filtered };
   }, [allMatches, selectedDate]);
 
   const onCreateMatch = () => {
@@ -120,8 +128,7 @@ export default function Matches() {
       selectedDate={selectedDate}
       onSelectDate={setSelectedDate}
       matchCountByDay={matchCountByDay}
-      weekOffset={weekOffset}
-      onChangeWeek={setWeekOffset}
+      onChangeWeek={handleChangeWeek}
     />
   );
 
@@ -159,7 +166,7 @@ export default function Matches() {
             />
           </View>
         }
-        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        ItemSeparatorComponent={ItemSeparator}
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />
         }

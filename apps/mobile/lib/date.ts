@@ -15,13 +15,14 @@ export function formatDateForAPI(date: Date): string {
   return date.toISOString().split("T")[0];
 }
 
-export function formatLongDate(date: Date, locale = "fr-FR"): string {
-  const formatter = new Intl.DateTimeFormat(locale, {
-    weekday: "long",
-    day: "numeric",
-    month: "short",
-  });
-  const formatted = formatter.format(date);
+const longDateFormatter = new Intl.DateTimeFormat("fr-FR", {
+  weekday: "long",
+  day: "numeric",
+  month: "short",
+});
+
+export function formatLongDate(date: Date): string {
+  const formatted = longDateFormatter.format(date);
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
@@ -35,7 +36,14 @@ export function startOfWeek(date: Date): Date {
   return d;
 }
 
+const shortWeekdayFormatter = new Intl.DateTimeFormat("fr-FR", { weekday: "short" });
+
 export function formatShortWeekday(date: Date): string {
-  const formatted = new Intl.DateTimeFormat("fr-FR", { weekday: "short" }).format(date);
-  return formatted.replace(".", "").toUpperCase().slice(0, 3);
+  return shortWeekdayFormatter.format(date).replace(".", "").toUpperCase().slice(0, 3);
+}
+
+export const monthYearFormatter = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric" });
+
+export function getMatchDisplayDate(match: { scheduledAt?: string | null; startedAt?: string | null; createdAt: string }): string {
+  return match.scheduledAt ?? match.startedAt ?? match.createdAt;
 }

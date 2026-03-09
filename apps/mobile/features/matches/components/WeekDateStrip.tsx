@@ -1,22 +1,20 @@
+import { useMemo } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors, spacing } from "@/constants/theme";
-import { startOfWeek, formatShortWeekday, formatDayKey } from "@/lib/date";
+import { startOfWeek, formatShortWeekday, formatDayKey, monthYearFormatter } from "@/lib/date";
 
 interface WeekDateStripProps {
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
   matchCountByDay: Map<string, number>;
-  weekOffset: number;
-  onChangeWeek: (offset: number) => void;
+  onChangeWeek: (direction: -1 | 1) => void;
 }
 
-function getWeekDays(weekOffset: number): Date[] {
-  const today = new Date();
-  const monday = startOfWeek(today);
-  monday.setDate(monday.getDate() + weekOffset * 7);
+function getWeekDays(selectedDate: Date): Date[] {
+  const monday = startOfWeek(selectedDate);
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
@@ -28,38 +26,36 @@ export function WeekDateStrip({
   selectedDate,
   onSelectDate,
   matchCountByDay,
-  weekOffset,
   onChangeWeek,
 }: WeekDateStripProps) {
   const scheme = useColorScheme();
-  const days = getWeekDays(weekOffset);
+  const days = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
   const selectedKey = formatDayKey(selectedDate);
-
-  const monthLabel = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric" })
-    .format(days[3])
-    .toUpperCase();
+  const monthLabel = monthYearFormatter.format(days[3]).toUpperCase();
 
   return (
     <View style={styles.container}>
-      {/* Month row with navigation */}
       <View style={styles.monthRow}>
-        <Pressable onPress={() => onChangeWeek(weekOffset - 1)} hitSlop={12}>
+        <Pressable onPress={() => onChangeWeek(-1)} hitSlop={12}>
           <ChevronLeft size={20} color={semanticColors.labelSecondary[scheme]} />
         </Pressable>
         <Text style={[styles.monthText, { color: semanticColors.labelSecondary[scheme] }]}>
           {monthLabel}
         </Text>
-        <Pressable onPress={() => onChangeWeek(weekOffset + 1)} hitSlop={12}>
+        <Pressable onPress={() => onChangeWeek(1)} hitSlop={12}>
           <ChevronRight size={20} color={semanticColors.labelSecondary[scheme]} />
         </Pressable>
       </View>
 
-      {/* Day cells */}
       <View style={styles.daysRow}>
         {days.map((day) => {
           const key = formatDayKey(day);
           const isSelected = key === selectedKey;
           const hasMatches = (matchCountByDay.get(key) ?? 0) > 0;
+          const textColor = isSelected ? colors.white : undefined;
+
+          const Wrapper = isSelected ? GlassView : View;
+          const wrapperProps = isSelected ? { tintColor: colors.accentGreen } : {};
 
           return (
             <Pressable
@@ -70,25 +66,14 @@ export function WeekDateStrip({
                 pressed && styles.dayCellPressed,
               ]}
             >
-              {isSelected ? (
-                <GlassView style={styles.dayInner} tintColor={colors.accentGreen}>
-                  <Text style={[styles.dayLabel, { color: colors.white }]}>
-                    {formatShortWeekday(day)}
-                  </Text>
-                  <Text style={[styles.dayNumber, { color: colors.white }]}>
-                    {day.getDate()}
-                  </Text>
-                </GlassView>
-              ) : (
-                <View style={styles.dayInner}>
-                  <Text style={[styles.dayLabel, { color: semanticColors.labelSecondary[scheme] }]}>
-                    {formatShortWeekday(day)}
-                  </Text>
-                  <Text style={[styles.dayNumber, { color: semanticColors.labelPrimary[scheme] }]}>
-                    {day.getDate()}
-                  </Text>
-                </View>
-              )}
+              <Wrapper style={styles.dayInner} {...wrapperProps}>
+                <Text style={[styles.dayLabel, { color: textColor ?? semanticColors.labelSecondary[scheme] }]}>
+                  {formatShortWeekday(day)}
+                </Text>
+                <Text style={[styles.dayNumber, { color: textColor ?? semanticColors.labelPrimary[scheme] }]}>
+                  {day.getDate()}
+                </Text>
+              </Wrapper>
               {hasMatches && <View style={styles.dot} />}
             </Pressable>
           );
