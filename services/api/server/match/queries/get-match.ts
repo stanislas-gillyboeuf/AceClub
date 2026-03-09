@@ -7,6 +7,7 @@ import {
   set,
   setScore,
   matchComment,
+  matchPhoto,
   matchFeedback,
 } from "../../../db/schema/match/schema";
 import { user, organization, member } from "../../../db/schema/auth/schema";
@@ -29,7 +30,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
 
     const foundMatch = matchData[0];
 
-    const [participantsRaw, setsData, commentsRaw] = await Promise.all([
+    const [participantsRaw, setsData, commentsRaw, photosData] = await Promise.all([
       db
         .select({
           id: matchParticipant.id,
@@ -76,6 +77,11 @@ export const getMatch = async (c: Context<HonoContext>) => {
         .leftJoin(user, eq(matchComment.userId, user.id))
         .where(eq(matchComment.matchId, matchId))
         .orderBy(matchComment.createdAt),
+
+      db
+        .select()
+        .from(matchPhoto)
+        .where(eq(matchPhoto.matchId, matchId)),
     ]);
 
     const participants = participantsRaw.map((p) => ({
@@ -208,6 +214,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
       sets: setsWithScores,
       comments,
       myFeedback,
+      photos: photosData,
       venueOrganization,
       participantOrganizations,
     });

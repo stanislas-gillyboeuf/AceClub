@@ -62,7 +62,7 @@ export default function MatchesLayout() {
         options={{
           presentation: formSheet,
           sheetGrabberVisible: Platform.OS === "ios",
-          title: "Sensations",
+          title: "Mon effort",
           headerTransparent: Platform.OS === "ios",
         }}
       />

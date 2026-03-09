@@ -24,6 +24,8 @@ import {
   createFeedback,
   updateFeedback,
   deleteFeedback,
+  uploadPhoto,
+  deletePhoto,
 } from "./mutations";
 import { getMatch, listMatches } from "./queries";
 
@@ -58,6 +60,10 @@ matchRouter.delete("/:id", deleteMatch);
 matchRouter.post("/:id/comment", zValidator("json", createCommentValidator), createComment);
 matchRouter.put("/:id/comment", zValidator("json", updateCommentValidator), updateComment);
 matchRouter.delete("/:id/comment", deleteComment);
+
+// Photo endpoints
+matchRouter.post("/:id/photo", uploadPhoto);
+matchRouter.delete("/:id/photo", deletePhoto);
 
 // Feedback endpoints
 matchRouter.post("/:id/feedback", zValidator("json", createFeedbackValidator), createFeedback);

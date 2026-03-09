@@ -1,11 +1,12 @@
 import { View, Text, StyleSheet } from "react-native";
+import { Image } from "expo-image";
 import { Calendar, Clock } from "lucide-react-native";
 import { Avatar } from "@/components/ui/avatar";
 import { BadgePill } from "@/components/ui/badge-pill";
 import { Card } from "@/components/ui/card";
 import { PlayerView } from "@/components/ui/player-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { colors, semanticColors, radii } from "@/constants/theme";
 import {
   formatMatchDate,
   formatMatchScore,
@@ -39,6 +40,8 @@ export function FeedMatchRow({
   const duration = formatMatchDuration(match);
   const date = formatMatchDate(match);
 
+  const photos = match.photos ?? [];
+
   const sortedComments = [...(match.comments ?? [])]
     .sort(
       (a, b) =>
@@ -50,6 +53,26 @@ export function FeedMatchRow({
 
   return (
     <Card onPress={onPress}>
+      {/* Match photos */}
+      {photos.length > 0 && (
+        <View style={styles.photosContainer}>
+          {photos.map((photo, index) => (
+            <Image
+              key={photo.id}
+              source={{ uri: photo.imageUrl }}
+              style={[
+                styles.feedPhoto,
+                photos.length === 1 && styles.feedPhotoSingle,
+                photos.length === 2 && index === 0 && { borderTopLeftRadius: radii.md },
+                photos.length === 2 && index === 1 && { borderTopRightRadius: radii.md },
+              ]}
+              contentFit="cover"
+              transition={200}
+            />
+          ))}
+        </View>
+      )}
+
       {/* Header: date + badge */}
       <View style={styles.headerRow}>
         <View style={styles.dateRow}>
@@ -170,6 +193,21 @@ export function FeedMatchRow({
 }
 
 const styles = StyleSheet.create({
+  photosContainer: {
+    flexDirection: "row",
+    gap: 4,
+    marginBottom: 12,
+    marginHorizontal: -16,
+    marginTop: -16,
+  },
+  feedPhoto: {
+    flex: 1,
+    height: 160,
+  },
+  feedPhotoSingle: {
+    borderTopLeftRadius: radii.md,
+    borderTopRightRadius: radii.md,
+  },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
