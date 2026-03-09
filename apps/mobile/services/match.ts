@@ -9,6 +9,7 @@ import type {
   UpdateMatchScoresRequest,
   UpdateMatchScoresResponse,
   MatchComment,
+  MatchPhoto,
   MatchFeedback,
   CreateCommentRequest,
   CreateFeedbackRequest,
@@ -68,4 +69,10 @@ export const matchService = {
 
   deleteFeedback: (matchId: string) =>
     api.delete<DeleteResponse>(`/match/${matchId}/feedback`),
+
+  uploadMatchPhoto: (matchId: string, uri: string, fileName: string, mimeType: string) =>
+    api.uploadMultipart<{ photo: MatchPhoto }>(`/match/${matchId}/photo`, "image", uri, fileName, mimeType),
+
+  deleteMatchPhoto: (matchId: string) =>
+    api.delete<DeleteResponse>(`/match/${matchId}/photo`),
 };

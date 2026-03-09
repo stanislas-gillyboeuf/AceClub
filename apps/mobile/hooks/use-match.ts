@@ -378,6 +378,51 @@ export function useUpdateFeedback() {
   });
 }
 
+export function useUploadMatchPhoto() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ matchId, uri, fileName, mimeType }: { matchId: string; uri: string; fileName: string; mimeType: string }) =>
+      matchService.uploadMatchPhoto(matchId, uri, fileName, mimeType),
+    onSuccess: (data, { matchId }) => {
+      // Eagerly update cache with server response to avoid waiting for refetch
+      const previous = getMatchDetail(queryClient, matchId);
+      if (previous && data?.photo) {
+        queryClient.setQueryData<MatchDetail>(["match", matchId], {
+          ...previous,
+          photos: [...(previous.photos ?? []), data.photo],
+        });
+      }
+    },
+    onSettled: (_, __, { matchId }) => {
+      settleMatch(queryClient, matchId);
+    },
+  });
+}
+
+export function useDeleteMatchPhoto() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (matchId: string) => matchService.deleteMatchPhoto(matchId),
+    onMutate: async (matchId) => {
+      const previous = await cancelAndSnapshot(queryClient, matchId);
+      if (previous) {
+        const me = getMe(queryClient);
+        queryClient.setQueryData<MatchDetail>(["match", matchId], {
+          ...previous,
+          photos: (previous.photos ?? []).filter((p) => p.userId !== me?.id),
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, matchId, context) => {
+      rollback(queryClient, matchId, context?.previous);
+    },
+    onSettled: (_, __, matchId) => {
+      settleMatch(queryClient, matchId);
+    },
+  });
+}
+
 export function useDeleteFeedback() {
   const queryClient = useQueryClient();
   return useMutation({
