@@ -24,3 +24,18 @@ export function formatLongDate(date: Date, locale = "fr-FR"): string {
   const formatted = formatter.format(date);
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
+
+export function startOfWeek(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay();
+  // getDay(): 0=Sun, 1=Mon ... 6=Sat → shift to Monday-based
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+export function formatShortWeekday(date: Date): string {
+  const formatted = new Intl.DateTimeFormat("fr-FR", { weekday: "short" }).format(date);
+  return formatted.replace(".", "").toUpperCase().slice(0, 3);
+}
