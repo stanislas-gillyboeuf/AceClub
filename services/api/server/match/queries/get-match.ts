@@ -9,9 +9,10 @@ import {
   matchComment,
   matchPhoto,
   matchFeedback,
+  matchLike,
 } from "../../../db/schema/match/schema";
 import { user, organization, member } from "../../../db/schema/auth/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, sql } from "drizzle-orm";
 
 export const getMatch = async (c: Context<HonoContext>) => {
   try {
@@ -208,6 +209,22 @@ export const getMatch = async (c: Context<HonoContext>) => {
       organization: org,
     }));
 
+    // Fetch likes data
+    const [{ count: likesCount }] = await db
+      .select({ count: sql<number>`cast(count(*) as integer)` })
+      .from(matchLike)
+      .where(eq(matchLike.matchId, matchId));
+
+    let hasLiked = false;
+    if (currentUser) {
+      const [userLike] = await db
+        .select({ id: matchLike.id })
+        .from(matchLike)
+        .where(and(eq(matchLike.matchId, matchId), eq(matchLike.userId, currentUser.id)))
+        .limit(1);
+      hasLiked = !!userLike;
+    }
+
     return c.json({
       match: foundMatch,
       participants,
@@ -217,6 +234,8 @@ export const getMatch = async (c: Context<HonoContext>) => {
       photos: photosData,
       venueOrganization,
       participantOrganizations,
+      likesCount,
+      hasLiked,
     });
   } catch (error) {
     return c.json({ error: (error as Error).message }, 500);

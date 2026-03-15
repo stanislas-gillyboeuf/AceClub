@@ -10,6 +10,7 @@ import {
   matchComment,
   matchPhoto,
   matchFeedback,
+  matchLike,
 } from "../../../db/schema/match/schema";
 import { user, member } from "../../../db/schema/auth/schema";
 import { and, eq, desc, sql, inArray, notInArray } from "drizzle-orm";
@@ -234,6 +235,34 @@ export const listMatches = async (c: Context<HonoContext>) => {
       commentsByMatch.get(comment.matchId)!.push(comment);
     }
 
+    // Fetch like counts per match
+    const likeCounts = await db
+      .select({
+        matchId: matchLike.matchId,
+        count: sql<number>`cast(count(*) as integer)`,
+      })
+      .from(matchLike)
+      .where(inArray(matchLike.matchId, matchIds))
+      .groupBy(matchLike.matchId);
+
+    const likeCountByMatch = new Map<string, number>();
+    for (const row of likeCounts) {
+      likeCountByMatch.set(row.matchId, row.count);
+    }
+
+    // Fetch current user's likes
+    const userLikedMatchIds = new Set<string>();
+    if (currentUser) {
+      const userLikes = await db
+        .select({ matchId: matchLike.matchId })
+        .from(matchLike)
+        .where(and(eq(matchLike.userId, currentUser.id), inArray(matchLike.matchId, matchIds)));
+
+      for (const like of userLikes) {
+        userLikedMatchIds.add(like.matchId);
+      }
+    }
+
     const setsByMatch = new Map<
       string,
       Map<
@@ -290,6 +319,8 @@ export const listMatches = async (c: Context<HonoContext>) => {
         sets,
         photos: photosByMatch.get(matchData.id) || [],
         comments: commentsByMatch.get(matchData.id) || [],
+        likesCount: likeCountByMatch.get(matchData.id) ?? 0,
+        hasLiked: userLikedMatchIds.has(matchData.id),
       };
     });
 

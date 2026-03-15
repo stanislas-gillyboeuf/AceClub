@@ -2,6 +2,8 @@ import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tansta
 import { matchService } from "@/services/match";
 import type {
   MatchDetail,
+  MatchWithParticipants,
+  ListMatchesResponse,
   CreateMatchRequest,
   UpdateMatchRequest,
   UpdateMatchScoresRequest,
@@ -439,6 +441,75 @@ export function useDeleteFeedback() {
     },
     onError: (_err, matchId, context) => {
       rollback(queryClient, matchId, context?.previous);
+    },
+    onSettled: (_, __, matchId) => {
+      settleMatch(queryClient, matchId);
+    },
+  });
+}
+
+export function useToggleLike() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (matchId: string) => matchService.toggleLike(matchId),
+    onMutate: async (matchId) => {
+      // Cancel ongoing queries for infinite lists
+      await queryClient.cancelQueries({ queryKey: ["match", "infinite"] });
+      await queryClient.cancelQueries({ queryKey: ["match", matchId] });
+
+      // Snapshot infinite queries
+      const previousInfinite = queryClient.getQueriesData<{ pages: ListMatchesResponse[] }>({
+        queryKey: ["match", "infinite"],
+      });
+
+      // Snapshot match detail
+      const previousDetail = getMatchDetail(queryClient, matchId);
+
+      // Optimistic update on infinite lists
+      queryClient.setQueriesData<{ pages: ListMatchesResponse[]; pageParams: number[] }>(
+        { queryKey: ["match", "infinite"] },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              matches: page.matches.map((m) =>
+                m.id === matchId
+                  ? {
+                      ...m,
+                      hasLiked: !m.hasLiked,
+                      likesCount: m.hasLiked ? m.likesCount - 1 : m.likesCount + 1,
+                    }
+                  : m,
+              ),
+            })),
+          };
+        },
+      );
+
+      // Optimistic update on match detail
+      if (previousDetail) {
+        queryClient.setQueryData<MatchDetail>(["match", matchId], {
+          ...previousDetail,
+          hasLiked: !previousDetail.hasLiked,
+          likesCount: previousDetail.hasLiked
+            ? previousDetail.likesCount - 1
+            : previousDetail.likesCount + 1,
+        });
+      }
+
+      return { previousInfinite, previousDetail, matchId };
+    },
+    onError: (_err, matchId, context) => {
+      // Rollback infinite queries
+      if (context?.previousInfinite) {
+        for (const [queryKey, data] of context.previousInfinite) {
+          if (data) queryClient.setQueryData(queryKey, data);
+        }
+      }
+      // Rollback detail
+      rollback(queryClient, matchId, context?.previousDetail);
     },
     onSettled: (_, __, matchId) => {
       settleMatch(queryClient, matchId);
