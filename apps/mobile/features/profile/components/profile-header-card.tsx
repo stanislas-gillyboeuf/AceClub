@@ -86,7 +86,7 @@ export function ProfileHeaderCard({
           <View
             style={[
               styles.progressTrack,
-              { backgroundColor: scheme === "dark" ? "#3A3A3C" : "#E5E5EA" },
+              { backgroundColor: semanticColors.skeleton[scheme] },
             ]}
           >
             <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />

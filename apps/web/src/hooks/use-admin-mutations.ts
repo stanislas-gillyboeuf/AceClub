@@ -107,6 +107,7 @@ export function useCreateOrganization() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-organizations"] })
+      queryClient.invalidateQueries({ queryKey: ["admin-organization"] })
     },
   })
 }
@@ -131,6 +132,7 @@ export function useUpdateOrganization() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-organizations"] })
+      queryClient.invalidateQueries({ queryKey: ["admin-organization"] })
     },
   })
 }
@@ -146,6 +148,7 @@ export function useDeleteOrganization() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-organizations"] })
+      queryClient.invalidateQueries({ queryKey: ["admin-organization"] })
     },
   })
 }
@@ -199,6 +202,7 @@ export function useToggleOrganizationPin() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-organizations"] })
+      queryClient.invalidateQueries({ queryKey: ["admin-organization"] })
     },
   })
 }
@@ -214,6 +218,7 @@ export function useRegenerateOrganizationPin() {
       }) as Promise<{ pin: string; pinEnabled: boolean }>,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-organizations"] })
+      queryClient.invalidateQueries({ queryKey: ["admin-organization"] })
     },
   })
 }
@@ -305,6 +310,22 @@ export function useSetFeatureFlagOverride() {
   })
 }
 
+export function useUpdateMatchDate() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { matchId: string; scheduledAt: string | null }) =>
+      apiClient("/admin/update-match", {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-matches"] })
+      queryClient.invalidateQueries({ queryKey: ["admin-match-detail"] })
+    },
+  })
+}
+
 export function useRemoveFeatureFlagOverride() {
   const queryClient = useQueryClient()
 
@@ -315,6 +336,78 @@ export function useRemoveFeatureFlagOverride() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-feature-flags"] })
+    },
+  })
+}
+
+export function useAdminCreateEvent() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: {
+      name: string
+      description?: string
+      startDate: string
+      endDate: string
+      address?: string
+      maxParticipants?: number
+      isFree?: boolean
+      price?: number
+      paymentLink?: string
+      visibility?: "public" | "organization"
+      organizationId?: string
+    }) =>
+      apiClient("/event/create", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-events"] })
+    },
+  })
+}
+
+export function useAdminUpdateEventStatus() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { eventId: string; status: string }) =>
+      apiClient("/event/admin-update-status", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-events"] })
+    },
+  })
+}
+
+export function useAdminDeleteEvent() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { eventId: string }) =>
+      apiClient("/event/admin-delete", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-events"] })
+    },
+  })
+}
+
+export function useProcessDeletionRequest() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { requestId: string; status: "processed" | "rejected" }) =>
+      apiClient("/admin/process-deletion-request", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-deletion-requests"] })
     },
   })
 }

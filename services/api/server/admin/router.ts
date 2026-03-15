@@ -7,6 +7,7 @@ import {
   listUserSessions,
   userStats,
   listOrganizations,
+  getOrganization,
   listOrganizationMembers,
   listOrganizationInvitations,
   listFeatureFlags,
@@ -33,6 +34,9 @@ import {
   createFeatureFlagValidator,
   updateFeatureFlagValidator,
   setFeatureFlagOverrideValidator,
+  updateMatchAdminValidator,
+  processDeletionRequestValidator,
+  bulkCreateOrganizationsValidator,
 } from "./validators";
 import {
   banUser,
@@ -52,6 +56,9 @@ import {
   deleteFeatureFlag,
   setFeatureFlagOverride,
   removeFeatureFlagOverride,
+  updateMatchAdmin,
+  processDeletionRequest,
+  bulkCreateOrganizations,
 } from "./mutations";
 
 export const adminRouter = new Hono<HonoContext>();
@@ -75,6 +82,8 @@ adminRouter.get(
   zValidator("query", listOrganizationsValidator),
   listOrganizations,
 );
+
+adminRouter.get("/get-organization/:organizationId", getOrganization);
 
 adminRouter.get(
   "/list-organization-members",
@@ -164,3 +173,24 @@ adminRouter.post(
 );
 
 adminRouter.delete("/feature-flags/:id/overrides/:orgId", removeFeatureFlagOverride);
+
+// Match admin
+adminRouter.put(
+  "/update-match",
+  zValidator("json", updateMatchAdminValidator),
+  updateMatchAdmin,
+);
+
+// Account deletion requests
+adminRouter.post(
+  "/process-deletion-request",
+  zValidator("json", processDeletionRequestValidator),
+  processDeletionRequest,
+);
+
+// Bulk organization import
+adminRouter.post(
+  "/bulk-create-organizations",
+  zValidator("json", bulkCreateOrganizationsValidator),
+  bulkCreateOrganizations,
+);

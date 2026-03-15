@@ -51,24 +51,25 @@ export function formatMatchScore(match: MatchWithParticipants): string {
   return `${structured.homeSetsWon} - ${structured.awaySetsWon}`;
 }
 
+export function computeMatchDuration(
+  startedAt: string | null | undefined,
+  finishedAt: string | null | undefined,
+): { hours: number; minutes: number } | null {
+  if (!startedAt || !finishedAt) return null;
+  const diffMs = new Date(finishedAt).getTime() - new Date(startedAt).getTime();
+  if (diffMs <= 0) return null;
+  const totalMinutes = Math.floor(diffMs / 60000);
+  if (totalMinutes === 0) return null;
+  return { hours: Math.floor(totalMinutes / 60), minutes: totalMinutes % 60 };
+}
+
 export function formatMatchDuration(
   match: MatchWithParticipants
 ): string | null {
-  if (!match.startedAt || !match.finishedAt) return null;
-
-  const start = new Date(match.startedAt).getTime();
-  const end = new Date(match.finishedAt).getTime();
-  const diffMs = end - start;
-
-  if (diffMs <= 0) return null;
-
-  const totalMinutes = Math.floor(diffMs / 60000);
-  if (totalMinutes === 0) return null;
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-
-  if (hours > 0) return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-  return `${minutes}m`;
+  const dur = computeMatchDuration(match.startedAt, match.finishedAt);
+  if (!dur) return null;
+  if (dur.hours > 0) return `${dur.hours}h ${dur.minutes.toString().padStart(2, "0")}m`;
+  return `${dur.minutes}m`;
 }
 
 export function formatMatchDate(match: MatchWithParticipants): string {
@@ -156,4 +157,61 @@ export function formatDistance(km: number): string {
     return `${Math.round(km * 1000)} m`;
   }
   return `${km.toFixed(1)} km`;
+}
+
+/** Haversine distance in km between two lat/lon points */
+export function haversineDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371;
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/** Estimated travel time in minutes (road factor 1.3, avg 30 km/h) */
+export function estimateTravelTimeMinutes(distanceKm: number): number {
+  return Math.round((distanceKm * 1.3) / 30 * 60);
+}
+
+/** Human-readable travel time string */
+export function estimateTravelTime(distanceKm: number): string {
+  const minutes = estimateTravelTimeMinutes(distanceKm);
+  if (minutes < 1) return "< 1 min";
+  return `~${minutes} min`;
+}
+
+/** Group label for event dates: "Aujourd'hui / Vendredi", "Demain / Samedi", "15 mars / Dimanche" */
+export function formatEventDateGroup(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((startOfDate.getTime() - startOfToday.getTime()) / 86400000);
+
+  const weekday = new Intl.DateTimeFormat("fr-FR", { weekday: "long" }).format(date);
+  const capitalizedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+
+  if (diffDays === 0) return `Aujourd'hui / ${capitalizedWeekday}`;
+  if (diffDays === 1) return `Demain / ${capitalizedWeekday}`;
+  if (diffDays === -1) return `Hier / ${capitalizedWeekday}`;
+
+  const dayMonth = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" }).format(date);
+  const capitalizedDayMonth = dayMonth.charAt(0).toUpperCase() + dayMonth.slice(1);
+  return `${capitalizedDayMonth} / ${capitalizedWeekday}`;
+}
+
+/** Format event time range: "15:00 - 18:00" */
+export function formatEventTime(startDate: string, endDate: string): string {
+  const start = new Date(startDate).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const end = new Date(endDate).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  return `${start} - ${end}`;
 }

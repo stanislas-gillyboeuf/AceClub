@@ -12,6 +12,7 @@ import { ulid } from "ulid";
 import { redis, CHAT_CHANNEL } from "../../../lib/redis";
 import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
 import { isUserConnectedWs } from "../../ws/bun-chat-handler";
+import { decryptMessageContent } from "../lib/decrypt-content";
 
 export const sendMessage = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user");
@@ -58,12 +59,20 @@ export const sendMessage = async (c: Context<HonoContext>) => {
       .where(eq(conversationParticipant.id, myParticipation.id));
   }
 
-  // Get sender name for the message
-  const [sender] = await db
-    .select({ name: user.name, image: user.image })
-    .from(user)
-    .where(eq(user.id, currentUser.id))
-    .limit(1);
+  // Get sender name and conversation encryption key in parallel
+  const [[sender], [conv]] = await Promise.all([
+    db
+      .select({ name: user.name, image: user.image })
+      .from(user)
+      .where(eq(user.id, currentUser.id))
+      .limit(1),
+    db
+      .select({ encryptionKey: conversation.encryptionKey })
+      .from(conversation)
+      .where(eq(conversation.id, conversationId))
+      .limit(1),
+  ]);
+  const encryptionKey = conv?.encryptionKey ?? null;
 
   // Insert the message
   const messageId = ulid();
@@ -108,15 +117,21 @@ export const sendMessage = async (c: Context<HonoContext>) => {
       .limit(1);
 
     if (repliedMessage) {
+      const replyContent = decryptMessageContent(repliedMessage.content, encryptionKey);
       replyTo = {
         id: repliedMessage.id,
         senderId: repliedMessage.senderId,
         senderName: repliedMessage.senderName || "Unknown",
-        content: repliedMessage.content.substring(0, 100),
+        content: replyContent.substring(0, 100),
         messageType: repliedMessage.messageType,
       };
     }
   }
+
+  // Decrypt content server-side so all clients can read regardless of expo-crypto support
+  const decryptedContent = isEncrypted
+    ? decryptMessageContent(content || "", encryptionKey)
+    : content || "";
 
   // Compute last message preview based on type
   let lastMessagePreview: string | null;
@@ -125,7 +140,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
   } else if (msgType === "image") {
     lastMessagePreview = "Photo";
   } else {
-    lastMessagePreview = plaintextPreview || (content || "").substring(0, 100);
+    lastMessagePreview = plaintextPreview || decryptedContent.substring(0, 100);
   }
 
   // Update conversation with last message info
@@ -179,10 +194,10 @@ export const sendMessage = async (c: Context<HonoContext>) => {
         name: sender?.name || "Unknown",
         image: sender?.image || null,
       },
-      content: content || "",
+      content: decryptedContent,
       createdAt: newMessage.createdAt.toISOString(),
       clientMessageId,
-      isEncrypted: newMessage.isEncrypted,
+      isEncrypted: false,
       messageType: msgType,
       attachmentUrl: attachmentUrl || null,
       attachmentDuration: attachmentDuration || null,
@@ -197,7 +212,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
   if (redis) {
     await Promise.all(
       otherParticipants.map((participant) =>
-        redis.publish(
+        redis?.publish(
           CHAT_CHANNEL,
           JSON.stringify({
             userId: participant.userId,
@@ -214,7 +229,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
       ? "Message vocal"
       : msgType === "image"
         ? "Photo"
-        : plaintextPreview || (content || "").substring(0, 100);
+        : plaintextPreview || decryptedContent.substring(0, 100);
   Promise.all(
     otherParticipants
       .filter((p) => !p.isMuted && !isUserConnectedWs(p.userId))
@@ -248,11 +263,11 @@ export const sendMessage = async (c: Context<HonoContext>) => {
         name: sender?.name || "Unknown",
         image: sender?.image || null,
       },
-      content: content || "",
+      content: decryptedContent,
       createdAt: newMessage.createdAt.toISOString(),
       clientMessageId,
       isFromMe: true,
-      isEncrypted: newMessage.isEncrypted,
+      isEncrypted: false,
       messageType: msgType,
       attachmentUrl: attachmentUrl || null,
       attachmentDuration: attachmentDuration || null,

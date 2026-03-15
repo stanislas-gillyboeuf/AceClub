@@ -70,6 +70,12 @@ export const updateProfile = async (c: Context<HonoContext>) => {
         userUpdateData.phoneNumber = normalizePhoneNumber(validated.phoneNumber);
         userUpdateData.phoneNumberVerified = false;
       }
+      if (validated.gender !== undefined) {
+        userUpdateData.gender = validated.gender;
+      }
+      if (validated.dateOfBirth !== undefined) {
+        userUpdateData.date_of_birth = validated.dateOfBirth;
+      }
 
       let updated: typeof userTable.$inferSelect;
       if (Object.keys(userUpdateData).length > 0) {
@@ -184,5 +190,7 @@ export const updateProfile = async (c: Context<HonoContext>) => {
     banExpires: updatedUserRow.banExpires,
     onboardingCompleted: updatedUserRow.onboarding_completed,
     phoneNumber: updatedUserRow.phoneNumber,
+    gender: updatedUserRow.gender,
+    dateOfBirth: updatedUserRow.date_of_birth,
   });
 };

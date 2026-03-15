@@ -22,7 +22,7 @@ export function useRevokeUserSession() {
   return useMutation({
     mutationFn: (data: { userId: string; sessionId: string }) =>
       adminService.revokeUserSession(data),
-    onSuccess: (_, variables) => {
+    onSettled: (_data, _err, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admin", "sessions", variables.userId] });
     },
   });
@@ -32,7 +32,7 @@ export function useRevokeUserSessions() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) => adminService.revokeUserSessions(userId),
-    onSuccess: (_, userId) => {
+    onSettled: (_data, _err, userId) => {
       queryClient.invalidateQueries({ queryKey: ["admin", "sessions", userId] });
     },
   });
@@ -42,7 +42,7 @@ export function useBanUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: BanUserRequest) => adminService.banUser(data),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
     },
   });
@@ -52,7 +52,7 @@ export function useUnbanUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) => adminService.unbanUser(userId),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
     },
   });
@@ -62,7 +62,7 @@ export function useAdminCreateUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateUserRequest) => adminService.createUser(data),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
     },
   });
@@ -72,7 +72,7 @@ export function useSetRole() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: SetRoleRequest) => adminService.setRole(data),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
     },
   });

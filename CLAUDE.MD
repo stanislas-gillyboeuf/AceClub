@@ -1,6 +1,6 @@
 
 # CLAUDE - Guide de l'agent de recherche de code
-Il faut que tu penses scalablement. Ne me donne pas une réponse unique à une question qui touche plusieurs parties du codebase. Si la question est complexe, divise-la en plusieurs questions plus simples et lance plusieurs mgrep. Le but est d'avoir des réponses précises et actionnables, pas une réponse vague qui couvre tout le codebase. 
+Il faut que tu penses scalablement. Ne me donne pas une réponse unique à une question qui touche plusieurs parties du codebase. Si la question est complexe, divise-la en plusieurs questions plus simples et lance plusieurs mgrep. Le but est d'avoir des réponses précises et actionnables, pas une réponse vague qui couvre tout le codebase.
 
 
 # Components - Expo Mobile
@@ -43,9 +43,9 @@ Si la requête touche **plusieurs parties du codebase**, lance plusieurs mgrep e
 
 ```bash
 # Exemple : comprendre le système d'auth complet
-mgrep "comment fonctionne l'authentification LinkedIn côté frontend" --store "nom-projet" -a -m <n>
-mgrep "comment le token LinkedIn est géré côté Convex" --store "nom-projet" -a -m <n>
-mgrep "comment le background script gère les sessions" --store "nom-projet" -a -m <n>
+mgrep "comment fonctionne l'authentification LinkedIn côté frontend" --store "aceclub" -a -m <n>
+mgrep "comment le token LinkedIn est géré côté API" --store "aceclub" -a -m <n>
+mgrep "comment Better Auth gère les sessions" --store "aceclub" -a -m <n>
 ```
 
 ## Règles
@@ -54,8 +54,8 @@ mgrep "comment le background script gère les sessions" --store "nom-projet" -a 
 - **Langage naturel** : mgrep est un agent IA comme toi. Parle-lui comme à un collègue, pas comme à un moteur de recherche.
   - ❌ `"architecture block icon color complete status"` (mots-clés robotiques)
   - ✅ `"Quelle est la couleur de l'icône des blocs d'architecture quand ils sont complétés ?"` (question naturelle)
-  
-  
+
+
 ---
 
 # Subagents (Task tool)
@@ -141,97 +141,123 @@ On utilise `expo-glass-effect` (`GlassView`) pour le design Liquid Glass iOS. `G
 
 ---
 
-# Architecture iOS - Clean Architecture MVVM
+# Architecture Mobile - React Native Expo
 
 ```
-apps/ios/AceClub/
-├── Core/                    # Point d'entrée et configuration de l'app
-├── Data/                    # Couche Data - Implémentation des sources de données
-│   ├── DataSources/         # Sources de données (API, local storage, etc.)
-│   ├── DTOs/                # Data Transfer Objects - Modèles de sérialisation
-│   ├── Repositories/        # Implémentations des Repository (accès aux données)
-│   └── Mappers/             # Transformations DTO <-> Entity
-├── Domain/                  # Couche Domain - Logique métier pure
-│   ├── Entities/            # Modèles métier (indépendants de l'infra)
-│   └── UseCases/            # Cas d'usage - Orchestration de la logique métier
-└── Presentation/            # Couche Presentation - UI et état
-    ├── View/                # Vues SwiftUI
-    └── ViewModel/           # ViewModels - État et logique de présentation
+apps/mobile/
+├── app/                    # Expo Router (file-based routing)
+│   ├── _layout.tsx         # Root layout + providers
+│   ├── (tabs)/             # Bottom tabs (feed, matches, chat, discover, profile)
+│   ├── (auth)/             # Auth routes
+│   └── (onboarding)/       # Onboarding flow
+├── components/             # Composants UI partagés
+│   └── ui/                 # Composants de base (card, avatar, button, glass-view, skeleton...)
+├── features/               # Modules par feature
+│   └── <feature>/
+│       ├── components/     # Composants spécifiques à la feature
+│       ├── hooks/          # Hooks spécifiques
+│       └── lib/            # Utilitaires
+├── hooks/                  # Hooks globaux (use-user, use-match, use-conversation...)
+├── services/               # Couche API (wrappers HTTP par domaine)
+├── lib/                    # Utilitaires core (api client, auth, query-client, websocket...)
+├── store/                  # Zustand stores (formulaires multi-étapes)
+├── types/                  # Types TypeScript par domaine
+└── constants/              # Thème, couleurs, spacing
 ```
 
-## Détail des dossiers iOS
+## Features actuelles
 
-### `Core/`
-**Objectif** : Configuration et bootstrap de l'application.
-- `AceClubApp.swift` : Point d'entrée `@main`, configuration de l'app SwiftUI
-- `ContentView.swift` : Vue racine de navigation
-- `Assets.xcassets` : Ressources (icônes, couleurs, images)
+`auth`, `chat`, `discover`, `feed`, `leaderboard`, `match-intent`, `matches`, `onboarding`, `profile`, `progression`, `settings`
 
-### `Data/`
-**Objectif** : Couche d'implémentation des accès aux données. Gère la communication avec les sources externes (API, base locale) et transforme les données brutes en objets utilisables par le Domain.
-
-#### `Data/DataSources/`
-**Objectif** : Sources de données concrètes. Chaque DataSource encapsule les appels réseau via `APIClient.shared.authenticatedRequest()`.
-- **Pattern** : Un fichier par domaine fonctionnel (ex: `UserAPIDataSource.swift`)
-- **Responsabilité** : Appels HTTP via `APIClient.shared`, gestion des status codes, décodage JSON
-
-#### `Data/DTOs/`
-**Objectif** : Data Transfer Objects. Structures qui représentent exactement le format JSON de l'API. Séparés des Entities pour découpler le format API des modèles métier.
-- **Convention** : `<Nom>DTO.swift`
-- **Caractéristique** : Conformes à `Codable` uniquement
-
-#### `Data/Repositories/`
-**Objectif** : Classes concrètes qui orchestrent les DataSources et appliquent les Mappers.
-- **Pattern** : Classes concrètes (pas de protocol). Le DataSource est instancié directement comme propriété.
-- **Responsabilité** : Coordination des DataSources, caching si nécessaire
-
-#### `Data/Mappers/`
-**Objectif** : Fonctions de transformation entre DTOs et Entities. Isolent la logique de mapping pour faciliter les tests et évolutions de l'API.
-- **Convention** : `<Nom>Mapper.swift`
-- **Pattern** : Fonctions statiques ou extensions
-
-### `Domain/`
-**Objectif** : Couche métier pure, sans dépendance aux frameworks. Contient la logique business et les règles de l'application.
-
-#### `Domain/Entities/`
-**Objectif** : Modèles métier. Structures représentant les concepts du domaine, indépendantes du format de l'API ou de la base de données.
-- **Caractéristique** : Conformes à `Identifiable`, pas de logique de sérialisation
-- **Principe** : Immuables quand possible
-
-#### `Domain/UseCases/`
-**Objectif** : Cas d'usage de l'application. Chaque UseCase encapsule une action métier unique et orchestre les Repository nécessaires.
-- **Convention** : `<Action><Domaine>UseCase.swift` (ex: `GetMeUseCase.swift`)
-- **Pattern** : Une méthode `execute()` par UseCase
-- **Principe** : Un UseCase = une responsabilité
-
-### `Presentation/`
-**Objectif** : Couche UI. Gère l'affichage et les interactions utilisateur via le pattern MVVM.
-
-#### `Presentation/View/`
-**Objectif** : Vues SwiftUI. Composants visuels déclaratifs, sans logique métier.
-- **Responsabilité** : Affichage, layout, animations
-- **Principe** : Les vues observent les ViewModels et déclenchent des actions
-
-#### `Presentation/ViewModel/`
-**Objectif** : ViewModels. Gèrent l'état de l'UI et orchestrent les UseCases.
-- **Pattern** : `@Observable` ou `ObservableObject`
-- **Responsabilité** : État de l'UI, appels aux UseCases, formatage des données pour l'affichage
-
-## Flux de données iOS
+## Flux de données
 
 ```
-View → ViewModel → UseCase → Repository → DataSource → API
-                                    ↓
-                               Mapper (DTO → Entity)
+Component → React Query Hook (hooks/) → Service (services/) → API Client (lib/api.ts) → Backend
 ```
 
-## Règles d'architecture iOS
+## Stack technique
 
-1. **Dépendances** : `Presentation → Domain ← Data` (le Domain ne dépend de rien)
-2. **Instanciation directe** : Les UseCases et Repositories sont instanciés inline comme propriétés privées (pas d'injection par constructeur)
-3. **Singletons utilitaires** : `APIClient.shared`, `KeychainManager.shared`, `NotificationManager.shared` sont utilisés dans le code
-4. **Async** : Utiliser `async/await` pour les opérations asynchrones
-5. **Erreurs** : Propager les erreurs via `throws`, gérer dans les ViewModels avec `catch is CancellationError { }` en premier
+- Expo SDK 55 (New Architecture + React Compiler)
+- Expo Router (file-based routing, typed routes)
+- React Query v5 (server state, cache, refetch)
+- Zustand (client state : formulaires multi-étapes)
+- Better Auth (`@better-auth/expo`)
+- React Native Reanimated v4 (animations)
+- `expo-glass-effect` (Liquid Glass iOS 26+)
+- `lucide-react-native` (icônes)
+
+## Conventions de nommage
+
+| Type | Convention | Exemple |
+|------|-----------|---------|
+| Service | `<domain>.ts` | `services/user.ts`, `services/match.ts` |
+| Hook global | `use-<domain>.ts` | `hooks/use-user.ts`, `hooks/use-match.ts` |
+| Hook feature | `use-<action>.ts` | `features/discover/hooks/use-discover-state.ts` |
+| Type | `<domain>.ts` | `types/user.ts`, `types/match.ts` |
+| Store | `<action>-form.ts` | `store/create-match-form.ts` |
+| UI component | `<name>.tsx` (kebab-case) | `components/ui/glass-view.tsx` |
+| Feature component | `<Name>.tsx` (PascalCase) | `features/chat/components/ChatBottomBar.tsx` |
+
+## Règles
+
+1. **Services** = wrappers HTTP fins (pas de logique métier)
+2. **React Query** gère TOUT le server state (pas de state local pour les données API)
+3. **Zustand** uniquement pour les formulaires multi-étapes
+4. **Invalidation de cache** dans `onSuccess` des mutations
+5. `staleTime: 5min`, `gcTime: 30min` par défaut
+6. **Imports** avec alias `@/*`
+
+---
+
+# Architecture Web - Next.js
+
+```
+apps/web/src/
+├── app/                    # Next.js App Router
+│   ├── (marketing)/        # Site public (homepage, contact, privacy, cgu)
+│   ├── (admin)/            # Dashboard admin protégé
+│   │   └── dashboard/      # Users, organizations, matches, feature-flags
+│   ├── (auth)/             # Login
+│   └── api/                # API routes (contact form)
+├── components/
+│   ├── ui/                 # shadcn/ui (button, card, dialog, table, sidebar...)
+│   ├── custom/             # Composants métier (data-table, columns, actions)
+│   └── sections/           # Sections marketing (hero, features, pricing...)
+├── hooks/                  # React Query hooks (use-admin-queries, use-admin-mutations)
+├── lib/                    # Utilitaires (auth-client, api-client, utils, config)
+└── types/                  # Types admin
+```
+
+## Stack technique
+
+- Next.js 16 (App Router, React Compiler)
+- React 19
+- Tailwind CSS 4 + shadcn/ui (New York style)
+- React Query v5 (data fetching)
+- TanStack Table v8 (tableaux admin)
+- Better Auth (organization + admin plugins)
+- Framer Motion (animations marketing)
+- Recharts (graphiques dashboard)
+- Lucide React (icônes)
+
+## Conventions de nommage
+
+| Type | Convention | Exemple |
+|------|-----------|---------|
+| Page | `page.tsx` | `app/(admin)/dashboard/users/page.tsx` |
+| Layout | `layout.tsx` | `app/(admin)/layout.tsx` |
+| UI component | kebab-case | `components/ui/button.tsx` |
+| Custom component | kebab-case | `components/custom/data-table.tsx` |
+| Hook | `use-<action>.ts` | `hooks/use-admin-queries.ts` |
+
+## Règles
+
+1. **Marketing** = Server Components (pas de `use client`)
+2. **Admin** = Client Components (`use client` pour React Query + state)
+3. **Protection admin** : vérifier `session.user.role === "admin"` dans le layout
+4. **API client** utilise `credentials: "include"` (cookies)
+5. **Tables** : colonnes définies séparément dans `*-columns.tsx`
+6. **Styling** : Tailwind classes uniquement, pas de CSS-in-JS
 
 ---
 
@@ -244,103 +270,88 @@ services/api/
 ├── drizzle.config.ts        # Configuration Drizzle ORM
 ├── db/                      # Couche base de données
 │   ├── index.ts             # Export connexion DB
-│   └── schema/              # Schémas Drizzle
+│   └── schema/              # Schémas Drizzle (15 modules)
 │       ├── index.ts         # Barrel export des schémas
-│       └── auth/            # Schémas liés à l'authentification
-│           ├── index.ts
-│           └── schema.ts    # Tables user, session, account, verification
+│       ├── auth/            # user, session, account, verification, organization, member
+│       ├── match/           # match, match_participant, match_set, match_comment, match_feedback
+│       ├── match_intents/   # match_intent, match_request
+│       ├── event/           # event, event_rsvp
+│       ├── challenge/       # challenge, user_challenge
+│       ├── conversation/    # conversation, message, conversation_participant
+│       ├── level/           # level_tier, user_level, aces_transaction
+│       ├── reward/          # badge, user_badge, user_title
+│       ├── streak/          # streak
+│       ├── notification/    # device_token
+│       ├── user-preference/ # user_preference
+│       ├── club-request/    # club_request
+│       ├── e2ee/            # e2ee_key
+│       ├── feature-flag/    # feature_flag
+│       └── account-deletion-request/
 ├── middleware/              # Middlewares Hono
 │   ├── index.ts             # Barrel export
-│   ├── auth.ts              # Middlewares d'authentification
+│   ├── auth.ts              # authMiddleware, requireAuth
+│   ├── admin.ts             # isAdmin
+│   ├── org-member.ts        # assertOrgAdmin
 │   └── cors.ts              # Configuration CORS
-├── server/                  # Logique serveur par domaine
+├── server/                  # Logique serveur par domaine (17 routers)
 │   ├── router.ts            # Router principal (monte les sous-routers)
-│   └── user/                # Domaine User
-│       ├── router.ts        # Routes /user/*
-│       ├── validators.ts    # Schémas de validation Zod
-│       ├── queries/         # Handlers de lecture (GET)
-│       │   ├── index.ts
-│       │   └── me.ts        # GET /user/me
-│       └── mutations/       # Handlers d'écriture (POST, PUT, DELETE)
+│   ├── user/                # /api/user
+│   ├── admin/               # /api/admin
+│   ├── organization/        # /api/organization
+│   ├── match/               # /api/match
+│   ├── match_intents/       # /api/match-intents
+│   ├── event/               # /api/event (Luma-style)
+│   ├── conversation/        # /api/conversation
+│   ├── notification/        # /api/notification
+│   ├── level/               # /api/level
+│   ├── challenge/           # /api/challenge
+│   ├── streak/              # /api/streak
+│   ├── reward/              # /api/reward
+│   ├── leaderboard/         # /api/leaderboard
+│   ├── upload/              # /api/upload
+│   ├── cron/                # /api/cron
+│   ├── e2ee/                # /api/e2ee
+│   ├── ws/                  # WebSocket
+│   └── account-deletion-request/
 └── types/                   # Types TypeScript partagés
     └── hono.ts              # Types de contexte Hono
 ```
 
-## Détail des dossiers API
+## Middlewares
 
-### Conventions HTTP Admin
+| Middleware | Rôle |
+|-----------|------|
+| `authMiddleware` | Auth optionnelle (set user/session si présent) |
+| `requireAuth` | Auth obligatoire (401 si non authentifié) |
+| `isAdmin` | Admin only (403 si pas admin) |
+| `assertOrgAdmin` | Vérifie owner/admin de l'organisation |
 
-- GET : `/admin/list-users`, `/admin/list-user-sessions` (query params)
-- POST/PUT : mutations `/admin/*` avec payload JSON (ex: `/admin/set-role`)
+## Structure d'un domaine
 
-### `index.ts`
-**Objectif** : Point d'entrée de l'API. Configure l'app Hono, les middlewares globaux (logging, CORS), et monte les routes.
-
-### `auth.ts`
-**Objectif** : Configuration de Better Auth (authentification). Définit l'adaptateur DB, les providers OAuth, et le plugin bearer token.
-
-### `db/`
-**Objectif** : Couche d'accès à la base de données PostgreSQL via Drizzle ORM.
-
-#### `db/schema/`
-**Objectif** : Définition des tables et relations avec Drizzle.
-- **Convention** : Un sous-dossier par domaine fonctionnel
-- **Pattern** : Chaque `schema.ts` exporte les tables et leurs relations
-
-#### `db/schema/auth/`
-**Objectif** : Tables liées à l'authentification Better Auth.
-- `user` : Utilisateurs
-- `session` : Sessions actives
-- `account` : Comptes OAuth liés
-- `verification` : Tokens de vérification email
-
-### `middleware/`
-**Objectif** : Middlewares Hono réutilisables.
-
-#### `middleware/auth.ts`
-**Objectif** : Middlewares d'authentification.
-- `authMiddleware` : Auth optionnelle (set user/session si présent)
-- `requireAuth` : Auth obligatoire (401 si non authentifié)
-
-#### `middleware/cors.ts`
-**Objectif** : Configuration CORS pour l'app iOS et le développement local.
-
-### `server/`
-**Objectif** : Logique serveur organisée par domaine fonctionnel.
-
-#### `server/router.ts`
-**Objectif** : Router principal qui agrège tous les sous-routers de domaines.
-
-#### `server/<domain>/`
-**Objectif** : Chaque domaine a son propre dossier avec une structure standardisée.
-
-**Structure d'un domaine** :
-- `router.ts` : Définit les routes et applique les middlewares
-- `validators.ts` : Schémas Zod pour valider les inputs
-- `queries/` : Handlers pour les opérations de lecture (GET)
-- `mutations/` : Handlers pour les opérations d'écriture (POST, PUT, DELETE)
-
-### `types/`
-**Objectif** : Types TypeScript partagés.
-
-#### `types/hono.ts`
-**Objectif** : Définit le type `HonoContext` pour typer les variables de contexte (user, session).
-
-## Routes API
-
-| Route | Méthode | Description | Auth |
-|-------|---------|-------------|------|
-| `/api/auth/*` | GET/POST | Endpoints Better Auth (signup, signin, signout) | Non |
-| `/api/session` | GET | Récupère la session courante | Non |
-| `/api/user/me` | GET | Infos de l'utilisateur connecté | Oui |
-| `/health` | GET | Health check | Non |
+```
+server/<domaine>/
+├── router.ts        # Définit les routes et applique les middlewares
+├── validators.ts    # Schémas Zod pour valider les inputs
+├── queries/         # Handlers de lecture (GET)
+│   └── index.ts
+└── mutations/       # Handlers d'écriture (POST, PUT, DELETE)
+    └── index.ts
+```
 
 ## Conventions API
 
 1. **Nommage** : kebab-case pour les routes, camelCase pour les variables
 2. **Validation** : Zod pour tous les inputs utilisateur
 3. **Erreurs** : Retourner des objets `{ error: string, message: string }`
-4. **Auth** : Bearer token via header `Authorization`
+4. **Auth** : Bearer token via header `Authorization` (mobile), cookies (web)
+5. **IDs** : `ulid()` pour générer les identifiants
+6. **Timestamps** : `defaultNow()` + `$onUpdate()` sur les schémas Drizzle
+7. **Enums** : `pgEnum()` pour les valeurs prédéfinies
+
+## Conventions HTTP Admin
+
+- GET : `/admin/list-users`, `/admin/list-user-sessions` (query params)
+- POST/PUT : mutations `/admin/*` avec payload JSON (ex: `/admin/set-role`)
 
 ## Ajout d'un nouveau domaine API
 

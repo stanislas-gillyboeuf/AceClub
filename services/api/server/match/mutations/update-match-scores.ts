@@ -167,6 +167,57 @@ export const updateMatchScores = async (c: Context<HonoContext>) => {
         updatedScores.push(...inserted);
       }
 
+      // Determine winner from set scores
+      const setsWon = new Map<string, number>();
+      for (const userId of userIds) {
+        setsWon.set(userId, 0);
+      }
+
+      for (const setData of validated.sets) {
+        if (setData.scores.length === 2) {
+          const [a, b] = setData.scores;
+          if (a.score > b.score) {
+            setsWon.set(a.userId, (setsWon.get(a.userId) ?? 0) + 1);
+          } else if (b.score > a.score) {
+            setsWon.set(b.userId, (setsWon.get(b.userId) ?? 0) + 1);
+          }
+        }
+      }
+
+      // Find the player with the most sets won
+      let winnerId: string | null = null;
+      let maxSets = 0;
+      let isTie = false;
+      for (const [userId, count] of setsWon) {
+        if (count > maxSets) {
+          maxSets = count;
+          winnerId = userId;
+          isTie = false;
+        } else if (count === maxSets && count > 0) {
+          isTie = true;
+        }
+      }
+
+      // Update isWinner on participants
+      if (isTie || maxSets === 0) {
+        // Tie or no sets played: clear winner
+        await tx
+          .update(matchParticipant)
+          .set({ isWinner: false })
+          .where(eq(matchParticipant.matchId, matchId));
+      } else if (winnerId) {
+        // Set the winner and clear others
+        await tx
+          .update(matchParticipant)
+          .set({ isWinner: false })
+          .where(eq(matchParticipant.matchId, matchId));
+
+        await tx
+          .update(matchParticipant)
+          .set({ isWinner: true })
+          .where(and(eq(matchParticipant.matchId, matchId), eq(matchParticipant.userId, winnerId)));
+      }
+
       return updatedScores;
     });
 

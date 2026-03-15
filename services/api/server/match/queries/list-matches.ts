@@ -8,6 +8,7 @@ import {
   set,
   setScore,
   matchComment,
+  matchPhoto,
   matchFeedback,
 } from "../../../db/schema/match/schema";
 import { user, member } from "../../../db/schema/auth/schema";
@@ -141,20 +142,61 @@ export const listMatches = async (c: Context<HonoContext>) => {
     }
 
     const matchIds = matches.map((m) => m.id);
-    const participantsRaw = await db
-      .select({
-        id: matchParticipant.id,
-        matchId: matchParticipant.matchId,
-        userId: matchParticipant.userId,
-        side: matchParticipant.side,
-        isWinner: matchParticipant.isWinner,
-        createdAt: matchParticipant.createdAt,
-        user: user,
-      })
-      .from(matchParticipant)
-      .leftJoin(user, eq(matchParticipant.userId, user.id))
-      .where(inArray(matchParticipant.matchId, matchIds))
-      .orderBy(matchParticipant.side);
+
+    const [participantsRaw, setsData, commentsRaw, photosData] = await Promise.all([
+      db
+        .select({
+          id: matchParticipant.id,
+          matchId: matchParticipant.matchId,
+          userId: matchParticipant.userId,
+          side: matchParticipant.side,
+          isWinner: matchParticipant.isWinner,
+          createdAt: matchParticipant.createdAt,
+          user: user,
+        })
+        .from(matchParticipant)
+        .leftJoin(user, eq(matchParticipant.userId, user.id))
+        .where(inArray(matchParticipant.matchId, matchIds))
+        .orderBy(matchParticipant.side),
+
+      db
+        .select({
+          setId: set.id,
+          matchId: set.matchId,
+          setNumber: set.setNumber,
+          setCreatedAt: set.createdAt,
+          scoreId: setScore.id,
+          scoreGames: setScore.games,
+          participantId: matchParticipant.id,
+          participantUserId: matchParticipant.userId,
+          participantSide: matchParticipant.side,
+        })
+        .from(set)
+        .leftJoin(setScore, eq(setScore.setId, set.id))
+        .leftJoin(matchParticipant, eq(setScore.participantId, matchParticipant.id))
+        .where(inArray(set.matchId, matchIds))
+        .orderBy(set.setNumber),
+
+      db
+        .select({
+          id: matchComment.id,
+          matchId: matchComment.matchId,
+          userId: matchComment.userId,
+          content: matchComment.content,
+          createdAt: matchComment.createdAt,
+          updatedAt: matchComment.updatedAt,
+          user: user,
+        })
+        .from(matchComment)
+        .leftJoin(user, eq(matchComment.userId, user.id))
+        .where(inArray(matchComment.matchId, matchIds))
+        .orderBy(matchComment.createdAt),
+
+      db
+        .select()
+        .from(matchPhoto)
+        .where(inArray(matchPhoto.matchId, matchIds)),
+    ]);
 
     const participants = participantsRaw.map((p) => ({
       id: p.id,
@@ -175,38 +217,14 @@ export const listMatches = async (c: Context<HonoContext>) => {
       participantsByMatch.get(participant.matchId)!.push(participant);
     }
 
-    const setsData = await db
-      .select({
-        setId: set.id,
-        matchId: set.matchId,
-        setNumber: set.setNumber,
-        setCreatedAt: set.createdAt,
-        scoreId: setScore.id,
-        scoreGames: setScore.games,
-        participantId: matchParticipant.id,
-        participantUserId: matchParticipant.userId,
-        participantSide: matchParticipant.side,
-      })
-      .from(set)
-      .leftJoin(setScore, eq(setScore.setId, set.id))
-      .leftJoin(matchParticipant, eq(setScore.participantId, matchParticipant.id))
-      .where(inArray(set.matchId, matchIds))
-      .orderBy(set.setNumber);
-
-    const commentsRaw = await db
-      .select({
-        id: matchComment.id,
-        matchId: matchComment.matchId,
-        userId: matchComment.userId,
-        content: matchComment.content,
-        createdAt: matchComment.createdAt,
-        updatedAt: matchComment.updatedAt,
-        user: user,
-      })
-      .from(matchComment)
-      .leftJoin(user, eq(matchComment.userId, user.id))
-      .where(inArray(matchComment.matchId, matchIds))
-      .orderBy(matchComment.createdAt);
+    type PhotoRow = (typeof photosData)[number];
+    const photosByMatch = new Map<string, PhotoRow[]>();
+    for (const photo of photosData) {
+      if (!photosByMatch.has(photo.matchId)) {
+        photosByMatch.set(photo.matchId, []);
+      }
+      photosByMatch.get(photo.matchId)!.push(photo);
+    }
 
     const commentsByMatch = new Map<string, typeof commentsRaw>();
     for (const comment of commentsRaw) {
@@ -270,6 +288,7 @@ export const listMatches = async (c: Context<HonoContext>) => {
         ...matchData,
         participants: participantsByMatch.get(matchData.id) || [],
         sets,
+        photos: photosByMatch.get(matchData.id) || [],
         comments: commentsByMatch.get(matchData.id) || [],
       };
     });

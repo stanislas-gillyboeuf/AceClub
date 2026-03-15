@@ -48,7 +48,6 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     markAllAsRead,
     updateMessageReactions,
     messagesRef,
-    decryptMessage: e2ee.decryptMessage,
     retryFailedMessage: send.retryFailedMessage,
     invalidateConversationList: () => queryClient.invalidateQueries({ queryKey: ["conversation", "list"] }),
   });
@@ -57,21 +56,13 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     updateMessageReactions,
   });
 
-  const e2eeRef = useRef(e2ee);
-  e2eeRef.current = e2ee;
   const setErrorMessageRef = useRef(send.setErrorMessage);
   setErrorMessageRef.current = send.setErrorMessage;
 
   const loadMessages = useCallback(async () => {
     try {
-      await e2eeRef.current.ensureReady();
-
       const loaded = await conversationService.listMessages(conversation.id, { limit: 20 });
-      const chatMessages = await Promise.all(
-        loaded
-          .map((m) => apiMessageToChatMessage(m, currentUserId))
-          .map((m) => e2eeRef.current.decryptMessage(m)),
-      );
+      const chatMessages = loaded.map((m) => apiMessageToChatMessage(m, currentUserId));
 
       setMessages(chatMessages);
       setHasMoreMessages(loaded.length >= 20);
@@ -105,11 +96,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
       if (older.length === 0) {
         setHasMoreMessages(false);
       } else {
-        const chatMessages = await Promise.all(
-          older
-            .map((m) => apiMessageToChatMessage(m, currentUserId))
-            .map((m) => e2eeRef.current.decryptMessage(m)),
-        );
+        const chatMessages = older.map((m) => apiMessageToChatMessage(m, currentUserId));
         mergeMessages(chatMessages);
         if (older.length < 50) {
           setHasMoreMessages(false);

@@ -11,7 +11,8 @@ export interface User {
   banReason?: string | null;
   banExpires?: string | null;
   onboardingCompleted?: boolean;
-  phoneNumber?: string | null;
+  gender?: "male" | "female" | "other" | null;
+  dateOfBirth?: string | null;
 }
 
 export interface UserSearchItem {
@@ -47,10 +48,12 @@ export interface UserPreferences {
 }
 
 export interface CompleteOnboardingRequest {
+  name: string;
   organizationId: string;
   sport: string;
   skillLevel: string;
-  phoneNumber: string;
+  gender: "male" | "female" | "other";
+  dateOfBirth: string;
   imageUrl?: string | null;
   pin?: string | null;
 }
@@ -58,10 +61,11 @@ export interface CompleteOnboardingRequest {
 export interface UpdateProfileRequest {
   name?: string | null;
   image?: string | null;
-  phoneNumber?: string | null;
   organizationId?: string | null;
   sport?: string | null;
   skillLevel?: string | null;
+  gender?: "male" | "female" | "other" | null;
+  dateOfBirth?: string | null;
   pin?: string | null;
 }
 

@@ -2,7 +2,6 @@ import { useCallback, useMemo } from "react";
 import { Stack, useRouter } from "expo-router";
 import {
   View,
-  ScrollView as HorizontalScroll,
   Platform,
   Pressable,
   StyleSheet,
@@ -14,12 +13,12 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 import { useMe } from "@/hooks/use-user";
 import { useMyLevel } from "@/hooks/use-level";
-import { useMatches, useInfiniteMatches } from "@/hooks/use-match";
+import { useInfiniteMatches } from "@/hooks/use-match";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 import { LevelProgressCard } from "@/features/feed/components/level-progress-card";
-import { OngoingMatchCard } from "@/features/feed/components/ongoing-match-card";
 import { FeedMatchRow } from "@/features/feed/components/feed-match-row";
+import { EventsFeedSection } from "@/features/events/components/events-feed-section";
 import { SectionHeader } from "@/components/ui/section-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SkeletonRow } from "@/components/ui/skeleton";
@@ -30,9 +29,7 @@ export default function Feed() {
   const scheme = useColorScheme();
   const { data: me } = useMe();
   const { data: level, isLoading: levelLoading } = useMyLevel();
-  const { data: ongoingData } = useMatches({ status: "ongoing" });
   const router = useRouter();
-
 
   const goToRanking = () => router.push("/(tabs)/feed/ranking");
   const goToProgression = () => router.push("/(tabs)/feed/progression");
@@ -48,7 +45,6 @@ export default function Feed() {
     refetch,
   } = useInfiniteMatches({ status: "finished", limit: 20 });
 
-  const ongoingMatches = ongoingData?.matches ?? [];
   const finishedMatches = useMemo(
     () => finishedData?.pages.flatMap((p) => p.matches) ?? [],
     [finishedData]
@@ -115,26 +111,24 @@ export default function Feed() {
               ) : null}
             </View>
 
-            {/* Ongoing matches */}
-            {ongoingMatches.length > 0 && (
+            {/* Events */}
+            <EventsFeedSection />
+
+            {/* Recent matches section header */}
+            {finishedMatches.length > 0 && (
               <View style={styles.section}>
-                <SectionHeader title="En cours" />
-                <HorizontalScroll
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.horizontalScroll}
-                >
-                  {ongoingMatches.map((match) => (
-                    <OngoingMatchCard key={match.id} match={match} />
-                  ))}
-                </HorizontalScroll>
+                <SectionHeader title="Matchs récents" />
               </View>
-            )}  
+            )}
           </View>
         }
         renderItem={({ item }) => (
           <View style={styles.matchRow}>
-            <FeedMatchRow match={item} currentUserId={currentUserId} />
+            <FeedMatchRow
+              match={item}
+              currentUserId={currentUserId}
+              onPress={() => router.push(`/(tabs)/matches/${item.id}`)}
+            />
           </View>
         )}
         ListEmptyComponent={
@@ -163,14 +157,6 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: spacing.horizontal,
     paddingVertical: 8,
-  },
-  sectionHeaderContainer: {
-    paddingHorizontal: spacing.horizontal,
-    paddingTop: 16,
-    paddingBottom: 4,
-  },
-  horizontalScroll: {
-    gap: 12,
   },
   matchRow: {
     paddingHorizontal: spacing.horizontal,

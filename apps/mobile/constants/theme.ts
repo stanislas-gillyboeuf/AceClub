@@ -18,9 +18,15 @@ export const colors = {
   gray500: "#6b7280",
   gray600: "#4b5563",
 
+  // iOS System
+  systemGray: "#8E8E93",
+
   // Feedback
   red50: "#fef2f2",
   red500: "#ef4444",
+
+  // Surfaces
+  warmBackground: "#FEF7ED",
 } as const;
 
 export const spacing = {
@@ -39,16 +45,6 @@ export const radii = {
 
 export const sizes = {
   buttonHeight: 52,
-  // Dark neutrals
-  gray700: "#374151",
-  gray800: "#1f2937",
-  gray900: "#111827",
-
-  // iOS system
-  systemGray5Light: "#E5E5EA",
-  systemGray5Dark: "#2C2C2E",
-  systemGray6Light: "#F2F2F7",
-  systemGray6Dark: "#1C1C1E",
 } as const;
 
 export const semanticColors = {
@@ -62,26 +58,8 @@ export const semanticColors = {
   divider: { light: "#C6C6C8", dark: "#38383A" },
   incomingBubble: { light: "#E5E5EA", dark: "#26252A" },
   chatBackground: { light: "#FFFFFF", dark: "#000000" },
-} as const;
-
-// Legacy format used by tabs layout / other screens
-export const Colors = {
-  light: {
-    text: colors.black,
-    background: colors.white,
-    tint: colors.accentGreen,
-    icon: colors.gray500,
-    tabIconDefault: colors.gray500,
-    tabIconSelected: colors.accentGreen,
-  },
-  dark: {
-    text: colors.white,
-    background: "#151718",
-    tint: colors.accentGreen,
-    icon: colors.gray400,
-    tabIconDefault: colors.gray400,
-    tabIconSelected: colors.accentGreen,
-  },
+  systemGray5: { light: "#E5E5EA", dark: "#2C2C2E" },
+  systemGray6: { light: "#F2F2F7", dark: "#1C1C1E" },
 } as const;
 
 export const Fonts = Platform.select({

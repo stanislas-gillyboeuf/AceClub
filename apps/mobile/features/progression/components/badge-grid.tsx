@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
 import { Image } from "expo-image";
 import { Lock } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { semanticColors, spacing } from "@/constants/theme";
+import { colors, semanticColors, spacing } from "@/constants/theme";
 import { getBadgeCategoryColor } from "@/lib/progression";
 import type { Badge } from "@/types/reward";
 
@@ -61,8 +61,8 @@ function BadgeItem({ badge }: BadgeItemProps) {
           </View>
         )}
         {!isUnlocked && (
-          <View style={styles.lockOverlay}>
-            <Lock size={16} color="#8E8E93" />
+          <View style={[styles.lockOverlay, { backgroundColor: semanticColors.systemGray5[scheme] }]}>
+            <Lock size={16} color={colors.systemGray} />
           </View>
         )}
       </View>
@@ -116,7 +116,6 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: "#E5E5EA",
     alignItems: "center",
     justifyContent: "center",
   },

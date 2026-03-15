@@ -11,12 +11,12 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { PlusCircle } from "lucide-react-native";
 import { SetScoresView } from "@/components/ui/set-scores-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useMatch, useUpdateMatchScores } from "@/hooks/use-match";
 import { colors, semanticColors, spacing, radii } from "@/constants/theme";
 import { SetScoreEditorRow, type EditableSet } from "@/features/matches/components/edit-scores/set-score-editor-row";
+import Button from "@/components/ui/button";
 import type { MatchDetail } from "@/types/match";
 
 let keyCounter = 0;
@@ -157,7 +157,6 @@ export default function EditScores() {
             <Stack.Toolbar.Button
               icon="xmark"
               onPress={() => router.dismiss()}
-              tintColor={colors.accentGreen}
             />
           </Stack.Toolbar>
           <Stack.Toolbar placement="right">
@@ -203,14 +202,14 @@ export default function EditScores() {
         ))}
 
         {/* Add set button */}
-        <Pressable onPress={addSet} style={[styles.addSetButton, {
-          backgroundColor: `${colors.accentGreen}1A`,
-        }]}>
-          <PlusCircle size={16} color={colors.accentGreen} strokeWidth={2} />
-          <Text style={[styles.addSetText, { color: colors.accentGreen }]}>
-            Ajouter un set
-          </Text>
-        </Pressable>
+        <View style={{ alignItems: "center" }}>
+          <Button
+            label="Ajouter un set"
+            onPress={addSet}
+            variant="secondary"
+            fullWidth={false}
+          />
+        </View>
       </ScrollView>
 
       {/* Saving overlay */}
@@ -246,18 +245,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     borderWidth: 0.5,
     marginBottom: 8,
-  },
-  addSetButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 14,
-    borderRadius: radii.md,
-  },
-  addSetText: {
-    fontSize: 14,
-    fontWeight: "500",
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,

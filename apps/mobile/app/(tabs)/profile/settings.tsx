@@ -19,12 +19,14 @@ import {
   MapPin,
   FileText,
   Hand,
-  Trash2,
+  Shield,
   X,
+  Check,
 } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as Notifications from "expo-notifications";
 import * as Location from "expo-location";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { useMe, usePreferences, useUpdateProfile, useDeleteAccount } from "@/hooks/use-user";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -41,16 +43,37 @@ import { ToggleRow } from "@/components/ui/toggle-row";
 import { RadioGroup } from "@/components/ui/radio-group";
 import { EditableAvatar } from "@/features/settings/components/editable-avatar";
 import { consumePendingClubSelection } from "@/lib/pending-club-selection";
+import Button from "@/components/ui/button";
 
 import { colors, semanticColors, spacing, radii } from "@/constants/theme";
 import type { Sport } from "@/types/common";
 import type { Organization } from "@/types/organization";
 
-const PHONE_ALLOWED_CHARS = /^[+0-9() -]*$/;
+type Gender = "male" | "female" | "other";
 
-function isValidPhone(phone: string): boolean {
-  const digits = phone.replace(/\D/g, "");
-  return digits.length >= 8;
+const GENDER_OPTIONS: { value: Gender; label: string }[] = [
+  { value: "male", label: "Homme" },
+  { value: "female", label: "Femme" },
+  { value: "other", label: "Autre" },
+];
+
+const now = new Date();
+const MIN_AGE = 13;
+const MAX_AGE = 100;
+const maxBirthdate = new Date(now.getFullYear() - MIN_AGE, now.getMonth(), now.getDate());
+const minBirthdate = new Date(now.getFullYear() - MAX_AGE, now.getMonth(), now.getDate());
+const defaultBirthdate = new Date(now.getFullYear() - 20, now.getMonth(), now.getDate());
+
+/** Parse "YYYY-MM-DD" or ISO string into a Date */
+function parseDateOfBirth(value: string | null | undefined): Date | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+/** Format Date to "YYYY-MM-DD" for the API */
+function formatDateOfBirth(date: Date): string {
+  return date.toISOString().split("T")[0];
 }
 
 export default function Settings() {
@@ -62,7 +85,10 @@ export default function Settings() {
 
   // Form state
   const [name, setName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
+  const [dateOfBirth, setDateOfBirth] = useState<Date>(defaultBirthdate);
+  const [hasDateOfBirth, setHasDateOfBirth] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(Platform.OS === "ios");
   const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
   const [selectedSkillLevel, setSelectedSkillLevel] = useState<string | null>(null);
   const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
@@ -106,7 +132,12 @@ export default function Settings() {
   useEffect(() => {
     if (user) {
       setName(user.name ?? "");
-      setPhoneNumber(user.phoneNumber ?? "");
+      setSelectedGender(user.gender ?? null);
+      const parsed = parseDateOfBirth(user.dateOfBirth);
+      if (parsed) {
+        setDateOfBirth(parsed);
+        setHasDateOfBirth(true);
+      }
     }
   }, [user]);
 
@@ -130,7 +161,8 @@ export default function Settings() {
   const originalValues = useMemo(
     () => ({
       name: user?.name ?? "",
-      phoneNumber: user?.phoneNumber ?? "",
+      gender: user?.gender ?? null,
+      dateOfBirth: user?.dateOfBirth ?? null,
       sport: (preferences?.sport as Sport) ?? null,
       skillLevel: preferences?.skillLevel ?? null,
       organizationId: preferences?.organizationId ?? null,
@@ -139,9 +171,12 @@ export default function Settings() {
     [user, preferences]
   );
 
+  const currentDateOfBirthStr = hasDateOfBirth ? formatDateOfBirth(dateOfBirth) : null;
+
   const hasChanges =
     name !== originalValues.name ||
-    phoneNumber !== originalValues.phoneNumber ||
+    selectedGender !== originalValues.gender ||
+    currentDateOfBirthStr !== originalValues.dateOfBirth ||
     selectedSport !== originalValues.sport ||
     selectedSkillLevel !== originalValues.skillLevel ||
     selectedOrganization?.id !== originalValues.organizationId ||
@@ -150,7 +185,6 @@ export default function Settings() {
   const canSave =
     hasChanges &&
     name.trim().length > 0 &&
-    (!phoneNumber || isValidPhone(phoneNumber)) &&
     !isSaving;
 
   // Sport change resets skill level
@@ -159,13 +193,6 @@ export default function Settings() {
     const levels = getSkillLevels(sport);
     if (levels.length > 0) {
       setSelectedSkillLevel(levels[0].value);
-    }
-  };
-
-  // Phone number validation
-  const handlePhoneChange = (text: string) => {
-    if (PHONE_ALLOWED_CHARS.test(text)) {
-      setPhoneNumber(text);
     }
   };
 
@@ -213,10 +240,10 @@ export default function Settings() {
       // Build payload with only defined (non-null) values
       const payload: Record<string, string> = {};
       const trimmedName = name.trim();
-      const trimmedPhone = phoneNumber.trim();
 
       if (trimmedName && trimmedName !== originalValues.name) payload.name = trimmedName;
-      if (trimmedPhone && trimmedPhone !== originalValues.phoneNumber) payload.phoneNumber = trimmedPhone;
+      if (selectedGender && selectedGender !== originalValues.gender) payload.gender = selectedGender;
+      if (currentDateOfBirthStr && currentDateOfBirthStr !== originalValues.dateOfBirth) payload.dateOfBirth = currentDateOfBirthStr;
       if (selectedSport && selectedSport !== originalValues.sport) payload.sport = selectedSport;
       if (selectedSkillLevel && selectedSkillLevel !== originalValues.skillLevel) payload.skillLevel = selectedSkillLevel;
       if (selectedOrganization?.id && selectedOrganization.id !== originalValues.organizationId) {
@@ -339,14 +366,12 @@ export default function Settings() {
               {isSaving ? (
                 <ActivityIndicator size="small" color={colors.accentGreen} />
               ) : (
-                <Text
-                  style={[
-                    styles.saveButton,
-                    { opacity: canSave ? 1 : 0.4 },
-                  ]}
-                >
-                  Enregistrer
-                </Text>
+                <Check
+                  size={24}
+                  color={colors.accentGreen}
+                  strokeWidth={2.5}
+                  style={{ opacity: canSave ? 1 : 0.4 }}
+                />
               )}
             </Pressable>
           ),
@@ -396,19 +421,72 @@ export default function Settings() {
               placeholder="Votre nom"
               autoCapitalize="words"
             />
-            <View style={{ height: 12 }} />
-            <FormField
-              label="Numéro de téléphone"
-              value={phoneNumber}
-              onChangeText={handlePhoneChange}
-              placeholder="+33 6 12 34 56 78"
-              keyboardType="phone-pad"
-              error={
-                phoneNumber && !isValidPhone(phoneNumber)
-                  ? "Minimum 8 chiffres requis"
-                  : null
-              }
+          </SectionCard>
+
+          {/* Gender */}
+          <SectionCard title="Genre">
+            <RadioGroup<Gender>
+              options={GENDER_OPTIONS}
+              selected={selectedGender}
+              onSelect={setSelectedGender}
             />
+          </SectionCard>
+
+          {/* Date of Birth */}
+          <SectionCard title="Date de naissance">
+            {Platform.OS === "ios" ? (
+              <View style={styles.datePickerRow}>
+                <DateTimePicker
+                  value={dateOfBirth}
+                  mode="date"
+                  display="spinner"
+                  onChange={(_, selectedDate) => {
+                    if (selectedDate) {
+                      setDateOfBirth(selectedDate);
+                      setHasDateOfBirth(true);
+                    }
+                  }}
+                  maximumDate={maxBirthdate}
+                  minimumDate={minBirthdate}
+                  locale="fr-FR"
+                  style={{ height: 150 }}
+                />
+              </View>
+            ) : (
+              <>
+                <Pressable
+                  onPress={() => setShowDatePicker(true)}
+                  style={({ pressed }) => [
+                    styles.dateButton,
+                    { backgroundColor: semanticColors.cardBackground[scheme] },
+                    pressed && { opacity: 0.7 },
+                  ]}
+                >
+                  <Text style={{ color: semanticColors.labelPrimary[scheme], fontSize: 16 }}>
+                    {hasDateOfBirth
+                      ? dateOfBirth.toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" })
+                      : "Sélectionner une date"
+                    }
+                  </Text>
+                </Pressable>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={dateOfBirth}
+                    mode="date"
+                    display="default"
+                    onChange={(_, selectedDate) => {
+                      setShowDatePicker(false);
+                      if (selectedDate) {
+                        setDateOfBirth(selectedDate);
+                        setHasDateOfBirth(true);
+                      }
+                    }}
+                    maximumDate={maxBirthdate}
+                    minimumDate={minBirthdate}
+                  />
+                )}
+              </>
+            )}
           </SectionCard>
 
           {/* Club */}
@@ -493,16 +571,23 @@ export default function Settings() {
             />
           </SectionCard>
 
+          {/* Administration (admin only) */}
+          {user?.role === "admin" && (
+            <SectionCard title="Administration">
+              <SettingsRow
+                icon={<Shield size={20} color={colors.accentOrange} strokeWidth={1.5} />}
+                label="Gestion de la plateforme"
+                onPress={() => router.push("/(tabs)/profile/admin")}
+              />
+            </SectionCard>
+          )}
+
           {/* Danger Zone */}
-          <SectionCard title="Zone dangereuse">
-            <SettingsRow
-              icon={<Trash2 size={20} color="#ef4444" strokeWidth={1.5} />}
-              label="Supprimer mon compte"
-              onPress={handleDeleteAccount}
-              destructive
-              showChevron={false}
-            />
-          </SectionCard>
+          <Button
+            label="Supprimer mon compte"
+            onPress={handleDeleteAccount}
+            variant="destructive"
+          />
 
           <View style={{ height: 40 }} />
         </ScrollView>
@@ -526,6 +611,15 @@ const styles = StyleSheet.create({
   avatarSection: {
     alignItems: "center",
     paddingVertical: 8,
+  },
+  datePickerRow: {
+    alignItems: "center",
+    paddingVertical: 4,
+  },
+  dateButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: radii.sm,
   },
   divider: {
     height: StyleSheet.hairlineWidth,

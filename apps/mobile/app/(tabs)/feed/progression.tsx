@@ -3,6 +3,7 @@ import {
   View,
   Text,
   Platform,
+  PlatformColor,
   Pressable,
   StyleSheet,
   RefreshControl,
@@ -170,7 +171,7 @@ export default function Progression() {
 
       {Platform.OS === "ios" && (
         <Stack.Toolbar placement="right">
-          <Stack.Toolbar.Button icon="xmark" onPress={goBack} tintColor={colors.accentGreen} />
+          <Stack.Toolbar.Button icon="xmark" onPress={goBack} />
         </Stack.Toolbar>
       )}
 

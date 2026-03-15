@@ -2,8 +2,8 @@ import { useState, useRef, useCallback } from "react";
 import {
   View,
   TextInput,
-  StyleSheet,
   Pressable,
+  StyleSheet,
   Text,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
@@ -153,7 +153,13 @@ export function ChatBottomBar({
         <InputBarReplyPreview message={replyingTo} onCancel={onCancelReply} />
       )}
       <View style={styles.container}>
-        <Pressable onPress={handlePickImage} style={styles.plusButton}>
+        <Pressable
+          onPress={handlePickImage}
+          style={({ pressed }) => [
+            styles.plusButton,
+            pressed && { transform: [{ scale: 0.95 }] },
+          ]}
+        >
           <GlassView style={styles.plusCircle}>
             <Image size={18} color={semanticColors.labelPrimary[scheme]} strokeWidth={2} />
           </GlassView>
@@ -187,7 +193,13 @@ export function ChatBottomBar({
           )}
 
           {hasText ? (
-            <Pressable onPress={handleSendText} style={styles.sendButtonInline}>
+            <Pressable
+              onPress={handleSendText}
+              style={({ pressed }) => [
+                styles.sendButtonInline,
+                pressed && { transform: [{ scale: 0.95 }] },
+              ]}
+            >
               <GlassView style={styles.sendCircle} tintColor={colors.accentGreen}>
                 <ArrowUp size={18} color={colors.white} strokeWidth={2.5} />
               </GlassView>

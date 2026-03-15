@@ -14,6 +14,8 @@ import {
 import {
   createEvent,
   updateEvent,
+  updateEventStatus,
+  deleteEvent,
   cancelEvent,
   registerEvent,
   cancelRegistration,
@@ -29,11 +31,11 @@ import {
   listParticipantsValidator,
   createEventValidator,
   updateEventValidator,
+  updateEventStatusValidator,
   deleteEventValidator,
   registerEventValidator,
   cancelRegistrationValidator,
   removeParticipantValidator,
-  updateEventStatusValidator,
   adminListEventsValidator,
 } from "./validators";
 
@@ -60,6 +62,12 @@ eventRouter.post(
 // --- Organizer routes (auth checked in handler via assertOrgAdmin) ---
 eventRouter.post("/create", zValidator("json", createEventValidator), createEvent);
 eventRouter.post("/update", zValidator("json", updateEventValidator), updateEvent);
+eventRouter.post(
+  "/update-status",
+  zValidator("json", updateEventStatusValidator),
+  updateEventStatus,
+);
+eventRouter.post("/delete", zValidator("json", deleteEventValidator), deleteEvent);
 eventRouter.post("/cancel", zValidator("json", deleteEventValidator), cancelEvent);
 eventRouter.post(
   "/remove-participant",

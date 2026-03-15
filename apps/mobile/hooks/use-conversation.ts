@@ -30,7 +30,7 @@ export function useSendMessage() {
   return useMutation({
     mutationFn: ({ conversationId, data }: { conversationId: string; data: SendMessageRequest }) =>
       conversationService.sendMessage(conversationId, data),
-    onSuccess: (_, variables) => {
+    onSettled: (_data, _err, variables) => {
       queryClient.invalidateQueries({ queryKey: ["conversation", variables.conversationId, "messages"] });
       queryClient.invalidateQueries({ queryKey: ["conversation", "list"] });
     },
@@ -57,7 +57,7 @@ export function useDeleteConversation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (conversationId: string) => conversationService.deleteConversation(conversationId),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["conversation", "list"] });
     },
   });
@@ -68,7 +68,7 @@ export function useDeleteMessage() {
   return useMutation({
     mutationFn: ({ conversationId, messageId }: { conversationId: string; messageId: string }) =>
       conversationService.deleteMessage(conversationId, messageId),
-    onSuccess: (_, variables) => {
+    onSettled: (_data, _err, variables) => {
       queryClient.invalidateQueries({ queryKey: ["conversation", variables.conversationId, "messages"] });
     },
   });
@@ -78,7 +78,7 @@ export function useFindOrCreateConversation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (participantId: string) => conversationService.findOrCreateConversation(participantId),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["conversation", "list"] });
     },
   });
@@ -89,7 +89,7 @@ export function useMuteConversation() {
   return useMutation({
     mutationFn: ({ conversationId, isMuted }: { conversationId: string; isMuted: boolean }) =>
       conversationService.muteConversation(conversationId, isMuted),
-    onSuccess: (_, variables) => {
+    onSettled: (_data, _err, variables) => {
       queryClient.invalidateQueries({ queryKey: ["conversation", variables.conversationId] });
       queryClient.invalidateQueries({ queryKey: ["conversation", "list"] });
     },

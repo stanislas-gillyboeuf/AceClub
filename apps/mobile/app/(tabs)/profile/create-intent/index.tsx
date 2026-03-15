@@ -144,9 +144,7 @@ export default function CreateIntent() {
           <Stack.Toolbar placement="right">
             <Stack.Toolbar.Button
               icon="xmark"
-              variant="prominent"
               onPress={handleDismiss}
-              tintColor={colors.accentGreen}
             />
           </Stack.Toolbar>
         </>

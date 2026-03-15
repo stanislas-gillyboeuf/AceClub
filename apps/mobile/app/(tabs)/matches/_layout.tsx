@@ -20,10 +20,12 @@ export default function MatchesLayout() {
         name="create/index"
         options={{
           presentation: formSheet,
-          sheetGrabberVisible: Platform.OS === "ios",
           title: "Nouveau match",
-          headerTransparent: true,
-          sheetAllowedDetents: [0.6, 0.85, 1],
+          headerTransparent: Platform.OS === "ios",
+          ...(Platform.OS === "ios" && {
+            sheetGrabberVisible: true,
+            sheetAllowedDetents: [0.6, 0.85, 1],
+          }),
         }}
       />
       <Stack.Screen
@@ -31,7 +33,7 @@ export default function MatchesLayout() {
         options={{
           presentation: "fullScreenModal",
           title: "Détails du match",
-          headerTransparent: true,
+          headerTransparent: Platform.OS === "ios",
         }}
       />
       <Stack.Screen
@@ -40,6 +42,27 @@ export default function MatchesLayout() {
           presentation: formSheet,
           sheetGrabberVisible: Platform.OS === "ios",
           title: "Modifier les scores",
+          headerTransparent: Platform.OS === "ios",
+        }}
+      />
+      <Stack.Screen
+        name="[id]/venue-detail"
+        options={{
+          presentation: formSheet,
+          title: "Lieu",
+          headerTransparent: Platform.OS === "ios",
+          ...(Platform.OS === "ios" && {
+            sheetGrabberVisible: true,
+            sheetAllowedDetents: [0.45, 0.7],
+          }),
+        }}
+      />
+      <Stack.Screen
+        name="[id]/feedback"
+        options={{
+          presentation: formSheet,
+          sheetGrabberVisible: Platform.OS === "ios",
+          title: "Mon effort",
           headerTransparent: Platform.OS === "ios",
         }}
       />

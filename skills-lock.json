@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "building-native-ui": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "computedHash": "37e9a7eb3464f210a0288f70bef5dbd350fbc62669ef6dca4967930a770450b5"
+    }
+  }
+}

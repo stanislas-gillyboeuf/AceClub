@@ -1,18 +1,23 @@
 import { useMemo, useCallback, useState } from "react";
-import { View, ScrollView, Alert, ActivityIndicator, RefreshControl, StyleSheet, Platform, Pressable } from "react-native";
+import { View, ScrollView, Alert, ActivityIndicator, RefreshControl, StyleSheet, Platform, PlatformColor, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { semanticColors, spacing, colors } from "@/constants/theme";
-import { useMatch, useUpdateMatch, useDeleteMatch } from "@/hooks/use-match";
+import { useMatch, useUpdateMatch, useDeleteMatch, useUpdateFeedback } from "@/hooks/use-match";
+import { useTakeMatchPhoto } from "@/features/matches/hooks/use-take-match-photo";
 import { useMe } from "@/hooks/use-user";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ScoreCard } from "@/features/matches/components/match-detail/score-card";
 import { SetsCard } from "@/features/matches/components/match-detail/sets-card";
 import { InfoCard } from "@/features/matches/components/match-detail/info-card";
 import { VenueCard } from "@/features/matches/components/match-detail/venue-card";
-import { FeedbackCard } from "@/features/matches/components/match-detail/feedback-card";
 import { CommentsCard } from "@/features/matches/components/match-detail/comments-card";
+import { ElapsedTimerCard } from "@/features/matches/components/match-detail/elapsed-timer-card";
+import { PhotoCard } from "@/features/matches/components/match-detail/photo-card";
+import { SheetActionBar } from "@/features/matches/components/match-detail/floating-action-bar";
+import { FeedbackCta } from "@/features/matches/components/feedback/feedback-cta";
+import { VisibilityToggle } from "@/features/matches/components/feedback/visibility-toggle";
 
 export default function MatchDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -23,6 +28,8 @@ export default function MatchDetail() {
   const { data: me } = useMe();
   const updateMatch = useUpdateMatch();
   const deleteMatch = useDeleteMatch();
+  const updateFeedback = useUpdateFeedback();
+  const { takePhoto: handleTakePhoto } = useTakeMatchPhoto(id);
   const [isManualRefresh, setIsManualRefresh] = useState(false);
 
   const handleRefresh = useCallback(async () => {
@@ -47,6 +54,9 @@ export default function MatchDetail() {
   const isOngoing = matchStatus === "ongoing";
   const hasUserCommented = (matchDetail?.comments ?? []).some(
     (c) => c.userId === currentUserId
+  );
+  const hasUserPhoto = (matchDetail?.photos ?? []).some(
+    (p) => p.userId === currentUserId
   );
 
   // --- Actions ---
@@ -99,8 +109,8 @@ export default function MatchDetail() {
     ]);
   };
 
-  const handleEditFeedback = () => {
-    Alert.alert("Bientôt disponible", "L'édition des sensations arrive prochainement.");
+  const handleFeedback = () => {
+    router.push(`/matches/${id}/feedback`);
   };
 
   // --- Loading ---
@@ -154,7 +164,7 @@ export default function MatchDetail() {
       {Platform.OS === "ios" && (
         <>
           <Stack.Toolbar placement="left">
-            <Stack.Toolbar.Button icon="xmark" variant="prominent" onPress={() => router.dismiss()} tintColor={colors.accentGreen} />
+            <Stack.Toolbar.Button icon="xmark" onPress={() => router.dismiss()} />
           </Stack.Toolbar>
 
           {isParticipant && (
@@ -183,6 +193,18 @@ export default function MatchDetail() {
                   <Stack.Toolbar.Spacer />
                 </>
               )}
+              {(isOngoing || isFinished) && !hasUserPhoto && (
+                <>
+                  <Stack.Toolbar.Button icon="camera" variant="prominent" onPress={handleTakePhoto} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Spacer />
+                </>
+              )}
+              {isFinished && !matchDetail?.myFeedback && (
+                <>
+                  <Stack.Toolbar.Button icon="face.smiling" variant="prominent" onPress={handleFeedback} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Spacer />
+                </>
+              )}
               {isFinished && !hasUserCommented && (
                 <>
                   <Stack.Toolbar.Button icon="bubble.left" variant="prominent" onPress={handleComment} tintColor={colors.accentGreen} />
@@ -208,14 +230,52 @@ export default function MatchDetail() {
       >
         <ScoreCard matchDetail={matchDetail} currentUserId={currentUserId} />
 
+        {isOngoing && matchDetail.match.startedAt && (
+          <ElapsedTimerCard startedAt={matchDetail.match.startedAt} />
+        )}
+
+        {(isOngoing || isFinished) && (
+          <PhotoCard
+            matchDetail={matchDetail}
+            currentUserId={currentUserId}
+            isParticipant={isParticipant}
+          />
+        )}
+
         {matchDetail.sets.length > 0 && <SetsCard matchDetail={matchDetail} />}
 
-        <InfoCard matchDetail={matchDetail} />
+        <InfoCard
+          matchDetail={matchDetail}
+          isScheduled={isScheduled}
+          onUpdateScheduledDate={(date) => {
+            updateMatch.mutate({
+              id: matchDetail.match.id,
+              data: { scheduledAt: date.toISOString() },
+            });
+          }}
+        />
 
-        <VenueCard matchDetail={matchDetail} />
+        <VenueCard matchDetail={matchDetail} isParticipant={isParticipant} isScheduled={isScheduled} />
 
-        {isFinished && matchDetail.myFeedback && (
-          <FeedbackCard feedback={matchDetail.myFeedback} onEdit={handleEditFeedback} />
+        {isFinished && isParticipant && (
+          <FeedbackCta
+            onEffort={handleFeedback}
+            onComment={handleComment}
+            hasEffort={!!matchDetail.myFeedback}
+            hasComment={hasUserCommented}
+          />
+        )}
+
+        {isFinished && isParticipant && matchDetail.myFeedback && (
+          <VisibilityToggle
+            value={matchDetail.myFeedback.visibleToClub}
+            onValueChange={(val) => {
+              updateFeedback.mutate({
+                matchId: matchDetail.match.id,
+                data: { visibleToClub: val },
+              });
+            }}
+          />
         )}
 
         {isFinished && (
@@ -225,6 +285,20 @@ export default function MatchDetail() {
             isParticipant={isParticipant}
             onAddComment={handleComment}
             onEditComment={() => handleComment()}
+          />
+        )}
+
+        {Platform.OS === "android" && (
+          <SheetActionBar
+            matchDetail={matchDetail}
+            currentUserId={currentUserId}
+            isParticipant={isParticipant}
+            onStart={handleStart}
+            onEditScores={handleEditScores}
+            onFinish={handleFinish}
+            onEditMatch={handleEditMatch}
+            onComment={handleComment}
+            onDelete={handleDelete}
           />
         )}
       </ScrollView>

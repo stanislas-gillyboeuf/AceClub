@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Avatar } from "@/components/ui/avatar";
 import { BadgePill } from "@/components/ui/badge-pill";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -13,6 +13,7 @@ import type { MatchWithParticipants, MatchParticipant } from "@/types/match";
 
 interface OngoingMatchCardProps {
   match: MatchWithParticipants;
+  onPress?: () => void;
 }
 
 function PlayerColumn({ participant }: { participant?: MatchParticipant }) {
@@ -30,7 +31,7 @@ function PlayerColumn({ participant }: { participant?: MatchParticipant }) {
   );
 }
 
-export function OngoingMatchCard({ match }: OngoingMatchCardProps) {
+export function OngoingMatchCard({ match, onPress }: OngoingMatchCardProps) {
   const scheme = useColorScheme();
   const home = getHomeParticipant(match);
   const away = getAwayParticipant(match);
@@ -38,13 +39,15 @@ export function OngoingMatchCard({ match }: OngoingMatchCardProps) {
   const setCount = match.sets?.length ?? 0;
 
   return (
-    <View
-      style={[
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
         styles.container,
         {
           backgroundColor: semanticColors.cardBackground[scheme],
           borderColor: `${colors.accentOrange}4D`,
         },
+        pressed && { transform: [{ scale: 0.97 }] },
       ]}
     >
       <View style={styles.header}>
@@ -72,7 +75,7 @@ export function OngoingMatchCard({ match }: OngoingMatchCardProps) {
           <PlayerColumn participant={away} />
         </View>
       )}
-    </View>
+    </Pressable>
   );
 }
 

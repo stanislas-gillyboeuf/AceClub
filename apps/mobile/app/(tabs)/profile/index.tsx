@@ -1,7 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import {
   View,
-  Text,
   ScrollView,
   Pressable,
   StyleSheet,
@@ -12,7 +11,6 @@ import {
 } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { LogOut } from "lucide-react-native";
 
 import { useMe, usePreferences } from "@/hooks/use-user";
 import { useMyLevel } from "@/hooks/use-level";
@@ -31,7 +29,10 @@ import { ProfileBadgeSection } from "@/features/profile/components/profile-badge
 import { MatchIntentList } from "@/features/profile/components/match-intent-list";
 import { OrganizationCard } from "@/features/profile/components/organization-card";
 import { InvitationList } from "@/features/profile/components/invitation-list";
-import { semanticColors, spacing, colors, radii } from "@/constants/theme";
+import { canAccessHub } from "@/features/profile/lib/role-permissions";
+import Button from "@/components/ui/button";
+import { semanticColors, spacing, colors } from "@/constants/theme";
+import type { MemberRole } from "@/types/common";
 import type { MatchWithParticipants } from "@/types/match";
 
 function calculateMatchStats(matches: MatchWithParticipants[], userId: string) {
@@ -83,8 +84,8 @@ export default function Profile() {
 
   // Data queries
   const { data: user, isLoading: userLoading, refetch: refetchUser } = useMe();
-  const { data: preferences, isLoading: prefsLoading, refetch: refetchPrefs } = usePreferences();
-  const { data: level, isLoading: levelLoading, refetch: refetchLevel } = useMyLevel();
+  const { data: preferences, refetch: refetchPrefs } = usePreferences();
+  const { data: level, refetch: refetchLevel } = useMyLevel();
   const { data: badgesData, refetch: refetchBadges } = useMyBadges();
   const { data: allBadgesData } = useAllBadges();
   const {
@@ -287,17 +288,22 @@ export default function Profile() {
           memberRole={memberRole?.role}
         />
 
-        {/* Sign Out */}
-        <Pressable
+        {/* Manage Club — owners and admins only */}
+        {canAccessHub(memberRole?.role as MemberRole) && (
+          <Button
+            label="Gérer le club"
+            onPress={() => router.push("/(tabs)/profile/admin")}
+            variant="secondary"
+          />
+        )}
+
+        <View style={{ width: '100%' }}>
+        <Button
+          label="Déconnexion"
           onPress={handleSignOut}
-          style={({ pressed }) => [
-            styles.signOutButton,
-            pressed ? { opacity: 0.6 } : undefined,
-          ]}
-        >
-          <LogOut size={18} color="#ef4444" strokeWidth={2} />
-          <Text style={styles.signOutText}>Déconnexion</Text>
-        </Pressable>
+          variant="destructive"
+          />
+        </View>
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -315,19 +321,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  signOutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    height: 52,
-    borderRadius: radii.md,
-    backgroundColor: "#fef2f2",
-  },
-  signOutText: {
-    fontSize: 17,
-    fontWeight: "600",
-    color: "#ef4444",
   },
 });

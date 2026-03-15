@@ -2,7 +2,7 @@ import { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { event, eventParticipant } from "../../../db/schema/event/schema";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, count } from "drizzle-orm";
 import { z } from "zod";
 import { removeParticipantValidator } from "../validators";
 import { assertOrgAdmin } from "../../../middleware/org-member";
@@ -18,7 +18,9 @@ export const removeParticipant = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Event not found" }, 404);
   }
 
-  const isOrgAdmin = await assertOrgAdmin(currentUser.id, eventRecord.organizationId);
+  const isOrgAdmin = eventRecord.organizationId
+    ? await assertOrgAdmin(currentUser.id, eventRecord.organizationId)
+    : false;
   if (!isOrgAdmin && currentUser.role !== "admin") {
     return c.json({ error: "Forbidden", message: "Not authorized to remove participants" }, 403);
   }
@@ -43,6 +45,7 @@ export const removeParticipant = async (c: Context<HonoContext>) => {
     .where(eq(eventParticipant.id, registration.id));
 
   if (wasRegistered) {
+    // Promote next waitlisted person
     const [nextWaitlisted] = await db
       .select()
       .from(eventParticipant)
@@ -57,6 +60,26 @@ export const removeParticipant = async (c: Context<HonoContext>) => {
         .update(eventParticipant)
         .set({ status: "registered" })
         .where(eq(eventParticipant.id, nextWaitlisted.id));
+    }
+
+    // If event was full, revert to on_sale since a spot opened
+    if (eventRecord.status === "full") {
+      const [registeredCount] = await db
+        .select({ count: count() })
+        .from(eventParticipant)
+        .where(
+          and(
+            eq(eventParticipant.eventId, body.eventId),
+            eq(eventParticipant.status, "registered"),
+          ),
+        );
+
+      if (!eventRecord.maxParticipants || registeredCount.count < eventRecord.maxParticipants) {
+        await db
+          .update(event)
+          .set({ status: "on_sale" })
+          .where(eq(event.id, body.eventId));
+      }
     }
   }
 

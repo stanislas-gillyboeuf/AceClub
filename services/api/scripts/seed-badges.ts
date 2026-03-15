@@ -12,8 +12,8 @@ const BADGES = [
     nameEn: "First steps",
     descriptionFr: "Bienvenue dans le club !",
     descriptionEn: "Welcome to the club!",
-    imageUrl:
-      "https://bucket-production-f7ab.up.railway.app/aceclub-production/badges/premiers_pas.png",
+    imageUrl: "https://bucket-production-4a13.up.railway.app/app/badges/premiers_pas.png",
+
     requiredLevel: null,
     isActive: true,
     displayOrder: 10,

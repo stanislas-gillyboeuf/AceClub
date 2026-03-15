@@ -1,28 +1,46 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useRouter } from "expo-router";
 import {
   View,
   Platform,
   Pressable,
-  SectionList,
+  FlatList,
   RefreshControl,
   StyleSheet,
 } from "react-native";
+import { Plus } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, radii, semanticColors, spacing } from "@/constants/theme";
+import { colors, semanticColors, spacing } from "@/constants/theme";
 import { useInfiniteMatches } from "@/hooks/use-match";
 import { MatchRow } from "@/features/matches/components/match-row";
 import { MatchRowSkeleton } from "@/features/matches/components/match-row-skeleton";
-import { MatchDateHeader } from "@/features/matches/components/match-date-header";
-import { buildSections, type MatchSection } from "@/features/matches/components/match-sections";
+import { WeekDateStrip } from "@/features/matches/components/WeekDateStrip";
 import { EmptyState } from "@/components/ui/empty-state";
+import { startOfDay, formatDayKey, getMatchDisplayDate } from "@/lib/date";
+import type { MatchWithParticipants } from "@/types/match";
+
+function ItemSeparator() {
+  return <View style={separatorStyle} />;
+}
+const separatorStyle = { height: 12 };
 
 export default function Matches() {
   const router = useRouter();
   const scheme = useColorScheme();
-  const sectionListRef = useRef<SectionList>(null);
-  const [hasScrolledToToday, setHasScrolledToToday] = useState(false);
+  const insets = useSafeAreaInsets();
+
+  const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
+
+  const handleChangeWeek = (direction: -1 | 1) => {
+    setSelectedDate((prev) => {
+      const d = new Date(prev);
+      d.setDate(d.getDate() + direction * 7);
+      return d;
+    });
+  };
 
   const {
     data,
@@ -39,12 +57,19 @@ export default function Matches() {
     [data]
   );
 
-  const sections = useMemo(() => buildSections(allMatches), [allMatches]);
+  const { matchCountByDay, filteredMatches } = useMemo(() => {
+    const selectedKey = formatDayKey(selectedDate);
+    const map = new Map<string, number>();
+    const filtered: MatchWithParticipants[] = [];
 
-  const todaySectionIndex = useMemo(
-    () => sections.findIndex((s) => s.isToday),
-    [sections]
-  );
+    for (const match of allMatches) {
+      const key = formatDayKey(startOfDay(new Date(getMatchDisplayDate(match))));
+      map.set(key, (map.get(key) ?? 0) + 1);
+      if (key === selectedKey) filtered.push(match);
+    }
+
+    return { matchCountByDay: map, filteredMatches: filtered };
+  }, [allMatches, selectedDate]);
 
   const onCreateMatch = () => {
     router.push("/matches/create");
@@ -54,27 +79,15 @@ export default function Matches() {
     router.push("/matches/requests");
   };
 
-  const onEndReached =() => {
+  const onEndReached = () => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   };
 
-  const scrollToToday =() => {
-    if (hasScrolledToToday) return;
-    if (todaySectionIndex < 0 || sections.length === 0) return;
-    setHasScrolledToToday(true);
-    setTimeout(() => {
-      try {
-        sectionListRef.current?.scrollToLocation({
-          sectionIndex: todaySectionIndex,
-          itemIndex: 0,
-          animated: true,
-          viewOffset: 0,
-        });
-      } catch {
-      }
-    }, 350);
-  };
-
+  const renderItem = ({ item }: { item: MatchWithParticipants }) => (
+    <View style={styles.rowContainer}>
+      <MatchRow match={item} onPress={() => router.push(`/matches/${item.id}`)} />
+    </View>
+  );
 
   const toolbar = (
     <>
@@ -84,35 +97,44 @@ export default function Matches() {
           headerRight:
             Platform.OS === "android"
               ? () => (
-                  <View style={styles.androidToolbar}>
-                    <Pressable onPress={onOpenRequests}>
-                      <MaterialIcons name="mail-outline" size={24} color={colors.accentGreen} />
-                    </Pressable>
-                    <Pressable onPress={onCreateMatch}>
-                      <MaterialIcons name="add" size={24} color={colors.accentGreen} />
-                    </Pressable>
-                  </View>
+                  <Pressable onPress={onOpenRequests}>
+                    <MaterialIcons name="mail-outline" size={24} color={colors.accentGreen} />
+                  </Pressable>
                 )
               : undefined,
         }}
       />
       {Platform.OS === "ios" && (
-        <>
-          <Stack.Toolbar placement="left">
-            <Stack.Toolbar.Button icon="plus" onPress={onCreateMatch} tintColor={colors.accentGreen} />
-          </Stack.Toolbar>
-          <Stack.Toolbar placement="right">
-            <Stack.Toolbar.Button icon="envelope.badge" onPress={onOpenRequests} tintColor={colors.accentGreen} />
-          </Stack.Toolbar>
-        </>
+        <Stack.Toolbar placement="right">
+          <Stack.Toolbar.Button icon="envelope.badge" onPress={onOpenRequests} tintColor={colors.accentGreen} />
+        </Stack.Toolbar>
       )}
     </>
   );
 
+  const fab = (
+    <Pressable
+      onPress={onCreateMatch}
+      style={({ pressed }) => [styles.fab, { bottom: insets.bottom + 24 }, pressed && styles.fabPressed]}
+    >
+      <GlassView style={styles.fabGlass} tintColor={colors.accentGreen}>
+        <Plus size={28} color={colors.white} />
+      </GlassView>
+    </Pressable>
+  );
+
+  const listHeader = (
+    <WeekDateStrip
+      selectedDate={selectedDate}
+      onSelectDate={setSelectedDate}
+      matchCountByDay={matchCountByDay}
+      onChangeWeek={handleChangeWeek}
+    />
+  );
 
   if (isLoading && allMatches.length === 0) {
     return (
-      <>
+      <View style={styles.container}>
         {toolbar}
         <View style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
           <View style={styles.skeletonList}>
@@ -121,71 +143,40 @@ export default function Matches() {
             ))}
           </View>
         </View>
-      </>
-    );
-  }
-
-
-  if (!isLoading && allMatches.length === 0) {
-    return (
-      <>
-        {toolbar}
-        <View style={[styles.emptyContainer, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-          <EmptyState
-            icon="Swords"
-            title="Aucun match"
-            description="Tes matchs apparaîtront ici une fois planifiés ou joués."
-          />
-        </View>
-      </>
+        {fab}
+      </View>
     );
   }
 
   return (
-    <>
+    <View style={styles.container}>
       {toolbar}
-      <SectionList
-        ref={sectionListRef}
+      <FlatList
         contentInsetAdjustmentBehavior="automatic"
-        sections={sections}
-        keyExtractor={(item, index) =>
-          typeof item === "string" ? `empty-${index}` : item.id
+        data={filteredMatches}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <EmptyState
+              icon="Swords"
+              title="Aucun match ce jour"
+              description="Planifie un match et lance-toi !"
+            />
+          </View>
         }
-        stickySectionHeadersEnabled
-        renderSectionHeader={({ section }) => {
-          const s = section as MatchSection;
-          return <MatchDateHeader date={s.date} isToday={s.isToday} />;
-        }}
-        renderItem={({ item }) => {
-          if (typeof item === "string") {
-            return (
-              <View style={styles.sectionContent}>
-                <EmptyState
-                  icon="Swords"
-                  title="Pas de match aujourd'hui"
-                  description="Planifie un match et lance-toi !"
-                  containerStyle={{ borderWidth: 1 , borderColor: semanticColors.borderColor[scheme], borderRadius: radii.md, backgroundColor: semanticColors.cardBackground[scheme] }}
-                />
-              </View>
-            );
-          }
-          return (
-            <View style={styles.sectionContent}>
-              <MatchRow match={item} onPress={() => router.push(`/matches/${item.id}`)} />
-            </View>
-          );
-        }}
-        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        ItemSeparatorComponent={ItemSeparator}
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />
         }
         onEndReached={onEndReached}
         onEndReachedThreshold={0.5}
-        onContentSizeChange={scrollToToday}
         contentContainerStyle={styles.listContent}
         style={{ backgroundColor: semanticColors.primaryBackground[scheme] }}
       />
-    </>
+      {fab}
+    </View>
   );
 }
 
@@ -199,20 +190,27 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
+    paddingHorizontal: spacing.horizontal,
+    paddingTop: 32,
   },
   listContent: {
     paddingBottom: 32,
   },
-  sectionContent: {
+  rowContainer: {
     paddingHorizontal: spacing.horizontal,
   },
-  androidToolbar: {
-    flexDirection: "row",
+  fab: {
+    position: "absolute",
+    alignSelf: "center",
+  },
+  fabGlass: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
     alignItems: "center",
-    gap: 16,
+  },
+  fabPressed: {
+    transform: [{ scale: 0.95 }],
   },
 });

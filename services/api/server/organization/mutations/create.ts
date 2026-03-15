@@ -6,8 +6,8 @@ import { auth } from "../../../auth";
 import { geocodeAddress } from "../services/geocoding";
 import { generatePin } from "../services/pin";
 import { db } from "../../../db";
-import { organization } from "../../../db/schema/auth/schema";
-import { eq } from "drizzle-orm";
+import { organization, member } from "../../../db/schema/auth/schema";
+import { eq, and } from "drizzle-orm";
 
 export const createOrganization = async (c: Context<HonoContext>) => {
   try {
@@ -44,6 +44,19 @@ export const createOrganization = async (c: Context<HonoContext>) => {
         .update(organization)
         .set(updateData)
         .where(eq(organization.id, createdOrganization.id));
+
+      // Si l'utilisateur est admin plateforme, supprimer le member auto-créé par Better Auth
+      const authUser = c.get("user");
+      if (authUser?.role === "admin") {
+        await db
+          .delete(member)
+          .where(
+            and(
+              eq(member.organizationId, createdOrganization.id),
+              eq(member.userId, authUser.id)
+            )
+          );
+      }
     }
 
     return c.json(createdOrganization);

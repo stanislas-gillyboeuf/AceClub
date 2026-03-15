@@ -12,18 +12,21 @@ import {
 import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 import { Image } from "expo-image";
 import { GlassView } from "@/components/ui/glass-view";
-import { Search, X, Building2, Lock, ChevronRight } from "lucide-react-native";
+import { Search, X, Lock, ChevronRight } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useSearchOrganizations, useVerifyPin, useRequestClub } from "@/hooks/use-organization";
 import { colors, semanticColors, radii, spacing } from "@/constants/theme";
 import { FormField } from "@/components/ui/form-field";
 import { setPendingClubSelection } from "@/lib/pending-club-selection";
+import { setPendingVenueSelection } from "@/lib/pending-venue-selection";
+import Button from "@/components/ui/button";
 import type { Organization } from "@/types/organization";
 
 export default function ClubSelection() {
   const scheme = useColorScheme();
   const router = useRouter();
-  const { selectedId } = useLocalSearchParams<{ selectedId?: string }>();
+  const { selectedId, mode } = useLocalSearchParams<{ selectedId?: string; mode?: string }>();
+  const isVenueMode = mode === "venue";
 
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -57,7 +60,11 @@ export default function ClubSelection() {
   const organizations = searchData?.organizations ?? [];
 
   const handleSelect = (org: Organization, orgPin?: string) => {
-    setPendingClubSelection({ organization: org, pin: orgPin });
+    if (isVenueMode) {
+      setPendingVenueSelection(org);
+    } else {
+      setPendingClubSelection({ organization: org, pin: orgPin });
+    }
     router.back();
   };
 
@@ -122,7 +129,7 @@ export default function ClubSelection() {
             <Image source={{ uri: item.logo }} style={styles.orgLogo} contentFit="cover" />
           ) : (
             <View style={styles.orgLogoPlaceholder}>
-              <Building2 size={18} color={colors.accentGreen} strokeWidth={1.5} />
+              <Text style={styles.orgLogoLetter}>{item.name.charAt(0).toUpperCase()}</Text>
             </View>
           )}
           <View style={styles.orgInfo}>
@@ -175,20 +182,12 @@ export default function ClubSelection() {
             placeholder="Entrez le PIN"
             maxLength={6}
           />
-          <Pressable
+          <Button
+            label="Valider"
             onPress={handlePinSubmit}
-            disabled={pin.length < 4 || verifyPin.isPending}
-            style={[
-              styles.submitButton,
-              { opacity: pin.length < 4 || verifyPin.isPending ? 0.5 : 1 },
-            ]}
-          >
-            {verifyPin.isPending ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.submitButtonText}>Valider</Text>
-            )}
-          </Pressable>
+            disabled={pin.length < 4}
+            loading={verifyPin.isPending}
+          />
         </View>
       </>
     );
@@ -220,23 +219,12 @@ export default function ClubSelection() {
             onChangeText={setRequestCity}
             placeholder="Ex: Paris"
           />
-          <Pressable
+          <Button
+            label="Envoyer la demande"
             onPress={handleRequestSubmit}
-            disabled={!requestName.trim() || !requestCity.trim() || requestClub.isPending}
-            style={[
-              styles.submitButton,
-              {
-                opacity:
-                  !requestName.trim() || !requestCity.trim() || requestClub.isPending ? 0.5 : 1,
-              },
-            ]}
-          >
-            {requestClub.isPending ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text style={styles.submitButtonText}>Envoyer la demande</Text>
-            )}
-          </Pressable>
+            disabled={!requestName.trim() || !requestCity.trim()}
+            loading={requestClub.isPending}
+          />
         </View>
       </>
     );
@@ -351,10 +339,15 @@ const styles = StyleSheet.create({
   orgLogoPlaceholder: {
     width: 40,
     height: 40,
-    borderRadius: 8,
-    backgroundColor: `${colors.accentGreen}1A`,
+    borderRadius: 20,
+    backgroundColor: `${colors.accentGreen}15`,
     alignItems: "center",
     justifyContent: "center",
+  },
+  orgLogoLetter: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.accentGreen,
   },
   orgInfo: {
     flex: 1,
@@ -401,17 +394,5 @@ const styles = StyleSheet.create({
   pinDescription: {
     fontSize: 15,
     lineHeight: 22,
-  },
-  submitButton: {
-    height: 52,
-    borderRadius: radii.md,
-    backgroundColor: colors.accentGreen,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  submitButtonText: {
-    color: "#FFFFFF",
-    fontSize: 17,
-    fontWeight: "600",
   },
 });

@@ -53,6 +53,14 @@ export interface MatchComment {
   user?: { id: string; name: string; image?: string | null } | null;
 }
 
+export interface MatchPhoto {
+  id: string;
+  matchId: string;
+  userId: string;
+  imageUrl: string;
+  createdAt: string;
+}
+
 export interface MatchFeedback {
   id: string;
   matchId: string;
@@ -73,6 +81,7 @@ export interface MatchDetail {
   match: Match;
   participants: MatchParticipant[];
   sets: MatchSet[];
+  photos?: MatchPhoto[] | null;
   comments?: MatchComment[] | null;
   myFeedback?: MatchFeedback | null;
   venueOrganization?: Organization | null;
@@ -91,6 +100,7 @@ export interface MatchWithParticipants {
   venueOrganizationId?: string | null;
   participants: MatchParticipant[];
   sets?: MatchSet[] | null;
+  photos?: MatchPhoto[] | null;
   comments?: MatchComment[] | null;
 }
 

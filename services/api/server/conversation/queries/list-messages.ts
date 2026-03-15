@@ -2,12 +2,14 @@ import type { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import {
+  conversation,
   conversationParticipant,
   message,
   messageReaction,
 } from "../../../db/schema/conversation/schema";
 import { user } from "../../../db/schema/auth/schema";
 import { eq, and, desc, lt, inArray } from "drizzle-orm";
+import { decryptMessageContent } from "../lib/decrypt-content";
 
 export const listMessages = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user");
@@ -29,8 +31,8 @@ export const listMessages = async (c: Context<HonoContext>) => {
     conditions.push(lt(message.createdAt, before));
   }
 
-  // Run participation check and message fetch in parallel
-  const [participationResult, messages] = await Promise.all([
+  // Run participation check, encryption key fetch, and message fetch in parallel
+  const [participationResult, convResult, messages] = await Promise.all([
     db
       .select({ id: conversationParticipant.id })
       .from(conversationParticipant)
@@ -40,6 +42,11 @@ export const listMessages = async (c: Context<HonoContext>) => {
           eq(conversationParticipant.userId, currentUser.id),
         ),
       )
+      .limit(1),
+    db
+      .select({ encryptionKey: conversation.encryptionKey })
+      .from(conversation)
+      .where(eq(conversation.id, conversationId))
       .limit(1),
     db
       .select({
@@ -69,6 +76,8 @@ export const listMessages = async (c: Context<HonoContext>) => {
   if (participationResult.length === 0) {
     return c.json({ error: "Forbidden", message: "Not a participant" }, 403);
   }
+
+  const encryptionKey = convResult[0]?.encryptionKey ?? null;
 
   // Batch-fetch replied-to messages
   const replyToIds = messages.map((m) => m.replyToId).filter((id): id is string => id !== null);
@@ -145,6 +154,15 @@ export const listMessages = async (c: Context<HonoContext>) => {
     messages.map((msg) => {
       const repliedTo = msg.replyToId ? replyToMap.get(msg.replyToId) : null;
 
+      // Decrypt server-side so all clients can read regardless of expo-crypto support
+      const decryptedContent = msg.isEncrypted
+        ? decryptMessageContent(msg.content, encryptionKey)
+        : msg.content;
+
+      const decryptedReplyContent = repliedTo?.content
+        ? decryptMessageContent(repliedTo.content, encryptionKey)
+        : repliedTo?.content;
+
       return {
         id: msg.id,
         conversationId: msg.conversationId,
@@ -153,11 +171,11 @@ export const listMessages = async (c: Context<HonoContext>) => {
           name: msg.senderName,
           image: msg.senderImage,
         },
-        content: msg.content,
+        content: decryptedContent,
         createdAt: msg.createdAt.toISOString(),
         clientMessageId: msg.clientMessageId,
         isFromMe: msg.senderId === currentUser.id,
-        isEncrypted: msg.isEncrypted,
+        isEncrypted: false,
         messageType: msg.messageType,
         attachmentUrl: msg.attachmentUrl,
         attachmentDuration: msg.attachmentDuration,
@@ -169,7 +187,7 @@ export const listMessages = async (c: Context<HonoContext>) => {
               id: repliedTo.id,
               senderId: repliedTo.senderId,
               senderName: repliedTo.senderName || "Unknown",
-              content: repliedTo.content.substring(0, 100),
+              content: (decryptedReplyContent ?? repliedTo.content).substring(0, 100),
               messageType: repliedTo.messageType,
             }
           : null,

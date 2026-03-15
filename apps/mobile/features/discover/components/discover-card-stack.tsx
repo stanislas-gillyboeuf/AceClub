@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { GlassView } from "@/components/ui/glass-view";
 import Animated, {
@@ -20,6 +20,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { colors, semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { MatchIntentWithUser } from "@/types/match-intent";
+import Button from "@/components/ui/button";
 
 const SWIPE_THRESHOLD = 100;
 const MAX_ROTATION = 12;
@@ -51,6 +52,7 @@ export function DiscoverCardStack({
 }: DiscoverCardStackProps) {
   const scheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const [cardAreaHeight, setCardAreaHeight] = useState(0);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
 
@@ -172,7 +174,10 @@ export function DiscoverCardStack({
       )}
 
       {/* Card area */}
-      <View style={styles.cardArea}>
+      <View
+        style={styles.cardArea}
+        onLayout={(e) => setCardAreaHeight(e.nativeEvent.layout.height)}
+      >
         {items.length === 0 && !isLoading ? (
           <View style={[styles.emptyContainer, { backgroundColor: semanticColors.cardBackground[scheme] }]}>
             <EmptyState
@@ -180,16 +185,12 @@ export function DiscoverCardStack({
               title="Plus de profils pour l'instant"
               description="Reviens plus tard pour découvrir de nouveaux joueurs de ton club."
             />
-            <Pressable
-              style={[styles.createButton, { backgroundColor: colors.accentGreen }]}
-              onPress={onCreateIntent}
-            >
-              <Text style={styles.createButtonText}>Créer une annonce</Text>
-            </Pressable>
+            <View style={{ alignItems: "center", marginBottom: 12 }}>
+              <Button onPress={onCreateIntent} fullWidth={false} label="Créer une annonce" />
+            </View>
           </View>
         ) : (
           <>
-            {/* Background cards */}
             {items.slice(1, MAX_VISIBLE_CARDS).reverse().map((item, reversedIndex) => {
               const actualIndex = MAX_VISIBLE_CARDS - 1 - reversedIndex;
               const scale = 1 - 0.04 * actualIndex;
@@ -207,7 +208,7 @@ export function DiscoverCardStack({
                   ]}
                   pointerEvents="none"
                 >
-                  <DiscoverCard item={item} />
+                  <DiscoverCard item={item} maxHeight={cardAreaHeight || undefined} />
                 </View>
               );
             })}
@@ -220,7 +221,7 @@ export function DiscoverCardStack({
                 >
                   <Pressable onPress={handleCardPress}>
                     <Animated.View style={glowAnimatedStyle}>
-                      <DiscoverCard item={topCard} />
+                      <DiscoverCard item={topCard} maxHeight={cardAreaHeight || undefined} />
                     </Animated.View>
                   </Pressable>
                 </Animated.View>

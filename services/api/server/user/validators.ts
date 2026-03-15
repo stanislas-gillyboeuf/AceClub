@@ -1,5 +1,23 @@
 import { z } from "zod";
 
+function isValidAge(val: string): boolean {
+  const date = new Date(val);
+  if (isNaN(date.getTime())) return false;
+  // Reject dates where JS overflows the day (e.g. 2023-02-30 → March 2)
+  if (date.getMonth() !== parseInt(val.split("-")[1], 10) - 1) return false;
+  const today = new Date();
+  const birthdayPassedThisYear =
+    today.getMonth() > date.getMonth() ||
+    (today.getMonth() === date.getMonth() && today.getDate() >= date.getDate());
+  const age = today.getFullYear() - date.getFullYear() - (birthdayPassedThisYear ? 0 : 1);
+  return age >= 13 && age <= 100;
+}
+
+const dateOfBirthSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Date of birth must be in YYYY-MM-DD format")
+  .refine(isValidAge, "Age must be between 13 and 100 years");
+
 export const createGhostValidator = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Valid email is required"),
@@ -43,13 +61,9 @@ export const completeOnboardingValidator = z
     organizationId: z.string().min(1, "Organization ID is required"),
     sport: z.enum(["tennis", "padel"]),
     skillLevel: z.string().min(1, "Skill level is required"),
-    phoneNumber: z
-      .string()
-      .trim()
-      .min(1, "Phone number is required")
-      .refine((value) => value.replace(/\D/g, "").length >= 8, {
-        message: "Invalid phone number",
-      }),
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    gender: z.enum(["male", "female", "other"]),
+    dateOfBirth: dateOfBirthSchema,
     imageUrl: z.string().url("Image must be a valid URL").optional(),
     pin: z.string().length(4).optional(),
   })
@@ -76,6 +90,8 @@ export const updateProfileValidator = z
     organizationId: z.string().min(1, "Organization ID must not be empty").optional(),
     sport: z.enum(["tennis", "padel"]).optional(),
     skillLevel: z.string().min(1, "Skill level must not be empty").optional(),
+    gender: z.enum(["male", "female", "other"]).optional(),
+    dateOfBirth: dateOfBirthSchema.optional(),
     pin: z.string().length(4).optional(),
   })
   .refine(
@@ -87,7 +103,9 @@ export const updateProfileValidator = z
         data.phoneNumber !== undefined ||
         data.organizationId !== undefined ||
         data.sport !== undefined ||
-        data.skillLevel !== undefined
+        data.skillLevel !== undefined ||
+        data.gender !== undefined ||
+        data.dateOfBirth !== undefined
       );
     },
     { message: "At least one field must be provided" },

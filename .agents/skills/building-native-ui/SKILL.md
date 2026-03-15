@@ -39,9 +39,6 @@ Most Expo apps work in Expo Go without any custom native code. Before running `n
 2. **Check if features work**: Test your app thoroughly in Expo Go
 3. **Only create custom builds when required** - see below
 
-
-Use Expo SDK 55
-
 ### When Custom Builds Are Required
 
 You need `npx expo run:ios/android` or `eas build` ONLY when using:

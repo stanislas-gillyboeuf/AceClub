@@ -69,8 +69,7 @@ export function InputBarReplyPreview({
       style={[
         styles.inputBar,
         {
-          backgroundColor:
-            scheme === "dark" ? "#1C1C1E" : "#F2F2F7",
+          backgroundColor: semanticColors.systemGray6[scheme],
         },
       ]}
     >

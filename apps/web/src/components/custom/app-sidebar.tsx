@@ -3,11 +3,14 @@
 import * as React from "react"
 import {
   Building2,
+  CalendarDays,
   LayoutDashboard,
   LifeBuoy,
   Users,
   Shield,
+  Swords,
   ToggleRight,
+  UserX,
 } from "lucide-react"
 
 import { NavMain } from "@/components/custom/nav-main"
@@ -42,9 +45,24 @@ const navMain = [
     icon: Building2,
   },
   {
+    title: "Matchs",
+    url: "/dashboard/matches",
+    icon: Swords,
+  },
+  {
+    title: "\u00c9v\u00e9nements",
+    url: "/dashboard/events",
+    icon: CalendarDays,
+  },
+  {
     title: "Feature Flags",
     url: "/dashboard/feature-flags",
     icon: ToggleRight,
+  },
+  {
+    title: "Suppressions",
+    url: "/dashboard/deletion-requests",
+    icon: UserX,
   },
 ]
 

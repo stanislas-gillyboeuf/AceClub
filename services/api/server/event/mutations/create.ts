@@ -19,19 +19,32 @@ export const createEvent = async (c: Context<HonoContext>) => {
     );
   }
 
+  if (!body.isFree && !body.paymentLink) {
+    return c.json(
+      { error: "BadRequest", message: "Payment link is required for paid events" },
+      400,
+    );
+  }
+
   const [created] = await db
     .insert(event)
     .values({
       name: body.name,
       description: body.description,
+      coverImage: body.coverImage,
       startDate: new Date(body.startDate),
       endDate: new Date(body.endDate),
       address: body.address,
+      latitude: body.latitude,
+      longitude: body.longitude,
       maxParticipants: body.maxParticipants,
+      isFree: body.isFree,
+      price: body.isFree ? null : body.price,
+      paymentLink: body.isFree ? null : body.paymentLink,
       visibility: body.visibility,
-      status: "open",
+      status: "on_sale",
       userId: currentUser.id,
-      organizationId: body.organizationId,
+      organizationId: body.organizationId ?? null,
     })
     .returning();
 

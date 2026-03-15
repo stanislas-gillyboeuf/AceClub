@@ -25,12 +25,14 @@ import { getLevelTier } from "@/features/discover/lib/level-tiers";
 
 interface DiscoverCardProps {
   item: MatchIntentWithUser;
+  maxHeight?: number;
 }
 
-export function DiscoverCard({ item }: DiscoverCardProps) {
+export function DiscoverCard({ item, maxHeight }: DiscoverCardProps) {
   const { width: screenWidth } = useWindowDimensions();
   const cardWidth = screenWidth - 40;
-  const cardHeight = cardWidth / 0.7;
+  const idealHeight = cardWidth / 0.7;
+  const cardHeight = maxHeight ? Math.min(idealHeight, maxHeight - 16) : idealHeight;
   const tier = getLevelTier(item.user?.level ?? 1);
 
   const displayName = item.user?.name ?? "Joueur";

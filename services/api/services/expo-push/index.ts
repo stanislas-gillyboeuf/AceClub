@@ -34,7 +34,7 @@ export async function sendPushNotification(
     title,
     body,
     badge,
-    sound: (sound as any) ?? "default",
+    sound: sound ?? "default",
     data,
   };
 

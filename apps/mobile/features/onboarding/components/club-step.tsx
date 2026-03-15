@@ -1,213 +1,203 @@
-import { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  FlatList,
-  ActivityIndicator,
-  StyleSheet,
-} from "react-native";
-import { colors, radii } from "@/constants/theme";
-import { Building2, Search, Lock, Check, Plus } from "lucide-react-native";
-import { useSearchOrganizations } from "@/hooks/use-organization";
-import { StepHeader } from "./step-header";
-import { PinModal } from "./pin-modal";
-import { RequestClubModal } from "./request-club-modal";
-import type { Organization } from "@/types/organization";
+import { useState, useRef, useEffect } from "react";
+import { View, Text, TextInput, Pressable, Alert, StyleSheet } from "react-native";
+import { router } from "expo-router";
+import { colors } from "@/constants/theme";
+import { Search, Check, Lock } from "lucide-react-native";
+import { useVerifyPin } from "@/hooks/use-organization";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  withTiming,
+  withDelay,
+} from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import type { Organization } from "@/types/organization";
+
+const PIN_LENGTH = 4;
 
 interface ClubStepProps {
+  firstName: string;
   selectedOrganization: Organization | null;
   isPinVerified: boolean;
-  onSelect: (org: Organization) => void;
   onPinVerified: (pin: string) => void;
-  onPinError: (error: string) => void;
-  pinError: string | null;
 }
 
 export function ClubStep({
+  firstName,
   selectedOrganization,
   isPinVerified,
-  onSelect,
   onPinVerified,
-  onPinError,
-  pinError,
 }: ClubStepProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [showPinModal, setShowPinModal] = useState(false);
-  const [showRequestModal, setShowRequestModal] = useState(false);
-  const [pendingOrg, setPendingOrg] = useState<Organization | null>(null);
-  const [isVerifyingPin, setIsVerifyingPin] = useState(false);
+  const [digits, setDigits] = useState<string[]>(Array(PIN_LENGTH).fill(""));
+  const hiddenInputRef = useRef<TextInput>(null);
+  const verifyPin = useVerifyPin();
 
-  const { data, isLoading } = useSearchOrganizations(
-    debouncedQuery || undefined
-  );
+  const needsPin = !!selectedOrganization?.pinEnabled && !isPinVerified;
 
+  // Reset digits when org changes
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 350);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+    setDigits(Array(PIN_LENGTH).fill(""));
+  }, [selectedOrganization?.id]);
 
-  const handleSelectOrg = useCallback(
-    (org: Organization) => {
-      Haptics.selectionAsync();
-      if (org.pinEnabled && !isPinVerified) {
-        setPendingOrg(org);
-        setShowPinModal(true);
-      } else {
-        onSelect(org);
+  // Auto-focus PIN input when a PIN club is selected
+  useEffect(() => {
+    if (needsPin) {
+      const timer = setTimeout(() => hiddenInputRef.current?.focus(), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [needsPin]);
+
+  const pin = digits.join("");
+
+  const handleChange = (text: string) => {
+    const cleaned = text.replace(/\D/g, "").slice(0, PIN_LENGTH);
+    const next = Array(PIN_LENGTH).fill("");
+    for (let i = 0; i < cleaned.length; i++) {
+      next[i] = cleaned[i];
+    }
+    setDigits(next);
+  };
+
+  const handlePinSubmit = () => {
+    if (!selectedOrganization || pin.length < PIN_LENGTH) return;
+    verifyPin.mutate(
+      { organizationId: selectedOrganization.id, pin },
+      {
+        onSuccess: (result) => {
+          if (result.valid) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            onPinVerified(pin);
+          } else {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            setDigits(Array(PIN_LENGTH).fill(""));
+            hiddenInputRef.current?.focus();
+            Alert.alert("PIN incorrect", "Le code PIN est invalide.");
+          }
+        },
+        onError: () => {
+          Alert.alert("Erreur", "Impossible de verifier le PIN.");
+        },
       }
-    },
-    [isPinVerified, onSelect]
-  );
+    );
+  };
 
-  const handlePinVerify = useCallback(
-    async (pin: string) => {
-      if (!pendingOrg) return;
-      setIsVerifyingPin(true);
-      try {
-        const { organizationService } = await import(
-          "@/services/organization"
-        );
-        const result = await organizationService.verifyPin({
-          organizationId: pendingOrg.id,
-          pin,
-        });
-        if (result.valid) {
-          onSelect(pendingOrg);
-          onPinVerified(pin);
-          setShowPinModal(false);
-          setPendingOrg(null);
-        } else {
-          onPinError("Code PIN incorrect");
-        }
-      } catch {
-        onPinError("Erreur de verification");
-      } finally {
-        setIsVerifyingPin(false);
-      }
-    },
-    [pendingOrg, onSelect, onPinVerified, onPinError]
-  );
-
-  const organizations = data?.organizations ?? [];
-
-  const renderOrg = useCallback(
-    ({ item }: { item: Organization }) => {
-      const isSelected = selectedOrganization?.id === item.id;
-      return (
-        <Pressable
-          onPress={() => handleSelectOrg(item)}
-          style={[styles.orgRow, isSelected && styles.orgRowSelected]}
-        >
-          <View
-            style={[
-              styles.orgAvatar,
-              isSelected && styles.orgAvatarSelected,
-            ]}
-          >
-            <Text
-              style={[
-                styles.orgInitial,
-                isSelected && styles.orgInitialSelected,
-              ]}
-            >
-              {item.name.charAt(0).toUpperCase()}
-            </Text>
-          </View>
-          <View style={styles.orgInfo}>
-            <Text style={styles.orgName} numberOfLines={1}>
-              {item.name}
-            </Text>
-            {item.pinEnabled && (
-              <View style={styles.pinBadge}>
-                <Lock size={10} color={colors.accentOrange} />
-                <Text style={styles.pinBadgeText}>PIN</Text>
-              </View>
-            )}
-          </View>
-          {isSelected && (
-            <View style={styles.checkCircle}>
-              <Check size={14} color={colors.white} />
-            </View>
-          )}
-        </Pressable>
-      );
-    },
-    [selectedOrganization, handleSelectOrg]
-  );
+  // Auto-submit when all digits filled
+  useEffect(() => {
+    if (pin.length === PIN_LENGTH && needsPin) {
+      handlePinSubmit();
+    }
+  }, [pin]);
 
   return (
     <View style={styles.container}>
-      <StepHeader
-        icon={Building2}
-        title="Dans quel club joues-tu ?"
-        subtitle="Recherche ton club pour rejoindre la communaute"
-      />
-
-      <View style={styles.searchContainer}>
-        <Search size={18} color={colors.gray400} />
-        <TextInput
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Rechercher un club..."
-          placeholderTextColor={colors.gray400}
-          style={styles.searchInput}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+      <View style={styles.header}>
+        <Animated.Text
+          entering={FadeIn.delay(100).duration(400)}
+          style={styles.title}
+        >
+          {firstName ? `Super, ${firstName}. Quel est ton club ?` : "Quel est ton club ?"}
+        </Animated.Text>
+        <Animated.Text
+          entering={FadeIn.delay(250).duration(400)}
+          style={styles.subtitle}
+        >
+          Rejoins ton club et retrouve tes partenaires de jeu.
+        </Animated.Text>
       </View>
 
-      {isLoading ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator color={colors.accentGreen} />
-        </View>
-      ) : organizations.length === 0 ? (
-        <View style={styles.centerContainer}>
-          <Text style={styles.emptyText}>
-            {debouncedQuery
-              ? "Aucun club trouve"
-              : "Commence a taper pour chercher"}
-          </Text>
-          {debouncedQuery && (
-            <Pressable
-              onPress={() => setShowRequestModal(true)}
-              style={styles.requestButton}
-            >
-              <Plus size={16} color={colors.accentGreen} />
-              <Text style={styles.requestButtonText}>Proposer mon club</Text>
-            </Pressable>
-          )}
-        </View>
-      ) : (
-        <FlatList
-          data={organizations}
-          renderItem={renderOrg}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        />
-      )}
-
-      <PinModal
-        visible={showPinModal}
-        clubName={pendingOrg?.name ?? ""}
-        isVerifying={isVerifyingPin}
-        error={pinError}
-        onVerify={handlePinVerify}
-        onClose={() => {
-          setShowPinModal(false);
-          setPendingOrg(null);
+      <Animated.View
+        entering={() => {
+          'worklet';
+          return {
+            initialValues: { opacity: 0, transform: [{ scale: 0.98 }] },
+            animations: {
+              opacity: withDelay(300, withTiming(1, { duration: 350 })),
+              transform: [{ scale: withDelay(300, withTiming(1, { duration: 400 })) }],
+            },
+          };
         }}
-      />
+        style={styles.inputs}
+      >
+        <Pressable
+          onPress={() => router.push("/(onboarding)/club-selection" as any)}
+          style={({ pressed }) => pressed && styles.cardPressed}
+        >
+          <Animated.View
+            style={[
+              styles.card,
+              selectedOrganization ? styles.cardSelected : styles.cardDefault,
+            ]}
+          >
+            {selectedOrganization ? (
+              <>
+                <View style={styles.cardAvatar}>
+                  <Text style={styles.cardAvatarText}>
+                    {selectedOrganization.name.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+                <View style={styles.cardInfo}>
+                  <Text style={styles.selectedText} numberOfLines={1}>
+                    {selectedOrganization.name}
+                  </Text>
+                  <Text style={styles.cardSubtitle}>Club</Text>
+                </View>
+                {isPinVerified || !selectedOrganization.pinEnabled ? (
+                  <View style={styles.checkCircle}>
+                    <Check size={14} color={colors.white} />
+                  </View>
+                ) : (
+                  <Lock size={14} color={colors.gray400} />
+                )}
+              </>
+            ) : (
+              <>
+                <Search size={18} color={colors.gray400} />
+                <Text style={styles.placeholder}>Rechercher un club...</Text>
+              </>
+            )}
+          </Animated.View>
+        </Pressable>
 
-      <RequestClubModal
-        visible={showRequestModal}
-        onClose={() => setShowRequestModal(false)}
-      />
+        {needsPin && (
+          <Animated.View entering={FadeIn.duration(300)} exiting={FadeOut.duration(250)} style={styles.pinSection}>
+            <View style={styles.pinLabelRow}>
+              <Lock size={14} color={colors.gray500} />
+              <Text style={styles.pinLabel}>
+                Ce club nécessite un code PIN
+              </Text>
+            </View>
+
+            <Pressable
+              style={styles.otpRow}
+              onPress={() => hiddenInputRef.current?.focus()}
+            >
+              {digits.map((digit, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.otpBox,
+                    digit ? styles.otpBoxFilled : null,
+                  ]}
+                >
+                  <Text style={[styles.otpDigit, digit ? styles.otpDigitFilled : null]}>
+                    {digit}
+                  </Text>
+                </View>
+              ))}
+            </Pressable>
+
+            <TextInput
+              ref={hiddenInputRef}
+              value={pin}
+              onChangeText={handleChange}
+              keyboardType="number-pad"
+              maxLength={PIN_LENGTH}
+              style={styles.hiddenInput}
+              autoComplete="one-time-code"
+            />
+          </Animated.View>
+        )}
+      </Animated.View>
     </View>
   );
 }
@@ -215,111 +205,78 @@ export function ClubStep({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.gray50,
-    borderRadius: radii.md,
-    marginHorizontal: 20,
-    paddingHorizontal: 14,
-    height: 48,
-    gap: 10,
-    borderWidth: 1,
-    borderColor: colors.gray200,
-    marginBottom: 16,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: colors.black,
-  },
-  centerContainer: {
-    flex: 1,
-    alignItems: "center",
     justifyContent: "center",
-    gap: 16,
   },
-  emptyText: {
-    fontSize: 15,
-    color: colors.gray400,
-  },
-  requestButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: radii.sm,
-    borderWidth: 1,
-    borderColor: colors.accentGreen,
-  },
-  requestButtonText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: colors.accentGreen,
-  },
-  list: {
+  header: {
     paddingHorizontal: 20,
-    paddingBottom: 16,
-    gap: 8,
+    marginBottom: 36,
   },
-  orgRow: {
+  title: {
+    fontSize: 34,
+    fontWeight: "700",
+    color: colors.black,
+    letterSpacing: 0.37,
+    marginBottom: 12,
+  },
+  subtitle: {
+    fontSize: 17,
+    color: colors.gray500,
+    lineHeight: 22,
+  },
+  inputs: {
+    marginHorizontal: 20,
+    gap: 24,
+  },
+  card: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 14,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.white,
-    borderRadius: radii.md,
-    padding: 14,
     gap: 12,
-    borderWidth: 1.5,
-    borderColor: colors.gray100,
   },
-  orgRowSelected: {
-    borderColor: colors.accentGreen,
+  cardDefault: {
+    backgroundColor: "rgba(120, 120, 128, 0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(120, 120, 128, 0.16)",
+  },
+  cardSelected: {
     backgroundColor: `${colors.accentGreen}08`,
+    borderWidth: 1.5,
+    borderColor: colors.accentGreen,
   },
-  orgAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  cardPressed: {
+    transform: [{ scale: 0.98 }],
+  },
+  cardAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: `${colors.accentGreen}15`,
     alignItems: "center",
     justifyContent: "center",
   },
-  orgAvatarSelected: {
-    backgroundColor: `${colors.accentGreen}25`,
-  },
-  orgInitial: {
-    fontSize: 18,
-    fontWeight: "700",
+  cardAvatarText: {
+    fontSize: 17,
+    fontWeight: "600",
     color: colors.accentGreen,
   },
-  orgInitialSelected: {
-    color: colors.accentGreen,
-  },
-  orgInfo: {
+  cardInfo: {
     flex: 1,
-    gap: 4,
+    gap: 1,
   },
-  orgName: {
+  cardSubtitle: {
+    fontSize: 13,
+    color: colors.gray400,
+  },
+  placeholder: {
+    fontSize: 17,
+    color: colors.gray400,
+  },
+  selectedText: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.black,
-  },
-  pinBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    alignSelf: "flex-start",
-    backgroundColor: `${colors.accentOrange}15`,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  pinBadgeText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: colors.accentOrange,
   },
   checkCircle: {
     width: 28,
@@ -328,5 +285,48 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
+  },
+  pinSection: {
+    gap: 14,
+  },
+  pinLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  pinLabel: {
+    fontSize: 15,
+    color: colors.gray500,
+  },
+  otpRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  otpBox: {
+    width: 52,
+    height: 58,
+    borderRadius: 12,
+    backgroundColor: "rgba(120, 120, 128, 0.08)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  otpBoxFilled: {
+    backgroundColor: `${colors.accentGreen}12`,
+    borderWidth: 1.5,
+    borderColor: colors.accentGreen,
+  },
+  otpDigit: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: colors.black,
+  },
+  otpDigitFilled: {
+    color: colors.accentGreen,
+  },
+  hiddenInput: {
+    position: "absolute",
+    opacity: 0,
+    height: 0,
+    width: 0,
   },
 });

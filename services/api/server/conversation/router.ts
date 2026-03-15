@@ -20,7 +20,7 @@ import {
   addReaction,
   removeReaction,
 } from "./mutations";
-import { listConversations, getConversation, listMessages, getConversationKey } from "./queries";
+import { listConversations, getConversation, listMessages } from "./queries";
 
 export const conversationRouter = new Hono<HonoContext>();
 
@@ -39,9 +39,6 @@ conversationRouter.post(
 
 // Get a specific conversation
 conversationRouter.get("/:id", getConversation);
-
-// Get the encryption key for a conversation
-conversationRouter.get("/:id/key", getConversationKey);
 
 // List messages in a conversation (paginated)
 conversationRouter.get("/:id/messages", listMessages);

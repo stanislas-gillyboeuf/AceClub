@@ -6,6 +6,7 @@ import {
   Modal,
   ActivityIndicator,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { GlassView } from "@/components/ui/glass-view";
@@ -44,7 +45,6 @@ export default function DiscoverScreen() {
     like,
     pass,
     updateLocation,
-    refresh,
   } = useDiscoverState();
 
   const [selectedItem, setSelectedItem] = useState<MatchIntentWithUser | null>(null);
@@ -79,9 +79,8 @@ export default function DiscoverScreen() {
     (value: number | undefined) => {
       setSelectedRadius(value);
       setShowRadiusMenu(false);
-      refresh();
     },
-    [setSelectedRadius, refresh]
+    [setSelectedRadius]
   );
 
   if (isLoading && items.length === 0) {
@@ -94,7 +93,7 @@ export default function DiscoverScreen() {
 
   return (
     <GestureHandlerRootView
-      style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme], paddingTop: headerHeight }]}
+      style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme], paddingTop: Platform.OS === "ios" ? headerHeight : 0 }]}
     >
       {!isDiscoveryRestricted && (
         <View style={styles.filterBar}>

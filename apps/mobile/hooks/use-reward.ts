@@ -26,7 +26,7 @@ export function useEquipTitle() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (titleId: string) => rewardService.equipTitle(titleId),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["reward", "my-titles"] });
     },
   });
