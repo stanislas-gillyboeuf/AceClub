@@ -11,3 +11,4 @@ export { updateFeedback } from "./update-feedback";
 export { deleteFeedback } from "./delete-feedback";
 export { uploadPhoto } from "./upload-photo";
 export { deletePhoto } from "./delete-photo";
+export { toggleLike } from "./toggle-like";

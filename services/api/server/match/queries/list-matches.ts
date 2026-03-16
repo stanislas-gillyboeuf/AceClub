@@ -10,9 +10,10 @@ import {
   matchComment,
   matchPhoto,
   matchFeedback,
+  matchLike,
 } from "../../../db/schema/match/schema";
 import { user, member } from "../../../db/schema/auth/schema";
-import { and, eq, desc, sql, inArray, notInArray } from "drizzle-orm";
+import { and, eq, desc, sql, inArray, notInArray, count } from "drizzle-orm";
 import { listMatchesQueryValidator } from "../validators";
 
 export const listMatches = async (c: Context<HonoContext>) => {
@@ -143,7 +144,7 @@ export const listMatches = async (c: Context<HonoContext>) => {
 
     const matchIds = matches.map((m) => m.id);
 
-    const [participantsRaw, setsData, commentsRaw, photosData] = await Promise.all([
+    const [participantsRaw, setsData, commentsRaw, photosData, likeCounts, userLikes] = await Promise.all([
       db
         .select({
           id: matchParticipant.id,
@@ -196,6 +197,22 @@ export const listMatches = async (c: Context<HonoContext>) => {
         .select()
         .from(matchPhoto)
         .where(inArray(matchPhoto.matchId, matchIds)),
+
+      db
+        .select({
+          matchId: matchLike.matchId,
+          count: count(),
+        })
+        .from(matchLike)
+        .where(inArray(matchLike.matchId, matchIds))
+        .groupBy(matchLike.matchId),
+
+      currentUser
+        ? db
+            .select({ matchId: matchLike.matchId })
+            .from(matchLike)
+            .where(and(eq(matchLike.userId, currentUser.id), inArray(matchLike.matchId, matchIds)))
+        : Promise.resolve([]),
     ]);
 
     const participants = participantsRaw.map((p) => ({
@@ -232,6 +249,16 @@ export const listMatches = async (c: Context<HonoContext>) => {
         commentsByMatch.set(comment.matchId, []);
       }
       commentsByMatch.get(comment.matchId)!.push(comment);
+    }
+
+    const likeCountByMatch = new Map<string, number>();
+    for (const row of likeCounts) {
+      likeCountByMatch.set(row.matchId, row.count);
+    }
+
+    const userLikedMatchIds = new Set<string>();
+    for (const like of userLikes) {
+      userLikedMatchIds.add(like.matchId);
     }
 
     const setsByMatch = new Map<
@@ -290,6 +317,8 @@ export const listMatches = async (c: Context<HonoContext>) => {
         sets,
         photos: photosByMatch.get(matchData.id) || [],
         comments: commentsByMatch.get(matchData.id) || [],
+        likesCount: likeCountByMatch.get(matchData.id) ?? 0,
+        hasLiked: userLikedMatchIds.has(matchData.id),
       };
     });
 

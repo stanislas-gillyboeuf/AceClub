@@ -15,6 +15,7 @@ import type {
   CreateFeedbackRequest,
   UpdateFeedbackRequest,
   DeleteResponse,
+  ToggleLikeResponse,
 } from "@/types/match";
 import type { Organization } from "@/types/organization";
 
@@ -75,4 +76,7 @@ export const matchService = {
 
   deleteMatchPhoto: (matchId: string) =>
     api.delete<DeleteResponse>(`/match/${matchId}/photo`),
+
+  toggleLike: (matchId: string) =>
+    api.post<ToggleLikeResponse>(`/match/${matchId}/like`),
 };
