@@ -13,7 +13,7 @@ import {
   matchLike,
 } from "../../../db/schema/match/schema";
 import { user, member } from "../../../db/schema/auth/schema";
-import { and, eq, desc, sql, inArray, notInArray } from "drizzle-orm";
+import { and, eq, desc, sql, inArray, notInArray, count } from "drizzle-orm";
 import { listMatchesQueryValidator } from "../validators";
 
 export const listMatches = async (c: Context<HonoContext>) => {
@@ -201,7 +201,7 @@ export const listMatches = async (c: Context<HonoContext>) => {
       db
         .select({
           matchId: matchLike.matchId,
-          count: sql<number>`cast(count(*) as integer)`,
+          count: count(),
         })
         .from(matchLike)
         .where(inArray(matchLike.matchId, matchIds))

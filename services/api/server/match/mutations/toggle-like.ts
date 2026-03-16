@@ -2,7 +2,7 @@ import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { match, matchParticipant, matchLike } from "../../../db/schema/match/schema";
-import { eq, and, ne, sql } from "drizzle-orm";
+import { eq, and, ne, count } from "drizzle-orm";
 import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
 
 export const toggleLike = async (c: Context<HonoContext>) => {
@@ -46,8 +46,8 @@ export const toggleLike = async (c: Context<HonoContext>) => {
     });
   }
 
-  const [{ count }] = await db
-    .select({ count: sql<number>`cast(count(*) as integer)` })
+  const [{ likesCount }] = await db
+    .select({ likesCount: count() })
     .from(matchLike)
     .where(eq(matchLike.matchId, matchId));
 
@@ -81,5 +81,5 @@ export const toggleLike = async (c: Context<HonoContext>) => {
     });
   }
 
-  return c.json({ liked, likesCount: count });
+  return c.json({ liked, likesCount });
 };

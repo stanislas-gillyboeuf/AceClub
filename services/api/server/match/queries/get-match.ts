@@ -12,7 +12,7 @@ import {
   matchLike,
 } from "../../../db/schema/match/schema";
 import { user, organization, member } from "../../../db/schema/auth/schema";
-import { eq, and, inArray, sql } from "drizzle-orm";
+import { eq, and, inArray, sql, count } from "drizzle-orm";
 
 export const getMatch = async (c: Context<HonoContext>) => {
   try {
@@ -86,7 +86,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
 
       db
         .select({
-          likesCount: sql<number>`cast(count(*) as integer)`,
+          likesCount: count(),
           hasLiked: currentUser
             ? sql<boolean>`bool_or(${matchLike.userId} = ${currentUser.id})`
             : sql<boolean>`false`,
