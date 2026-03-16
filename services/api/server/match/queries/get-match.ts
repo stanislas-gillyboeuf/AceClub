@@ -31,7 +31,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
 
     const foundMatch = matchData[0];
 
-    const [participantsRaw, setsData, commentsRaw, photosData] = await Promise.all([
+    const [participantsRaw, setsData, commentsRaw, photosData, likeData] = await Promise.all([
       db
         .select({
           id: matchParticipant.id,
@@ -83,6 +83,16 @@ export const getMatch = async (c: Context<HonoContext>) => {
         .select()
         .from(matchPhoto)
         .where(eq(matchPhoto.matchId, matchId)),
+
+      db
+        .select({
+          likesCount: sql<number>`cast(count(*) as integer)`,
+          hasLiked: currentUser
+            ? sql<boolean>`bool_or(${matchLike.userId} = ${currentUser.id})`
+            : sql<boolean>`false`,
+        })
+        .from(matchLike)
+        .where(eq(matchLike.matchId, matchId)),
     ]);
 
     const participants = participantsRaw.map((p) => ({
@@ -209,21 +219,8 @@ export const getMatch = async (c: Context<HonoContext>) => {
       organization: org,
     }));
 
-    // Fetch likes data
-    const [{ count: likesCount }] = await db
-      .select({ count: sql<number>`cast(count(*) as integer)` })
-      .from(matchLike)
-      .where(eq(matchLike.matchId, matchId));
-
-    let hasLiked = false;
-    if (currentUser) {
-      const [userLike] = await db
-        .select({ id: matchLike.id })
-        .from(matchLike)
-        .where(and(eq(matchLike.matchId, matchId), eq(matchLike.userId, currentUser.id)))
-        .limit(1);
-      hasLiked = !!userLike;
-    }
+    const likesCount = likeData[0]?.likesCount ?? 0;
+    const hasLiked = likeData[0]?.hasLiked ?? false;
 
     return c.json({
       match: foundMatch,

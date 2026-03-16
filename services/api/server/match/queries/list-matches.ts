@@ -144,7 +144,7 @@ export const listMatches = async (c: Context<HonoContext>) => {
 
     const matchIds = matches.map((m) => m.id);
 
-    const [participantsRaw, setsData, commentsRaw, photosData] = await Promise.all([
+    const [participantsRaw, setsData, commentsRaw, photosData, likeCounts, userLikes] = await Promise.all([
       db
         .select({
           id: matchParticipant.id,
@@ -197,6 +197,22 @@ export const listMatches = async (c: Context<HonoContext>) => {
         .select()
         .from(matchPhoto)
         .where(inArray(matchPhoto.matchId, matchIds)),
+
+      db
+        .select({
+          matchId: matchLike.matchId,
+          count: sql<number>`cast(count(*) as integer)`,
+        })
+        .from(matchLike)
+        .where(inArray(matchLike.matchId, matchIds))
+        .groupBy(matchLike.matchId),
+
+      currentUser
+        ? db
+            .select({ matchId: matchLike.matchId })
+            .from(matchLike)
+            .where(and(eq(matchLike.userId, currentUser.id), inArray(matchLike.matchId, matchIds)))
+        : Promise.resolve([]),
     ]);
 
     const participants = participantsRaw.map((p) => ({
@@ -235,32 +251,14 @@ export const listMatches = async (c: Context<HonoContext>) => {
       commentsByMatch.get(comment.matchId)!.push(comment);
     }
 
-    // Fetch like counts per match
-    const likeCounts = await db
-      .select({
-        matchId: matchLike.matchId,
-        count: sql<number>`cast(count(*) as integer)`,
-      })
-      .from(matchLike)
-      .where(inArray(matchLike.matchId, matchIds))
-      .groupBy(matchLike.matchId);
-
     const likeCountByMatch = new Map<string, number>();
     for (const row of likeCounts) {
       likeCountByMatch.set(row.matchId, row.count);
     }
 
-    // Fetch current user's likes
     const userLikedMatchIds = new Set<string>();
-    if (currentUser) {
-      const userLikes = await db
-        .select({ matchId: matchLike.matchId })
-        .from(matchLike)
-        .where(and(eq(matchLike.userId, currentUser.id), inArray(matchLike.matchId, matchIds)));
-
-      for (const like of userLikes) {
-        userLikedMatchIds.add(like.matchId);
-      }
+    for (const like of userLikes) {
+      userLikedMatchIds.add(like.matchId);
     }
 
     const setsByMatch = new Map<

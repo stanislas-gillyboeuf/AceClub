@@ -157,8 +157,8 @@ export function FeedMatchRow({
         >
           <Heart
             size={18}
-            color={match.hasLiked ? "#EF4444" : semanticColors.labelSecondary[scheme]}
-            fill={match.hasLiked ? "#EF4444" : "transparent"}
+            color={match.hasLiked ? colors.red500 : semanticColors.labelSecondary[scheme]}
+            fill={match.hasLiked ? colors.red500 : "transparent"}
             strokeWidth={2}
           />
           {match.likesCount > 0 && (
@@ -167,7 +167,7 @@ export function FeedMatchRow({
                 styles.likeCount,
                 {
                   color: match.hasLiked
-                    ? "#EF4444"
+                    ? colors.red500
                     : semanticColors.labelSecondary[scheme],
                 },
               ]}
