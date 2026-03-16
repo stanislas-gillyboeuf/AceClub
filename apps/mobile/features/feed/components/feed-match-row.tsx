@@ -1,6 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Image } from "expo-image";
-import { Calendar, Clock, Heart } from "lucide-react-native";
+import { Calendar } from "lucide-react-native";
 import { Avatar } from "@/components/ui/avatar";
 import { BadgePill } from "@/components/ui/badge-pill";
 import { Card } from "@/components/ui/card";
@@ -10,11 +10,12 @@ import { useToggleLike } from "@/hooks/use-match";
 import { colors, semanticColors, radii } from "@/constants/theme";
 import {
   formatMatchDate,
-  formatMatchScore,
   formatMatchDuration,
   getHomeParticipant,
   getAwayParticipant,
+  getStructuredMatchScore,
 } from "@/lib/format";
+import { SetScoresView } from "@/components/ui/set-scores-view";
 import type { MatchWithParticipants } from "@/types/match";
 
 interface FeedMatchRowProps {
@@ -38,7 +39,7 @@ export function FeedMatchRow({
     match.participants.find((p) => p.userId === currentUserId)?.isWinner ??
     false;
 
-  const score = formatMatchScore(match);
+  const structuredScore = getStructuredMatchScore(match);
   const duration = formatMatchDuration(match);
   const date = formatMatchDate(match);
 
@@ -75,7 +76,7 @@ export function FeedMatchRow({
         </View>
       )}
 
-      {/* Header: date + badge */}
+      {/* Header: date + duration + badge */}
       <View style={styles.headerRow}>
         <View style={styles.dateRow}>
           <Calendar size={14} color={colors.accentGreen} strokeWidth={2} />
@@ -87,6 +88,19 @@ export function FeedMatchRow({
           >
             {date}
           </Text>
+          {duration && (
+            <>
+              <Text style={[styles.dotSep, { color: semanticColors.labelTertiary[scheme] }]}>·</Text>
+              <Text
+                style={[
+                  styles.durationText,
+                  { color: semanticColors.labelSecondary[scheme] },
+                ]}
+              >
+                {duration}
+              </Text>
+            </>
+          )}
         </View>
         <BadgePill
           label={currentUserWon ? "Victoire" : "Défaite"}
@@ -94,9 +108,17 @@ export function FeedMatchRow({
         />
       </View>
 
-      {/* Players row */}
-      <View style={styles.playersSection}>
-        <View style={styles.playersLeft}>
+      {/* Set-by-set scores */}
+      {structuredScore ? (
+        <SetScoresView
+          score={structuredScore}
+          homeName={home?.user?.name ?? "N/A"}
+          awayName={away?.user?.name ?? "N/A"}
+          homeIsWinner={home?.isWinner}
+          size="compact"
+        />
+      ) : (
+        <View style={styles.playersSection}>
           <PlayerView
             name={home?.user?.name ?? "N/A"}
             imageUrl={home?.user?.image}
@@ -118,35 +140,7 @@ export function FeedMatchRow({
             isWinner={away?.isWinner ?? false}
           />
         </View>
-
-        <View style={styles.scoreSection}>
-          <Text
-            style={[
-              styles.scoreText,
-              { color: semanticColors.labelPrimary[scheme] },
-            ]}
-          >
-            {score}
-          </Text>
-          {duration && (
-            <View style={styles.durationRow}>
-              <Clock
-                size={10}
-                color={semanticColors.labelSecondary[scheme]}
-                strokeWidth={2}
-              />
-              <Text
-                style={[
-                  styles.durationText,
-                  { color: semanticColors.labelSecondary[scheme] },
-                ]}
-              >
-                {duration}
-              </Text>
-            </View>
-          )}
-        </View>
-      </View>
+      )}
 
       {/* Like button */}
       <View style={styles.likeSection}>
@@ -254,13 +248,13 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 15,
   },
-  playersSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
+  dotSep: {
+    fontSize: 13,
   },
-  playersLeft: {
-    flex: 1,
+  durationText: {
+    fontSize: 13,
+  },
+  playersSection: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
@@ -268,24 +262,7 @@ const styles = StyleSheet.create({
   vsText: {
     fontSize: 15,
   },
-  scoreSection: {
-    alignItems: "flex-end",
-    gap: 4,
-  },
-  scoreText: {
-    fontSize: 20,
-    fontWeight: "700",
-    fontVariant: ["tabular-nums"],
-  },
-  durationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  durationText: {
-    fontSize: 12,
-  },
-  likeSection: {
+  commentsSection: {
     marginTop: 12,
   },
   likeButton: {
