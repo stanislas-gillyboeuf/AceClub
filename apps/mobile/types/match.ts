@@ -86,6 +86,8 @@ export interface MatchDetail {
   myFeedback?: MatchFeedback | null;
   venueOrganization?: Organization | null;
   participantOrganizations?: ParticipantOrganization[] | null;
+  likesCount: number;
+  hasLiked: boolean;
 }
 
 export interface MatchWithParticipants {
@@ -102,6 +104,13 @@ export interface MatchWithParticipants {
   sets?: MatchSet[] | null;
   photos?: MatchPhoto[] | null;
   comments?: MatchComment[] | null;
+  likesCount: number;
+  hasLiked: boolean;
+}
+
+export interface ToggleLikeResponse {
+  liked: boolean;
+  likesCount: number;
 }
 
 export interface ListMatchesResponse {

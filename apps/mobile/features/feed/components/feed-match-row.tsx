@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { Calendar } from "lucide-react-native";
 import { Avatar } from "@/components/ui/avatar";
@@ -6,6 +6,7 @@ import { BadgePill } from "@/components/ui/badge-pill";
 import { Card } from "@/components/ui/card";
 import { PlayerView } from "@/components/ui/player-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useToggleLike } from "@/hooks/use-match";
 import { colors, semanticColors, radii } from "@/constants/theme";
 import {
   formatMatchDate,
@@ -29,6 +30,7 @@ export function FeedMatchRow({
   onPress,
 }: FeedMatchRowProps) {
   const scheme = useColorScheme();
+  const { mutate: toggleLike } = useToggleLike();
 
   const home = getHomeParticipant(match);
   const away = getAwayParticipant(match);
@@ -140,6 +142,36 @@ export function FeedMatchRow({
         </View>
       )}
 
+      {/* Like button */}
+      <View style={styles.likeSection}>
+        <Pressable
+          onPress={() => toggleLike(match.id)}
+          hitSlop={8}
+          style={styles.likeButton}
+        >
+          <Heart
+            size={18}
+            color={match.hasLiked ? colors.red500 : semanticColors.labelSecondary[scheme]}
+            fill={match.hasLiked ? colors.red500 : "transparent"}
+            strokeWidth={2}
+          />
+          {match.likesCount > 0 && (
+            <Text
+              style={[
+                styles.likeCount,
+                {
+                  color: match.hasLiked
+                    ? colors.red500
+                    : semanticColors.labelSecondary[scheme],
+                },
+              ]}
+            >
+              {match.likesCount}
+            </Text>
+          )}
+        </Pressable>
+      </View>
+
       {/* Comments preview */}
       {sortedComments.length > 0 && (
         <View style={styles.commentsSection}>
@@ -232,6 +264,20 @@ const styles = StyleSheet.create({
   },
   commentsSection: {
     marginTop: 12,
+  },
+  likeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    alignSelf: "flex-start",
+  },
+  likeCount: {
+    fontSize: 13,
+    fontWeight: "600",
+    fontVariant: ["tabular-nums"],
+  },
+  commentsSection: {
+    marginTop: 8,
     gap: 8,
   },
   divider: {

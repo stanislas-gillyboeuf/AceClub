@@ -26,6 +26,7 @@ import {
   deleteFeedback,
   uploadPhoto,
   deletePhoto,
+  toggleLike,
 } from "./mutations";
 import { getMatch, listMatches } from "./queries";
 
@@ -69,3 +70,6 @@ matchRouter.delete("/:id/photo", deletePhoto);
 matchRouter.post("/:id/feedback", zValidator("json", createFeedbackValidator), createFeedback);
 matchRouter.put("/:id/feedback", zValidator("json", updateFeedbackValidator), updateFeedback);
 matchRouter.delete("/:id/feedback", deleteFeedback);
+
+// Like endpoint (toggle)
+matchRouter.post("/:id/like", toggleLike);
