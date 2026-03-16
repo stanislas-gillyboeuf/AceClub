@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { userService } from "@/services/user";
 import { api } from "@/lib/api";
 import type { CompleteOnboardingRequest, UpdateProfileRequest, CreateGhostRequest } from "@/types/user";
@@ -15,6 +15,8 @@ export function useSearchUsers(query: string, limit = 10) {
     queryKey: ["user", "search", query, limit],
     queryFn: () => userService.searchUsers(query, limit),
     enabled: query.length >= 2,
+    staleTime: 0,
+    placeholderData: keepPreviousData,
   });
 }
 

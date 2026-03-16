@@ -9,7 +9,8 @@ import {
   Alert,
 } from "react-native";
 import { useRouter, Stack } from "expo-router";
-import { useMembers } from "@/hooks/use-organization";
+import { useSearchUsers } from "@/hooks/use-user";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
 import { Avatar } from "@/components/ui/avatar";
@@ -17,48 +18,31 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { authClient } from "@/lib/auth-client";
 import { ChevronRight, X } from "lucide-react-native";
 import { conversationService } from "@/services/conversation";
-import type { Member } from "@/types/organization";
-
-function getRoleDisplayName(role: string): string {
-  switch (role) {
-    case "owner":
-      return "Propriétaire";
-    case "admin":
-      return "Administrateur";
-    default:
-      return "Membre";
-  }
-}
+import type { UserSearchItem } from "@/types/user";
 
 export default function NewConversationScreen() {
   const router = useRouter();
   const scheme = useColorScheme();
   const { data: session } = authClient.useSession();
   const currentUserId = session?.user?.id ?? "";
-  const { data: membersData, isLoading } = useMembers();
   const [searchText, setSearchText] = useState("");
+  const debouncedSearch = useDebouncedValue(searchText);
   const [isCreating, setIsCreating] = useState(false);
 
-  const members = useMemo(() => {
-    if (!membersData?.members) return [];
-    return membersData.members.filter(
-      (m) => m.userId !== currentUserId && m.user != null && m.role !== "owner",
-    );
-  }, [membersData, currentUserId]);
+  const { data: searchData, isLoading } = useSearchUsers(debouncedSearch, 15);
 
-  const filteredMembers = useMemo(() => {
-    if (!searchText.trim()) return members;
-    const query = searchText.toLowerCase();
-    return members.filter((m) =>
-      m.user?.name?.toLowerCase().includes(query),
+  const users = useMemo(() => {
+    if (!searchData?.users) return [];
+    return searchData.users.filter(
+      (u) => u.id !== currentUserId && !u.isGhost,
     );
-  }, [members, searchText]);
+  }, [searchData, currentUserId]);
 
-  const handleSelectMember = useCallback(
-    async (member: Member) => {
+  const handleSelectUser = useCallback(
+    async (user: UserSearchItem) => {
       setIsCreating(true);
       try {
-        const result = await conversationService.findOrCreateConversation(member.userId);
+        const result = await conversationService.findOrCreateConversation(user.id);
         router.replace(`/conversation/${result.conversationId}`);
       } catch {
         Alert.alert("Erreur", "Impossible de créer la conversation");
@@ -69,38 +53,31 @@ export default function NewConversationScreen() {
     [router],
   );
 
-  const renderMember = useCallback(
-    ({ item }: { item: Member }) => {
-      if (!item.user) return null;
+  const renderUser = useCallback(
+    ({ item }: { item: UserSearchItem }) => {
       return (
         <Pressable
-          onPress={() => handleSelectMember(item)}
+          onPress={() => handleSelectUser(item)}
           style={({ pressed }) => [
             styles.memberRow,
             { backgroundColor: pressed ? semanticColors.skeleton[scheme] : "transparent" },
           ]}
           disabled={isCreating}
         >
-          <Avatar imageUrl={item.user.image} name={item.user.name} size={50} />
+          <Avatar imageUrl={item.image} name={item.name} size={50} />
           <View style={styles.memberInfo}>
             <Text
               style={[styles.memberName, { color: semanticColors.labelPrimary[scheme] }]}
               numberOfLines={1}
             >
-              {item.user.name}
-            </Text>
-            <Text
-              style={[styles.memberRole, { color: semanticColors.labelSecondary[scheme] }]}
-              numberOfLines={1}
-            >
-              {getRoleDisplayName(item.role)}
+              {item.name}
             </Text>
           </View>
           <ChevronRight size={16} color={semanticColors.labelSecondary[scheme]} />
         </Pressable>
       );
     },
-    [handleSelectMember, scheme, isCreating],
+    [handleSelectUser, scheme, isCreating],
   );
 
   const renderSeparator = useCallback(
@@ -118,7 +95,7 @@ export default function NewConversationScreen() {
         options={{
           title: "Nouveau message",
           headerSearchBarOptions: {
-            placeholder: "Rechercher un membre",
+            placeholder: "Rechercher un utilisateur",
             onChangeText: (e) => setSearchText(e.nativeEvent.text),
           },
           headerLeft: () => (
@@ -137,9 +114,9 @@ export default function NewConversationScreen() {
 
       <FlatList
         style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
-        data={filteredMembers}
+        data={users}
         keyExtractor={(item) => item.id}
-        renderItem={renderMember}
+        renderItem={renderUser}
         ItemSeparatorComponent={renderSeparator}
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
@@ -151,11 +128,11 @@ export default function NewConversationScreen() {
           ) : (
             <EmptyState
               icon="Users"
-              title="Aucun membre"
+              title={searchText ? "Aucun résultat" : "Rechercher"}
               description={
                 searchText
-                  ? "Aucun membre ne correspond à votre recherche."
-                  : "Aucun membre disponible pour démarrer une conversation."
+                  ? "Aucun utilisateur ne correspond à votre recherche."
+                  : "Tapez un nom pour trouver un utilisateur."
               }
               containerStyle={styles.emptyState}
             />
@@ -190,9 +167,6 @@ const styles = StyleSheet.create({
   memberName: {
     fontSize: 17,
     fontWeight: "600",
-  },
-  memberRole: {
-    fontSize: 15,
   },
   separator: {
     height: StyleSheet.hairlineWidth,

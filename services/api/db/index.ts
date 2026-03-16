@@ -11,6 +11,17 @@ const pool = new Pool({
   keepAlive: true,
 });
 
+// Enable pg_trgm extension for fuzzy search (similarity/word_similarity)
+// Also create a GIN trigram index on organization names for performance
+pool
+  .query(
+    `CREATE EXTENSION IF NOT EXISTS pg_trgm;
+     CREATE INDEX IF NOT EXISTS idx_organization_name_trgm ON organization USING GIN (lower(name) gin_trgm_ops);`,
+  )
+  .catch((err: Error) => {
+    console.warn("[db] pg_trgm setup skipped:", err.message);
+  });
+
 const db = drizzle(pool, {
   schema,
 });
