@@ -6,11 +6,12 @@ import { PlayerView } from "@/components/ui/player-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
 import {
-  formatMatchScore,
   formatMatchDuration,
   getHomeParticipant,
   getAwayParticipant,
+  getStructuredMatchScore,
 } from "@/lib/format";
+import { SetScoresView } from "@/components/ui/set-scores-view";
 import type { MatchWithParticipants } from "@/types/match";
 
 interface MatchRowProps {
@@ -41,7 +42,7 @@ export function MatchRow({ match, onPress }: MatchRowProps) {
 
   const home = getHomeParticipant(match);
   const away = getAwayParticipant(match);
-  const score = formatMatchScore(match);
+  const structuredScore = getStructuredMatchScore(match);
   const duration = formatMatchDuration(match);
   const statusBadge = getStatusBadge(match.status);
   const displayTime = formatTime(match.scheduledAt ?? match.startedAt ?? match.createdAt);
@@ -55,20 +56,36 @@ export function MatchRow({ match, onPress }: MatchRowProps) {
         borderWidth: 2,
       } : undefined}
     >
-      {/* Header: time + status badge */}
+      {/* Header: time + status badge + duration */}
       <View style={styles.headerRow}>
         <View style={styles.timeRow}>
           <Clock size={14} color={colors.accentGreen} strokeWidth={2} />
           <Text style={[styles.timeText, { color: semanticColors.labelSecondary[scheme] }]}>
             {displayTime}
           </Text>
+          {duration && (
+            <>
+              <Text style={[styles.dotSep, { color: semanticColors.labelTertiary[scheme] }]}>·</Text>
+              <Text style={[styles.durationText, { color: semanticColors.labelSecondary[scheme] }]}>
+                {duration}
+              </Text>
+            </>
+          )}
         </View>
         <BadgePill label={statusBadge.label} variant={statusBadge.variant} />
       </View>
 
-      {/* Players + Score */}
-      <View style={styles.playersSection}>
-        <View style={styles.playersLeft}>
+      {/* Set-by-set scores */}
+      {structuredScore ? (
+        <SetScoresView
+          score={structuredScore}
+          homeName={home?.user?.name ?? "N/A"}
+          awayName={away?.user?.name ?? "N/A"}
+          homeIsWinner={home?.isWinner}
+          size="compact"
+        />
+      ) : (
+        <View style={styles.playersSection}>
           <PlayerView
             name={home?.user?.name ?? "N/A"}
             imageUrl={home?.user?.image}
@@ -81,21 +98,7 @@ export function MatchRow({ match, onPress }: MatchRowProps) {
             isWinner={away?.isWinner ?? false}
           />
         </View>
-
-        <View style={styles.scoreSection}>
-          <Text style={[styles.scoreText, { color: semanticColors.labelPrimary[scheme] }]}>
-            {score}
-          </Text>
-          {duration && (
-            <View style={styles.durationRow}>
-              <Clock size={10} color={semanticColors.labelSecondary[scheme]} strokeWidth={2} />
-              <Text style={[styles.durationText, { color: semanticColors.labelSecondary[scheme] }]}>
-                {duration}
-              </Text>
-            </View>
-          )}
-        </View>
-      </View>
+      )}
     </Card>
   );
 }
@@ -115,35 +118,18 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: 15,
   },
-  playersSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
+  dotSep: {
+    fontSize: 13,
   },
-  playersLeft: {
-    flex: 1,
+  durationText: {
+    fontSize: 13,
+  },
+  playersSection: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },
   vsText: {
     fontSize: 15,
-  },
-  scoreSection: {
-    alignItems: "flex-end",
-    gap: 4,
-  },
-  scoreText: {
-    fontSize: 20,
-    fontWeight: "700",
-    fontVariant: ["tabular-nums"],
-  },
-  durationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  durationText: {
-    fontSize: 12,
   },
 });

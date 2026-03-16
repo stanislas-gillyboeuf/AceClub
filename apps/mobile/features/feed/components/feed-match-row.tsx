@@ -1,18 +1,21 @@
-import { View, Text, StyleSheet } from "react-native";
-import { Calendar, Clock } from "lucide-react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
+import { Image } from "expo-image";
+import { Calendar } from "lucide-react-native";
 import { Avatar } from "@/components/ui/avatar";
 import { BadgePill } from "@/components/ui/badge-pill";
 import { Card } from "@/components/ui/card";
 import { PlayerView } from "@/components/ui/player-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { useToggleLike } from "@/hooks/use-match";
+import { colors, semanticColors, radii } from "@/constants/theme";
 import {
   formatMatchDate,
-  formatMatchScore,
   formatMatchDuration,
   getHomeParticipant,
   getAwayParticipant,
+  getStructuredMatchScore,
 } from "@/lib/format";
+import { SetScoresView } from "@/components/ui/set-scores-view";
 import type { MatchWithParticipants } from "@/types/match";
 
 interface FeedMatchRowProps {
@@ -27,6 +30,7 @@ export function FeedMatchRow({
   onPress,
 }: FeedMatchRowProps) {
   const scheme = useColorScheme();
+  const { mutate: toggleLike } = useToggleLike();
 
   const home = getHomeParticipant(match);
   const away = getAwayParticipant(match);
@@ -35,9 +39,11 @@ export function FeedMatchRow({
     match.participants.find((p) => p.userId === currentUserId)?.isWinner ??
     false;
 
-  const score = formatMatchScore(match);
+  const structuredScore = getStructuredMatchScore(match);
   const duration = formatMatchDuration(match);
   const date = formatMatchDate(match);
+
+  const photos = match.photos ?? [];
 
   const sortedComments = [...(match.comments ?? [])]
     .sort(
@@ -50,7 +56,27 @@ export function FeedMatchRow({
 
   return (
     <Card onPress={onPress}>
-      {/* Header: date + badge */}
+      {/* Match photos */}
+      {photos.length > 0 && (
+        <View style={styles.photosContainer}>
+          {photos.map((photo, index) => (
+            <Image
+              key={photo.id}
+              source={{ uri: photo.imageUrl }}
+              style={[
+                styles.feedPhoto,
+                photos.length === 1 && styles.feedPhotoSingle,
+                photos.length === 2 && index === 0 && { borderTopLeftRadius: radii.md },
+                photos.length === 2 && index === 1 && { borderTopRightRadius: radii.md },
+              ]}
+              contentFit="cover"
+              transition={200}
+            />
+          ))}
+        </View>
+      )}
+
+      {/* Header: date + duration + badge */}
       <View style={styles.headerRow}>
         <View style={styles.dateRow}>
           <Calendar size={14} color={colors.accentGreen} strokeWidth={2} />
@@ -62,6 +88,19 @@ export function FeedMatchRow({
           >
             {date}
           </Text>
+          {duration && (
+            <>
+              <Text style={[styles.dotSep, { color: semanticColors.labelTertiary[scheme] }]}>·</Text>
+              <Text
+                style={[
+                  styles.durationText,
+                  { color: semanticColors.labelSecondary[scheme] },
+                ]}
+              >
+                {duration}
+              </Text>
+            </>
+          )}
         </View>
         <BadgePill
           label={currentUserWon ? "Victoire" : "Défaite"}
@@ -69,9 +108,17 @@ export function FeedMatchRow({
         />
       </View>
 
-      {/* Players row */}
-      <View style={styles.playersSection}>
-        <View style={styles.playersLeft}>
+      {/* Set-by-set scores */}
+      {structuredScore ? (
+        <SetScoresView
+          score={structuredScore}
+          homeName={home?.user?.name ?? "N/A"}
+          awayName={away?.user?.name ?? "N/A"}
+          homeIsWinner={home?.isWinner}
+          size="compact"
+        />
+      ) : (
+        <View style={styles.playersSection}>
           <PlayerView
             name={home?.user?.name ?? "N/A"}
             imageUrl={home?.user?.image}
@@ -93,34 +140,36 @@ export function FeedMatchRow({
             isWinner={away?.isWinner ?? false}
           />
         </View>
+      )}
 
-        <View style={styles.scoreSection}>
-          <Text
-            style={[
-              styles.scoreText,
-              { color: semanticColors.labelPrimary[scheme] },
-            ]}
-          >
-            {score}
-          </Text>
-          {duration && (
-            <View style={styles.durationRow}>
-              <Clock
-                size={10}
-                color={semanticColors.labelSecondary[scheme]}
-                strokeWidth={2}
-              />
-              <Text
-                style={[
-                  styles.durationText,
-                  { color: semanticColors.labelSecondary[scheme] },
-                ]}
-              >
-                {duration}
-              </Text>
-            </View>
+      {/* Like button */}
+      <View style={styles.likeSection}>
+        <Pressable
+          onPress={() => toggleLike(match.id)}
+          hitSlop={8}
+          style={styles.likeButton}
+        >
+          <Heart
+            size={18}
+            color={match.hasLiked ? colors.red500 : semanticColors.labelSecondary[scheme]}
+            fill={match.hasLiked ? colors.red500 : "transparent"}
+            strokeWidth={2}
+          />
+          {match.likesCount > 0 && (
+            <Text
+              style={[
+                styles.likeCount,
+                {
+                  color: match.hasLiked
+                    ? colors.red500
+                    : semanticColors.labelSecondary[scheme],
+                },
+              ]}
+            >
+              {match.likesCount}
+            </Text>
           )}
-        </View>
+        </Pressable>
       </View>
 
       {/* Comments preview */}
@@ -170,6 +219,21 @@ export function FeedMatchRow({
 }
 
 const styles = StyleSheet.create({
+  photosContainer: {
+    flexDirection: "row",
+    gap: 4,
+    marginBottom: 12,
+    marginHorizontal: -16,
+    marginTop: -16,
+  },
+  feedPhoto: {
+    flex: 1,
+    height: 160,
+  },
+  feedPhotoSingle: {
+    borderTopLeftRadius: radii.md,
+    borderTopRightRadius: radii.md,
+  },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -184,13 +248,13 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 15,
   },
-  playersSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
+  dotSep: {
+    fontSize: 13,
   },
-  playersLeft: {
-    flex: 1,
+  durationText: {
+    fontSize: 13,
+  },
+  playersSection: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
@@ -198,25 +262,22 @@ const styles = StyleSheet.create({
   vsText: {
     fontSize: 15,
   },
-  scoreSection: {
-    alignItems: "flex-end",
-    gap: 4,
-  },
-  scoreText: {
-    fontSize: 20,
-    fontWeight: "700",
-    fontVariant: ["tabular-nums"],
-  },
-  durationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  durationText: {
-    fontSize: 12,
-  },
   commentsSection: {
     marginTop: 12,
+  },
+  likeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    alignSelf: "flex-start",
+  },
+  likeCount: {
+    fontSize: 13,
+    fontWeight: "600",
+    fontVariant: ["tabular-nums"],
+  },
+  commentsSection: {
+    marginTop: 8,
     gap: 8,
   },
   divider: {

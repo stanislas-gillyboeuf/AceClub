@@ -9,47 +9,67 @@ export function getInitials(name: string): string {
     .join("");
 }
 
-export function formatMatchScore(match: MatchWithParticipants): string {
+export interface SetScoreData {
+  homeGames: number;
+  awayGames: number;
+  isTiebreak: boolean;
+}
+
+export interface StructuredMatchScore {
+  sets: SetScoreData[];
+  homeSetsWon: number;
+  awaySetsWon: number;
+}
+
+export function getStructuredMatchScore(match: MatchWithParticipants): StructuredMatchScore | null {
   const sets = match.sets;
-  if (!sets || sets.length === 0) return "-";
+  if (!sets || sets.length === 0) return null;
 
   const home = getHomeParticipant(match);
   const away = getAwayParticipant(match);
-  if (!home || !away) return "-";
+  if (!home || !away) return null;
 
   let homeSetsWon = 0;
   let awaySetsWon = 0;
+  const sortedSets = [...sets].sort((a, b) => a.setNumber - b.setNumber);
 
-  for (const set of sets) {
-    const homeGames =
-      set.scores?.find((s) => s.userId === home.userId)?.games ?? 0;
-    const awayGames =
-      set.scores?.find((s) => s.userId === away.userId)?.games ?? 0;
+  const setScores: SetScoreData[] = sortedSets.map((set) => {
+    const homeGames = set.scores?.find((s) => s.userId === home.userId)?.games ?? 0;
+    const awayGames = set.scores?.find((s) => s.userId === away.userId)?.games ?? 0;
     if (homeGames > awayGames) homeSetsWon++;
     else if (awayGames > homeGames) awaySetsWon++;
-  }
+    const isTiebreak = homeGames >= 6 && awayGames >= 6 && Math.abs(homeGames - awayGames) === 1;
+    return { homeGames, awayGames, isTiebreak };
+  });
 
-  return `${homeSetsWon} - ${awaySetsWon}`;
+  return { sets: setScores, homeSetsWon, awaySetsWon };
+}
+
+export function formatMatchScore(match: MatchWithParticipants): string {
+  const structured = getStructuredMatchScore(match);
+  if (!structured) return "-";
+  return `${structured.homeSetsWon} - ${structured.awaySetsWon}`;
+}
+
+export function computeMatchDuration(
+  startedAt: string | null | undefined,
+  finishedAt: string | null | undefined,
+): { hours: number; minutes: number } | null {
+  if (!startedAt || !finishedAt) return null;
+  const diffMs = new Date(finishedAt).getTime() - new Date(startedAt).getTime();
+  if (diffMs <= 0) return null;
+  const totalMinutes = Math.floor(diffMs / 60000);
+  if (totalMinutes === 0) return null;
+  return { hours: Math.floor(totalMinutes / 60), minutes: totalMinutes % 60 };
 }
 
 export function formatMatchDuration(
   match: MatchWithParticipants
 ): string | null {
-  if (!match.startedAt || !match.finishedAt) return null;
-
-  const start = new Date(match.startedAt).getTime();
-  const end = new Date(match.finishedAt).getTime();
-  const diffMs = end - start;
-
-  if (diffMs <= 0) return null;
-
-  const totalMinutes = Math.floor(diffMs / 60000);
-  if (totalMinutes === 0) return null;
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-
-  if (hours > 0) return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-  return `${minutes}m`;
+  const dur = computeMatchDuration(match.startedAt, match.finishedAt);
+  if (!dur) return null;
+  if (dur.hours > 0) return `${dur.hours}h ${dur.minutes.toString().padStart(2, "0")}m`;
+  return `${dur.minutes}m`;
 }
 
 export function formatMatchDate(match: MatchWithParticipants): string {
