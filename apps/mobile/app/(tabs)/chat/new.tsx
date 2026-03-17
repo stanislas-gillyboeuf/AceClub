@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { useRouter, Stack } from "expo-router";
-import { useMembers } from "@/hooks/use-organization";
+import { useMembers, useMyOrganizations } from "@/hooks/use-organization";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
 import { Avatar } from "@/components/ui/avatar";
@@ -35,7 +35,9 @@ export default function NewConversationScreen() {
   const scheme = useColorScheme();
   const { data: session } = authClient.useSession();
   const currentUserId = session?.user?.id ?? "";
-  const { data: membersData, isLoading } = useMembers();
+  const { data: orgs } = useMyOrganizations();
+  const orgId = orgs?.[0]?.id ?? "";
+  const { data: membersData, isLoading } = useMembers(orgId);
   const [searchText, setSearchText] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
