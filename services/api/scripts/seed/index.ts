@@ -28,6 +28,9 @@ import {
   match,
   matchParticipant,
   matchComment,
+  matchFeedback,
+  matchPhoto,
+  matchLike,
   set,
   setScore,
   matchIntent,
@@ -77,8 +80,13 @@ async function clearDatabase(db: Database): Promise<void> {
   await db.delete(message);
   await db.delete(conversationParticipant);
 
-  // Match domain (must clear matchComment, scores, participants, then sets, then match)
-  await db.delete(matchComment);
+  // Match domain (must clear dependent tables before match)
+  await Promise.all([
+    db.delete(matchComment),
+    db.delete(matchFeedback),
+    db.delete(matchPhoto),
+    db.delete(matchLike),
+  ]);
   await db.delete(setScore);
   await db.delete(set);
   await db.delete(matchParticipant);

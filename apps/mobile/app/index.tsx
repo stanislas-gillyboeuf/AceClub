@@ -13,7 +13,7 @@ export default function Index() {
     );
   }
 
-  if (!session) {
+  if (!session?.user) {
     return <Redirect href="/(auth)/sign-in" />;
   }
 

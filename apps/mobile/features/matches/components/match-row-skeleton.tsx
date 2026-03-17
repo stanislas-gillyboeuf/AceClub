@@ -1,8 +1,28 @@
 import { View, StyleSheet } from "react-native";
 import { CardSkeleton } from "@/components/ui/card-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { semanticColors } from "@/constants/theme";
+
+function PlayerRowSkeleton({ nameWidth }: { nameWidth: number }) {
+  return (
+    <View style={styles.playerRow}>
+      <View style={styles.nameSection}>
+        <Skeleton width={6} height={6} borderRadius={3} />
+        <Skeleton width={nameWidth} height={13} />
+      </View>
+      <View style={styles.setsSection}>
+        <Skeleton width={24} height={15} />
+        <Skeleton width={24} height={15} />
+        <Skeleton width={24} height={15} />
+      </View>
+    </View>
+  );
+}
 
 export function MatchRowSkeleton() {
+  const scheme = useColorScheme();
+
   return (
     <CardSkeleton>
       <View style={styles.headerRow}>
@@ -12,18 +32,10 @@ export function MatchRowSkeleton() {
         </View>
         <Skeleton width={70} height={24} borderRadius={12} />
       </View>
-      <View style={styles.playersRow}>
-        <View style={styles.playerRow}>
-          <Skeleton width={36} height={36} borderRadius={18} />
-          <Skeleton width={80} height={14} />
-        </View>
-        <Skeleton width={20} height={14} />
-        <View style={styles.playerRow}>
-          <Skeleton width={36} height={36} borderRadius={18} />
-          <Skeleton width={80} height={14} />
-        </View>
-        <Skeleton width={50} height={22} />
-      </View>
+
+      <PlayerRowSkeleton nameWidth={90} />
+      <View style={[styles.separator, { backgroundColor: semanticColors.borderColor[scheme] }]} />
+      <PlayerRowSkeleton nameWidth={70} />
     </CardSkeleton>
   );
 }
@@ -40,15 +52,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  playersRow: {
+  playerRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    justifyContent: "space-between",
+    paddingVertical: 4,
   },
-  playerRow: {
+  nameSection: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     flex: 1,
+  },
+  setsSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  separator: {
+    height: StyleSheet.hairlineWidth,
   },
 });
