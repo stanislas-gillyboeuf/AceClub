@@ -7,7 +7,7 @@ import { useConversations } from "@/hooks/use-conversation";
 
 export default function TabLayout() {
   const { data: session } = authClient.useSession();
-  const isReady = !!session && !!(session.user as any).onboardingCompleted;
+  const isReady = !!session?.user && !!(session.user as any).onboardingCompleted;
 
   usePushNotifications(isReady);
 
@@ -16,7 +16,7 @@ export default function TabLayout() {
     ? (conversations?.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) ?? 0)
     : 0;
 
-  if (!session) {
+  if (!session?.user) {
     return <Redirect href="/(auth)/sign-in" />;
   }
 

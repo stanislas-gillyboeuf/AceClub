@@ -5,7 +5,7 @@ import { authClient } from "@/lib/auth-client";
 export default function OnboardingLayout() {
   const { data: session } = authClient.useSession();
 
-  if (!session) {
+  if (!session?.user) {
     return <Redirect href="/(auth)/sign-in" />;
   }
 

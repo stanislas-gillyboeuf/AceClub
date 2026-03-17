@@ -4,7 +4,7 @@ import { authClient } from "@/lib/auth-client";
 export default function AuthLayout() {
   const { data: session } = authClient.useSession();
 
-  if (session) {
+  if (session?.user) {
     if (!(session.user as any).onboardingCompleted) {
       return <Redirect href="/(onboarding)" />;
     }

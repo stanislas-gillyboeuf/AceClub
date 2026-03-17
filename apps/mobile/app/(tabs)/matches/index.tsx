@@ -17,6 +17,7 @@ import { colors, semanticColors, spacing } from "@/constants/theme";
 import { useInfiniteMatches } from "@/hooks/use-match";
 import { MatchRow } from "@/features/matches/components/match-row";
 import { MatchRowSkeleton } from "@/features/matches/components/match-row-skeleton";
+import { WeekDateStripSkeleton } from "@/features/matches/components/week-date-strip-skeleton";
 import { WeekDateStrip } from "@/features/matches/components/WeekDateStrip";
 import { EmptyState } from "@/components/ui/empty-state";
 import { startOfDay, formatDayKey, getMatchDisplayDate } from "@/lib/date";
@@ -137,8 +138,9 @@ export default function Matches() {
       <View style={styles.container}>
         {toolbar}
         <View style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
+          <WeekDateStripSkeleton />
           <View style={styles.skeletonList}>
-            {Array.from({ length: 5 }).map((_, i) => (
+            {Array.from({ length: 3 }).map((_, i) => (
               <MatchRowSkeleton key={i} />
             ))}
           </View>
