@@ -171,47 +171,47 @@ export default function MatchDetail() {
             <Stack.Toolbar placement="bottom">
               {isScheduled && (
                 <>
-                  <Stack.Toolbar.Button icon="play.fill" variant="prominent" onPress={handleStart} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Button icon="play.fill" onPress={handleStart} tintColor={colors.accentGreen} />
                   <Stack.Toolbar.Spacer />
                 </>
               )}
               {isOngoing && (
                 <>
-                  <Stack.Toolbar.Button icon="pencil" variant="prominent" onPress={handleEditScores} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Button icon="pencil" onPress={handleEditScores} tintColor={colors.accentGreen} />
                   <Stack.Toolbar.Spacer />
                 </>
               )}
               {isOngoing && (
                 <>
-                  <Stack.Toolbar.Button icon="checkmark.circle" variant="prominent" onPress={handleFinish} tintColor={colors.accentOrange} />
+                  <Stack.Toolbar.Button icon="checkmark.circle" onPress={handleFinish} tintColor={colors.accentOrange} />
                   <Stack.Toolbar.Spacer />
                 </>
               )}
               {isFinished && (
                 <>
-                  <Stack.Toolbar.Button icon="pencil" variant="prominent" onPress={handleEditMatch} tintColor={colors.accentOrange} />
+                  <Stack.Toolbar.Button icon="pencil" onPress={handleEditMatch} tintColor={colors.accentOrange} />
                   <Stack.Toolbar.Spacer />
                 </>
               )}
               {(isOngoing || isFinished) && !hasUserPhoto && (
                 <>
-                  <Stack.Toolbar.Button icon="camera" variant="prominent" onPress={handleTakePhoto} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Button icon="camera" onPress={handleTakePhoto} tintColor={colors.accentGreen} />
                   <Stack.Toolbar.Spacer />
                 </>
               )}
               {isFinished && !matchDetail?.myFeedback && (
                 <>
-                  <Stack.Toolbar.Button icon="face.smiling" variant="prominent" onPress={handleFeedback} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Button icon="face.smiling" onPress={handleFeedback} tintColor={colors.accentGreen} />
                   <Stack.Toolbar.Spacer />
                 </>
               )}
               {isFinished && !hasUserCommented && (
                 <>
-                  <Stack.Toolbar.Button icon="bubble.left" variant="prominent" onPress={handleComment} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Button icon="bubble.left" onPress={handleComment} tintColor={colors.accentGreen} />
                   <Stack.Toolbar.Spacer />
                 </>
               )}
-              <Stack.Toolbar.Button icon="trash" variant="prominent" onPress={handleDelete} tintColor="#FF3B30" />
+              <Stack.Toolbar.Button icon="trash" onPress={handleDelete} tintColor="#FF3B30" />
             </Stack.Toolbar>
           )}
         </>
