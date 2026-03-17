@@ -208,19 +208,23 @@ export const sendMessage = async (c: Context<HonoContext>) => {
     },
   };
 
-  // Broadcast via Redis to all server instances (parallel)
+  // Broadcast via Redis to all server instances (best-effort)
   if (redis) {
-    await Promise.all(
-      otherParticipants.map((participant) =>
-        redis?.publish(
-          CHAT_CHANNEL,
-          JSON.stringify({
-            userId: participant.userId,
-            payload: messagePayload,
-          }),
+    try {
+      await Promise.all(
+        otherParticipants.map((participant) =>
+          redis?.publish(
+            CHAT_CHANNEL,
+            JSON.stringify({
+              userId: participant.userId,
+              payload: messagePayload,
+            }),
+          ),
         ),
-      ),
-    );
+      );
+    } catch {
+      console.warn("[send-message] Redis publish failed, skipping broadcast");
+    }
   }
 
   // Fire-and-forget push notifications (don't block response)

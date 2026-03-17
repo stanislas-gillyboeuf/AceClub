@@ -39,34 +39,37 @@ export const markRead = async (c: Context<HonoContext>) => {
     })
     .where(eq(conversationParticipant.id, myParticipation.id));
 
-  // Broadcast read receipt via Redis
+  // Broadcast read receipt via Redis (best-effort)
   if (redis) {
-    // Get other participants to notify about read status
-    const otherParticipants = await db
-      .select({ userId: conversationParticipant.userId })
-      .from(conversationParticipant)
-      .where(
-        and(
-          eq(conversationParticipant.conversationId, conversationId),
-          ne(conversationParticipant.userId, currentUser.id),
-        ),
-      );
+    try {
+      const otherParticipants = await db
+        .select({ userId: conversationParticipant.userId })
+        .from(conversationParticipant)
+        .where(
+          and(
+            eq(conversationParticipant.conversationId, conversationId),
+            ne(conversationParticipant.userId, currentUser.id),
+          ),
+        );
 
-    const readPayload = {
-      type: "read",
-      conversationId,
-      userId: currentUser.id,
-      readAt: now.toISOString(),
-    };
+      const readPayload = {
+        type: "read",
+        conversationId,
+        userId: currentUser.id,
+        readAt: now.toISOString(),
+      };
 
-    for (const participant of otherParticipants) {
-      await redis.publish(
-        CHAT_CHANNEL,
-        JSON.stringify({
-          userId: participant.userId,
-          payload: readPayload,
-        }),
-      );
+      for (const participant of otherParticipants) {
+        await redis.publish(
+          CHAT_CHANNEL,
+          JSON.stringify({
+            userId: participant.userId,
+            payload: readPayload,
+          }),
+        );
+      }
+    } catch {
+      console.warn("[mark-read] Redis publish failed, skipping broadcast");
     }
   }
 
