@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   },
   matchRow: {
     paddingHorizontal: spacing.horizontal,
-    paddingVertical: 6,
+    paddingVertical: 8,
   },
   loader: {
     paddingVertical: 16,
