@@ -31,7 +31,7 @@ export function Pricing() {
       id="pricing"
       title="Tarifs"
       subtitle="Simple et transparent"
-      className="container px-10 mx-auto max-w-[var(--max-container-width)]"
+      className="container px-4 sm:px-10 mx-auto max-w-[var(--max-container-width)]"
       ref={ref}
     >
       <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto py-10">

@@ -18,3 +18,4 @@ export * from "./remove-feature-flag-override";
 export * from "./update-match";
 export * from "./process-deletion-request";
 export * from "./bulk-create-organizations";
+export * from "./update-member-role";
