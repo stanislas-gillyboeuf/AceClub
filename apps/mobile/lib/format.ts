@@ -74,16 +74,7 @@ export function formatMatchDuration(
 
 export function formatMatchDate(match: MatchWithParticipants): string {
   const dateStr = match.finishedAt ?? match.startedAt ?? match.createdAt;
-  const date = new Date(dateStr);
-
-  const formatter = new Intl.DateTimeFormat("fr-FR", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-
-  const formatted = formatter.format(date);
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  return formatShortDate(dateStr);
 }
 
 export function getHomeParticipant(
@@ -116,25 +107,25 @@ export function formatAces(count: number | undefined | null): string {
   return count.toString();
 }
 
+const shortDateFormatter = new Intl.DateTimeFormat("fr-FR", {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+});
+
+const fullDateFormatter = new Intl.DateTimeFormat("fr-FR", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
+
 export function formatShortDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const formatter = new Intl.DateTimeFormat("fr-FR", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-  const formatted = formatter.format(date);
+  const formatted = shortDateFormatter.format(new Date(dateStr));
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
 export function formatFullDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const formatter = new Intl.DateTimeFormat("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-  const formatted = formatter.format(date);
+  const formatted = fullDateFormatter.format(new Date(dateStr));
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
@@ -186,6 +177,21 @@ export function estimateTravelTime(distanceKm: number): string {
   const minutes = estimateTravelTimeMinutes(distanceKm);
   if (minutes < 1) return "< 1 min";
   return `~${minutes} min`;
+}
+
+export function formatRelativeTime(dateStr: string): string {
+  const now = Date.now();
+  const diff = now - new Date(dateStr).getTime();
+  if (diff < 0 || Number.isNaN(diff)) return "";
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "À l'instant";
+  if (minutes < 60) return `il y a ${minutes}min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `il y a ${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `il y a ${days}j`;
+  const weeks = Math.floor(days / 7);
+  return `il y a ${weeks} sem.`;
 }
 
 /** Group label for event dates: "Aujourd'hui / Vendredi", "Demain / Samedi", "15 mars / Dimanche" */

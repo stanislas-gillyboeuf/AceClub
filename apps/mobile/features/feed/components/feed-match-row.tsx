@@ -1,6 +1,6 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { Image } from "expo-image";
-import { Calendar, Heart } from "lucide-react-native";
+import { Heart, MessageCircle } from "lucide-react-native";
 import { Avatar } from "@/components/ui/avatar";
 import { BadgePill } from "@/components/ui/badge-pill";
 import { Card } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { colors, semanticColors, radii } from "@/constants/theme";
 import {
   formatMatchDate,
   formatMatchDuration,
+  formatRelativeTime,
   getHomeParticipant,
   getAwayParticipant,
   getStructuredMatchScore,
@@ -44,63 +45,41 @@ export function FeedMatchRow({
   const date = formatMatchDate(match);
 
   const photos = match.photos ?? [];
-
-  const sortedComments = [...(match.comments ?? [])]
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    )
-    .slice(0, 2);
   const totalComments = match.comments?.length ?? 0;
-  const hasMoreComments = totalComments > 2;
+  const relativeTime = formatRelativeTime(
+    match.finishedAt ?? match.startedAt ?? match.createdAt
+  );
 
   return (
     <Card onPress={onPress}>
-      {/* Match photos */}
-      {photos.length > 0 && (
-        <View style={styles.photosContainer}>
-          {photos.map((photo, index) => (
-            <Image
-              key={photo.id}
-              source={{ uri: photo.imageUrl }}
+      {/* Player Header */}
+      <View style={styles.playerHeader}>
+        <View style={styles.playerHeaderLeft}>
+          <Avatar
+            imageUrl={home?.user?.image}
+            name={home?.user?.name ?? "?"}
+            size={40}
+          />
+          <View style={styles.playerHeaderText}>
+            <Text
               style={[
-                styles.feedPhoto,
-                photos.length === 1 && styles.feedPhotoSingle,
-                photos.length === 2 && index === 0 && { borderTopLeftRadius: radii.md },
-                photos.length === 2 && index === 1 && { borderTopRightRadius: radii.md },
+                styles.playerNames,
+                { color: semanticColors.labelPrimary[scheme] },
               ]}
-              contentFit="cover"
-              transition={200}
-            />
-          ))}
-        </View>
-      )}
-
-      {/* Header: date + duration + badge */}
-      <View style={styles.headerRow}>
-        <View style={styles.dateRow}>
-          <Calendar size={14} color={colors.accentGreen} strokeWidth={2} />
-          <Text
-            style={[
-              styles.dateText,
-              { color: semanticColors.labelSecondary[scheme] },
-            ]}
-          >
-            {date}
-          </Text>
-          {duration && (
-            <>
-              <Text style={[styles.dotSep, { color: semanticColors.labelTertiary[scheme] }]}>·</Text>
-              <Text
-                style={[
-                  styles.durationText,
-                  { color: semanticColors.labelSecondary[scheme] },
-                ]}
-              >
-                {duration}
-              </Text>
-            </>
-          )}
+              numberOfLines={1}
+            >
+              {home?.user?.name ?? "N/A"} vs {away?.user?.name ?? "N/A"}
+            </Text>
+            <Text
+              style={[
+                styles.playerMeta,
+                { color: semanticColors.labelSecondary[scheme] },
+              ]}
+            >
+              {date}
+              {duration ? ` · ${duration}` : ""}
+            </Text>
+          </View>
         </View>
         <BadgePill
           label={currentUserWon ? "Victoire" : "Défaite"}
@@ -108,15 +87,45 @@ export function FeedMatchRow({
         />
       </View>
 
+      {/* Match photos */}
+      {photos.length === 1 && (
+        <Image
+          source={{ uri: photos[0].imageUrl }}
+          style={styles.singlePhoto}
+          contentFit="cover"
+          transition={200}
+        />
+      )}
+      {photos.length > 1 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.photosScroll}
+          contentContainerStyle={styles.photosScrollContent}
+        >
+          {photos.map((photo) => (
+            <Image
+              key={photo.id}
+              source={{ uri: photo.imageUrl }}
+              style={styles.scrollPhoto}
+              contentFit="cover"
+              transition={200}
+            />
+          ))}
+        </ScrollView>
+      )}
+
       {/* Set-by-set scores */}
       {structuredScore ? (
-        <SetScoresView
-          score={structuredScore}
-          homeName={home?.user?.name ?? "N/A"}
-          awayName={away?.user?.name ?? "N/A"}
-          homeIsWinner={home?.isWinner}
-          size="compact"
-        />
+        <View style={styles.scoresSection}>
+          <SetScoresView
+            score={structuredScore}
+            homeName={home?.user?.name ?? "N/A"}
+            awayName={away?.user?.name ?? "N/A"}
+            homeIsWinner={home?.isWinner}
+            size="compact"
+          />
+        </View>
       ) : (
         <View style={styles.playersSection}>
           <PlayerView
@@ -142,161 +151,156 @@ export function FeedMatchRow({
         </View>
       )}
 
-      {/* Like button */}
-      <View style={styles.likeSection}>
-        <Pressable
-          onPress={() => toggleLike(match.id)}
-          hitSlop={8}
-          style={styles.likeButton}
-        >
-          <Heart
-            size={18}
-            color={match.hasLiked ? colors.red500 : semanticColors.labelSecondary[scheme]}
-            fill={match.hasLiked ? colors.red500 : "transparent"}
-            strokeWidth={2}
-          />
-          {match.likesCount > 0 && (
-            <Text
-              style={[
-                styles.likeCount,
-                {
-                  color: match.hasLiked
-                    ? colors.red500
-                    : semanticColors.labelSecondary[scheme],
-                },
-              ]}
-            >
-              {match.likesCount}
-            </Text>
-          )}
-        </Pressable>
-      </View>
-
-      {/* Comments preview */}
-      {sortedComments.length > 0 && (
-        <View style={styles.commentsSection}>
-          <View
-            style={[
-              styles.divider,
-              { backgroundColor: semanticColors.divider[scheme] },
-            ]}
-          />
-          {sortedComments.map((comment) => (
-            <View key={comment.id} style={styles.commentRow}>
-              <Avatar
-                imageUrl={comment.user?.image}
-                name={comment.user?.name ?? "?"}
-                size={24}
-              />
+      {/* Action Bar */}
+      <View
+        style={[
+          styles.actionBar,
+          { borderTopColor: semanticColors.divider[scheme] },
+        ]}
+      >
+        <View style={styles.actionBarLeft}>
+          <Pressable
+            onPress={() => toggleLike(match.id)}
+            hitSlop={8}
+            style={styles.actionButton}
+          >
+            <Heart
+              size={18}
+              color={
+                match.hasLiked
+                  ? colors.red500
+                  : semanticColors.labelSecondary[scheme]
+              }
+              fill={match.hasLiked ? colors.red500 : "transparent"}
+              strokeWidth={2}
+            />
+            {match.likesCount > 0 && (
               <Text
                 style={[
-                  styles.commentText,
-                  { color: semanticColors.labelPrimary[scheme] },
+                  styles.actionCount,
+                  {
+                    color: match.hasLiked
+                      ? colors.red500
+                      : semanticColors.labelSecondary[scheme],
+                  },
                 ]}
-                numberOfLines={2}
               >
-                <Text style={styles.commentAuthor}>
-                  {comment.user?.name ?? "?"}{" "}
-                </Text>
-                {comment.content}
+                {match.likesCount}
               </Text>
-            </View>
-          ))}
-          {hasMoreComments && (
-            <Text
-              style={[
-                styles.moreComments,
-                { color: semanticColors.labelSecondary[scheme] },
-              ]}
-            >
-              Voir les {totalComments} commentaires
-            </Text>
-          )}
+            )}
+          </Pressable>
+
+          <View style={styles.actionButton}>
+            <MessageCircle
+              size={18}
+              color={semanticColors.labelSecondary[scheme]}
+              strokeWidth={2}
+            />
+            {totalComments > 0 && (
+              <Text
+                style={[
+                  styles.actionCount,
+                  { color: semanticColors.labelSecondary[scheme] },
+                ]}
+              >
+                {totalComments}
+              </Text>
+            )}
+          </View>
         </View>
-      )}
+
+        <Text
+          style={[
+            styles.relativeTime,
+            { color: semanticColors.labelTertiary[scheme] },
+          ]}
+        >
+          {relativeTime}
+        </Text>
+      </View>
     </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  photosContainer: {
-    flexDirection: "row",
-    gap: 4,
-    marginBottom: 12,
-    marginHorizontal: -16,
-    marginTop: -16,
-  },
-  feedPhoto: {
-    flex: 1,
-    height: 160,
-  },
-  feedPhotoSingle: {
-    borderTopLeftRadius: radii.md,
-    borderTopRightRadius: radii.md,
-  },
-  headerRow: {
+  playerHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 16,
   },
-  dateRow: {
+  playerHeaderLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 12,
+    flex: 1,
+    marginRight: 12,
   },
-  dateText: {
-    fontSize: 15,
+  playerHeaderText: {
+    flex: 1,
   },
-  dotSep: {
+  playerNames: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  playerMeta: {
     fontSize: 13,
+    marginTop: 2,
   },
-  durationText: {
-    fontSize: 13,
+  singlePhoto: {
+    width: "100%",
+    height: 200,
+    borderRadius: radii.lg,
+    marginBottom: 16,
+  },
+  photosScroll: {
+    marginHorizontal: -16,
+    marginBottom: 16,
+  },
+  photosScrollContent: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  scrollPhoto: {
+    width: 240,
+    height: 200,
+    borderRadius: radii.lg,
+  },
+  scoresSection: {
+    marginBottom: 16,
   },
   playersSection: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    marginBottom: 16,
   },
   vsText: {
     fontSize: 15,
   },
-  commentsSection: {
-    marginTop: 12,
+  actionBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: 12,
   },
-  likeButton: {
+  actionBarLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  actionButton: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    alignSelf: "flex-start",
   },
-  likeCount: {
+  actionCount: {
     fontSize: 13,
     fontWeight: "600",
     fontVariant: ["tabular-nums"],
   },
-  commentsSection: {
-    marginTop: 8,
-    gap: 8,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginBottom: 4,
-  },
-  commentRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  commentText: {
-    fontSize: 12,
-    flex: 1,
-  },
-  commentAuthor: {
-    fontWeight: "600",
-  },
-  moreComments: {
-    fontSize: 12,
+  relativeTime: {
+    fontSize: 13,
   },
 });

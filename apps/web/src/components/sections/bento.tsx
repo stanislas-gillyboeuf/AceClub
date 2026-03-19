@@ -52,7 +52,7 @@ export function BentoGrid() {
       id="bento"
       title="Avantages"
       subtitle="Et ce n'est pas tout !"
-      className="mx-auto max-w-screen-md px-10"
+      className="mx-auto max-w-screen-md px-4 sm:px-10"
       ref={ref}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -28,7 +28,7 @@ import {
   useOrganizationMembers,
   useOrganizationInvitations,
 } from "@/hooks/use-admin-queries"
-import { useCancelInvitation, useUpdateOrganization, useToggleOrganizationPin, useRegenerateOrganizationPin } from "@/hooks/use-admin-mutations"
+import { useCancelInvitation, useUpdateOrganization, useToggleOrganizationPin, useRegenerateOrganizationPin, useUpdateMemberRole } from "@/hooks/use-admin-mutations"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { OrganizationMember, Invitation } from "@/types/admin"
 
@@ -50,58 +50,74 @@ function getInitials(name: string) {
     .slice(0, 2)
 }
 
-const membersColumns: ColumnDef<OrganizationMember>[] = [
-  {
-    accessorKey: "userName",
-    header: "Membre",
-    cell: ({ row }) => {
-      const m = row.original
-      return (
-        <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={m.userImage ?? undefined} alt={m.userName} />
-            <AvatarFallback className="text-xs">
-              {getInitials(m.userName)}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <span className="font-medium">{m.userName}</span>
-            <p className="text-xs text-muted-foreground">{m.userEmail}</p>
+function getMembersColumns(
+  onRoleChange: (memberId: string, role: "member" | "admin" | "owner") => void,
+): ColumnDef<OrganizationMember>[] {
+  return [
+    {
+      accessorKey: "userName",
+      header: "Membre",
+      cell: ({ row }) => {
+        const m = row.original
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={m.userImage ?? undefined} alt={m.userName} />
+              <AvatarFallback className="text-xs">
+                {getInitials(m.userName)}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <span className="font-medium">{m.userName}</span>
+              <p className="text-xs text-muted-foreground">{m.userEmail}</p>
+            </div>
           </div>
-        </div>
-      )
+        )
+      },
     },
-  },
-  {
-    accessorKey: "role",
-    header: "R\u00f4le",
-    cell: ({ row }) => {
-      const role = row.original.role
-      return (
-        <Badge variant={role === "owner" ? "default" : "secondary"}>
-          {role}
-        </Badge>
-      )
+    {
+      accessorKey: "role",
+      header: "R\u00f4le",
+      cell: ({ row }) => {
+        const role = row.original.role
+        return (
+          <select
+            value={role}
+            onChange={(e) =>
+              onRoleChange(
+                row.original.id,
+                e.target.value as "member" | "admin" | "owner",
+              )
+            }
+            onClick={(e) => e.stopPropagation()}
+            className="rounded border border-input bg-background px-2 py-1 text-sm"
+          >
+            <option value="member">member</option>
+            <option value="admin">admin</option>
+            <option value="owner">owner</option>
+          </select>
+        )
+      },
     },
-  },
-  {
-    accessorKey: "userBanned",
-    header: "Statut",
-    cell: ({ row }) => {
-      const banned = row.original.userBanned
-      return (
-        <Badge variant={banned ? "destructive" : "outline"}>
-          {banned ? "Banni" : "Actif"}
-        </Badge>
-      )
+    {
+      accessorKey: "userBanned",
+      header: "Statut",
+      cell: ({ row }) => {
+        const banned = row.original.userBanned
+        return (
+          <Badge variant={banned ? "destructive" : "outline"}>
+            {banned ? "Banni" : "Actif"}
+          </Badge>
+        )
+      },
     },
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Date d'ajout",
-    cell: ({ row }) => formatDate(row.original.createdAt),
-  },
-]
+    {
+      accessorKey: "createdAt",
+      header: "Date d'ajout",
+      cell: ({ row }) => formatDate(row.original.createdAt),
+    },
+  ]
+}
 
 function getStatusVariant(
   status: string,
@@ -167,6 +183,16 @@ export default function OrganizationDetailPage() {
   const updateOrganizationMutation = useUpdateOrganization()
   const togglePinMutation = useToggleOrganizationPin()
   const regeneratePinMutation = useRegenerateOrganizationPin()
+  const updateMemberRoleMutation = useUpdateMemberRole()
+
+  const handleRoleChange = useCallback(
+    (memberId: string, role: "member" | "admin" | "owner") => {
+      updateMemberRoleMutation.mutate({ memberId, organizationId, role })
+    },
+    [updateMemberRoleMutation, organizationId],
+  )
+
+  const membersColumns = getMembersColumns(handleRoleChange)
 
   const handleCopyPin = useCallback(() => {
     if (org?.pin) {
@@ -245,7 +271,7 @@ export default function OrganizationDetailPage() {
 
       {org && (
         <Card>
-          <CardContent className="flex items-center gap-6 pt-6">
+          <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pt-6">
             <Avatar className="h-16 w-16">
               <AvatarImage src={org.logo ?? undefined} alt={org.name} />
               <AvatarFallback className="text-lg">
@@ -282,7 +308,7 @@ export default function OrganizationDetailPage() {
                 </pre>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -325,7 +351,7 @@ export default function OrganizationDetailPage() {
       {org && (
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 {org.pinEnabled ? (
                   <Lock className="h-5 w-5 text-green-600" />
@@ -344,7 +370,7 @@ export default function OrganizationDetailPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 {org.pin && (
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-2xl font-bold tracking-[0.3em]">
@@ -442,7 +468,7 @@ export default function OrganizationDetailPage() {
               Aucune invitation
             </p>
           ) : (
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>

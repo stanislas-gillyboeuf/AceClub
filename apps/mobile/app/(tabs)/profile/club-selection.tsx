@@ -4,6 +4,7 @@ import {
   Text,
   TextInput,
   FlatList,
+  ScrollView,
   Pressable,
   StyleSheet,
   ActivityIndicator,
@@ -170,7 +171,12 @@ export default function ClubSelection() {
             ),
           }}
         />
-        <View style={[styles.pinContent, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
+        <ScrollView
+          style={{ flex: 1, backgroundColor: semanticColors.primaryBackground[scheme] }}
+          contentContainerStyle={styles.pinContent}
+          contentInsetAdjustmentBehavior="automatic"
+          keyboardShouldPersistTaps="handled"
+        >
           <Text style={[styles.pinDescription, { color: semanticColors.labelSecondary[scheme] }]}>
             Le club "{pinOrg.name}" est protege par un code PIN. Demandez-le a votre club.
           </Text>
@@ -188,7 +194,7 @@ export default function ClubSelection() {
             disabled={pin.length < 4}
             loading={verifyPin.isPending}
           />
-        </View>
+        </ScrollView>
       </>
     );
   }
@@ -206,7 +212,12 @@ export default function ClubSelection() {
             ),
           }}
         />
-        <View style={[styles.pinContent, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
+        <ScrollView
+          style={{ flex: 1, backgroundColor: semanticColors.primaryBackground[scheme] }}
+          contentContainerStyle={styles.pinContent}
+          contentInsetAdjustmentBehavior="automatic"
+          keyboardShouldPersistTaps="handled"
+        >
           <FormField
             label="Nom du club"
             value={requestName}
@@ -225,7 +236,7 @@ export default function ClubSelection() {
             disabled={!requestName.trim() || !requestCity.trim()}
             loading={requestClub.isPending}
           />
-        </View>
+        </ScrollView>
       </>
     );
   }
@@ -387,7 +398,6 @@ const styles = StyleSheet.create({
     color: colors.accentGreen,
   },
   pinContent: {
-    flex: 1,
     padding: spacing.horizontal,
     gap: 16,
   },
