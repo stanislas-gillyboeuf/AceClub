@@ -125,6 +125,12 @@ export const processDeletionRequestValidator = z.object({
   status: z.enum(["processed", "rejected"]),
 });
 
+export const updateMemberRoleAdminValidator = z.object({
+  memberId: z.string(),
+  organizationId: z.string(),
+  role: z.enum(["member", "admin", "owner"]),
+});
+
 export const bulkCreateOrganizationsValidator = z.object({
   clubs: z
     .array(

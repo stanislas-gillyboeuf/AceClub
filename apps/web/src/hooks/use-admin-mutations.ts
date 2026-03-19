@@ -382,6 +382,21 @@ export function useAdminUpdateEventStatus() {
   })
 }
 
+export function useUpdateMemberRole() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { memberId: string; organizationId: string; role: "member" | "admin" | "owner" }) =>
+      apiClient("/admin/update-member-role", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-organization-members"] })
+    },
+  })
+}
+
 export function useAdminDeleteEvent() {
   const queryClient = useQueryClient()
 

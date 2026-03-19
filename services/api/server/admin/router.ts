@@ -37,6 +37,7 @@ import {
   updateMatchAdminValidator,
   processDeletionRequestValidator,
   bulkCreateOrganizationsValidator,
+  updateMemberRoleAdminValidator,
 } from "./validators";
 import {
   banUser,
@@ -59,6 +60,7 @@ import {
   updateMatchAdmin,
   processDeletionRequest,
   bulkCreateOrganizations,
+  updateMemberRole,
 } from "./mutations";
 
 export const adminRouter = new Hono<HonoContext>();
@@ -186,6 +188,13 @@ adminRouter.post(
   "/process-deletion-request",
   zValidator("json", processDeletionRequestValidator),
   processDeletionRequest,
+);
+
+// Member role
+adminRouter.post(
+  "/update-member-role",
+  zValidator("json", updateMemberRoleAdminValidator),
+  updateMemberRole,
 );
 
 // Bulk organization import
