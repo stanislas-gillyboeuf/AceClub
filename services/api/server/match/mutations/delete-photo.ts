@@ -18,12 +18,7 @@ export const deletePhoto = async (c: Context<HonoContext>) => {
   const [photo] = await db
     .select()
     .from(matchPhoto)
-    .where(
-      and(
-        eq(matchPhoto.matchId, matchId),
-        eq(matchPhoto.userId, currentUser.id),
-      ),
-    )
+    .where(and(eq(matchPhoto.matchId, matchId), eq(matchPhoto.userId, currentUser.id)))
     .limit(1);
 
   if (!photo) {
@@ -35,9 +30,7 @@ export const deletePhoto = async (c: Context<HonoContext>) => {
   await deleteObject(storageKey);
 
   // Delete from DB
-  await db
-    .delete(matchPhoto)
-    .where(eq(matchPhoto.id, photo.id));
+  await db.delete(matchPhoto).where(eq(matchPhoto.id, photo.id));
 
   // Invalidate cache
   await cacheDel(CacheKeys.matchPhotos(matchId));

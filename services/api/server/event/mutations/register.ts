@@ -104,14 +104,9 @@ async function checkAndUpdateFullStatus(eventId: string, maxParticipants: number
   const [registeredCount] = await db
     .select({ count: count() })
     .from(eventParticipant)
-    .where(
-      and(eq(eventParticipant.eventId, eventId), eq(eventParticipant.status, "registered")),
-    );
+    .where(and(eq(eventParticipant.eventId, eventId), eq(eventParticipant.status, "registered")));
 
   if (registeredCount.count >= maxParticipants) {
-    await db
-      .update(event)
-      .set({ status: "full" })
-      .where(eq(event.id, eventId));
+    await db.update(event).set({ status: "full" }).where(eq(event.id, eventId));
   }
 }

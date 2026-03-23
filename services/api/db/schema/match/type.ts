@@ -1,4 +1,13 @@
-import { match, matchParticipant, set, setScore, matchPhoto, matchComment, matchFeedback, matchLike } from "./schema";
+import {
+  match,
+  matchParticipant,
+  set,
+  setScore,
+  matchPhoto,
+  matchComment,
+  matchFeedback,
+  matchLike,
+} from "./schema";
 
 export type Match = typeof match.$inferSelect;
 export type NewMatch = typeof match.$inferInsert;

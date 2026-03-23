@@ -26,10 +26,7 @@ export const deleteEvent = async (c: Context<HonoContext>) => {
   }
 
   if (existing.status === "completed") {
-    return c.json(
-      { error: "BadRequest", message: "Completed events cannot be deleted" },
-      400,
-    );
+    return c.json({ error: "BadRequest", message: "Completed events cannot be deleted" }, 400);
   }
 
   await db.delete(eventParticipant).where(eq(eventParticipant.eventId, body.eventId));

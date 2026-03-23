@@ -38,20 +38,14 @@ export const cancelEvent = async (c: Context<HonoContext>) => {
     .update(eventParticipant)
     .set({ status: "cancelled" })
     .where(
-      and(
-        eq(eventParticipant.eventId, body.eventId),
-        eq(eventParticipant.status, "registered"),
-      ),
+      and(eq(eventParticipant.eventId, body.eventId), eq(eventParticipant.status, "registered")),
     );
 
   await db
     .update(eventParticipant)
     .set({ status: "cancelled" })
     .where(
-      and(
-        eq(eventParticipant.eventId, body.eventId),
-        eq(eventParticipant.status, "waitlisted"),
-      ),
+      and(eq(eventParticipant.eventId, body.eventId), eq(eventParticipant.status, "waitlisted")),
     );
 
   const [updated] = await db

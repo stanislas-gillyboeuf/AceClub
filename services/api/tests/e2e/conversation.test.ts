@@ -1,11 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import {
-  createTestUser,
-  cleanupTestUser,
-  get,
-  post,
-  del,
-} from "../helpers";
+import { createTestUser, cleanupTestUser, get, post, del } from "../helpers";
 
 describe("Conversation API (/api/conversation)", () => {
   let userId: string;
@@ -114,11 +108,7 @@ describe("Conversation API (/api/conversation)", () => {
   describe("POST /api/conversation/:id/mark-read", () => {
     it("should mark conversation as read", async () => {
       if (!conversationId) return;
-      const res = await post(
-        `/api/conversation/${conversationId}/mark-read`,
-        {},
-        { headers },
-      );
+      const res = await post(`/api/conversation/${conversationId}/mark-read`, {}, { headers });
       expect(res.status).toBe(200);
     });
   });
@@ -158,10 +148,10 @@ describe("Conversation API (/api/conversation)", () => {
 
     it("DELETE /api/conversation/:id/message/:messageId/reaction - should remove reaction", async () => {
       if (!conversationId || !messageId) return;
-      const res = await del(
-        `/api/conversation/${conversationId}/message/${messageId}/reaction`,
-        { headers, body: { emoji: "👍" } },
-      );
+      const res = await del(`/api/conversation/${conversationId}/message/${messageId}/reaction`, {
+        headers,
+        body: { emoji: "👍" },
+      });
       expect(res.status).toBe(200);
     });
   });
@@ -169,10 +159,9 @@ describe("Conversation API (/api/conversation)", () => {
   describe("DELETE /api/conversation/:id/message/:messageId", () => {
     it("should delete a message", async () => {
       if (!conversationId || !messageId) return;
-      const res = await del(
-        `/api/conversation/${conversationId}/message/${messageId}`,
-        { headers },
-      );
+      const res = await del(`/api/conversation/${conversationId}/message/${messageId}`, {
+        headers,
+      });
       expect(res.status).toBe(200);
     });
   });

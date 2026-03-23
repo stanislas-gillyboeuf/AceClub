@@ -53,11 +53,7 @@ export const cancelRegistration = async (c: Context<HonoContext>) => {
     }
 
     // If event was full, revert to on_sale since a spot opened
-    const [eventRecord] = await db
-      .select()
-      .from(event)
-      .where(eq(event.id, body.eventId))
-      .limit(1);
+    const [eventRecord] = await db.select().from(event).where(eq(event.id, body.eventId)).limit(1);
 
     if (eventRecord && eventRecord.status === "full") {
       const [registeredCount] = await db
@@ -71,10 +67,7 @@ export const cancelRegistration = async (c: Context<HonoContext>) => {
         );
 
       if (!eventRecord.maxParticipants || registeredCount.count < eventRecord.maxParticipants) {
-        await db
-          .update(event)
-          .set({ status: "on_sale" })
-          .where(eq(event.id, body.eventId));
+        await db.update(event).set({ status: "on_sale" }).where(eq(event.id, body.eventId));
       }
     }
   }

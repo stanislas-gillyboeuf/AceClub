@@ -1,6 +1,14 @@
 import { z } from "zod";
 
-const eventStatusEnum = z.enum(["draft", "presale", "on_sale", "completed", "full", "cancelled", "archived"]);
+const eventStatusEnum = z.enum([
+  "draft",
+  "presale",
+  "on_sale",
+  "completed",
+  "full",
+  "cancelled",
+  "archived",
+]);
 const eventVisibilityEnum = z.enum(["public", "organization"]);
 
 // --- Mutations ---
@@ -60,10 +68,7 @@ export const listEventsValidator = z.object({
   visibility: eventVisibilityEnum.optional(),
   fromDate: z.string().optional(),
   toDate: z.string().optional(),
-  sortBy: z
-    .enum(["upcoming", "nearest", "recent", "past"])
-    .optional()
-    .default("upcoming"),
+  sortBy: z.enum(["upcoming", "nearest", "recent", "past"]).optional().default("upcoming"),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
   cursor: z.string().optional(),

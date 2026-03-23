@@ -51,10 +51,7 @@ export const createOrganization = async (c: Context<HonoContext>) => {
         await db
           .delete(member)
           .where(
-            and(
-              eq(member.organizationId, createdOrganization.id),
-              eq(member.userId, authUser.id)
-            )
+            and(eq(member.organizationId, createdOrganization.id), eq(member.userId, authUser.id)),
           );
       }
     }
