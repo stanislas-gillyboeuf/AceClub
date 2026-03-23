@@ -79,10 +79,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
         .where(eq(matchComment.matchId, matchId))
         .orderBy(matchComment.createdAt),
 
-      db
-        .select()
-        .from(matchPhoto)
-        .where(eq(matchPhoto.matchId, matchId)),
+      db.select().from(matchPhoto).where(eq(matchPhoto.matchId, matchId)),
 
       db
         .select({

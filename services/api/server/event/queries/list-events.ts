@@ -15,10 +15,7 @@ export const listEvents = async (c: Context<HonoContext>) => {
   const now = new Date();
 
   // Only show visible events (not draft, not cancelled)
-  const conditions: SQL[] = [
-    ne(event.status, "draft"),
-    ne(event.status, "cancelled"),
-  ];
+  const conditions: SQL[] = [ne(event.status, "draft"), ne(event.status, "cancelled")];
 
   // Visibility: public events are always visible, organization events only for members
   if (query.visibility === "organization") {
@@ -42,7 +39,10 @@ export const listEvents = async (c: Context<HonoContext>) => {
 
     if (memberOrgIds.length > 0) {
       conditions.push(
-        sql`(${event.visibility} = 'public' OR (${event.visibility} = 'organization' AND ${event.organizationId} IN (${sql.join(memberOrgIds.map((id) => sql`${id}`), sql`, `)})))`,
+        sql`(${event.visibility} = 'public' OR (${event.visibility} = 'organization' AND ${event.organizationId} IN (${sql.join(
+          memberOrgIds.map((id) => sql`${id}`),
+          sql`, `,
+        )})))`,
       );
     } else {
       conditions.push(eq(event.visibility, "public"));

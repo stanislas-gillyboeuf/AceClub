@@ -75,10 +75,7 @@ export const removeParticipant = async (c: Context<HonoContext>) => {
         );
 
       if (!eventRecord.maxParticipants || registeredCount.count < eventRecord.maxParticipants) {
-        await db
-          .update(event)
-          .set({ status: "on_sale" })
-          .where(eq(event.id, body.eventId));
+        await db.update(event).set({ status: "on_sale" }).where(eq(event.id, body.eventId));
       }
     }
   }

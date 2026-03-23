@@ -190,9 +190,7 @@ describe("Organization API (/api/organization)", () => {
       });
       const members = await membersRes.json();
       const memberList = Array.isArray(members) ? members : members.data || [];
-      const otherMember = memberList.find(
-        (m: { userId: string }) => m.userId === otherUserId,
-      );
+      const otherMember = memberList.find((m: { userId: string }) => m.userId === otherUserId);
 
       if (otherMember) {
         const res = await post(
@@ -238,11 +236,7 @@ describe("Organization API (/api/organization)", () => {
 
     it("POST /api/organization/cancel-invitation - should cancel invitation", async () => {
       if (!invitationId) return;
-      const res = await post(
-        "/api/organization/cancel-invitation",
-        { invitationId },
-        { headers },
-      );
+      const res = await post("/api/organization/cancel-invitation", { invitationId }, { headers });
       expect(res.status).toBe(200);
     });
   });

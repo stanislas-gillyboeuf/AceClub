@@ -8,11 +8,7 @@ describe("Cron API (/api/cron)", () => {
 
   describe("POST /api/cron/assign-weekly-challenges", () => {
     it("should assign weekly challenges with valid secret", async () => {
-      const res = await post(
-        "/api/cron/assign-weekly-challenges",
-        {},
-        { headers: cronHeaders },
-      );
+      const res = await post("/api/cron/assign-weekly-challenges", {}, { headers: cronHeaders });
       // 200 if secret matches, 401 if not configured
       expect([200, 401, 500]).toContain(res.status);
     });
@@ -33,33 +29,21 @@ describe("Cron API (/api/cron)", () => {
 
   describe("POST /api/cron/expire-challenges", () => {
     it("should expire challenges with valid secret", async () => {
-      const res = await post(
-        "/api/cron/expire-challenges",
-        {},
-        { headers: cronHeaders },
-      );
+      const res = await post("/api/cron/expire-challenges", {}, { headers: cronHeaders });
       expect([200, 401, 500]).toContain(res.status);
     });
   });
 
   describe("POST /api/cron/streak-warning", () => {
     it("should send streak warnings with valid secret", async () => {
-      const res = await post(
-        "/api/cron/streak-warning",
-        {},
-        { headers: cronHeaders },
-      );
+      const res = await post("/api/cron/streak-warning", {}, { headers: cronHeaders });
       expect([200, 401, 500]).toContain(res.status);
     });
   });
 
   describe("POST /api/cron/cleanup-expired-intents", () => {
     it("should cleanup expired intents with valid secret", async () => {
-      const res = await post(
-        "/api/cron/cleanup-expired-intents",
-        {},
-        { headers: cronHeaders },
-      );
+      const res = await post("/api/cron/cleanup-expired-intents", {}, { headers: cronHeaders });
       expect([200, 401, 500]).toContain(res.status);
     });
   });

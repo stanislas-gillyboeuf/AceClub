@@ -8,15 +8,17 @@ import {
   StyleSheet,
   Platform,
 } from "react-native";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { GlassView } from "@/components/ui/glass-view";
 import * as Location from "expo-location";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { SlidersHorizontal, Check } from "lucide-react-native";
 import { DiscoverCardStack } from "@/features/discover/components/discover-card-stack";
 import { DiscoverDetailSheet } from "@/features/discover/components/discover-detail-sheet";
 import { useDiscoverState } from "@/features/discover/hooks/use-discover-state";
+import { useMatchRequests } from "@/hooks/use-match-intent";
 import { colors, semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { MatchIntentWithUser } from "@/types/match-intent";
@@ -47,6 +49,9 @@ export default function DiscoverScreen() {
     updateLocation,
   } = useDiscoverState();
 
+  const { data: matchRequests } = useMatchRequests();
+  const pendingCount = (matchRequests ?? []).filter((r) => r.status === "pending").length;
+
   const [selectedItem, setSelectedItem] = useState<MatchIntentWithUser | null>(null);
   const [showRadiusMenu, setShowRadiusMenu] = useState(false);
   useEffect(() => {
@@ -71,6 +76,10 @@ export default function DiscoverScreen() {
     setSelectedItem(item);
   }, []);
 
+  const onOpenRequests = () => {
+    router.push("/(tabs)/discover/requests");
+  };
+
   const handleCreateIntent = useCallback(() => {
     router.push("/(tabs)/discover/create-intent");
   }, [router]);
@@ -92,6 +101,28 @@ export default function DiscoverScreen() {
   }
 
   return (
+    <>
+      <Stack.Screen
+        options={{
+          headerRight:
+            Platform.OS === "android"
+              ? () => (
+                  <Pressable onPress={onOpenRequests} style={styles.headerButton}>
+                    <MaterialIcons name="mail-outline" size={24} color={colors.accentGreen} />
+                    {pendingCount > 0 && <View style={styles.badge} />}
+                  </Pressable>
+                )
+              : undefined,
+        }}
+      />
+      {Platform.OS === "ios" && (
+        <Stack.Toolbar placement="right">
+          <View>
+            <Stack.Toolbar.Button icon="envelope.badge" onPress={onOpenRequests} tintColor={colors.accentGreen} />
+            {pendingCount > 0 && <View style={styles.badge} />}
+          </View>
+        </Stack.Toolbar>
+      )}
     <GestureHandlerRootView
       style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme], paddingTop: Platform.OS === "ios" ? headerHeight : 0 }]}
     >
@@ -184,6 +215,7 @@ export default function DiscoverScreen() {
         </Pressable>
       </Modal>
     </GestureHandlerRootView>
+    </>
   );
 }
 
@@ -241,5 +273,17 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     fontSize: 16,
+  },
+  headerButton: {
+    position: "relative",
+  },
+  badge: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "red",
   },
 });

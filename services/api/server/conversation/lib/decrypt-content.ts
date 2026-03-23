@@ -4,10 +4,7 @@ import { createDecipheriv } from "crypto";
  * Decrypt a v2 AES-256-GCM encrypted message server-side.
  * Returns the plaintext, or the original content if not encrypted / unknown format.
  */
-export function decryptMessageContent(
-  content: string,
-  encryptionKey: string | null,
-): string {
+export function decryptMessageContent(content: string, encryptionKey: string | null): string {
   if (!encryptionKey || !content) return content;
 
   let parsed: { v?: number; n?: string; c?: string };
