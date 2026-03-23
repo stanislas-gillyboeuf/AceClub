@@ -25,7 +25,9 @@ export const uploadPhoto = async (c: Context<HonoContext>) => {
     db
       .select()
       .from(matchParticipant)
-      .where(and(eq(matchParticipant.matchId, matchId), eq(matchParticipant.userId, currentUser.id)))
+      .where(
+        and(eq(matchParticipant.matchId, matchId), eq(matchParticipant.userId, currentUser.id)),
+      )
       .limit(1),
     db
       .select()
@@ -38,7 +40,10 @@ export const uploadPhoto = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Match not found" }, 404);
   }
   if (foundMatch.status !== "ongoing" && foundMatch.status !== "finished") {
-    return c.json({ error: "BadRequest", message: "Photos can only be added to ongoing or finished matches" }, 400);
+    return c.json(
+      { error: "BadRequest", message: "Photos can only be added to ongoing or finished matches" },
+      400,
+    );
   }
   if (!participation) {
     return c.json({ error: "Forbidden", message: "Not a participant" }, 403);

@@ -45,10 +45,7 @@ export async function createTestUser(overrides?: {
 
   // Set role if admin
   if (overrides?.role === "admin") {
-    await db
-      .update(userTable)
-      .set({ role: "admin" })
-      .where(eq(userTable.id, savedUser.id));
+    await db.update(userTable).set({ role: "admin" }).where(eq(userTable.id, savedUser.id));
   }
 
   // Set onboarding completed

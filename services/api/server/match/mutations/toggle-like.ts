@@ -57,10 +57,7 @@ export const toggleLike = async (c: Context<HonoContext>) => {
       .select({ userId: matchParticipant.userId })
       .from(matchParticipant)
       .where(
-        and(
-          eq(matchParticipant.matchId, matchId),
-          ne(matchParticipant.userId, currentUser.id),
-        ),
+        and(eq(matchParticipant.matchId, matchId), ne(matchParticipant.userId, currentUser.id)),
       );
 
     const likerName = currentUser.name ?? "Quelqu'un";

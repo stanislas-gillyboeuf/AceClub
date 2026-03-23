@@ -29,10 +29,7 @@ export const adminListEvents = async (c: Context<HonoContext>) => {
       .orderBy(event.createdAt)
       .limit(query.limit)
       .offset(query.offset),
-    db
-      .select({ count: count() })
-      .from(event)
-      .where(whereClause),
+    db.select({ count: count() }).from(event).where(whereClause),
   ]);
 
   const eventsWithCounts = await Promise.all(

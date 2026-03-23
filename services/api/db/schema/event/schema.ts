@@ -53,8 +53,7 @@ export const event = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id),
-    organizationId: text("organization_id")
-      .references(() => organization.id),
+    organizationId: text("organization_id").references(() => organization.id),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()

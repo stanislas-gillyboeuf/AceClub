@@ -204,11 +204,7 @@ describe("Match API (/api/match)", () => {
 
     it("PUT /api/match/:id/feedback - should update feedback", async () => {
       if (!matchId) return;
-      const res = await put(
-        `/api/match/${matchId}/feedback`,
-        { sensation: "great" },
-        { headers },
-      );
+      const res = await put(`/api/match/${matchId}/feedback`, { sensation: "great" }, { headers });
       expect([200, 404]).toContain(res.status);
     });
 

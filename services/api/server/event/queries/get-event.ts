@@ -56,10 +56,7 @@ export const getEvent = async (c: Context<HonoContext>) => {
         .select()
         .from(member)
         .where(
-          and(
-            eq(member.organizationId, result.organizationId),
-            eq(member.userId, currentUser.id),
-          ),
+          and(eq(member.organizationId, result.organizationId), eq(member.userId, currentUser.id)),
         )
         .limit(1);
 
@@ -79,10 +76,7 @@ export const getEvent = async (c: Context<HonoContext>) => {
       .select()
       .from(member)
       .where(
-        and(
-          eq(member.organizationId, result.organizationId),
-          eq(member.userId, currentUser.id),
-        ),
+        and(eq(member.organizationId, result.organizationId), eq(member.userId, currentUser.id)),
       )
       .limit(1);
 

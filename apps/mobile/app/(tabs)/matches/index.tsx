@@ -1,9 +1,7 @@
 import { useMemo, useState } from "react";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useRouter } from "expo-router";
 import {
   View,
-  Platform,
   Pressable,
   FlatList,
   RefreshControl,
@@ -76,10 +74,6 @@ export default function Matches() {
     router.push("/matches/create");
   };
 
-  const onOpenRequests = () => {
-    router.push("/matches/requests");
-  };
-
   const onEndReached = () => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   };
@@ -91,26 +85,7 @@ export default function Matches() {
   );
 
   const toolbar = (
-    <>
-      <Stack.Screen
-        options={{
-          title: "Matchs",
-          headerRight:
-            Platform.OS === "android"
-              ? () => (
-                  <Pressable onPress={onOpenRequests}>
-                    <MaterialIcons name="mail-outline" size={24} color={colors.accentGreen} />
-                  </Pressable>
-                )
-              : undefined,
-        }}
-      />
-      {Platform.OS === "ios" && (
-        <Stack.Toolbar placement="right">
-          <Stack.Toolbar.Button icon="envelope.badge" onPress={onOpenRequests} tintColor={colors.accentGreen} />
-        </Stack.Toolbar>
-      )}
-    </>
+    <Stack.Screen options={{ title: "Matchs" }} />
   );
 
   const fab = (

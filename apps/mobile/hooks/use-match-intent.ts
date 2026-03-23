@@ -26,6 +26,7 @@ export function useMatchRequests() {
   return useQuery({
     queryKey: ["match-intent", "requests"],
     queryFn: matchIntentService.listRequests,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

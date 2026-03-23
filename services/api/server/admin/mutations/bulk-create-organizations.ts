@@ -49,9 +49,7 @@ async function getUniqueSlug(baseSlug: string): Promise<string> {
 
 export const bulkCreateOrganizations = async (c: Context<HonoContext>) => {
   // @ts-ignore
-  const validated = c.req.valid("json") as z.infer<
-    typeof bulkCreateOrganizationsValidator
-  >;
+  const validated = c.req.valid("json") as z.infer<typeof bulkCreateOrganizationsValidator>;
   const { clubs } = validated;
 
   return streamSSE(c, async (stream) => {
@@ -121,10 +119,7 @@ export const bulkCreateOrganizations = async (c: Context<HonoContext>) => {
             updateData.address = address;
           }
 
-          await db
-            .update(organization)
-            .set(updateData)
-            .where(eq(organization.id, createdOrg.id));
+          await db.update(organization).set(updateData).where(eq(organization.id, createdOrg.id));
 
           results.created++;
         }

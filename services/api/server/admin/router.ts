@@ -177,11 +177,7 @@ adminRouter.post(
 adminRouter.delete("/feature-flags/:id/overrides/:orgId", removeFeatureFlagOverride);
 
 // Match admin
-adminRouter.put(
-  "/update-match",
-  zValidator("json", updateMatchAdminValidator),
-  updateMatchAdmin,
-);
+adminRouter.put("/update-match", zValidator("json", updateMatchAdminValidator), updateMatchAdmin);
 
 // Account deletion requests
 adminRouter.post(

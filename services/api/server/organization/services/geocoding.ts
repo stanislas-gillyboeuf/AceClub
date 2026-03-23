@@ -25,7 +25,9 @@ export async function reverseGeocode(
     });
 
     if (!response.ok) {
-      console.error(`[GEOCODING] Nominatim reverse error: ${response.status} ${response.statusText}`);
+      console.error(
+        `[GEOCODING] Nominatim reverse error: ${response.status} ${response.statusText}`,
+      );
       return null;
     }
 

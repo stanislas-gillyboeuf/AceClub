@@ -131,11 +131,7 @@ describe("Event API (/api/event)", () => {
   describe("POST /api/event/register", () => {
     it("should register for an event", async () => {
       if (!eventId) return;
-      const res = await post(
-        "/api/event/register",
-        { eventId },
-        { headers },
-      );
+      const res = await post("/api/event/register", { eventId }, { headers });
       expect([200, 201]).toContain(res.status);
     });
   });
@@ -154,11 +150,7 @@ describe("Event API (/api/event)", () => {
   describe("POST /api/event/cancel-registration", () => {
     it("should cancel registration", async () => {
       if (!eventId) return;
-      const res = await post(
-        "/api/event/cancel-registration",
-        { eventId },
-        { headers },
-      );
+      const res = await post("/api/event/cancel-registration", { eventId }, { headers });
       expect(res.status).toBe(200);
     });
   });
@@ -206,11 +198,7 @@ describe("Event API (/api/event)", () => {
   describe("POST /api/event/cancel", () => {
     it("should cancel an event", async () => {
       if (!eventId) return;
-      const res = await post(
-        "/api/event/cancel",
-        { eventId },
-        { headers },
-      );
+      const res = await post("/api/event/cancel", { eventId }, { headers });
       expect(res.status).toBe(200);
     });
   });

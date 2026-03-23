@@ -144,76 +144,76 @@ export const listMatches = async (c: Context<HonoContext>) => {
 
     const matchIds = matches.map((m) => m.id);
 
-    const [participantsRaw, setsData, commentsRaw, photosData, likeCounts, userLikes] = await Promise.all([
-      db
-        .select({
-          id: matchParticipant.id,
-          matchId: matchParticipant.matchId,
-          userId: matchParticipant.userId,
-          side: matchParticipant.side,
-          isWinner: matchParticipant.isWinner,
-          createdAt: matchParticipant.createdAt,
-          user: user,
-        })
-        .from(matchParticipant)
-        .leftJoin(user, eq(matchParticipant.userId, user.id))
-        .where(inArray(matchParticipant.matchId, matchIds))
-        .orderBy(matchParticipant.side),
+    const [participantsRaw, setsData, commentsRaw, photosData, likeCounts, userLikes] =
+      await Promise.all([
+        db
+          .select({
+            id: matchParticipant.id,
+            matchId: matchParticipant.matchId,
+            userId: matchParticipant.userId,
+            side: matchParticipant.side,
+            isWinner: matchParticipant.isWinner,
+            createdAt: matchParticipant.createdAt,
+            user: user,
+          })
+          .from(matchParticipant)
+          .leftJoin(user, eq(matchParticipant.userId, user.id))
+          .where(inArray(matchParticipant.matchId, matchIds))
+          .orderBy(matchParticipant.side),
 
-      db
-        .select({
-          setId: set.id,
-          matchId: set.matchId,
-          setNumber: set.setNumber,
-          setCreatedAt: set.createdAt,
-          scoreId: setScore.id,
-          scoreGames: setScore.games,
-          participantId: matchParticipant.id,
-          participantUserId: matchParticipant.userId,
-          participantSide: matchParticipant.side,
-        })
-        .from(set)
-        .leftJoin(setScore, eq(setScore.setId, set.id))
-        .leftJoin(matchParticipant, eq(setScore.participantId, matchParticipant.id))
-        .where(inArray(set.matchId, matchIds))
-        .orderBy(set.setNumber),
+        db
+          .select({
+            setId: set.id,
+            matchId: set.matchId,
+            setNumber: set.setNumber,
+            setCreatedAt: set.createdAt,
+            scoreId: setScore.id,
+            scoreGames: setScore.games,
+            participantId: matchParticipant.id,
+            participantUserId: matchParticipant.userId,
+            participantSide: matchParticipant.side,
+          })
+          .from(set)
+          .leftJoin(setScore, eq(setScore.setId, set.id))
+          .leftJoin(matchParticipant, eq(setScore.participantId, matchParticipant.id))
+          .where(inArray(set.matchId, matchIds))
+          .orderBy(set.setNumber),
 
-      db
-        .select({
-          id: matchComment.id,
-          matchId: matchComment.matchId,
-          userId: matchComment.userId,
-          content: matchComment.content,
-          createdAt: matchComment.createdAt,
-          updatedAt: matchComment.updatedAt,
-          user: user,
-        })
-        .from(matchComment)
-        .leftJoin(user, eq(matchComment.userId, user.id))
-        .where(inArray(matchComment.matchId, matchIds))
-        .orderBy(matchComment.createdAt),
+        db
+          .select({
+            id: matchComment.id,
+            matchId: matchComment.matchId,
+            userId: matchComment.userId,
+            content: matchComment.content,
+            createdAt: matchComment.createdAt,
+            updatedAt: matchComment.updatedAt,
+            user: user,
+          })
+          .from(matchComment)
+          .leftJoin(user, eq(matchComment.userId, user.id))
+          .where(inArray(matchComment.matchId, matchIds))
+          .orderBy(matchComment.createdAt),
 
-      db
-        .select()
-        .from(matchPhoto)
-        .where(inArray(matchPhoto.matchId, matchIds)),
+        db.select().from(matchPhoto).where(inArray(matchPhoto.matchId, matchIds)),
 
-      db
-        .select({
-          matchId: matchLike.matchId,
-          count: count(),
-        })
-        .from(matchLike)
-        .where(inArray(matchLike.matchId, matchIds))
-        .groupBy(matchLike.matchId),
+        db
+          .select({
+            matchId: matchLike.matchId,
+            count: count(),
+          })
+          .from(matchLike)
+          .where(inArray(matchLike.matchId, matchIds))
+          .groupBy(matchLike.matchId),
 
-      currentUser
-        ? db
-            .select({ matchId: matchLike.matchId })
-            .from(matchLike)
-            .where(and(eq(matchLike.userId, currentUser.id), inArray(matchLike.matchId, matchIds)))
-        : Promise.resolve([]),
-    ]);
+        currentUser
+          ? db
+              .select({ matchId: matchLike.matchId })
+              .from(matchLike)
+              .where(
+                and(eq(matchLike.userId, currentUser.id), inArray(matchLike.matchId, matchIds)),
+              )
+          : Promise.resolve([]),
+      ]);
 
     const participants = participantsRaw.map((p) => ({
       id: p.id,
