@@ -3,6 +3,15 @@ import { conversationService } from "@/services/conversation";
 import type { Conversation } from "@/types/conversation";
 import type { ChatMessage, MessageSendStatus } from "../types";
 
+function getMimeTypeFromUri(uri: string): { mime: string; ext: string } {
+  const lower = uri.toLowerCase();
+  if (lower.endsWith(".gif")) return { mime: "image/gif", ext: "gif" };
+  if (lower.endsWith(".png")) return { mime: "image/png", ext: "png" };
+  if (lower.endsWith(".webp")) return { mime: "image/webp", ext: "webp" };
+  if (lower.endsWith(".heic")) return { mime: "image/heic", ext: "heic" };
+  return { mime: "image/jpeg", ext: "jpg" };
+}
+
 function generateId(): string {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -194,11 +203,12 @@ export function useMessageSend(
       setIsSending(true);
 
       try {
+        const { mime, ext } = getMimeTypeFromUri(fileUri);
         const uploaded = await conversationService.uploadAttachment(
           conversation.id,
           fileUri,
-          `${clientMessageId}.jpg`,
-          "image/jpeg",
+          `${clientMessageId}.${ext}`,
+          mime,
         );
 
         const sent = await conversationService.sendMessage(conversation.id, {
