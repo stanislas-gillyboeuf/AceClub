@@ -13,8 +13,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { GlassView } from "@/components/ui/glass-view";
 import * as Location from "expo-location";
 import { Stack, useRouter } from "expo-router";
-import { useHeaderHeight } from "@react-navigation/elements";
-import { SlidersHorizontal, Check } from "lucide-react-native";
+import { Check } from "lucide-react-native";
 import { DiscoverCardStack } from "@/features/discover/components/discover-card-stack";
 import { DiscoverDetailSheet } from "@/features/discover/components/discover-detail-sheet";
 import { useDiscoverState } from "@/features/discover/hooks/use-discover-state";
@@ -34,7 +33,6 @@ const RADIUS_OPTIONS: { label: string; value: number | undefined }[] = [
 export default function DiscoverScreen() {
   const scheme = useColorScheme();
   const router = useRouter();
-  const headerHeight = useHeaderHeight();
   const {
     items,
     isLoading,
@@ -107,114 +105,129 @@ export default function DiscoverScreen() {
           headerRight:
             Platform.OS === "android"
               ? () => (
-                  <Pressable onPress={onOpenRequests} style={styles.headerButton}>
-                    <MaterialIcons name="mail-outline" size={24} color={colors.accentGreen} />
-                    {pendingCount > 0 && <View style={styles.badge} />}
-                  </Pressable>
+                  <View style={{ flexDirection: "row", gap: 12 }}>
+                    {!isDiscoveryRestricted && (
+                      <Pressable onPress={() => setShowRadiusMenu(true)}>
+                        <MaterialIcons name="tune" size={24} color={colors.accentGreen} />
+                      </Pressable>
+                    )}
+                    <Pressable onPress={onOpenRequests} style={styles.headerButton}>
+                      <MaterialIcons name="mail-outline" size={24} color={colors.accentGreen} />
+                      {pendingCount > 0 && <View style={styles.badge} />}
+                    </Pressable>
+                  </View>
                 )
               : undefined,
         }}
       />
       {Platform.OS === "ios" && (
-        <Stack.Toolbar placement="right">
-          <View>
-            <Stack.Toolbar.Button icon="envelope.badge" onPress={onOpenRequests} tintColor={colors.accentGreen} />
-            {pendingCount > 0 && <View style={styles.badge} />}
-          </View>
-        </Stack.Toolbar>
+        <>
+          <Stack.Toolbar placement="right">
+            <Stack.Toolbar.Button onPress={onOpenRequests} tintColor={colors.accentGreen}>
+              <Stack.Toolbar.Icon sf="envelope.badge" />
+              {pendingCount > 0 && <Stack.Toolbar.Badge>{pendingCount}</Stack.Toolbar.Badge>}
+            </Stack.Toolbar.Button>
+          </Stack.Toolbar>
+          {!isDiscoveryRestricted && (
+            <Stack.Toolbar placement="left">
+              <Stack.Toolbar.Menu
+                icon="line.3.horizontal.decrease.circle"
+                label={selectedRadius ? `${selectedRadius} km` : "Tous"}
+                tintColor={colors.accentGreen}
+              >
+                {RADIUS_OPTIONS.map((option) => (
+                  <Stack.Toolbar.MenuAction
+                    key={option.label}
+                    icon={selectedRadius === option.value ? "checkmark" : undefined}
+                    onPress={() => handleRadiusSelect(option.value)}
+                  >
+                    {option.label}
+                  </Stack.Toolbar.MenuAction>
+                ))}
+              </Stack.Toolbar.Menu>
+            </Stack.Toolbar>
+          )}
+        </>
       )}
-    <GestureHandlerRootView
-      style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme], paddingTop: Platform.OS === "ios" ? headerHeight : 0 }]}
-    >
-      {!isDiscoveryRestricted && (
-        <View style={styles.filterBar}>
-          <Pressable onPress={() => setShowRadiusMenu(true)}>
-            <GlassView style={styles.filterButton}>
-              <SlidersHorizontal size={16} color={colors.accentGreen} strokeWidth={2} />
-              <Text style={[styles.filterText, { color: semanticColors.labelPrimary[scheme] }]}>
-                {selectedRadius ? `${selectedRadius} km` : "Tous"}
+      <GestureHandlerRootView
+        style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
+      >
+        <DiscoverCardStack
+          items={items}
+          isLoading={isLoading}
+          isSwiping={isSwiping}
+          matchMessage={matchMessage}
+          didMatch={didMatch}
+          onLike={like}
+          onPass={pass}
+          onCardPress={handleCardPress}
+          onCreateIntent={handleCreateIntent}
+        />
+
+        <Modal
+          visible={selectedItem !== null}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setSelectedItem(null)}
+        >
+          {selectedItem && (
+            <DiscoverDetailSheet
+              item={selectedItem}
+              onLike={() => {
+                like();
+                setSelectedItem(null);
+              }}
+              onPass={() => {
+                pass();
+                setSelectedItem(null);
+              }}
+              onClose={() => setSelectedItem(null)}
+            />
+          )}
+        </Modal>
+
+        <Modal
+          visible={showRadiusMenu}
+          animationType="fade"
+          transparent
+          onRequestClose={() => setShowRadiusMenu(false)}
+        >
+          <Pressable style={styles.menuOverlay} onPress={() => setShowRadiusMenu(false)}>
+            <GlassView style={styles.menuContainer}>
+              <Text style={[styles.menuTitle, { color: semanticColors.labelPrimary[scheme] }]}>
+                Rayon de recherche
               </Text>
+              {RADIUS_OPTIONS.map((option) => (
+                <Pressable
+                  key={option.label}
+                  style={[
+                    styles.menuItem,
+                    { borderBottomColor: semanticColors.borderColor[scheme] },
+                  ]}
+                  onPress={() => handleRadiusSelect(option.value)}
+                >
+                  <Text
+                    style={[
+                      styles.menuItemText,
+                      {
+                        color:
+                          selectedRadius === option.value
+                            ? colors.accentGreen
+                            : semanticColors.labelPrimary[scheme],
+                      },
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                  {selectedRadius === option.value && (
+                    <Check size={18} color={colors.accentGreen} strokeWidth={2.5} />
+                  )}
+                </Pressable>
+              ))}
             </GlassView>
           </Pressable>
-        </View>
-      )}
-
-      <DiscoverCardStack
-        items={items}
-        isLoading={isLoading}
-        isSwiping={isSwiping}
-        matchMessage={matchMessage}
-        didMatch={didMatch}
-        onLike={like}
-        onPass={pass}
-        onCardPress={handleCardPress}
-        onCreateIntent={handleCreateIntent}
-      />
-
-      <Modal
-        visible={selectedItem !== null}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setSelectedItem(null)}
-      >
-        {selectedItem && (
-          <DiscoverDetailSheet
-            item={selectedItem}
-            onLike={() => {
-              like();
-              setSelectedItem(null);
-            }}
-            onPass={() => {
-              pass();
-              setSelectedItem(null);
-            }}
-            onClose={() => setSelectedItem(null)}
-          />
-        )}
-      </Modal>
-
-      <Modal
-        visible={showRadiusMenu}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setShowRadiusMenu(false)}
-      >
-        <Pressable style={styles.menuOverlay} onPress={() => setShowRadiusMenu(false)}>
-          <GlassView style={styles.menuContainer}>
-            <Text style={[styles.menuTitle, { color: semanticColors.labelPrimary[scheme] }]}>
-              Rayon de recherche
-            </Text>
-            {RADIUS_OPTIONS.map((option) => (
-              <Pressable
-                key={option.label}
-                style={[
-                  styles.menuItem,
-                  { borderBottomColor: semanticColors.borderColor[scheme] },
-                ]}
-                onPress={() => handleRadiusSelect(option.value)}
-              >
-                <Text
-                  style={[
-                    styles.menuItemText,
-                    {
-                      color:
-                        selectedRadius === option.value
-                          ? colors.accentGreen
-                          : semanticColors.labelPrimary[scheme],
-                    },
-                  ]}
-                >
-                  {option.label}
-                </Text>
-                {selectedRadius === option.value && (
-                  <Check size={18} color={colors.accentGreen} strokeWidth={2.5} />
-                )}
-              </Pressable>
-            ))}
-          </GlassView>
-        </Pressable>
-      </Modal>
-    </GestureHandlerRootView>
+        </Modal>
+      </GestureHandlerRootView>
     </>
   );
 }
@@ -227,24 +240,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-  },
-  filterBar: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    paddingHorizontal: 20,
-    paddingTop: 8,
-  },
-  filterButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  filterText: {
-    fontSize: 14,
-    fontWeight: "500",
   },
   menuOverlay: {
     flex: 1,

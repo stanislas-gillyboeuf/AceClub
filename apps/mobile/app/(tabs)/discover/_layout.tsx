@@ -8,7 +8,7 @@ export default function DiscoverLayout() {
     <Stack>
       <Stack.Screen
         name="index"
-        options={{ title: "Trouver un partenaire", headerLargeTitle: true, headerTransparent: Platform.OS === "ios" }}
+        options={{ title: "Trouver un partenaire", headerLargeTitle: true }}
       />
       <Stack.Screen
         name="requests"
