@@ -23,7 +23,7 @@ import type { MatchIntentWithUser } from "@/types/match-intent";
 import Button from "@/components/ui/button";
 
 const SWIPE_THRESHOLD = 100;
-const MAX_ROTATION = 12;
+const MAX_ROTATION = 8;
 const CARD_STACK_SPACING = 8;
 const MAX_VISIBLE_CARDS = 3;
 
@@ -54,7 +54,6 @@ export function DiscoverCardStack({
   const insets = useSafeAreaInsets();
   const [cardAreaHeight, setCardAreaHeight] = useState(0);
   const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
 
   const topCard = items.length > 0 ? items[0] : null;
   const topCardId = topCard?.intent.id;
@@ -62,8 +61,7 @@ export function DiscoverCardStack({
   // Reset position when the top card changes (after swipe removal)
   useEffect(() => {
     translateX.value = 0;
-    translateY.value = 0;
-  }, [topCardId, translateX, translateY]);
+  }, [topCardId, translateX]);
 
   const handleSwipeComplete = useCallback(
     (direction: "left" | "right") => {
@@ -79,17 +77,15 @@ export function DiscoverCardStack({
   );
 
   const resetPosition = useCallback(() => {
-    translateX.value = withSpring(0, { damping: 15, stiffness: 150 });
-    translateY.value = withSpring(0, { damping: 15, stiffness: 150 });
-  }, [translateX, translateY]);
+    translateX.value = withSpring(0, { damping: 25, stiffness: 200 });
+  }, [translateX]);
 
   const animateSwipeOut = useCallback(
     (direction: "left" | "right") => {
-      const targetX = direction === "right" ? 500 : -500;
-      translateX.value = withTiming(targetX, { duration: 200 });
-      translateY.value = withTiming(0, { duration: 200 });
+      const targetX = direction === "right" ? 400 : -400;
+      translateX.value = withTiming(targetX, { duration: 250 });
     },
-    [translateX, translateY]
+    [translateX]
   );
 
   const panGesture = Gesture.Pan()
@@ -97,7 +93,6 @@ export function DiscoverCardStack({
     .minDistance(10)
     .onUpdate((e) => {
       translateX.value = e.translationX;
-      translateY.value = e.translationY;
     })
     .onEnd((e) => {
       if (e.translationX > SWIPE_THRESHOLD) {
@@ -122,7 +117,6 @@ export function DiscoverCardStack({
     return {
       transform: [
         { translateX: translateX.value },
-        { translateY: translateY.value },
         { rotate: `${rotation}deg` },
       ],
     };
@@ -291,7 +285,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
-    overflow: "hidden",
   },
   stackedCard: {
     position: "absolute",

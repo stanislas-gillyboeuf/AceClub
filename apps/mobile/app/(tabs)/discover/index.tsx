@@ -5,6 +5,7 @@ import {
   Pressable,
   Modal,
   ActivityIndicator,
+  ScrollView,
   StyleSheet,
   Platform,
 } from "react-native";
@@ -152,6 +153,12 @@ export default function DiscoverScreen() {
       <GestureHandlerRootView
         style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
       >
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          scrollEnabled={false}
+          contentContainerStyle={{ flex: 1 }}
+          style={{ flex: 1 }}
+        >
         <DiscoverCardStack
           items={items}
           isLoading={isLoading}
@@ -163,6 +170,7 @@ export default function DiscoverScreen() {
           onCardPress={handleCardPress}
           onCreateIntent={handleCreateIntent}
         />
+        </ScrollView>
 
         <Modal
           visible={selectedItem !== null}
