@@ -211,22 +211,21 @@ export function ChatBottomBar({
             </TextInputWrapper>
           )}
 
-          {hasText ? (
-            <Pressable
-              onPress={handleSendText}
-              style={({ pressed }) => [
-                styles.sendButtonInline,
-                pressed && { transform: [{ scale: 0.95 }] },
-              ]}
-            >
-              <GlassView style={styles.sendCircle} tintColor={colors.accentGreen}>
-                <ArrowUp size={18} color={colors.white} strokeWidth={2.5} />
-              </GlassView>
-            </Pressable>
-          ) : null}
         </GlassView>
 
-        {!hasText && (
+        {hasText ? (
+          <Pressable
+            onPress={handleSendText}
+            style={({ pressed }) => [
+              styles.sendButton,
+              pressed && { transform: [{ scale: 0.9 }] },
+            ]}
+          >
+            <View style={styles.sendCircle}>
+              <ArrowUp size={18} color={colors.white} strokeWidth={2.5} />
+            </View>
+          </Pressable>
+        ) : (
           <GestureDetector gesture={combinedGesture}>
             <Animated.View style={[styles.micButton, buttonScale, buttonOffset]}>
               <Mic size={22} color={semanticColors.labelPrimary[scheme]} />
@@ -273,7 +272,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     minHeight: 36,
     paddingLeft: 12,
-    paddingRight: 4,
+    paddingRight: 12,
   },
   input: {
     flex: 1,
@@ -281,15 +280,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     maxHeight: 120,
   },
-  sendButtonInline: {
-    paddingBottom: 3,
-    paddingLeft: 4,
-    paddingRight: 2,
+  sendButton: {
+    paddingBottom: 2,
   },
   sendCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
   },
