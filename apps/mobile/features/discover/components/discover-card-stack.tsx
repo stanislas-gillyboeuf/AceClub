@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet, useWindowDimensions } from "react-native";
 import { GlassView } from "@/components/ui/glass-view";
+import { useHeaderHeight } from "@react-navigation/elements";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -23,7 +24,7 @@ import type { MatchIntentWithUser } from "@/types/match-intent";
 import Button from "@/components/ui/button";
 
 const SWIPE_THRESHOLD = 100;
-const MAX_ROTATION = 12;
+const MAX_ROTATION = 8;
 const CARD_STACK_SPACING = 8;
 const MAX_VISIBLE_CARDS = 3;
 
@@ -52,9 +53,11 @@ export function DiscoverCardStack({
 }: DiscoverCardStackProps) {
   const scheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
+  const { height: screenHeight } = useWindowDimensions();
+  const availableHeight = screenHeight - headerHeight - insets.bottom;
   const [cardAreaHeight, setCardAreaHeight] = useState(0);
   const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
 
   const topCard = items.length > 0 ? items[0] : null;
   const topCardId = topCard?.intent.id;
@@ -62,8 +65,7 @@ export function DiscoverCardStack({
   // Reset position when the top card changes (after swipe removal)
   useEffect(() => {
     translateX.value = 0;
-    translateY.value = 0;
-  }, [topCardId, translateX, translateY]);
+  }, [topCardId, translateX]);
 
   const handleSwipeComplete = useCallback(
     (direction: "left" | "right") => {
@@ -79,17 +81,15 @@ export function DiscoverCardStack({
   );
 
   const resetPosition = useCallback(() => {
-    translateX.value = withSpring(0, { damping: 15, stiffness: 150 });
-    translateY.value = withSpring(0, { damping: 15, stiffness: 150 });
-  }, [translateX, translateY]);
+    translateX.value = withSpring(0, { damping: 25, stiffness: 200 });
+  }, [translateX]);
 
   const animateSwipeOut = useCallback(
     (direction: "left" | "right") => {
-      const targetX = direction === "right" ? 500 : -500;
-      translateX.value = withTiming(targetX, { duration: 200 });
-      translateY.value = withTiming(0, { duration: 200 });
+      const targetX = direction === "right" ? 400 : -400;
+      translateX.value = withTiming(targetX, { duration: 250 });
     },
-    [translateX, translateY]
+    [translateX]
   );
 
   const panGesture = Gesture.Pan()
@@ -97,7 +97,6 @@ export function DiscoverCardStack({
     .minDistance(10)
     .onUpdate((e) => {
       translateX.value = e.translationX;
-      translateY.value = e.translationY;
     })
     .onEnd((e) => {
       if (e.translationX > SWIPE_THRESHOLD) {
@@ -122,7 +121,6 @@ export function DiscoverCardStack({
     return {
       transform: [
         { translateX: translateX.value },
-        { translateY: translateY.value },
         { rotate: `${rotation}deg` },
       ],
     };
@@ -161,8 +159,15 @@ export function DiscoverCardStack({
     if (topCard) onCardPress(topCard);
   }, [topCard, onCardPress]);
 
+  const tapGesture = Gesture.Tap()
+    .onEnd(() => {
+      runOnJS(handleCardPress)();
+    });
+
+  const composedGesture = Gesture.Race(panGesture, tapGesture);
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { height: availableHeight }]}>
       {/* Match banner */}
       {didMatch && matchMessage && (
         <View style={styles.matchBanner}>
@@ -190,20 +195,34 @@ export function DiscoverCardStack({
             </View>
           </View>
         ) : (
-          <>
-            {items.slice(1, MAX_VISIBLE_CARDS).reverse().map((item, reversedIndex) => {
-              const actualIndex = MAX_VISIBLE_CARDS - 1 - reversedIndex;
-              const scale = 1 - 0.04 * actualIndex;
-              const offsetY = actualIndex * CARD_STACK_SPACING;
+          <View style={styles.cardStack}>
+            {/* Top card with gestures — rendered first to define layout size */}
+            {topCard && (
+              <GestureDetector gesture={composedGesture}>
+                <Animated.View
+                  style={[topCardAnimatedStyle, { zIndex: MAX_VISIBLE_CARDS }]}
+                >
+                  <Animated.View style={glowAnimatedStyle}>
+                    <DiscoverCard item={topCard} maxHeight={cardAreaHeight || undefined} />
+                  </Animated.View>
+                </Animated.View>
+              </GestureDetector>
+            )}
+
+            {/* Background cards stacked behind */}
+            {items.slice(1, MAX_VISIBLE_CARDS).map((item, index) => {
+              const stackIndex = index + 1;
+              const scale = 1 - 0.04 * stackIndex;
+              const offsetY = stackIndex * CARD_STACK_SPACING;
 
               return (
                 <View
                   key={item.intent.id}
                   style={[
-                    styles.stackedCard,
+                    styles.backgroundCard,
                     {
                       transform: [{ scale }, { translateY: offsetY }],
-                      zIndex: MAX_VISIBLE_CARDS - actualIndex,
+                      zIndex: MAX_VISIBLE_CARDS - stackIndex,
                     },
                   ]}
                   pointerEvents="none"
@@ -212,22 +231,7 @@ export function DiscoverCardStack({
                 </View>
               );
             })}
-
-            {/* Top card with gestures */}
-            {topCard && (
-              <GestureDetector gesture={panGesture}>
-                <Animated.View
-                  style={[styles.stackedCard, topCardAnimatedStyle, { zIndex: MAX_VISIBLE_CARDS }]}
-                >
-                  <Pressable onPress={handleCardPress}>
-                    <Animated.View style={glowAnimatedStyle}>
-                      <DiscoverCard item={topCard} maxHeight={cardAreaHeight || undefined} />
-                    </Animated.View>
-                  </Pressable>
-                </Animated.View>
-              </GestureDetector>
-            )}
-          </>
+          </View>
         )}
       </View>
 
@@ -291,10 +295,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
-    overflow: "hidden",
   },
-  stackedCard: {
+  cardStack: {
+    alignItems: "center",
+  },
+  backgroundCard: {
     position: "absolute",
+    top: 0,
+    alignSelf: "center",
   },
   emptyContainer: {
     borderRadius: 16,
