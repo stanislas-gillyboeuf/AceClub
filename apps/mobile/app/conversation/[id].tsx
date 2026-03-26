@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, Stack } from "expo-router";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { useHeaderHeight } from "@react-navigation/elements";
 import * as Haptics from "expo-haptics";
 import { useConversation } from "@/hooks/use-conversation";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -57,6 +58,7 @@ function ChatContent({
   currentUserId: string;
 }) {
   const scheme = useColorScheme();
+  const headerHeight = useHeaderHeight();
   const flatListRef = useRef<FlatList>(null);
   const [contextMenuMessage, setContextMenuMessage] = useState<ChatMessage | null>(null);
   const isLoadingMoreRef = useRef(false);
@@ -188,7 +190,7 @@ function ChatContent({
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior="padding"
-        keyboardVerticalOffset={0}
+        keyboardVerticalOffset={headerHeight}
       >
         {isInitialLoading && (
           <View style={styles.messagesLoading}>
