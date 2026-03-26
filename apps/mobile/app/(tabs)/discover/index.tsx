@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
   Pressable,
   Modal,
   ActivityIndicator,
+  ScrollView,
   StyleSheet,
   Platform,
 } from "react-native";
@@ -12,12 +13,12 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { GlassView } from "@/components/ui/glass-view";
 import * as Location from "expo-location";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, useFocusEffect } from "expo-router";
 import { Check } from "lucide-react-native";
 import { DiscoverCardStack } from "@/features/discover/components/discover-card-stack";
-import { DiscoverDetailSheet } from "@/features/discover/components/discover-detail-sheet";
 import { useDiscoverState } from "@/features/discover/hooks/use-discover-state";
 import { useMatchRequests } from "@/hooks/use-match-intent";
+import { useDiscoverDetailStore } from "@/store/discover-detail";
 import { colors, semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { MatchIntentWithUser } from "@/types/match-intent";
@@ -50,8 +51,24 @@ export default function DiscoverScreen() {
   const { data: matchRequests } = useMatchRequests();
   const pendingCount = (matchRequests ?? []).filter((r) => r.status === "pending").length;
 
-  const [selectedItem, setSelectedItem] = useState<MatchIntentWithUser | null>(null);
+  const { setSelectedItem, consumeAction } = useDiscoverDetailStore();
   const [showRadiusMenu, setShowRadiusMenu] = useState(false);
+
+  // Use refs to avoid stale closures in useFocusEffect
+  const likeRef = useRef(like);
+  likeRef.current = like;
+  const passRef = useRef(pass);
+  passRef.current = pass;
+
+  // Consume pending action (like/pass) when returning from detail screen
+  useFocusEffect(
+    useCallback(() => {
+      const action = consumeAction();
+      if (action === "like") likeRef.current();
+      else if (action === "pass") passRef.current();
+    }, [consumeAction])
+  );
+
   useEffect(() => {
     if (isDiscoveryRestricted) return;
 
@@ -72,7 +89,8 @@ export default function DiscoverScreen() {
 
   const handleCardPress = useCallback((item: MatchIntentWithUser) => {
     setSelectedItem(item);
-  }, []);
+    router.push("/(tabs)/discover/detail");
+  }, [setSelectedItem, router]);
 
   const onOpenRequests = () => {
     router.push("/(tabs)/discover/requests");
@@ -149,42 +167,25 @@ export default function DiscoverScreen() {
           )}
         </>
       )}
-      <GestureHandlerRootView
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        scrollEnabled={false}
         style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
       >
-        <DiscoverCardStack
-          items={items}
-          isLoading={isLoading}
-          isSwiping={isSwiping}
-          matchMessage={matchMessage}
-          didMatch={didMatch}
-          onLike={like}
-          onPass={pass}
-          onCardPress={handleCardPress}
-          onCreateIntent={handleCreateIntent}
-        />
-
-        <Modal
-          visible={selectedItem !== null}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          onRequestClose={() => setSelectedItem(null)}
-        >
-          {selectedItem && (
-            <DiscoverDetailSheet
-              item={selectedItem}
-              onLike={() => {
-                like();
-                setSelectedItem(null);
-              }}
-              onPass={() => {
-                pass();
-                setSelectedItem(null);
-              }}
-              onClose={() => setSelectedItem(null)}
-            />
-          )}
-        </Modal>
+        <GestureHandlerRootView>
+          <DiscoverCardStack
+            items={items}
+            isLoading={isLoading}
+            isSwiping={isSwiping}
+            matchMessage={matchMessage}
+            didMatch={didMatch}
+            onLike={like}
+            onPass={pass}
+            onCardPress={handleCardPress}
+            onCreateIntent={handleCreateIntent}
+          />
+        </GestureHandlerRootView>
+      </ScrollView>
 
         <Modal
           visible={showRadiusMenu}
@@ -227,7 +228,6 @@ export default function DiscoverScreen() {
             </GlassView>
           </Pressable>
         </Modal>
-      </GestureHandlerRootView>
     </>
   );
 }

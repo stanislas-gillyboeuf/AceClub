@@ -37,7 +37,7 @@ export function DiscoverCard({ item, maxHeight }: DiscoverCardProps) {
 
   const displayName = item.user?.name ?? "Joueur";
   const intentType = item.intent.type ?? "match";
-  const typeLabel = intentType === "match" ? "Match" : "Entra\u00eenement";
+  const typeLabel = intentType === "match" ? "Match" : "Entraînement";
   const TypeIcon = intentType === "match" ? Trophy : Dumbbell;
 
   return (
@@ -74,7 +74,7 @@ export function DiscoverCard({ item, maxHeight }: DiscoverCardProps) {
       {/* Top badges */}
       <View style={styles.topBadges}>
         {item.distance != null && (
-          <GlassView style={styles.distanceBadge}>
+          <GlassView style={styles.distanceBadge} tintColor="rgba(0,0,0,0.45)">
             <MapPin size={10} color="#FFFFFF" strokeWidth={2.5} />
             <Text style={styles.distanceText}>
               {formatDistance(item.distance)}
