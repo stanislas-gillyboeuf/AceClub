@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet, useWindowDimensions } from "react-native";
 import { GlassView } from "@/components/ui/glass-view";
+import { useHeaderHeight } from "@react-navigation/elements";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -52,6 +53,9 @@ export function DiscoverCardStack({
 }: DiscoverCardStackProps) {
   const scheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
+  const { height: screenHeight } = useWindowDimensions();
+  const availableHeight = screenHeight - headerHeight - insets.bottom;
   const [cardAreaHeight, setCardAreaHeight] = useState(0);
   const translateX = useSharedValue(0);
 
@@ -155,8 +159,15 @@ export function DiscoverCardStack({
     if (topCard) onCardPress(topCard);
   }, [topCard, onCardPress]);
 
+  const tapGesture = Gesture.Tap()
+    .onEnd(() => {
+      runOnJS(handleCardPress)();
+    });
+
+  const composedGesture = Gesture.Race(panGesture, tapGesture);
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { height: availableHeight }]}>
       {/* Match banner */}
       {didMatch && matchMessage && (
         <View style={styles.matchBanner}>
@@ -184,20 +195,34 @@ export function DiscoverCardStack({
             </View>
           </View>
         ) : (
-          <>
-            {items.slice(1, MAX_VISIBLE_CARDS).reverse().map((item, reversedIndex) => {
-              const actualIndex = MAX_VISIBLE_CARDS - 1 - reversedIndex;
-              const scale = 1 - 0.04 * actualIndex;
-              const offsetY = actualIndex * CARD_STACK_SPACING;
+          <View style={styles.cardStack}>
+            {/* Top card with gestures — rendered first to define layout size */}
+            {topCard && (
+              <GestureDetector gesture={composedGesture}>
+                <Animated.View
+                  style={[topCardAnimatedStyle, { zIndex: MAX_VISIBLE_CARDS }]}
+                >
+                  <Animated.View style={glowAnimatedStyle}>
+                    <DiscoverCard item={topCard} maxHeight={cardAreaHeight || undefined} />
+                  </Animated.View>
+                </Animated.View>
+              </GestureDetector>
+            )}
+
+            {/* Background cards stacked behind */}
+            {items.slice(1, MAX_VISIBLE_CARDS).map((item, index) => {
+              const stackIndex = index + 1;
+              const scale = 1 - 0.04 * stackIndex;
+              const offsetY = stackIndex * CARD_STACK_SPACING;
 
               return (
                 <View
                   key={item.intent.id}
                   style={[
-                    styles.stackedCard,
+                    styles.backgroundCard,
                     {
                       transform: [{ scale }, { translateY: offsetY }],
-                      zIndex: MAX_VISIBLE_CARDS - actualIndex,
+                      zIndex: MAX_VISIBLE_CARDS - stackIndex,
                     },
                   ]}
                   pointerEvents="none"
@@ -206,22 +231,7 @@ export function DiscoverCardStack({
                 </View>
               );
             })}
-
-            {/* Top card with gestures */}
-            {topCard && (
-              <GestureDetector gesture={panGesture}>
-                <Animated.View
-                  style={[styles.stackedCard, topCardAnimatedStyle, { zIndex: MAX_VISIBLE_CARDS }]}
-                >
-                  <Pressable onPress={handleCardPress}>
-                    <Animated.View style={glowAnimatedStyle}>
-                      <DiscoverCard item={topCard} maxHeight={cardAreaHeight || undefined} />
-                    </Animated.View>
-                  </Pressable>
-                </Animated.View>
-              </GestureDetector>
-            )}
-          </>
+          </View>
         )}
       </View>
 
@@ -286,8 +296,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 20,
   },
-  stackedCard: {
+  cardStack: {
+    alignItems: "center",
+  },
+  backgroundCard: {
     position: "absolute",
+    top: 0,
+    alignSelf: "center",
   },
   emptyContainer: {
     borderRadius: 16,

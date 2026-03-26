@@ -20,6 +20,15 @@ export default function DiscoverLayout() {
         }}
       />
       <Stack.Screen
+        name="detail"
+        options={{
+          presentation: formSheet,
+          sheetGrabberVisible: Platform.OS === "ios",
+          title: "",
+          headerTransparent: Platform.OS === "ios",
+        }}
+      />
+      <Stack.Screen
         name="create-intent"
         options={{
           title: "Nouvelle dispo",

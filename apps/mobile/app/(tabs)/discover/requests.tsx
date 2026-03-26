@@ -5,10 +5,11 @@ import {
   RefreshControl,
   Alert,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { semanticColors, spacing } from "@/constants/theme";
+import { colors, semanticColors, spacing } from "@/constants/theme";
 import { useMatchRequests, useAcceptRequest, useRejectRequest } from "@/hooks/use-match-intent";
 import { MatchRequestRow } from "@/features/match-intent/components/match-request-row";
 import { MatchRequestSkeleton } from "@/features/match-intent/components/match-request-skeleton";
@@ -111,6 +112,11 @@ export default function MatchRequests() {
   return (
     <>
       <Stack.Screen options={{ title: "Demandes de match" }} />
+      {Platform.OS === "ios" && (
+        <Stack.Toolbar placement="right">
+          <Stack.Toolbar.Button icon="xmark" onPress={() => router.dismiss()} tintColor={colors.accentGreen} />
+        </Stack.Toolbar>
+      )}
       <FlatList
         data={pendingRequests}
         keyExtractor={(item) => item.id}
