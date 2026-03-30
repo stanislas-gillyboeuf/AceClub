@@ -2,24 +2,38 @@ import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { updateMemberRoleAdminValidator } from "../validators";
-import { auth } from "../../../auth";
+import { db } from "../../../db";
+import { member } from "../../../db/schema/auth/schema";
+import { and, eq } from "drizzle-orm";
 
 export const updateMemberRole = async (c: Context<HonoContext>) => {
   try {
     // @ts-ignore
     const validated = c.req.valid("json") as z.infer<typeof updateMemberRoleAdminValidator>;
 
-    const result = await auth.api.updateMemberRole({
-      body: {
-        role: validated.role,
-        memberId: validated.memberId,
-        organizationId: validated.organizationId,
-      },
-      headers: c.req.raw.headers,
-    });
+    const [existing] = await db
+      .select()
+      .from(member)
+      .where(
+        and(
+          eq(member.id, validated.memberId),
+          eq(member.organizationId, validated.organizationId),
+        ),
+      )
+      .limit(1);
 
-    return c.json(result);
+    if (!existing) {
+      return c.json({ error: "NotFound", message: "Member not found" }, 404);
+    }
+
+    const [updated] = await db
+      .update(member)
+      .set({ role: validated.role })
+      .where(eq(member.id, validated.memberId))
+      .returning();
+
+    return c.json(updated);
   } catch (error) {
-    return c.json({ error: (error as Error).message }, 500);
+    return c.json({ error: "InternalError", message: (error as Error).message }, 500);
   }
 };
