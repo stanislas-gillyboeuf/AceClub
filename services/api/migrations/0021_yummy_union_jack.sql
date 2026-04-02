@@ -1,4 +1,7 @@
-CREATE TYPE "public"."game_config_category" AS ENUM('aces_rewards', 'level_formula', 'streak_multiplier');--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."game_config_category" AS ENUM('aces_rewards', 'level_formula', 'streak_multiplier');
+EXCEPTION WHEN duplicate_object THEN null;
+END $$;--> statement-breakpoint
 CREATE TABLE "game_config" (
 	"id" text PRIMARY KEY NOT NULL,
 	"category" "game_config_category" NOT NULL,

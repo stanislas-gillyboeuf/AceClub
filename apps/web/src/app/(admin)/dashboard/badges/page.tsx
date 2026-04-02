@@ -30,15 +30,26 @@ import {
 } from "@/hooks/use-admin-mutations"
 import type { AdminBadge } from "@/types/admin"
 
-const EMPTY_FORM = {
+const EMPTY_FORM: {
+  code: string
+  category: AdminBadge["category"]
+  nameFr: string
+  nameEn: string
+  descriptionFr: string
+  descriptionEn: string
+  imageUrl: string
+  requiredLevel: number | null
+  displayOrder: number
+  isActive: boolean
+} = {
   code: "",
-  category: "achievement" as const,
+  category: "achievement",
   nameFr: "",
   nameEn: "",
   descriptionFr: "",
   descriptionEn: "",
   imageUrl: "",
-  requiredLevel: null as number | null,
+  requiredLevel: null,
   displayOrder: 0,
   isActive: true,
 }
