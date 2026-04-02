@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
-  ScrollView,
   Pressable,
   Alert,
   StyleSheet,
@@ -11,7 +9,6 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { X, Check, Trash2 } from "lucide-react-native";
-import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import {
   useMatch,
@@ -19,11 +16,8 @@ import {
   useUpdateFeedback,
   useDeleteFeedback,
 } from "@/hooks/use-match";
-import { colors, semanticColors, spacing, radii } from "@/constants/theme";
-import { SensationPicker } from "@/features/matches/components/feedback/sensation-picker";
-import { VisibilityToggle } from "@/features/matches/components/feedback/visibility-toggle";
-
-const MAX_COMMENT_LENGTH = 500;
+import { colors, semanticColors, spacing } from "@/constants/theme";
+import { EffortPicker } from "@/features/matches/components/feedback/effort-picker";
 
 export default function FeedbackScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -38,67 +32,45 @@ export default function FeedbackScreen() {
   const existingFeedback = matchDetail?.myFeedback;
   const isEditing = !!existingFeedback;
 
-  const [selectedSensation, setSelectedSensation] = useState<string | null>(null);
-  const [comment, setComment] = useState("");
-  const [visibleToClub, setVisibleToClub] = useState(true);
+  const [selectedEffort, setSelectedEffort] = useState<string | null>(null);
 
   useEffect(() => {
     if (existingFeedback) {
-      setSelectedSensation(existingFeedback.sensation);
-      setComment(existingFeedback.comment ?? "");
-      setVisibleToClub(existingFeedback.visibleToClub);
+      setSelectedEffort(existingFeedback.sensation);
     }
   }, [existingFeedback?.id]);
 
   const isSaving =
     createFeedback.isPending || updateFeedback.isPending || deleteFeedback.isPending;
-  const canSubmit =
-    selectedSensation !== null && comment.length <= MAX_COMMENT_LENGTH && !isSaving;
 
-  const handleSubmit = () => {
-    if (!canSubmit || !matchDetail) return;
+  const canSubmit = !!selectedEffort && !isSaving;
 
-    const trimmedComment = comment.trim();
+  const handleDone = async () => {
+    if (!selectedEffort || !matchDetail) return;
     const matchId = matchDetail.match.id;
 
-    if (isEditing) {
-      updateFeedback.mutate(
-        {
-          matchId,
-          data: {
-            sensation: selectedSensation,
-            comment: trimmedComment || null,
-            visibleToClub,
-          },
-        },
-        {
-          onSuccess: () => router.dismiss(),
-          onError: (err) =>
-            Alert.alert("Erreur", err.message ?? "Impossible de modifier les sensations."),
-        },
-      );
-    } else {
-      createFeedback.mutate(
-        {
-          matchId,
-          data: {
-            sensation: selectedSensation!,
-            comment: trimmedComment || undefined,
-            visibleToClub,
-          },
-        },
-        {
-          onSuccess: () => router.dismiss(),
-          onError: (err) =>
-            Alert.alert("Erreur", err.message ?? "Impossible d'enregistrer les sensations."),
-        },
-      );
+    try {
+      const feedbackData = {
+        sensation: selectedEffort,
+        comment: existingFeedback?.comment ?? undefined,
+        visibleToClub: existingFeedback?.visibleToClub ?? true,
+      };
+
+      if (isEditing) {
+        await updateFeedback.mutateAsync({ matchId, data: feedbackData });
+      } else {
+        await createFeedback.mutateAsync({ matchId, data: feedbackData });
+      }
+
+      router.dismiss();
+    } catch (err: any) {
+      Alert.alert("Erreur", err.message ?? "Impossible de sauvegarder.");
     }
   };
 
   const handleDelete = () => {
     if (!matchDetail) return;
-    Alert.alert("Supprimer le feedback", "Es-tu sûr de vouloir supprimer tes sensations ?", [
+    Alert.alert("Supprimer le feedback", "Es-tu sûr de vouloir supprimer ton effort ?", [
       { text: "Annuler", style: "cancel" },
       {
         text: "Supprimer",
@@ -107,7 +79,7 @@ export default function FeedbackScreen() {
           deleteFeedback.mutate(matchDetail.match.id, {
             onSuccess: () => router.dismiss(),
             onError: (err) =>
-              Alert.alert("Erreur", err.message ?? "Impossible de supprimer les sensations."),
+              Alert.alert("Erreur", err.message ?? "Impossible de supprimer."),
           });
         },
       },
@@ -118,84 +90,42 @@ export default function FeedbackScreen() {
     <>
       <Stack.Screen
         options={{
-          title: isEditing ? "Modifier tes sensations" : "Comment tu te sens ?",
+          title: "Mon effort",
           headerLeft: () => (
             <Pressable onPress={() => router.dismiss()} disabled={isSaving} hitSlop={8}>
-              <X size={24} color={semanticColors.labelPrimary[scheme]} strokeWidth={2} />
+              <X size={24} color={colors.accentGreen} strokeWidth={2} />
             </Pressable>
           ),
           headerRight: () => (
-            <Pressable onPress={handleSubmit} disabled={!canSubmit} hitSlop={8}>
-              <Check
-                size={24}
-                color={canSubmit ? colors.accentGreen : colors.gray400}
-                strokeWidth={2}
-              />
+            <Pressable onPress={handleDone} disabled={!canSubmit} hitSlop={8}>
+              {isSaving ? (
+                <ActivityIndicator size="small" color={colors.accentGreen} />
+              ) : (
+                <Check
+                  size={24}
+                  color={canSubmit ? colors.accentGreen : semanticColors.labelTertiary[scheme]}
+                  strokeWidth={2.5}
+                />
+              )}
             </Pressable>
           ),
         }}
       />
 
-      <ScrollView
-        style={[styles.root, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
-        contentInsetAdjustmentBehavior="automatic"
-        keyboardShouldPersistTaps="handled"
-      >
+      <View style={[styles.root, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
         <View style={styles.content}>
-          <SensationPicker
-            selected={selectedSensation}
-            onSelect={setSelectedSensation}
-          />
+          <EffortPicker selected={selectedEffort} onSelect={setSelectedEffort} />
+        </View>
 
-          <GlassView style={styles.commentCard}>
-            <TextInput
-              style={[styles.input, { color: semanticColors.labelPrimary[scheme] }]}
-              placeholder="Un commentaire ? (optionnel)"
-              placeholderTextColor={semanticColors.labelTertiary[scheme]}
-              value={comment}
-              onChangeText={setComment}
-              maxLength={MAX_COMMENT_LENGTH}
-              multiline
-              textAlignVertical="top"
-            />
-            <Text
-              style={[
-                styles.charCount,
-                {
-                  color:
-                    comment.length > MAX_COMMENT_LENGTH
-                      ? "#FF3B30"
-                      : semanticColors.labelTertiary[scheme],
-                },
-              ]}
-            >
-              {comment.length}/{MAX_COMMENT_LENGTH}
-            </Text>
-          </GlassView>
-
-          <VisibilityToggle value={visibleToClub} onValueChange={setVisibleToClub} />
-
-          {isEditing && (
+        {isEditing && (
+          <View style={styles.footer}>
             <Pressable onPress={handleDelete} disabled={isSaving} style={styles.deleteButton}>
               <Trash2 size={16} color="#FF3B30" strokeWidth={2} />
-              <Text style={styles.deleteText}>Supprimer le feedback</Text>
+              <Text style={styles.deleteText}>Supprimer</Text>
             </Pressable>
-          )}
-        </View>
-      </ScrollView>
-
-      {isSaving && (
-        <View style={styles.overlay}>
-          <GlassView style={styles.overlayCard}>
-            <ActivityIndicator size="small" color={colors.accentGreen} />
-            <Text
-              style={[styles.overlayText, { color: semanticColors.labelSecondary[scheme] }]}
-            >
-              {deleteFeedback.isPending ? "Suppression..." : "Enregistrement..."}
-            </Text>
-          </GlassView>
-        </View>
-      )}
+          </View>
+        )}
+      </View>
     </>
   );
 }
@@ -206,22 +136,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    paddingHorizontal: spacing.horizontal,
+  },
+  footer: {
     padding: spacing.horizontal,
-    gap: 16,
-  },
-  commentCard: {
-    borderRadius: radii.md,
-    padding: 16,
-    gap: 6,
-  },
-  input: {
-    fontSize: 16,
-    minHeight: 80,
-    maxHeight: 200,
-  },
-  charCount: {
-    fontSize: 12,
-    textAlign: "right",
+    paddingBottom: 34,
   },
   deleteButton: {
     flexDirection: "row",
@@ -234,21 +153,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     color: "#FF3B30",
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  overlayCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 24,
-    borderRadius: radii.md,
-  },
-  overlayText: {
-    fontSize: 14,
   },
 });

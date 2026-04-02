@@ -24,6 +24,12 @@ export const CacheKeys = {
   convParticipants: (conversationId: string) => `conv:participants:${conversationId}`,
   userEnrichment: (userId: string) => `user:enrichment:${userId}`,
 
+  // Match photos
+  matchPhotos: (matchId: string) => `match:photos:${matchId}`,
+
+  // Game config
+  gameConfig: () => "game:config",
+
   // Prefixes for bulk invalidation
   PREFIX_LEADERBOARD_GLOBAL: "leaderboard:global:",
   PREFIX_LEADERBOARD_WEEKLY: "leaderboard:weekly:",

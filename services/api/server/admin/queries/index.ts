@@ -6,3 +6,6 @@ export * from "./get-organization";
 export * from "./list-organization-members";
 export * from "./list-organization-invitations";
 export * from "./list-feature-flags";
+export * from "./list-game-config";
+export * from "./list-challenge-templates";
+export * from "./list-badges";

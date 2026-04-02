@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,37 +9,38 @@ import {
   Alert,
   Platform,
 } from "react-native";
-import { Stack, useRouter, useFocusEffect } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {
   ImagePlus,
-  MapPin,
   Eye,
   Users,
   Building2,
-  ChevronRight,
   Ticket,
   Link,
 } from "lucide-react-native";
 
 import { useCreateEvent } from "@/hooks/use-event";
+import { useMyOrganizations } from "@/hooks/use-organization";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useCreateEventFormStore } from "@/store/create-event-form";
 import { uploadService } from "@/services/upload";
-import { consumePendingVenueSelection } from "@/lib/pending-venue-selection";
 import { GlassView } from "@/components/ui/glass-view";
 import Button from "@/components/ui/button";
 import { colors, semanticColors, spacing, radii } from "@/constants/theme";
-import { VISIBILITY_OPTIONS } from "@/features/events/lib/event-status";
+import { LocationPicker } from "@/features/events/components/LocationPicker";
+import { EVENT_STATUS_CONFIG, VISIBILITY_OPTIONS } from "@/features/events/lib/event-status";
 import { formatShortDate, formatTime } from "@/lib/format";
-import type { EventVisibility } from "@/types/event";
+import type { EventVisibility, EventStatus } from "@/types/event";
 
 export default function CreateEvent() {
   const scheme = useColorScheme();
   const router = useRouter();
   const createEvent = useCreateEvent();
+  const { data: orgs } = useMyOrganizations();
+  const primaryOrg = orgs?.[0] ?? null;
 
   const {
     name,
@@ -52,17 +53,19 @@ export default function CreateEvent() {
     locationLatitude,
     locationLongitude,
     maxParticipants,
+    status,
     visibility,
     isFree,
     price,
     paymentLink,
+    setStatus,
     setName,
     setDescription,
     setCoverImageUri,
     setStartDate,
     setEndDate,
     setOrganization,
-    setAddress,
+    setLocation,
     setMaxParticipants,
     setVisibility,
     setIsFree,
@@ -78,15 +81,12 @@ export default function CreateEvent() {
     maxParticipants ? String(maxParticipants) : "",
   );
 
-  // Consume venue selection when returning from club-selection
-  useFocusEffect(
-    useCallback(() => {
-      const selected = consumePendingVenueSelection();
-      if (selected) {
-        setOrganization(selected);
-      }
-    }, [setOrganization]),
-  );
+  // Auto-set organization to user's club
+  useEffect(() => {
+    if (primaryOrg && !organization) {
+      setOrganization(primaryOrg);
+    }
+  }, [primaryOrg, organization, setOrganization]);
 
   const handlePickCover = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -144,6 +144,7 @@ export default function CreateEvent() {
         price: isFree ? undefined : (parseInt(price, 10) || undefined),
         paymentLink: isFree ? undefined : (paymentLink.trim() || undefined),
         visibility,
+        status,
         organizationId: organization!.id,
       });
 
@@ -204,6 +205,41 @@ export default function CreateEvent() {
             placeholderTextColor={semanticColors.labelTertiary[scheme]}
             style={[styles.nameInput, { color: semanticColors.labelPrimary[scheme] }]}
           />
+        </GlassView>
+
+        {/* Status */}
+        <GlassView style={styles.fieldCard}>
+          <Text
+            style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}
+          >
+            STATUT
+          </Text>
+          <View style={styles.statusGrid}>
+            {EVENT_STATUS_CONFIG.map((opt) => {
+              const isActive = status === opt.value;
+              return (
+                <Pressable
+                  key={opt.value}
+                  onPress={() => setStatus(opt.value)}
+                  style={[
+                    styles.statusChip,
+                    isActive && { backgroundColor: `${opt.color}20` },
+                  ]}
+                >
+                  <View style={[styles.statusDot, { backgroundColor: opt.color }]} />
+                  <Text
+                    style={[
+                      styles.statusChipText,
+                      { color: isActive ? opt.color : semanticColors.labelSecondary[scheme] },
+                      isActive && { fontWeight: "700" },
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </GlassView>
 
         {/* Date Section */}
@@ -299,73 +335,41 @@ export default function CreateEvent() {
           )}
         </GlassView>
 
-        {/* Club organisateur */}
-        <Pressable
-          onPress={() =>
-            router.push({
-              pathname: "/(tabs)/profile/admin/club-selection",
-              params: { selectedId: organization?.id ?? "", mode: "venue" },
-            })
-          }
-          style={({ pressed }) => [pressed && styles.pressed]}
-        >
-          <GlassView style={styles.rowCard}>
-            <Building2
-              size={20}
-              color={organization ? colors.accentGreen : semanticColors.labelTertiary[scheme]}
-              strokeWidth={1.5}
-            />
-            <Text
-              style={[
-                styles.rowLabel,
-                {
-                  color: organization
-                    ? semanticColors.labelPrimary[scheme]
-                    : semanticColors.labelSecondary[scheme],
-                  flex: 1,
-                },
-              ]}
-              numberOfLines={1}
-            >
-              {organization?.name ?? "Choisir un club"}
-            </Text>
-            <ChevronRight
-              size={18}
-              color={semanticColors.labelTertiary[scheme]}
-              strokeWidth={2}
-            />
-          </GlassView>
-        </Pressable>
+        {/* Club organisateur (auto-sélectionné) */}
+        <GlassView style={styles.rowCard}>
+          <Building2
+            size={20}
+            color={organization ? colors.accentGreen : semanticColors.labelTertiary[scheme]}
+            strokeWidth={1.5}
+          />
+          <Text
+            style={[
+              styles.rowLabel,
+              {
+                color: organization
+                  ? semanticColors.labelPrimary[scheme]
+                  : semanticColors.labelSecondary[scheme],
+                flex: 1,
+              },
+            ]}
+            numberOfLines={1}
+          >
+            {organization?.name ?? (orgs ? "Aucun club" : "Chargement...")}
+          </Text>
+        </GlassView>
 
         {/* Lieu */}
-        <GlassView style={styles.fieldCard}>
-          <Text
-            style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}
-          >
-            LIEU
-          </Text>
-          <View style={styles.optionRow}>
-            <MapPin
-              size={20}
-              color={address ? colors.accentGreen : semanticColors.labelTertiary[scheme]}
-              strokeWidth={1.5}
-            />
-            <View style={{ flex: 1 }}>
-              <TextInput
-                value={address}
-                onChangeText={setAddress}
-                placeholder="Ajouter une adresse"
-                placeholderTextColor={semanticColors.labelTertiary[scheme]}
-                style={[styles.addressInput, { color: semanticColors.labelPrimary[scheme] }]}
-              />
-              {organization && address === (organization.address ?? "") && address.length > 0 && (
-                <Text style={[styles.addressSubtitle, { color: semanticColors.labelTertiary[scheme] }]}>
-                  Adresse du club
-                </Text>
-              )}
-            </View>
-          </View>
-        </GlassView>
+        <LocationPicker
+          address={address}
+          latitude={locationLatitude}
+          longitude={locationLongitude}
+          onLocationChange={setLocation}
+          isOrgAddress={
+            !!organization &&
+            address === (organization.address ?? "") &&
+            address.length > 0
+          }
+        />
 
         {/* Description */}
         <GlassView style={styles.fieldCard}>
@@ -622,6 +626,28 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "600",
   },
+  statusGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  statusChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 8,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  statusChipText: {
+    fontSize: 13,
+    fontWeight: "500",
+  },
   sectionLabel: {
     fontSize: 11,
     fontWeight: "700",
@@ -657,10 +683,6 @@ const styles = StyleSheet.create({
   addressInput: {
     fontSize: 16,
     flex: 1,
-  },
-  addressSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
   },
   descriptionInput: {
     fontSize: 16,

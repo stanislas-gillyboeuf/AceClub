@@ -8,8 +8,8 @@ import {
   Alert,
 } from "react-native";
 import { useLocalSearchParams, Stack } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { useHeaderHeight } from "@react-navigation/elements";
 import * as Haptics from "expo-haptics";
 import { useConversation } from "@/hooks/use-conversation";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -30,8 +30,6 @@ import { wsManager } from "@/lib/websocket-manager";
 import { authClient } from "@/lib/auth-client";
 import type { ChatMessage } from "@/features/chat/types";
 import type { Conversation } from "@/types/conversation";
-
-const HEADER_HEIGHT = 44;
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -60,7 +58,7 @@ function ChatContent({
   currentUserId: string;
 }) {
   const scheme = useColorScheme();
-  const insets = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
   const flatListRef = useRef<FlatList>(null);
   const [contextMenuMessage, setContextMenuMessage] = useState<ChatMessage | null>(null);
   const isLoadingMoreRef = useRef(false);
@@ -181,8 +179,6 @@ function ChatContent({
     );
   }, [hasMoreMessages, messages.length]);
 
-  const topInset = insets.top + HEADER_HEIGHT;
-
   return (
     <View style={styles.container}>
       <ChatHeader
@@ -194,7 +190,7 @@ function ChatContent({
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior="padding"
-        keyboardVerticalOffset={0}
+        keyboardVerticalOffset={headerHeight}
       >
         {isInitialLoading && (
           <View style={styles.messagesLoading}>
@@ -202,27 +198,19 @@ function ChatContent({
           </View>
         )}
         <FlatList
-          style={{ flex: 1 }}
-          contentInsetAdjustmentBehavior="never"
-          inverted
           ref={flatListRef}
           data={messages}
           keyExtractor={(item) => item.id}
           renderItem={renderMessage}
-          contentContainerStyle={[
-            styles.messagesList,
-            // Inverted flips padding: paddingTop → visual bottom, paddingBottom → visual top
-            { paddingTop: 8, paddingBottom: topInset },
-          ]}
-          scrollIndicatorInsets={{ bottom: topInset }}
+          inverted
+          removeClippedSubviews={false}
+          contentInsetAdjustmentBehavior="never"
+          contentContainerStyle={styles.messagesList}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderLoadMore}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive"
-          maxToRenderPerBatch={15}
-          windowSize={11}
-          initialNumToRender={20}
         />
 
         {isOtherUserTyping && <TypingIndicator />}
@@ -260,6 +248,7 @@ const styles = StyleSheet.create({
   },
   messagesList: {
     paddingHorizontal: 16,
+    paddingTop: 8,
   },
   timeSeparator: {
     textAlign: "center",

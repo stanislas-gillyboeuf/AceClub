@@ -124,6 +124,47 @@ export const matchFeedback = pgTable(
   ],
 );
 
+export const matchPhoto = pgTable(
+  "match_photo",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    matchId: text("match_id")
+      .notNull()
+      .references(() => match.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id),
+    imageUrl: text("image_url").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("match_photo_matchId_idx").on(table.matchId),
+    uniqueIndex("match_photo_matchId_userId_unique").on(table.matchId, table.userId),
+  ],
+);
+
+export const matchLike = pgTable(
+  "match_like",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    matchId: text("match_id")
+      .notNull()
+      .references(() => match.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("match_like_matchId_idx").on(table.matchId),
+    uniqueIndex("match_like_matchId_userId_unique").on(table.matchId, table.userId),
+  ],
+);
+
 export const matchComment = pgTable(
   "match_comment",
   {

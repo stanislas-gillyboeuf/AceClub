@@ -11,6 +11,7 @@ export const NotificationType = pgEnum("notification_type", [
   "challenge_assigned",
   "streak_warning",
   "new_message",
+  "match_liked",
 ]);
 
 export const DevicePlatform = pgEnum("device_platform", ["ios", "android"]);

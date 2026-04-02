@@ -127,7 +127,7 @@ function PlayerScoreColumn({
 
       <View style={[
         styles.scoreBox,
-        { backgroundColor: scheme === "light" ? "#F2F2F7" : "#1C1C1E" },
+        { backgroundColor: semanticColors.systemGray6[scheme] },
         isWinner && { borderColor: `${accentColor}4D`, borderWidth: 1.5 },
       ]}>
         <Text style={[styles.scoreValue, { color: semanticColors.labelPrimary[scheme] }]}>

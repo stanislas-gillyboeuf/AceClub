@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { Organization } from "@/types/organization";
-import type { EventVisibility } from "@/types/event";
+import type { EventVisibility, EventStatus } from "@/types/event";
 
 interface CreateEventFormState {
   name: string;
@@ -15,17 +15,19 @@ interface CreateEventFormState {
   locationLongitude: number | null;
   maxParticipants: number | null;
   visibility: EventVisibility;
+  status: EventStatus;
   isFree: boolean;
   price: string;
   paymentLink: string;
 
+  setStatus: (status: EventStatus) => void;
   setName: (name: string) => void;
   setDescription: (description: string) => void;
   setCoverImageUri: (uri: string | null) => void;
   setStartDate: (date: Date) => void;
   setEndDate: (date: Date) => void;
   setOrganization: (org: Organization | null) => void;
-  setAddress: (text: string) => void;
+  setLocation: (location: { address: string; latitude: number | null; longitude: number | null }) => void;
   setMaxParticipants: (max: number | null) => void;
   setVisibility: (visibility: EventVisibility) => void;
   setIsFree: (isFree: boolean) => void;
@@ -59,10 +61,12 @@ export const useCreateEventFormStore = create<CreateEventFormState>((set) => ({
   locationLongitude: null,
   maxParticipants: null,
   visibility: "public",
+  status: "draft",
   isFree: true,
   price: "",
   paymentLink: "",
 
+  setStatus: (status) => set({ status }),
   setName: (name) => set({ name }),
   setDescription: (description) => set({ description }),
   setCoverImageUri: (coverImageUri) => set({ coverImageUri }),
@@ -76,11 +80,11 @@ export const useCreateEventFormStore = create<CreateEventFormState>((set) => ({
       locationLatitude: org?.latitude ?? null,
       locationLongitude: org?.longitude ?? null,
     }),
-  setAddress: (address) =>
+  setLocation: ({ address, latitude, longitude }) =>
     set({
       address,
-      locationLatitude: null,
-      locationLongitude: null,
+      locationLatitude: latitude,
+      locationLongitude: longitude,
     }),
   setMaxParticipants: (maxParticipants) => set({ maxParticipants }),
   setVisibility: (visibility) => set({ visibility }),
@@ -102,6 +106,7 @@ export const useCreateEventFormStore = create<CreateEventFormState>((set) => ({
       locationLongitude: null,
       maxParticipants: null,
       visibility: "public",
+      status: "draft",
       isFree: true,
       price: "",
       paymentLink: "",

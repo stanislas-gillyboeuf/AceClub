@@ -5,8 +5,10 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  Image as RNImage,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { TextInputWrapper, type PasteEventPayload } from "expo-paste-input";
 import { GlassView } from "@/components/ui/glass-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -80,6 +82,21 @@ export function ChatBottomBar({
       onSendImage(asset.uri, asset.width, asset.height);
     }
   }, [onSendImage]);
+
+  const handlePaste = useCallback(
+    (payload: PasteEventPayload) => {
+      if (payload.type === "images") {
+        for (const uri of payload.uris) {
+          RNImage.getSize(
+            uri,
+            (width, height) => onSendImage(uri, width, height),
+            () => onSendImage(uri, 0, 0),
+          );
+        }
+      }
+    },
+    [onSendImage],
+  );
 
   // Voice recording gesture
   const startRecording = useCallback(() => {
@@ -177,37 +194,38 @@ export function ChatBottomBar({
               </Text>
             </View>
           ) : (
-            <TextInput
-              ref={inputRef}
-              style={[
-                styles.input,
-                { color: semanticColors.labelPrimary[scheme] },
-              ]}
-              placeholder="Message"
-              placeholderTextColor={semanticColors.labelSecondary[scheme]}
-              value={text}
-              onChangeText={handleTextChange}
-              multiline
-              maxLength={5000}
-            />
+            <TextInputWrapper onPaste={handlePaste}>
+              <TextInput
+                ref={inputRef}
+                style={[
+                  styles.input,
+                  { color: semanticColors.labelPrimary[scheme] },
+                ]}
+                placeholder="Message"
+                placeholderTextColor={semanticColors.labelSecondary[scheme]}
+                value={text}
+                onChangeText={handleTextChange}
+                multiline
+                maxLength={5000}
+              />
+            </TextInputWrapper>
           )}
 
-          {hasText ? (
-            <Pressable
-              onPress={handleSendText}
-              style={({ pressed }) => [
-                styles.sendButtonInline,
-                pressed && { transform: [{ scale: 0.95 }] },
-              ]}
-            >
-              <GlassView style={styles.sendCircle} tintColor={colors.accentGreen}>
-                <ArrowUp size={18} color={colors.white} strokeWidth={2.5} />
-              </GlassView>
-            </Pressable>
-          ) : null}
         </GlassView>
 
-        {!hasText && (
+        {hasText ? (
+          <Pressable
+            onPress={handleSendText}
+            style={({ pressed }) => [
+              styles.sendButton,
+              pressed && { transform: [{ scale: 0.9 }] },
+            ]}
+          >
+            <View style={styles.sendCircle}>
+              <ArrowUp size={18} color={colors.white} strokeWidth={2.5} />
+            </View>
+          </Pressable>
+        ) : (
           <GestureDetector gesture={combinedGesture}>
             <Animated.View style={[styles.micButton, buttonScale, buttonOffset]}>
               <Mic size={22} color={semanticColors.labelPrimary[scheme]} />
@@ -254,7 +272,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     minHeight: 36,
     paddingLeft: 12,
-    paddingRight: 4,
+    paddingRight: 12,
   },
   input: {
     flex: 1,
@@ -262,15 +280,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     maxHeight: 120,
   },
-  sendButtonInline: {
-    paddingBottom: 3,
-    paddingLeft: 4,
-    paddingRight: 2,
+  sendButton: {
+    paddingBottom: 2,
   },
   sendCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
   },

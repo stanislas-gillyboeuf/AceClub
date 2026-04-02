@@ -4,10 +4,11 @@ import { BadgePill } from "@/components/ui/badge-pill";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors, radii } from "@/constants/theme";
 import {
-  formatMatchScore,
   getHomeParticipant,
   getAwayParticipant,
+  getStructuredMatchScore,
 } from "@/lib/format";
+import { SetScoresView } from "@/components/ui/set-scores-view";
 import type { MatchWithParticipants, MatchParticipant } from "@/types/match";
 
 interface OngoingMatchCardProps {
@@ -34,6 +35,7 @@ export function OngoingMatchCard({ match, onPress }: OngoingMatchCardProps) {
   const scheme = useColorScheme();
   const home = getHomeParticipant(match);
   const away = getAwayParticipant(match);
+  const structuredScore = getStructuredMatchScore(match);
   const setCount = match.sets?.length ?? 0;
 
   return (
@@ -59,20 +61,20 @@ export function OngoingMatchCard({ match, onPress }: OngoingMatchCardProps) {
           Set {setCount}
         </Text>
       </View>
-      <View style={styles.playersRow}>
-        <PlayerColumn participant={home} />
-
-        <Text
-          style={[
-            styles.score,
-            { color: semanticColors.labelPrimary[scheme] },
-          ]}
-        >
-          {formatMatchScore(match)}
-        </Text>
-
-        <PlayerColumn participant={away} />
-      </View>
+      {structuredScore ? (
+        <SetScoresView
+          score={structuredScore}
+          homeName={home?.user?.name ?? "N/A"}
+          awayName={away?.user?.name ?? "N/A"}
+          size="compact"
+        />
+      ) : (
+        <View style={styles.playersRow}>
+          <PlayerColumn participant={home} />
+          <Text style={[styles.vsText, { color: semanticColors.labelSecondary[scheme] }]}>vs</Text>
+          <PlayerColumn participant={away} />
+        </View>
+      )}
     </Pressable>
   );
 }
@@ -112,9 +114,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     width: "100%",
   },
-  score: {
-    fontSize: 20,
-    fontWeight: "700",
-    fontVariant: ["tabular-nums"],
+  vsText: {
+    fontSize: 13,
+    fontWeight: "500",
   },
 });

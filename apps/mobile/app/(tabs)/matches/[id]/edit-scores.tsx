@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Avatar } from "@/components/ui/avatar";
+import { SetScoresView } from "@/components/ui/set-scores-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useMatch, useUpdateMatchScores } from "@/hooks/use-match";
 import { colors, semanticColors, spacing, radii } from "@/constants/theme";
@@ -66,14 +66,16 @@ export default function EditScores() {
     matchDetail ? initSets(matchDetail, homeUserId, awayUserId) : [{ key: nextKey(), setNumber: 1, homeScore: 0, awayScore: 0 }]
   );
 
-  const globalScore = useMemo(() => {
-    let homeSets = 0;
-    let awaySets = 0;
-    for (const s of sets) {
-      if (s.homeScore > s.awayScore) homeSets++;
-      else if (s.awayScore > s.homeScore) awaySets++;
-    }
-    return `${homeSets} - ${awaySets}`;
+  const structuredScore = useMemo(() => {
+    let homeSetsWon = 0;
+    let awaySetsWon = 0;
+    const setScores = sets.map((s) => {
+      if (s.homeScore > s.awayScore) homeSetsWon++;
+      else if (s.awayScore > s.homeScore) awaySetsWon++;
+      const isTiebreak = s.homeScore >= 6 && s.awayScore >= 6 && Math.abs(s.homeScore - s.awayScore) === 1;
+      return { homeGames: s.homeScore, awayGames: s.awayScore, isTiebreak };
+    });
+    return { sets: setScores, homeSetsWon, awaySetsWon };
   }, [sets]);
 
   const updateSet = useCallback((key: string, field: "homeScore" | "awayScore", value: number) => {
@@ -172,41 +174,17 @@ export default function EditScores() {
         contentContainerStyle={styles.scrollContent}
         style={{ backgroundColor: semanticColors.primaryBackground[scheme] }}
       >
-        {/* Match header */}
+        {/* Match header with set scores */}
         <View style={[styles.headerCard, {
           backgroundColor: semanticColors.cardBackground[scheme],
           borderColor: semanticColors.borderColor[scheme],
         }]}>
-          <View style={styles.headerRow}>
-            <View style={styles.headerPlayer}>
-              <Avatar imageUrl={home?.user?.image} name={homeName} size={48} />
-              <Text
-                style={[styles.headerName, { color: semanticColors.labelPrimary[scheme] }]}
-                numberOfLines={1}
-              >
-                {homeName}
-              </Text>
-            </View>
-
-            <View style={styles.headerScore}>
-              <Text style={[styles.globalScore, { color: semanticColors.labelPrimary[scheme] }]}>
-                {globalScore}
-              </Text>
-              <Text style={[styles.setsLabel, { color: semanticColors.labelSecondary[scheme] }]}>
-                Sets
-              </Text>
-            </View>
-
-            <View style={styles.headerPlayer}>
-              <Avatar imageUrl={away?.user?.image} name={awayName} size={48} />
-              <Text
-                style={[styles.headerName, { color: semanticColors.labelPrimary[scheme] }]}
-                numberOfLines={1}
-              >
-                {awayName}
-              </Text>
-            </View>
-          </View>
+          <SetScoresView
+            score={structuredScore}
+            homeName={homeName}
+            awayName={awayName}
+            size="compact"
+          />
         </View>
 
         {/* Editable sets */}
@@ -267,33 +245,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     borderWidth: 0.5,
     marginBottom: 8,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 24,
-  },
-  headerPlayer: {
-    alignItems: "center",
-    gap: 4,
-    flex: 1,
-  },
-  headerName: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  headerScore: {
-    alignItems: "center",
-    gap: 2,
-  },
-  globalScore: {
-    fontSize: 28,
-    fontWeight: "700",
-    fontVariant: ["tabular-nums"],
-  },
-  setsLabel: {
-    fontSize: 10,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,

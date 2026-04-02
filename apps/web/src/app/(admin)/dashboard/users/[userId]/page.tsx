@@ -102,7 +102,7 @@ export default function UserDetailPage() {
       {/* User info card */}
       {user && (
         <Card>
-          <CardContent className="flex items-center gap-6 pt-6">
+          <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pt-6">
             <Avatar className="h-16 w-16">
               <AvatarImage src={user.image ?? undefined} alt={user.name} />
               <AvatarFallback className="text-lg">
@@ -126,7 +126,7 @@ export default function UserDetailPage() {
                 </span>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
                 size="sm"

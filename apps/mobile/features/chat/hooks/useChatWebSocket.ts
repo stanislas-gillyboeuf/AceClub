@@ -14,7 +14,6 @@ interface UseChatWebSocketDeps {
     updater: (reactions: ChatMessage["reactions"]) => ChatMessage["reactions"],
   ) => void;
   messagesRef: React.MutableRefObject<ChatMessage[]>;
-  decryptMessage: (msg: ChatMessage) => Promise<ChatMessage>;
   retryFailedMessage: (msg: ChatMessage) => Promise<void>;
   invalidateConversationList: () => void;
 }
@@ -41,7 +40,7 @@ export function useChatWebSocket(
 
   // Subscribe once per conversation.id — use refs for everything else
   useEffect(() => {
-    const unsubscribe = wsManager.subscribe(async (event) => {
+    const unsubscribe = wsManager.subscribe((event) => {
       const conv = conversationRef.current;
       const userId = currentUserIdRef.current;
       const d = depsRef.current;
@@ -50,17 +49,14 @@ export function useChatWebSocket(
         case "reconnected": {
           conversationService
             .listMessages(conv.id)
-            .then(async (recent) => {
+            .then((recent) => {
               const existingIds = new Set(
                 d.messagesRef.current.map((m) => m.id),
               );
-              const toDecrypt = recent
+              const newMsgs = recent
                 .filter((m) => !existingIds.has(m.id))
                 .map((m) => apiMessageToChatMessage(m, userId));
-              if (toDecrypt.length === 0) return;
-              const newMsgs = await Promise.all(
-                toDecrypt.map((m) => d.decryptMessage(m)),
-              );
+              if (newMsgs.length === 0) return;
               d.mergeMessages(newMsgs);
             })
             .catch(() => {});
@@ -89,8 +85,7 @@ export function useChatWebSocket(
           }
           if (d.messagesRef.current.some((m) => m.id === msg.id)) break;
 
-          let chatMsg = apiMessageToChatMessage(msg, userId);
-          chatMsg = await d.decryptMessage(chatMsg);
+          const chatMsg = apiMessageToChatMessage(msg, userId);
           d.addIncoming(chatMsg);
 
           conversationService.markRead(conv.id)

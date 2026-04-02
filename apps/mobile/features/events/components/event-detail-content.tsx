@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator, Pressable, Linking, Platform } from "react-native";
 import { Image } from "expo-image";
 import { GlassView } from "@/components/ui/glass-view";
 import { Avatar } from "@/components/ui/avatar";
@@ -10,6 +10,7 @@ import {
   MapPin,
   Users,
   CalendarDays,
+  ExternalLink,
 } from "lucide-react-native";
 import { colors, semanticColors, radii, spacing } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -131,31 +132,7 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
           ) : null}
 
           {/* Location */}
-          {event.address && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: semanticColors.labelPrimary[scheme] }]}>
-                Lieu
-              </Text>
-              <GlassView style={styles.locationCard}>
-                <View style={styles.infoRow}>
-                  <MapPin size={16} color={colors.accentGreen} strokeWidth={2} />
-                  <Text
-                    style={[styles.infoText, { color: semanticColors.labelSecondary[scheme], flex: 1 }]}
-                    numberOfLines={2}
-                  >
-                    {event.address}
-                  </Text>
-                </View>
-              </GlassView>
-              {event.latitude != null && event.longitude != null && (
-                <MapPreview
-                  latitude={event.latitude}
-                  longitude={event.longitude}
-                  title={event.name}
-                />
-              )}
-            </View>
-          )}
+          <LocationSection event={event} />
 
           {/* Description */}
           {event.description && event.description.length > 0 && (
@@ -203,6 +180,67 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
         ) : null}
       </View>
     </>
+  );
+}
+
+function LocationSection({ event }: { event: NonNullable<ReturnType<typeof useEvent>["data"]> }) {
+  const scheme = useColorScheme();
+  const displayAddress = event.address || event.organizationAddress || null;
+  const displayLat = event.latitude ?? event.organizationLatitude ?? null;
+  const displayLng = event.longitude ?? event.organizationLongitude ?? null;
+  const isOrgFallback = !event.address && !!event.organizationAddress;
+
+  if (!displayAddress) return null;
+
+  const openInMaps = () => {
+    const encodedAddress = encodeURIComponent(displayAddress);
+    const url =
+      displayLat != null && displayLng != null
+        ? Platform.select({
+            ios: `maps:?ll=${displayLat},${displayLng}&q=${encodedAddress}`,
+            default: `geo:${displayLat},${displayLng}?q=${encodedAddress}`,
+          })
+        : Platform.select({
+            ios: `maps:?q=${encodedAddress}`,
+            default: `geo:0,0?q=${encodedAddress}`,
+          });
+    Linking.openURL(url);
+  };
+
+  return (
+    <View style={styles.section}>
+      <Text style={[styles.sectionTitle, { color: semanticColors.labelPrimary[scheme] }]}>
+        Lieu
+      </Text>
+      <Pressable onPress={openInMaps}>
+        <GlassView style={styles.locationCard}>
+          <View style={styles.infoRow}>
+            <MapPin size={16} color={colors.accentGreen} strokeWidth={2} />
+            <Text
+              style={[styles.infoText, { color: semanticColors.labelSecondary[scheme], flex: 1 }]}
+              numberOfLines={2}
+            >
+              {displayAddress}
+            </Text>
+            <ExternalLink size={14} color={semanticColors.labelTertiary[scheme]} strokeWidth={2} />
+          </View>
+          {isOrgFallback && (
+            <Text style={[styles.orgFallbackText, { color: semanticColors.labelTertiary[scheme] }]}>
+              Adresse du club
+            </Text>
+          )}
+        </GlassView>
+      </Pressable>
+      {displayLat != null && displayLng != null && (
+        <Pressable onPress={openInMaps}>
+          <MapPreview
+            latitude={displayLat}
+            longitude={displayLng}
+            title={event.name}
+          />
+        </Pressable>
+      )}
+    </View>
   );
 }
 
@@ -281,6 +319,11 @@ const styles = StyleSheet.create({
   locationCard: {
     padding: spacing.card,
     borderRadius: radii.md,
+    gap: 4,
+  },
+  orgFallbackText: {
+    fontSize: 12,
+    marginLeft: 26,
   },
   descriptionCard: {
     padding: spacing.card,

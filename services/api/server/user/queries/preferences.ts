@@ -25,13 +25,7 @@ export const getPreferences = async (c: Context<HonoContext>) => {
     .limit(1);
 
   if (!pref) {
-    return c.json(
-      {
-        error: "Not found",
-        message: "User preferences not found",
-      },
-      404,
-    );
+    return c.json(null, 200);
   }
 
   return c.json({

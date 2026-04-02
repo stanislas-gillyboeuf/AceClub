@@ -52,7 +52,7 @@ export function MessageContextMenu({
     onClose();
   };
 
-  const menuBg = scheme === "dark" ? "#2C2C2E" : "#FFFFFF";
+  const menuBg = semanticColors.cardBackground[scheme];
   const textColor = semanticColors.labelPrimary[scheme];
 
   return (

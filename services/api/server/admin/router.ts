@@ -11,6 +11,9 @@ import {
   listOrganizationMembers,
   listOrganizationInvitations,
   listFeatureFlags,
+  listGameConfig,
+  listChallengeTemplates,
+  listBadges,
 } from "./queries";
 import { zValidator } from "@hono/zod-validator";
 import {
@@ -37,6 +40,13 @@ import {
   updateMatchAdminValidator,
   processDeletionRequestValidator,
   bulkCreateOrganizationsValidator,
+  updateMemberRoleAdminValidator,
+  updateGameConfigValidator,
+  listChallengeTemplatesValidator,
+  createChallengeTemplateValidator,
+  updateChallengeTemplateValidator,
+  createBadgeValidator,
+  updateBadgeValidator,
 } from "./validators";
 import {
   banUser,
@@ -59,6 +69,15 @@ import {
   updateMatchAdmin,
   processDeletionRequest,
   bulkCreateOrganizations,
+  updateMemberRole,
+  updateGameConfig,
+  resetGameConfig,
+  createChallengeTemplate,
+  updateChallengeTemplate,
+  deleteChallengeTemplate,
+  createBadge,
+  updateBadge,
+  deleteBadge,
 } from "./mutations";
 
 export const adminRouter = new Hono<HonoContext>();
@@ -175,11 +194,7 @@ adminRouter.post(
 adminRouter.delete("/feature-flags/:id/overrides/:orgId", removeFeatureFlagOverride);
 
 // Match admin
-adminRouter.put(
-  "/update-match",
-  zValidator("json", updateMatchAdminValidator),
-  updateMatchAdmin,
-);
+adminRouter.put("/update-match", zValidator("json", updateMatchAdminValidator), updateMatchAdmin);
 
 // Account deletion requests
 adminRouter.post(
@@ -188,9 +203,57 @@ adminRouter.post(
   processDeletionRequest,
 );
 
+// Member role
+adminRouter.post(
+  "/update-member-role",
+  zValidator("json", updateMemberRoleAdminValidator),
+  updateMemberRole,
+);
+
 // Bulk organization import
 adminRouter.post(
   "/bulk-create-organizations",
   zValidator("json", bulkCreateOrganizationsValidator),
   bulkCreateOrganizations,
 );
+
+// Game config
+adminRouter.get("/game-config", listGameConfig);
+
+adminRouter.put(
+  "/game-config/:id",
+  zValidator("json", updateGameConfigValidator),
+  updateGameConfig,
+);
+
+adminRouter.post("/game-config/reset", resetGameConfig);
+
+// Challenge templates
+adminRouter.get(
+  "/challenge-templates",
+  zValidator("query", listChallengeTemplatesValidator),
+  listChallengeTemplates,
+);
+
+adminRouter.post(
+  "/challenge-templates",
+  zValidator("json", createChallengeTemplateValidator),
+  createChallengeTemplate,
+);
+
+adminRouter.put(
+  "/challenge-templates/:id",
+  zValidator("json", updateChallengeTemplateValidator),
+  updateChallengeTemplate,
+);
+
+adminRouter.delete("/challenge-templates/:id", deleteChallengeTemplate);
+
+// Badges
+adminRouter.get("/badges", listBadges);
+
+adminRouter.post("/badges", zValidator("json", createBadgeValidator), createBadge);
+
+adminRouter.put("/badges/:id", zValidator("json", updateBadgeValidator), updateBadge);
+
+adminRouter.delete("/badges/:id", deleteBadge);

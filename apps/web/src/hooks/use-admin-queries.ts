@@ -17,6 +17,10 @@ import type {
   ListAccountDeletionRequestsResponse,
   ListEventsParams,
   ListEventsResponse,
+  GameConfigResponse,
+  ListChallengeTemplatesParams,
+  ListChallengeTemplatesResponse,
+  ListBadgesResponse,
 } from "@/types/admin"
 
 export function useAdminUsers(params: ListUsersParams) {
@@ -180,5 +184,39 @@ export function useAccountDeletionRequests() {
       apiClient<ListAccountDeletionRequestsResponse>(
         "/account-deletion-request/list",
       ),
+  })
+}
+
+export function useGameConfig() {
+  return useQuery({
+    queryKey: ["admin-game-config"],
+    queryFn: () => apiClient<GameConfigResponse>("/admin/game-config"),
+  })
+}
+
+export function useChallengeTemplates(params: ListChallengeTemplatesParams) {
+  const searchParams = new URLSearchParams()
+
+  if (params.type) searchParams.set("type", params.type)
+  if (params.difficulty) searchParams.set("difficulty", params.difficulty)
+  if (params.isActive !== undefined) searchParams.set("isActive", String(params.isActive))
+  if (params.limit) searchParams.set("limit", String(params.limit))
+  if (params.offset) searchParams.set("offset", String(params.offset))
+
+  const qs = searchParams.toString()
+
+  return useQuery({
+    queryKey: ["admin-challenge-templates", params],
+    queryFn: () =>
+      apiClient<ListChallengeTemplatesResponse>(
+        `/admin/challenge-templates${qs ? `?${qs}` : ""}`,
+      ),
+  })
+}
+
+export function useAdminBadges() {
+  return useQuery({
+    queryKey: ["admin-badges"],
+    queryFn: () => apiClient<ListBadgesResponse>("/admin/badges"),
   })
 }

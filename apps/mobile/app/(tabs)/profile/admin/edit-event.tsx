@@ -16,7 +16,6 @@ import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {
   ImagePlus,
-  MapPin,
   Eye,
   Users,
   Building2,
@@ -31,6 +30,7 @@ import { uploadService } from "@/services/upload";
 import { GlassView } from "@/components/ui/glass-view";
 import Button from "@/components/ui/button";
 import { colors, semanticColors, spacing, radii } from "@/constants/theme";
+import { LocationPicker } from "@/features/events/components/LocationPicker";
 import { EVENT_STATUS_CONFIG, VISIBILITY_OPTIONS } from "@/features/events/lib/event-status";
 import { formatShortDate, formatTime } from "@/lib/format";
 import type { EventVisibility, EventStatus } from "@/types/event";
@@ -51,6 +51,8 @@ export default function EditEvent() {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [address, setAddress] = useState("");
+  const [locationLatitude, setLocationLatitude] = useState<number | null>(null);
+  const [locationLongitude, setLocationLongitude] = useState<number | null>(null);
   const [maxParticipants, setMaxParticipants] = useState<number | null>(null);
   const [visibility, setVisibility] = useState<EventVisibility>("public");
   const [status, setStatus] = useState<EventStatus>("on_sale");
@@ -62,7 +64,6 @@ export default function EditEvent() {
   const [showEndPicker, setShowEndPicker] = useState(Platform.OS === "ios");
   const [capacityText, setCapacityText] = useState("");
   const [hasLoaded, setHasLoaded] = useState(false);
-  const [addressModified, setAddressModified] = useState(false);
 
   // Pre-fill form when event data loads
   useEffect(() => {
@@ -73,6 +74,8 @@ export default function EditEvent() {
       setStartDate(new Date(event.startDate));
       setEndDate(new Date(event.endDate));
       setAddress(event.address ?? "");
+      setLocationLatitude(event.latitude ?? null);
+      setLocationLongitude(event.longitude ?? null);
       setMaxParticipants(event.maxParticipants);
       setCapacityText(event.maxParticipants ? String(event.maxParticipants) : "");
       setVisibility(event.visibility);
@@ -138,6 +141,8 @@ export default function EditEvent() {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         address: address.trim() || undefined,
+        latitude: locationLatitude ?? undefined,
+        longitude: locationLongitude ?? undefined,
         maxParticipants: maxParticipants,
         isFree,
         price: isFree ? undefined : (parseInt(price, 10) || undefined),
@@ -392,37 +397,16 @@ export default function EditEvent() {
         </GlassView>
 
         {/* Lieu */}
-        <GlassView style={styles.fieldCard}>
-          <Text
-            style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}
-          >
-            LIEU
-          </Text>
-          <View style={styles.optionRow}>
-            <MapPin
-              size={20}
-              color={address ? colors.accentGreen : semanticColors.labelTertiary[scheme]}
-              strokeWidth={1.5}
-            />
-            <View style={{ flex: 1 }}>
-              <TextInput
-                value={address}
-                onChangeText={(text) => {
-                  setAddress(text);
-                  setAddressModified(true);
-                }}
-                placeholder="Ajouter une adresse"
-                placeholderTextColor={semanticColors.labelTertiary[scheme]}
-                style={[styles.addressInput, { color: semanticColors.labelPrimary[scheme] }]}
-              />
-              {!addressModified && address.length > 0 && event?.organizationName && (
-                <Text style={[styles.addressSubtitle, { color: semanticColors.labelTertiary[scheme] }]}>
-                  Adresse du club
-                </Text>
-              )}
-            </View>
-          </View>
-        </GlassView>
+        <LocationPicker
+          address={address}
+          latitude={locationLatitude}
+          longitude={locationLongitude}
+          onLocationChange={({ address: addr, latitude: lat, longitude: lng }) => {
+            setAddress(addr);
+            setLocationLatitude(lat);
+            setLocationLongitude(lng);
+          }}
+        />
 
         {/* Description */}
         <GlassView style={styles.fieldCard}>
@@ -750,10 +734,6 @@ const styles = StyleSheet.create({
   addressInput: {
     fontSize: 16,
     flex: 1,
-  },
-  addressSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
   },
   descriptionInput: {
     fontSize: 16,

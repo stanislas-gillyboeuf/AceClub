@@ -1,29 +1,25 @@
 import { useMemo, useRef, useState } from "react";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Stack, useRouter } from "expo-router";
-import {
-  View,
-  Platform,
-  Pressable,
-  SectionList,
-  RefreshControl,
-  StyleSheet,
-} from "react-native";
-import { Plus } from "lucide-react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { GlassView } from "@/components/ui/glass-view";
+import { View, SectionList, RefreshControl, StyleSheet } from "react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, radii, semanticColors, spacing } from "@/constants/theme";
+import { semanticColors, spacing } from "@/constants/theme";
 import { useInfiniteMatches } from "@/hooks/use-match";
 import { MatchRow } from "@/features/matches/components/match-row";
-import { MatchRowSkeleton } from "@/features/matches/components/match-row-skeleton";
 import { MatchDateHeader } from "@/features/matches/components/match-date-header";
 import { buildSections, type MatchSection } from "@/features/matches/components/match-sections";
+import { MatchListSkeleton } from "@/features/matches/components/MatchListSkeleton";
+import { MatchFab } from "@/features/matches/components/MatchFab";
+import { MatchEmptyDay } from "@/features/matches/components/MatchEmptyDay";
 import { EmptyState } from "@/components/ui/empty-state";
+
+function ItemSeparator() {
+  return <View style={separatorStyle} />;
+}
+const separatorStyle = { height: 12 };
+
 export default function Matches() {
   const router = useRouter();
   const scheme = useColorScheme();
-  const insets = useSafeAreaInsets();
   const sectionListRef = useRef<SectionList>(null);
   const [hasScrolledToToday, setHasScrolledToToday] = useState(false);
 
@@ -42,26 +38,20 @@ export default function Matches() {
     [data]
   );
 
-  const sections = useMemo(() => buildSections(allMatches), [allMatches]);
-
-  const todaySectionIndex = useMemo(
-    () => sections.findIndex((s) => s.isToday),
-    [sections]
-  );
+  const { sections, todaySectionIndex } = useMemo(() => {
+    const built = buildSections(allMatches);
+    return { sections: built, todaySectionIndex: built.findIndex((s) => s.isToday) };
+  }, [allMatches]);
 
   const onCreateMatch = () => {
     router.push("/matches/create");
   };
 
-  const onOpenRequests = () => {
-    router.push("/matches/requests");
-  };
-
-  const onEndReached =() => {
+  const onEndReached = () => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   };
 
-  const scrollToToday =() => {
+  const scrollToToday = () => {
     if (hasScrolledToToday) return;
     if (todaySectionIndex < 0 || sections.length === 0) return;
     setHasScrolledToToday(true);
@@ -73,63 +63,21 @@ export default function Matches() {
           animated: true,
           viewOffset: 0,
         });
-      } catch {
-      }
+      } catch {}
     }, 350);
   };
 
-
-  const toolbar = (
-    <>
-      <Stack.Screen
-        options={{
-          title: "Matchs",
-          headerRight:
-            Platform.OS === "android"
-              ? () => (
-                  <Pressable onPress={onOpenRequests}>
-                    <MaterialIcons name="mail-outline" size={24} color={colors.accentGreen} />
-                  </Pressable>
-                )
-              : undefined,
-        }}
-      />
-      {Platform.OS === "ios" && (
-        <Stack.Toolbar placement="right">
-          <Stack.Toolbar.Button icon="envelope.badge" onPress={onOpenRequests} tintColor={colors.accentGreen} />
-        </Stack.Toolbar>
-      )}
-    </>
-  );
-
-  const fab = (
-    <Pressable
-      onPress={onCreateMatch}
-      style={({ pressed }) => [styles.fab, { bottom: insets.bottom + 24 }, pressed && styles.fabPressed]}
-    >
-      <GlassView style={styles.fabGlass} tintColor={colors.accentGreen}>
-        <Plus size={28} color={colors.white} />
-      </GlassView>
-    </Pressable>
-  );
-
+  const toolbar = <Stack.Screen options={{ title: "Matchs" }} />;
 
   if (isLoading && allMatches.length === 0) {
     return (
       <View style={styles.container}>
         {toolbar}
-        <View style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-          <View style={styles.skeletonList}>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <MatchRowSkeleton key={i} />
-            ))}
-          </View>
-        </View>
-        {fab}
+        <MatchListSkeleton />
+        <MatchFab onPress={onCreateMatch} />
       </View>
     );
   }
-
 
   if (!isLoading && allMatches.length === 0) {
     return (
@@ -142,7 +90,7 @@ export default function Matches() {
             description="Tes matchs apparaîtront ici une fois planifiés ou joués."
           />
         </View>
-        {fab}
+        <MatchFab onPress={onCreateMatch} />
       </View>
     );
   }
@@ -164,16 +112,7 @@ export default function Matches() {
         }}
         renderItem={({ item }) => {
           if (typeof item === "string") {
-            return (
-              <View style={styles.sectionContent}>
-                <EmptyState
-                  icon="Swords"
-                  title="Pas de match aujourd'hui"
-                  description="Planifie un match et lance-toi !"
-                  containerStyle={{ borderWidth: 1 , borderColor: semanticColors.borderColor[scheme], borderRadius: radii.md, backgroundColor: semanticColors.cardBackground[scheme] }}
-                />
-              </View>
-            );
+            return <MatchEmptyDay />;
           }
           return (
             <View style={styles.sectionContent}>
@@ -181,7 +120,7 @@ export default function Matches() {
             </View>
           );
         }}
-        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        ItemSeparatorComponent={ItemSeparator}
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />
         }
@@ -191,7 +130,7 @@ export default function Matches() {
         contentContainerStyle={styles.listContent}
         style={{ backgroundColor: semanticColors.primaryBackground[scheme] }}
       />
-      {fab}
+      <MatchFab onPress={onCreateMatch} />
     </View>
   );
 }
@@ -200,35 +139,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  skeletonList: {
-    padding: spacing.horizontal,
-    paddingTop: 16,
-    gap: 12,
-  },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
   },
   listContent: {
     paddingBottom: 32,
   },
   sectionContent: {
     paddingHorizontal: spacing.horizontal,
-  },
-  fab: {
-    position: "absolute",
-    alignSelf: "center",
-  },
-  fabGlass: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  fabPressed: {
-    transform: [{ scale: 0.95 }],
   },
 });

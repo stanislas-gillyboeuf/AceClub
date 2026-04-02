@@ -58,6 +58,7 @@ export function useMembers(organizationId?: string) {
   return useQuery({
     queryKey: ["organization", "members", organizationId],
     queryFn: () => organizationService.listMembers(organizationId),
+    enabled: !!organizationId,
   });
 }
 
@@ -66,7 +67,7 @@ export function useSetActiveOrganization() {
   return useMutation({
     mutationFn: (data: { organizationSlug?: string; organizationId?: string }) =>
       organizationService.setActiveOrganization(data),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["organization"] });
       queryClient.invalidateQueries({ queryKey: ["user", "me"] });
     },
@@ -77,7 +78,7 @@ export function useCreateOrganization() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateOrganizationRequest) => organizationService.createOrganization(data),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["organization"] });
     },
   });
@@ -87,7 +88,7 @@ export function useUpdateOrganization() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: UpdateOrganizationRequest) => organizationService.updateOrganization(data),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["organization"] });
     },
   });
@@ -98,7 +99,7 @@ export function useAddMember() {
   return useMutation({
     mutationFn: (data: { userId: string; role: string; organizationId?: string }) =>
       organizationService.addMember(data),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["organization", "members"] });
     },
   });
@@ -109,7 +110,7 @@ export function useRemoveMember() {
   return useMutation({
     mutationFn: (data: { memberIdOrEmail: string; organizationId?: string }) =>
       organizationService.removeMember(data),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["organization", "members"] });
     },
   });
@@ -120,7 +121,7 @@ export function useUpdateMemberRole() {
   return useMutation({
     mutationFn: (data: { memberId: string; role: string; organizationId?: string }) =>
       organizationService.updateMemberRole(data),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["organization", "members"] });
     },
   });
@@ -130,7 +131,7 @@ export function useLeaveOrganization() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (organizationId: string) => organizationService.leaveOrganization(organizationId),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["organization"] });
     },
   });
@@ -149,7 +150,7 @@ export function useToggleOrganizationPin() {
   return useMutation({
     mutationFn: (data: { organizationId: string; enabled: boolean }) =>
       organizationService.toggleOrganizationPin(data),
-    onSuccess: (_, variables) => {
+    onSettled: (_data, _err, variables) => {
       queryClient.invalidateQueries({ queryKey: ["organization", "pin", variables.organizationId] });
     },
   });
@@ -159,7 +160,7 @@ export function useRegenerateOrganizationPin() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (organizationId: string) => organizationService.regenerateOrganizationPin(organizationId),
-    onSuccess: (_, organizationId) => {
+    onSettled: (_data, _err, organizationId) => {
       queryClient.invalidateQueries({ queryKey: ["organization", "pin", organizationId] });
     },
   });

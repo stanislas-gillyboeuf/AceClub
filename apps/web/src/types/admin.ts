@@ -301,6 +301,76 @@ export interface ListEventsResponse {
   total: number
 }
 
+// Game Config
+export interface GameConfigEntry {
+  id: string
+  category: string
+  key: string
+  value: string
+  description: string | null
+  updatedBy: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface GameConfigResponse {
+  config: Record<string, GameConfigEntry[]>
+}
+
+// Challenge Templates
+export interface ChallengeTemplate {
+  id: string
+  code: string
+  type: "quantitative" | "social" | "performance"
+  difficulty: "easy" | "medium" | "hard"
+  titleFr: string
+  titleEn: string
+  descriptionFr: string
+  descriptionEn: string
+  targetValue: number
+  acesReward: number
+  minLevel: number
+  maxLevel: number | null
+  isActive: boolean
+  createdAt: string
+}
+
+export interface ListChallengeTemplatesParams {
+  type?: string
+  difficulty?: string
+  isActive?: boolean
+  limit?: number
+  offset?: number
+}
+
+export interface ListChallengeTemplatesResponse {
+  templates: ChallengeTemplate[]
+  total: number
+  limit: number
+  offset: number
+}
+
+// Badges
+export interface AdminBadge {
+  id: string
+  code: string
+  category: "level" | "achievement" | "milestone" | "special"
+  nameFr: string
+  nameEn: string
+  descriptionFr: string
+  descriptionEn: string
+  imageUrl: string
+  requiredLevel: number | null
+  isActive: boolean
+  displayOrder: number
+  createdAt: string
+  unlockCount: number
+}
+
+export interface ListBadgesResponse {
+  badges: AdminBadge[]
+}
+
 export interface MatchDetailResponse {
   match: Omit<AdminMatch, "participants" | "sets" | "comments">
   participants: MatchParticipant[]

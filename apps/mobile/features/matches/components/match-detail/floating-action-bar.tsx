@@ -102,7 +102,7 @@ export function SheetActionBar({
         <Pressable
           onPress={onDelete}
           style={[styles.moreButton, {
-            backgroundColor: scheme === "light" ? "#F2F2F7" : "#2C2C2E",
+            backgroundColor: semanticColors.systemGray6[scheme],
           }]}
         >
           <Trash2 size={18} color="#FF3B30" strokeWidth={2} />
@@ -129,7 +129,7 @@ function ActionButton({
     <Pressable
       onPress={onPress}
       style={[styles.actionButton, {
-        backgroundColor: scheme === "light" ? "#F2F2F7" : "#2C2C2E",
+        backgroundColor: semanticColors.systemGray6[scheme],
       }]}
     >
       {icon}

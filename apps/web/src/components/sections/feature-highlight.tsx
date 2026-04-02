@@ -132,7 +132,7 @@ export function FeatureHighlight() {
       id="feature-highlight"
       title="Fonctionnalités"
       subtitle="Tout en un seul endroit"
-      className="container px-10 mx-auto max-w-[var(--max-container-width)]"
+      className="container px-4 sm:px-10 mx-auto max-w-[var(--max-container-width)]"
       ref={containerRef}
     >
       {features.map((feature, index) => (

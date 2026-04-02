@@ -20,8 +20,7 @@ export function SegmentedControl<T extends string>({
       style={[
         styles.container,
         {
-          backgroundColor:
-            scheme === "dark" ? "#1C1C1E" : "#E5E5EA",
+          backgroundColor: semanticColors.systemGray5[scheme],
         },
       ]}
     >

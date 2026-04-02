@@ -2,8 +2,9 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import { ChevronRight } from "lucide-react-native";
 import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { semanticColors, spacing, radii } from "@/constants/theme";
-import { SENSATION_MAP } from "@/features/matches/constants/sensations";
+import { colors, semanticColors, spacing, radii } from "@/constants/theme";
+import { EFFORT_MAP } from "@/features/matches/constants/sensations";
+import { TennisBall } from "@/features/matches/components/feedback/tennis-ball";
 import type { MatchFeedback } from "@/types/match";
 
 interface FeedbackCardProps {
@@ -11,18 +12,18 @@ interface FeedbackCardProps {
   onEdit: () => void;
 }
 
-function getSensation(key: string) {
-  return SENSATION_MAP[key] ?? { emoji: "\u{2753}", label: key };
+function getEffort(key: string) {
+  return EFFORT_MAP[key] ?? { label: key, description: "", percentage: "—", value: 0 };
 }
 
 export function FeedbackCard({ feedback, onEdit }: FeedbackCardProps) {
   const scheme = useColorScheme();
-  const sensation = getSensation(feedback.sensation);
+  const effort = getEffort(feedback.sensation);
 
   return (
     <GlassView style={styles.container}>
       <Text style={[styles.header, { color: semanticColors.labelTertiary[scheme] }]}>
-        MES SENSATIONS
+        SESSION
       </Text>
 
       <Pressable
@@ -30,19 +31,14 @@ export function FeedbackCard({ feedback, onEdit }: FeedbackCardProps) {
         style={({ pressed }) => [pressed && styles.pressed]}
       >
         <GlassView style={styles.feedbackRow}>
-          <Text style={styles.emoji}>{sensation.emoji}</Text>
+          <TennisBall size={40} color={colors.accentGreen} />
           <View style={styles.feedbackInfo}>
-            <Text style={[styles.sensationLabel, { color: semanticColors.labelPrimary[scheme] }]}>
-              {sensation.label}
+            <Text style={[styles.effortLabel, { color: semanticColors.labelPrimary[scheme] }]}>
+              {effort.label}
             </Text>
-            {feedback.comment && (
-              <Text
-                style={[styles.commentText, { color: semanticColors.labelSecondary[scheme] }]}
-                numberOfLines={2}
-              >
-                {feedback.comment}
-              </Text>
-            )}
+            <Text style={[styles.effortPercentage, { color: semanticColors.labelSecondary[scheme] }]}>
+              Effort {effort.percentage}
+            </Text>
           </View>
           <ChevronRight size={14} color={semanticColors.labelTertiary[scheme]} strokeWidth={2.5} />
         </GlassView>
@@ -72,18 +68,15 @@ const styles = StyleSheet.create({
     padding: spacing.card,
     borderRadius: radii.md,
   },
-  emoji: {
-    fontSize: 32,
-  },
   feedbackInfo: {
     flex: 1,
     gap: 2,
   },
-  sensationLabel: {
-    fontSize: 14,
+  effortLabel: {
+    fontSize: 15,
     fontWeight: "600",
   },
-  commentText: {
-    fontSize: 12,
+  effortPercentage: {
+    fontSize: 13,
   },
 });

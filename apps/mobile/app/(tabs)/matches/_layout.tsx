@@ -8,15 +8,6 @@ export default function MatchesLayout() {
     <Stack>
       <Stack.Screen name="index" options={{ title: "Matches", headerLargeTitle: true }} />
       <Stack.Screen
-        name="requests"
-        options={{
-          presentation: formSheet,
-          sheetGrabberVisible: Platform.OS === "ios",
-          title: "Demandes de match",
-          headerTransparent: Platform.OS === "ios",
-        }}
-      />
-      <Stack.Screen
         name="create/index"
         options={{
           presentation: formSheet,
@@ -62,7 +53,7 @@ export default function MatchesLayout() {
         options={{
           presentation: formSheet,
           sheetGrabberVisible: Platform.OS === "ios",
-          title: "Sensations",
+          title: "Mon effort",
           headerTransparent: Platform.OS === "ios",
         }}
       />

@@ -125,6 +125,81 @@ export const processDeletionRequestValidator = z.object({
   status: z.enum(["processed", "rejected"]),
 });
 
+export const updateMemberRoleAdminValidator = z.object({
+  memberId: z.string(),
+  organizationId: z.string(),
+  role: z.enum(["member", "admin", "owner"]),
+});
+
+// Game config
+export const updateGameConfigValidator = z.object({
+  value: z.string().min(1),
+});
+
+// Challenge templates
+export const listChallengeTemplatesValidator = z.object({
+  type: z.enum(["quantitative", "social", "performance"]).optional(),
+  difficulty: z.enum(["easy", "medium", "hard"]).optional(),
+  isActive: z.coerce.boolean().optional(),
+  limit: z.coerce.number().optional(),
+  offset: z.coerce.number().optional(),
+});
+
+export const createChallengeTemplateValidator = z.object({
+  code: z.string().min(1),
+  type: z.enum(["quantitative", "social", "performance"]),
+  difficulty: z.enum(["easy", "medium", "hard"]),
+  titleFr: z.string().min(1),
+  titleEn: z.string().min(1),
+  descriptionFr: z.string().min(1),
+  descriptionEn: z.string().min(1),
+  targetValue: z.number().int().min(1),
+  acesReward: z.number().int().min(0),
+  minLevel: z.number().int().min(1).default(1),
+  maxLevel: z.number().int().nullable().optional(),
+  isActive: z.boolean().default(true),
+});
+
+export const updateChallengeTemplateValidator = z.object({
+  type: z.enum(["quantitative", "social", "performance"]).optional(),
+  difficulty: z.enum(["easy", "medium", "hard"]).optional(),
+  titleFr: z.string().min(1).optional(),
+  titleEn: z.string().min(1).optional(),
+  descriptionFr: z.string().min(1).optional(),
+  descriptionEn: z.string().min(1).optional(),
+  targetValue: z.number().int().min(1).optional(),
+  acesReward: z.number().int().min(0).optional(),
+  minLevel: z.number().int().min(1).optional(),
+  maxLevel: z.number().int().nullable().optional(),
+  isActive: z.boolean().optional(),
+});
+
+// Badges
+export const createBadgeValidator = z.object({
+  code: z.string().min(1),
+  category: z.enum(["level", "achievement", "milestone", "special"]),
+  nameFr: z.string().min(1),
+  nameEn: z.string().min(1),
+  descriptionFr: z.string().min(1),
+  descriptionEn: z.string().min(1),
+  imageUrl: z.string().min(1),
+  requiredLevel: z.number().int().nullable().optional(),
+  displayOrder: z.number().int().default(0),
+  isActive: z.boolean().default(true),
+});
+
+export const updateBadgeValidator = z.object({
+  category: z.enum(["level", "achievement", "milestone", "special"]).optional(),
+  nameFr: z.string().min(1).optional(),
+  nameEn: z.string().min(1).optional(),
+  descriptionFr: z.string().min(1).optional(),
+  descriptionEn: z.string().min(1).optional(),
+  imageUrl: z.string().min(1).optional(),
+  requiredLevel: z.number().int().nullable().optional(),
+  displayOrder: z.number().int().optional(),
+  isActive: z.boolean().optional(),
+});
+
 export const bulkCreateOrganizationsValidator = z.object({
   clubs: z
     .array(

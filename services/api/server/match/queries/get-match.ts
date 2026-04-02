@@ -7,10 +7,12 @@ import {
   set,
   setScore,
   matchComment,
+  matchPhoto,
   matchFeedback,
+  matchLike,
 } from "../../../db/schema/match/schema";
 import { user, organization, member } from "../../../db/schema/auth/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, sql, count } from "drizzle-orm";
 
 export const getMatch = async (c: Context<HonoContext>) => {
   try {
@@ -29,7 +31,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
 
     const foundMatch = matchData[0];
 
-    const [participantsRaw, setsData, commentsRaw] = await Promise.all([
+    const [participantsRaw, setsData, commentsRaw, photosData, likeData] = await Promise.all([
       db
         .select({
           id: matchParticipant.id,
@@ -76,6 +78,18 @@ export const getMatch = async (c: Context<HonoContext>) => {
         .leftJoin(user, eq(matchComment.userId, user.id))
         .where(eq(matchComment.matchId, matchId))
         .orderBy(matchComment.createdAt),
+
+      db.select().from(matchPhoto).where(eq(matchPhoto.matchId, matchId)),
+
+      db
+        .select({
+          likesCount: count(),
+          hasLiked: currentUser
+            ? sql<boolean>`bool_or(${matchLike.userId} = ${currentUser.id})`
+            : sql<boolean>`false`,
+        })
+        .from(matchLike)
+        .where(eq(matchLike.matchId, matchId)),
     ]);
 
     const participants = participantsRaw.map((p) => ({
@@ -202,14 +216,20 @@ export const getMatch = async (c: Context<HonoContext>) => {
       organization: org,
     }));
 
+    const likesCount = likeData[0]?.likesCount ?? 0;
+    const hasLiked = likeData[0]?.hasLiked ?? false;
+
     return c.json({
       match: foundMatch,
       participants,
       sets: setsWithScores,
       comments,
       myFeedback,
+      photos: photosData,
       venueOrganization,
       participantOrganizations,
+      likesCount,
+      hasLiked,
     });
   } catch (error) {
     return c.json({ error: (error as Error).message }, 500);

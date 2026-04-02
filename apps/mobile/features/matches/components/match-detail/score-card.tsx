@@ -6,7 +6,6 @@ import Animated, {
   withRepeat,
   withTiming,
   withSequence,
-  withSpring,
   FadeInUp,
   Easing,
 } from "react-native-reanimated";
@@ -15,12 +14,13 @@ import { Avatar } from "@/components/ui/avatar";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors, spacing, radii } from "@/constants/theme";
 import {
-  formatMatchScore,
   formatMatchDuration,
   getHomeParticipant,
   getAwayParticipant,
+  getStructuredMatchScore,
   matchDetailToMatchWithParticipants,
 } from "@/lib/format";
+import { SetScoresView } from "@/components/ui/set-scores-view";
 import type { MatchDetail, MatchParticipant, ParticipantOrganization } from "@/types/match";
 
 interface ScoreCardProps {
@@ -78,35 +78,13 @@ function PulsingDot({ color }: { color: string }) {
   return <Animated.View style={[styles.liveDot, { backgroundColor: color }, animatedStyle]} />;
 }
 
-function AnimatedScore({ score, scheme }: { score: string; scheme: "light" | "dark" }) {
-  const scale = useSharedValue(1);
-
-  useEffect(() => {
-    scale.value = withSequence(
-      withSpring(1.08, { damping: 6, stiffness: 400 }),
-      withSpring(1, { damping: 10, stiffness: 300 })
-    );
-  }, [score]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  return (
-    <Animated.View style={animatedStyle}>
-      <Text style={[styles.scoreText, { color: semanticColors.labelPrimary[scheme] }]}>
-        {score}
-      </Text>
-    </Animated.View>
-  );
-}
 
 export function ScoreCard({ matchDetail, currentUserId }: ScoreCardProps) {
   const scheme = useColorScheme();
   const match = matchDetailToMatchWithParticipants(matchDetail);
   const home = getHomeParticipant(match);
   const away = getAwayParticipant(match);
-  const score = formatMatchScore(match);
+  const structuredScore = getStructuredMatchScore(match);
   const duration = formatMatchDuration(match);
   const status = matchDetail.match.status;
   const statusConfig = STATUS_CONFIG[status] ?? { label: status.toUpperCase(), color: "#8E8E93" };
@@ -142,14 +120,7 @@ export function ScoreCard({ matchDetail, currentUserId }: ScoreCardProps) {
         <View style={styles.scoreCenter}>
           {status === "scheduled" && !hasSets ? (
             <Text style={[styles.vsText, { color: semanticColors.labelTertiary[scheme] }]}>VS</Text>
-          ) : (
-            <AnimatedScore score={score} scheme={scheme} />
-          )}
-          {hasSets && (
-            <Text style={[styles.setsLabel, { color: semanticColors.labelTertiary[scheme] }]}>
-              SETS
-            </Text>
-          )}
+          ) : null}
         </View>
 
         <PlayerColumn
@@ -160,6 +131,19 @@ export function ScoreCard({ matchDetail, currentUserId }: ScoreCardProps) {
           scheme={scheme}
         />
       </Animated.View>
+
+      {/* Set-by-set scores */}
+      {structuredScore && (
+        <Animated.View entering={FadeInUp.duration(400).delay(300)}>
+          <SetScoresView
+            score={structuredScore}
+            homeName={home?.user?.name ?? "Joueur 1"}
+            awayName={away?.user?.name ?? "Joueur 2"}
+            homeIsWinner={home?.isWinner}
+            size="large"
+          />
+        </Animated.View>
+      )}
 
       {/* Divider + Context line */}
       <View style={styles.contextSection}>
@@ -315,16 +299,6 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: "800",
     opacity: 0.5,
-  },
-  scoreText: {
-    fontSize: 56,
-    fontWeight: "800",
-    fontVariant: ["tabular-nums"],
-  },
-  setsLabel: {
-    fontSize: 10,
-    fontWeight: "700",
-    letterSpacing: 2,
   },
   contextSection: {
     marginTop: 20,

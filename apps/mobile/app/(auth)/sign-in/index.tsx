@@ -49,6 +49,13 @@ export default function SignIn() {
           token: credential.identityToken,
         },
       });
+      // Apple provides fullName only on first sign-in — update user name (fire-and-forget)
+      const givenName = credential.fullName?.givenName;
+      const familyName = credential.fullName?.familyName;
+      if (givenName || familyName) {
+        const fullName = [givenName, familyName].filter(Boolean).join(" ");
+        authClient.updateUser({ name: fullName }).catch(console.warn);
+      }
     } catch (e: any) {
       if (e.code !== "ERR_REQUEST_CANCELED") {
         setError("Une erreur est survenue avec Apple Sign-In");

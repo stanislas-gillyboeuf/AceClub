@@ -9,61 +9,72 @@ export function getInitials(name: string): string {
     .join("");
 }
 
-export function formatMatchScore(match: MatchWithParticipants): string {
+export interface SetScoreData {
+  homeGames: number;
+  awayGames: number;
+  isTiebreak: boolean;
+}
+
+export interface StructuredMatchScore {
+  sets: SetScoreData[];
+  homeSetsWon: number;
+  awaySetsWon: number;
+}
+
+export function getStructuredMatchScore(match: MatchWithParticipants): StructuredMatchScore | null {
   const sets = match.sets;
-  if (!sets || sets.length === 0) return "-";
+  if (!sets || sets.length === 0) return null;
 
   const home = getHomeParticipant(match);
   const away = getAwayParticipant(match);
-  if (!home || !away) return "-";
+  if (!home || !away) return null;
 
   let homeSetsWon = 0;
   let awaySetsWon = 0;
+  const sortedSets = [...sets].sort((a, b) => a.setNumber - b.setNumber);
 
-  for (const set of sets) {
-    const homeGames =
-      set.scores?.find((s) => s.userId === home.userId)?.games ?? 0;
-    const awayGames =
-      set.scores?.find((s) => s.userId === away.userId)?.games ?? 0;
+  const setScores: SetScoreData[] = sortedSets.map((set) => {
+    const homeGames = set.scores?.find((s) => s.userId === home.userId)?.games ?? 0;
+    const awayGames = set.scores?.find((s) => s.userId === away.userId)?.games ?? 0;
     if (homeGames > awayGames) homeSetsWon++;
     else if (awayGames > homeGames) awaySetsWon++;
-  }
+    const isTiebreak = homeGames >= 6 && awayGames >= 6 && Math.abs(homeGames - awayGames) === 1;
+    return { homeGames, awayGames, isTiebreak };
+  });
 
-  return `${homeSetsWon} - ${awaySetsWon}`;
+  return { sets: setScores, homeSetsWon, awaySetsWon };
+}
+
+export function formatMatchScore(match: MatchWithParticipants): string {
+  const structured = getStructuredMatchScore(match);
+  if (!structured) return "-";
+  return `${structured.homeSetsWon} - ${structured.awaySetsWon}`;
+}
+
+export function computeMatchDuration(
+  startedAt: string | null | undefined,
+  finishedAt: string | null | undefined,
+): { hours: number; minutes: number } | null {
+  if (!startedAt || !finishedAt) return null;
+  const diffMs = new Date(finishedAt).getTime() - new Date(startedAt).getTime();
+  if (diffMs <= 0) return null;
+  const totalMinutes = Math.floor(diffMs / 60000);
+  if (totalMinutes === 0) return null;
+  return { hours: Math.floor(totalMinutes / 60), minutes: totalMinutes % 60 };
 }
 
 export function formatMatchDuration(
   match: MatchWithParticipants
 ): string | null {
-  if (!match.startedAt || !match.finishedAt) return null;
-
-  const start = new Date(match.startedAt).getTime();
-  const end = new Date(match.finishedAt).getTime();
-  const diffMs = end - start;
-
-  if (diffMs <= 0) return null;
-
-  const totalMinutes = Math.floor(diffMs / 60000);
-  if (totalMinutes === 0) return null;
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-
-  if (hours > 0) return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
-  return `${minutes}m`;
+  const dur = computeMatchDuration(match.startedAt, match.finishedAt);
+  if (!dur) return null;
+  if (dur.hours > 0) return `${dur.hours}h ${dur.minutes.toString().padStart(2, "0")}m`;
+  return `${dur.minutes}m`;
 }
 
 export function formatMatchDate(match: MatchWithParticipants): string {
   const dateStr = match.finishedAt ?? match.startedAt ?? match.createdAt;
-  const date = new Date(dateStr);
-
-  const formatter = new Intl.DateTimeFormat("fr-FR", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-
-  const formatted = formatter.format(date);
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  return formatShortDate(dateStr);
 }
 
 export function getHomeParticipant(
@@ -96,25 +107,25 @@ export function formatAces(count: number | undefined | null): string {
   return count.toString();
 }
 
+const shortDateFormatter = new Intl.DateTimeFormat("fr-FR", {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+});
+
+const fullDateFormatter = new Intl.DateTimeFormat("fr-FR", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
+
 export function formatShortDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const formatter = new Intl.DateTimeFormat("fr-FR", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-  const formatted = formatter.format(date);
+  const formatted = shortDateFormatter.format(new Date(dateStr));
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
 export function formatFullDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const formatter = new Intl.DateTimeFormat("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-  const formatted = formatter.format(date);
+  const formatted = fullDateFormatter.format(new Date(dateStr));
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
@@ -166,6 +177,21 @@ export function estimateTravelTime(distanceKm: number): string {
   const minutes = estimateTravelTimeMinutes(distanceKm);
   if (minutes < 1) return "< 1 min";
   return `~${minutes} min`;
+}
+
+export function formatRelativeTime(dateStr: string): string {
+  const now = Date.now();
+  const diff = now - new Date(dateStr).getTime();
+  if (diff < 0 || Number.isNaN(diff)) return "";
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "À l'instant";
+  if (minutes < 60) return `il y a ${minutes}min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `il y a ${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `il y a ${days}j`;
+  const weeks = Math.floor(days / 7);
+  return `il y a ${weeks} sem.`;
 }
 
 /** Group label for event dates: "Aujourd'hui / Vendredi", "Demain / Samedi", "15 mars / Dimanche" */

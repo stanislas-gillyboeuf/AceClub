@@ -63,7 +63,7 @@ export default function DeletionRequestsPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>

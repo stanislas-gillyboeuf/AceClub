@@ -35,6 +35,9 @@ export interface EventSummary {
   organizationName: string | null;
   organizationLogo: string | null;
   organizationSlug: string | null;
+  organizationAddress: string | null;
+  organizationLatitude: number | null;
+  organizationLongitude: number | null;
   participantCount: number;
 }
 
@@ -78,6 +81,7 @@ export interface CreateEventRequest {
   price?: number;
   paymentLink?: string;
   visibility?: EventVisibility;
+  status?: EventStatus;
   organizationId: string;
 }
 

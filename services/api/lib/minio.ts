@@ -28,6 +28,14 @@ export async function generateUploadUrl(
   return { signedUrl, publicUrl };
 }
 
+export function extractKeyFromUrl(url: string): string {
+  const prefix = `${process.env.MINIO_PUBLIC_URL}/${process.env.MINIO_BUCKET_NAME}/`;
+  if (!url.startsWith(prefix)) {
+    throw new Error(`URL does not match expected S3 prefix: ${url}`);
+  }
+  return url.slice(prefix.length);
+}
+
 export async function deleteObject(key: string): Promise<void> {
   const command = new DeleteObjectCommand({
     Bucket: process.env.MINIO_BUCKET_NAME!,

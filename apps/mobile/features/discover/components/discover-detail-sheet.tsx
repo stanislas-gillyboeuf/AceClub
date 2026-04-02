@@ -1,9 +1,8 @@
-import { View, Text, ScrollView, Pressable, StyleSheet, useWindowDimensions } from "react-native";
+import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import { GlassView } from "@/components/ui/glass-view";
+import Button from "@/components/ui/button";
 import {
-  X,
   MapPin,
   Building2,
   Calendar,
@@ -38,132 +37,112 @@ export function DiscoverDetailSheet({
   onClose,
 }: DiscoverDetailSheetProps) {
   const scheme = useColorScheme();
-  const { width: screenWidth } = useWindowDimensions();
   const tier = getLevelTier(item.user?.level ?? 1);
+  const TierIcon = tier.icon;
 
   const displayName = item.user?.name ?? "Joueur";
   const intentType = item.intent.type ?? "match";
-  const typeLabel = intentType === "match" ? "Match" : "Entra\u00eenement";
+  const typeLabel = intentType === "match" ? "Match" : "Entraînement";
   const TypeIcon = intentType === "match" ? Trophy : Dumbbell;
 
+  const date = item.intent.date ?? item.intent.scheduledDate;
+  const time = item.intent.time ?? item.intent.scheduledTime;
+
   return (
-    <View style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-      <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-        {/* Hero photo */}
-        <View style={[styles.heroContainer, { width: screenWidth }]}>
+    <>
+      <ScrollView
+        style={[styles.scrollView, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.content}>
+          {/* Cover image */}
           {item.user?.image ? (
             <Image
               source={{ uri: item.user.image }}
-              style={StyleSheet.absoluteFill}
+              style={styles.coverImage}
               contentFit="cover"
               transition={200}
             />
           ) : (
-            <LinearGradient
-              colors={[`${tier.color}B3`, `${tier.color}4D`]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            >
-              <View style={styles.heroInitials}>
-                <Text style={styles.heroInitialsText}>
-                  {item.user ? getInitials(item.user.name) : "?"}
-                </Text>
-              </View>
-            </LinearGradient>
+            <View style={[styles.coverPlaceholder, { backgroundColor: semanticColors.skeleton[scheme] }]}>
+              <Text style={styles.initialsText}>
+                {item.user ? getInitials(item.user.name) : "?"}
+              </Text>
+            </View>
           )}
 
-          <LinearGradient
-            colors={["transparent", semanticColors.primaryBackground[scheme]]}
-            style={styles.heroGradient}
-          />
+          {/* Name */}
+          <Text
+            style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}
+            numberOfLines={1}
+          >
+            {displayName}
+          </Text>
 
-          {/* Close button */}
-          <Pressable onPress={onClose}>
-            <GlassView style={styles.closeButton}>
-              <X size={18} color={semanticColors.labelSecondary[scheme]} strokeWidth={2.5} />
-            </GlassView>
-          </Pressable>
-        </View>
-
-        <View style={styles.content}>
-          {/* Profile info */}
-          <View style={styles.profileSection}>
-            <View style={styles.profileHeader}>
-              <Text
-                style={[styles.profileName, { color: semanticColors.labelPrimary[scheme] }]}
-                numberOfLines={1}
-              >
-                {displayName}
-              </Text>
-              <View style={styles.levelBadge}>
-                <TypeIcon size={14} color={tier.color} strokeWidth={2.5} />
-                <Text style={[styles.levelText, { color: semanticColors.labelSecondary[scheme] }]}>
-                  Niv. {item.user?.level ?? 1}
-                </Text>
-              </View>
-            </View>
-
-            {item.user?.organization && (
-              <View style={styles.orgRow}>
-                <Building2 size={14} color={colors.accentGreen} strokeWidth={2} />
-                <Text style={[styles.orgText, { color: colors.accentGreen }]}>
-                  {item.user.organization.name}
-                </Text>
-              </View>
-            )}
-
-            {item.distance != null && (
-              <View style={styles.distanceRow}>
-                <MapPin size={14} color={semanticColors.labelSecondary[scheme]} strokeWidth={2} />
-                <Text style={[styles.distanceText, { color: semanticColors.labelSecondary[scheme] }]}>
-                  {formatDistance(item.distance)}
-                </Text>
-              </View>
-            )}
+          {/* Info rows */}
+          <View style={styles.infoRow}>
+            <TierIcon size={16} color={tier.color} strokeWidth={2} />
+            <Text style={[styles.infoText, { color: semanticColors.labelPrimary[scheme] }]}>
+              Niveau {item.user?.level ?? 1} · {tier.label}
+            </Text>
           </View>
+
+          {item.user?.organization && (
+            <View style={styles.infoRow}>
+              <Building2 size={16} color={colors.accentGreen} strokeWidth={2} />
+              <Text style={[styles.infoText, { color: semanticColors.labelPrimary[scheme] }]}>
+                {item.user.organization.name}
+              </Text>
+            </View>
+          )}
+
+          {item.distance != null && (
+            <View style={styles.infoRow}>
+              <MapPin size={16} color={colors.accentGreen} strokeWidth={2} />
+              <Text style={[styles.infoText, { color: semanticColors.labelPrimary[scheme] }]}>
+                {formatDistance(item.distance)}
+              </Text>
+            </View>
+          )}
 
           <View style={[styles.divider, { backgroundColor: semanticColors.divider[scheme] }]} />
 
           {/* Availability section */}
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: semanticColors.labelPrimary[scheme] }]}>
-              Disponibilit\u00e9
+              Disponibilité
             </Text>
             <GlassView style={styles.availabilityCard}>
-              <DetailRow
-                icon={TypeIcon}
-                title="Type"
-                value={typeLabel}
-                iconColor={colors.accentGreen}
-                scheme={scheme}
-              />
-              {(item.intent.date ?? item.intent.scheduledDate) && (
-                <DetailRow
-                  icon={Calendar}
-                  title="Date"
-                  value={formatFullDate((item.intent.date ?? item.intent.scheduledDate)!)}
-                  iconColor={colors.accentGreen}
-                  scheme={scheme}
-                />
+              <View style={styles.cardRow}>
+                <TypeIcon size={16} color={colors.accentGreen} strokeWidth={2} />
+                <Text style={[styles.infoText, { color: semanticColors.labelPrimary[scheme] }]}>
+                  {typeLabel}
+                </Text>
+              </View>
+              {date && (
+                <View style={styles.cardRow}>
+                  <Calendar size={16} color={colors.accentGreen} strokeWidth={2} />
+                  <Text style={[styles.infoText, { color: semanticColors.labelPrimary[scheme] }]}>
+                    {formatFullDate(date)}
+                  </Text>
+                </View>
               )}
-              {(item.intent.time ?? item.intent.scheduledTime) && (
-                <DetailRow
-                  icon={Clock}
-                  title="Heure"
-                  value={formatTime((item.intent.time ?? item.intent.scheduledTime)!)}
-                  iconColor={colors.accentGreen}
-                  scheme={scheme}
-                />
+              {time && (
+                <View style={styles.cardRow}>
+                  <Clock size={16} color={colors.accentGreen} strokeWidth={2} />
+                  <Text style={[styles.infoText, { color: semanticColors.labelPrimary[scheme] }]}>
+                    {formatTime(time)}
+                  </Text>
+                </View>
               )}
               {item.intent.duration != null && item.intent.duration > 0 && (
-                <DetailRow
-                  icon={Timer}
-                  title="Dur\u00e9e"
-                  value={formatDuration(item.intent.duration)}
-                  iconColor={colors.accentGreen}
-                  scheme={scheme}
-                />
+                <View style={styles.cardRow}>
+                  <Timer size={16} color={colors.accentGreen} strokeWidth={2} />
+                  <Text style={[styles.infoText, { color: semanticColors.labelPrimary[scheme] }]}>
+                    {formatDuration(item.intent.duration)}
+                  </Text>
+                </View>
               )}
             </GlassView>
           </View>
@@ -172,7 +151,7 @@ export function DiscoverDetailSheet({
           {((item.intent.description ?? item.intent.message) ?? "").length > 0 && (
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: semanticColors.labelPrimary[scheme] }]}>
-                Note
+                À propos
               </Text>
               <GlassView style={styles.descriptionCard}>
                 <Text style={[styles.descriptionText, { color: semanticColors.labelSecondary[scheme] }]}>
@@ -184,138 +163,76 @@ export function DiscoverDetailSheet({
         </View>
       </ScrollView>
 
-      {/* Action buttons */}
+      {/* Action bar */}
       <View
         style={[
           styles.actionBar,
           { backgroundColor: semanticColors.cardBackground[scheme] },
         ]}
       >
-        <Pressable
-          style={styles.passActionButton}
-          onPress={() => {
-            onPass();
-            onClose();
-          }}
-        >
-          <X size={24} color={colors.red500} strokeWidth={2.5} />
-        </Pressable>
-
-        <Pressable
-          style={[styles.likeActionButton, { backgroundColor: colors.accentGreen }]}
+        <Button
+          label="Proposer un match"
           onPress={() => {
             onLike();
             onClose();
           }}
+        />
+        <Pressable
+          onPress={() => {
+            onPass();
+            onClose();
+          }}
+          style={({ pressed }) => pressed && { opacity: 0.6 }}
         >
-          <Trophy size={18} color="#FFFFFF" strokeWidth={2} />
-          <Text style={styles.likeActionText}>Proposer un match</Text>
+          <Text style={[styles.passText, { color: semanticColors.labelSecondary[scheme] }]}>
+            Passer
+          </Text>
         </Pressable>
       </View>
-    </View>
-  );
-}
-
-interface DetailRowProps {
-  icon: any;
-  title: string;
-  value: string;
-  iconColor: string;
-  scheme: "light" | "dark";
-}
-
-function DetailRow({ icon: Icon, title, value, iconColor, scheme }: DetailRowProps) {
-  return (
-    <View style={styles.detailRow}>
-      <Icon size={16} color={iconColor} strokeWidth={2} />
-      <Text style={[styles.detailTitle, { color: semanticColors.labelSecondary[scheme] }]}>
-        {title}
-      </Text>
-      <View style={styles.detailSpacer} />
-      <Text style={[styles.detailValue, { color: semanticColors.labelPrimary[scheme] }]}>
-        {value}
-      </Text>
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scrollView: {
     flex: 1,
-  },
-  heroContainer: {
-    height: 400,
-    overflow: "hidden",
-  },
-  heroInitials: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  heroInitialsText: {
-    fontSize: 80,
-    fontWeight: "700",
-    color: "rgba(255,255,255,0.6)",
-  },
-  heroGradient: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 120,
-  },
-  closeButton: {
-    position: "absolute",
-    top: 56,
-    right: 16,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
   },
   content: {
     paddingHorizontal: spacing.horizontal,
-    paddingBottom: 100,
+    paddingTop: 16,
+    paddingBottom: 120,
   },
-  profileSection: {
-    paddingTop: 20,
-    gap: 12,
+  coverImage: {
+    aspectRatio: 1,
+    width: "100%",
+    borderRadius: radii.lg,
+    overflow: "hidden",
   },
-  profileHeader: {
-    flexDirection: "row",
+  coverPlaceholder: {
+    aspectRatio: 1,
+    width: "100%",
+    borderRadius: radii.lg,
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "center",
   },
-  profileName: {
+  initialsText: {
+    fontSize: 80,
+    fontWeight: "700",
+    color: "rgba(0,0,0,0.15)",
+  },
+  title: {
     fontSize: 28,
     fontWeight: "700",
-    flex: 1,
+    marginTop: 20,
+    marginBottom: 16,
   },
-  levelBadge: {
+  infoRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 10,
+    marginBottom: 8,
   },
-  levelText: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  orgRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  orgText: {
-    fontSize: 15,
-    fontWeight: "500",
-  },
-  distanceRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  distanceText: {
+  infoText: {
     fontSize: 15,
     fontWeight: "500",
   },
@@ -324,7 +241,7 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   section: {
-    gap: 16,
+    gap: 12,
     marginBottom: 20,
   },
   sectionTitle: {
@@ -334,22 +251,12 @@ const styles = StyleSheet.create({
   availabilityCard: {
     padding: spacing.card,
     borderRadius: radii.md,
-    gap: 12,
+    gap: 8,
   },
-  detailRow: {
+  cardRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-  },
-  detailTitle: {
-    fontSize: 15,
-  },
-  detailSpacer: {
-    flex: 1,
-  },
-  detailValue: {
-    fontSize: 15,
-    fontWeight: "500",
+    gap: 10,
   },
   descriptionCard: {
     padding: spacing.card,
@@ -360,35 +267,20 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   actionBar: {
-    flexDirection: "row",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     alignItems: "center",
-    gap: 16,
+    gap: 12,
     paddingHorizontal: spacing.horizontal,
-    paddingVertical: 16,
+    paddingTop: 16,
+    paddingBottom: 34,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "rgba(0,0,0,0.1)",
   },
-  passActionButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 2,
-    borderColor: colors.red500,
-  },
-  likeActionButton: {
-    flex: 1,
-    height: 56,
-    borderRadius: radii.md,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  likeActionText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
+  passText: {
+    fontSize: 15,
+    fontWeight: "500",
   },
 });
