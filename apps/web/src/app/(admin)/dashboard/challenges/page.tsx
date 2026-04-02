@@ -32,8 +32,8 @@ import type { ChallengeTemplate } from "@/types/admin"
 
 const EMPTY_FORM = {
   code: "",
-  type: "quantitative" as const,
-  difficulty: "easy" as const,
+  type: "quantitative" as "quantitative" | "social" | "performance",
+  difficulty: "easy" as "easy" | "medium" | "hard",
   titleFr: "",
   titleEn: "",
   descriptionFr: "",
