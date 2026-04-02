@@ -2,14 +2,17 @@
 
 import * as React from "react"
 import {
+  Award,
   Building2,
   CalendarDays,
   LayoutDashboard,
   LifeBuoy,
+  Settings,
+  Swords,
+  Target,
+  ToggleRight,
   Users,
   Shield,
-  Swords,
-  ToggleRight,
   UserX,
 } from "lucide-react"
 
@@ -63,6 +66,21 @@ const navMain = [
     title: "Suppressions",
     url: "/dashboard/deletion-requests",
     icon: UserX,
+  },
+  {
+    title: "Configuration",
+    url: "/dashboard/game-config",
+    icon: Settings,
+  },
+  {
+    title: "D\u00e9fis",
+    url: "/dashboard/challenges",
+    icon: Target,
+  },
+  {
+    title: "Badges",
+    url: "/dashboard/badges",
+    icon: Award,
   },
 ]
 

@@ -1,11 +1,11 @@
 import { eq, and, sql } from "drizzle-orm";
 import { db } from "../../../db";
 import { badge, userBadge } from "../../../db/schema/reward/schema";
-import { userLevel, acesTransaction } from "../../../db/schema/level/schema";
+import { userLevel } from "../../../db/schema/level/schema";
 import { userStreak } from "../../../db/schema/streak/schema";
 import { match, matchParticipant } from "../../../db/schema/match/schema";
 import { userChallenge } from "../../../db/schema/challenge/schema";
-import { calculateLevelFromAces } from "../../level/services/xp-calculator";
+import { calculateLevelFromAcesAsync } from "../../level/services/xp-calculator";
 
 async function hasUserBadge(userId: string, badgeCode: string): Promise<boolean> {
   const [existing] = await db
@@ -18,7 +18,11 @@ async function hasUserBadge(userId: string, badgeCode: string): Promise<boolean>
 }
 
 async function awardBadge(userId: string, badgeCode: string): Promise<void> {
-  const [badgeRecord] = await db.select().from(badge).where(eq(badge.code, badgeCode)).limit(1);
+  const [badgeRecord] = await db
+    .select()
+    .from(badge)
+    .where(and(eq(badge.code, badgeCode), eq(badge.isActive, true)))
+    .limit(1);
 
   if (!badgeRecord) return;
 
@@ -31,71 +35,119 @@ async function awardBadge(userId: string, badgeCode: string): Promise<void> {
   });
 }
 
+function extractThreshold(code: string): number | null {
+  const match = code.match(/_(\d+)$/);
+  return match ? parseInt(match[1], 10) : null;
+}
+
 export async function checkBadges(userId: string): Promise<void> {
-  const [levelData] = await db
+  // Load all active badges from DB
+  const activeBadges = await db
     .select()
-    .from(userLevel)
-    .where(eq(userLevel.userId, userId))
-    .limit(1);
+    .from(badge)
+    .where(eq(badge.isActive, true));
 
-  if (levelData) {
-    const levelInfo = calculateLevelFromAces(levelData.totalAces);
+  // Level-based badges (LEVEL_*)
+  const levelBadges = activeBadges.filter((b) => b.code.startsWith("LEVEL_"));
+  if (levelBadges.length > 0) {
+    const [levelData] = await db
+      .select()
+      .from(userLevel)
+      .where(eq(userLevel.userId, userId))
+      .limit(1);
 
-    if (levelInfo.level >= 5) await awardBadge(userId, "LEVEL_5");
-    if (levelInfo.level >= 10) await awardBadge(userId, "LEVEL_10");
-    if (levelInfo.level >= 25) await awardBadge(userId, "LEVEL_25");
-    if (levelInfo.level >= 50) await awardBadge(userId, "LEVEL_50");
-    if (levelInfo.level >= 75) await awardBadge(userId, "LEVEL_75");
-    if (levelInfo.level >= 100) await awardBadge(userId, "LEVEL_100");
+    if (levelData) {
+      const levelInfo = await calculateLevelFromAcesAsync(levelData.totalAces);
+      for (const b of levelBadges) {
+        const threshold = extractThreshold(b.code);
+        if (threshold && levelInfo.level >= threshold) {
+          await awardBadge(userId, b.code);
+        }
+      }
+    }
   }
 
-  const [streakData] = await db
-    .select()
-    .from(userStreak)
-    .where(eq(userStreak.userId, userId))
-    .limit(1);
+  // Streak-based badges (STREAK_*)
+  const streakBadges = activeBadges.filter((b) => b.code.startsWith("STREAK_"));
+  if (streakBadges.length > 0) {
+    const [streakData] = await db
+      .select()
+      .from(userStreak)
+      .where(eq(userStreak.userId, userId))
+      .limit(1);
 
-  if (streakData) {
-    if (streakData.longestStreak >= 4) await awardBadge(userId, "STREAK_4");
-    if (streakData.longestStreak >= 12) await awardBadge(userId, "STREAK_12");
+    if (streakData) {
+      for (const b of streakBadges) {
+        const threshold = extractThreshold(b.code);
+        if (threshold && streakData.longestStreak >= threshold) {
+          await awardBadge(userId, b.code);
+        }
+      }
+    }
   }
 
-  const [matchStats] = await db
-    .select({
-      totalMatches: sql<number>`count(*)`.as("total_matches"),
-      totalWins: sql<number>`sum(case when ${matchParticipant.isWinner} then 1 else 0 end)`.as(
-        "total_wins",
-      ),
-    })
-    .from(matchParticipant)
-    .innerJoin(match, eq(matchParticipant.matchId, match.id))
-    .where(and(eq(matchParticipant.userId, userId), eq(match.status, "finished")));
+  // Match-based badges (WIN_*, MATCH_*, FIRST_WIN)
+  const winBadges = activeBadges.filter((b) => b.code.startsWith("WIN_") || b.code === "FIRST_WIN");
+  const matchBadges = activeBadges.filter((b) => b.code.startsWith("MATCH_"));
 
-  if (matchStats) {
-    const totalMatches = Number(matchStats.totalMatches) || 0;
-    const totalWins = Number(matchStats.totalWins) || 0;
+  if (winBadges.length > 0 || matchBadges.length > 0) {
+    const [matchStats] = await db
+      .select({
+        totalMatches: sql<number>`count(*)`.as("total_matches"),
+        totalWins: sql<number>`sum(case when ${matchParticipant.isWinner} then 1 else 0 end)`.as(
+          "total_wins",
+        ),
+      })
+      .from(matchParticipant)
+      .innerJoin(match, eq(matchParticipant.matchId, match.id))
+      .where(and(eq(matchParticipant.userId, userId), eq(match.status, "finished")));
 
-    if (totalWins >= 1) await awardBadge(userId, "FIRST_WIN");
-    if (totalWins >= 10) await awardBadge(userId, "WIN_10");
-    if (totalWins >= 50) await awardBadge(userId, "WIN_50");
-    if (totalWins >= 100) await awardBadge(userId, "WIN_100");
+    if (matchStats) {
+      const totalMatches = Number(matchStats.totalMatches) || 0;
+      const totalWins = Number(matchStats.totalWins) || 0;
 
-    if (totalMatches >= 10) await awardBadge(userId, "MATCH_10");
-    if (totalMatches >= 50) await awardBadge(userId, "MATCH_50");
-    if (totalMatches >= 100) await awardBadge(userId, "MATCH_100");
+      // FIRST_WIN special case
+      if (totalWins >= 1) {
+        const firstWin = activeBadges.find((b) => b.code === "FIRST_WIN");
+        if (firstWin) await awardBadge(userId, "FIRST_WIN");
+      }
+
+      for (const b of winBadges) {
+        if (b.code === "FIRST_WIN") continue;
+        const threshold = extractThreshold(b.code);
+        if (threshold && totalWins >= threshold) {
+          await awardBadge(userId, b.code);
+        }
+      }
+
+      for (const b of matchBadges) {
+        const threshold = extractThreshold(b.code);
+        if (threshold && totalMatches >= threshold) {
+          await awardBadge(userId, b.code);
+        }
+      }
+    }
   }
 
-  const [challengeStats] = await db
-    .select({
-      completedCount: sql<number>`count(*)`.as("completed_count"),
-    })
-    .from(userChallenge)
-    .where(and(eq(userChallenge.userId, userId), eq(userChallenge.status, "completed")));
+  // Challenge-based badges (CHALLENGE_*)
+  const challengeBadges = activeBadges.filter((b) => b.code.startsWith("CHALLENGE_"));
+  if (challengeBadges.length > 0) {
+    const [challengeStats] = await db
+      .select({
+        completedCount: sql<number>`count(*)`.as("completed_count"),
+      })
+      .from(userChallenge)
+      .where(and(eq(userChallenge.userId, userId), eq(userChallenge.status, "completed")));
 
-  if (challengeStats) {
-    const completedCount = Number(challengeStats.completedCount) || 0;
+    if (challengeStats) {
+      const completedCount = Number(challengeStats.completedCount) || 0;
 
-    if (completedCount >= 10) await awardBadge(userId, "CHALLENGE_10");
-    if (completedCount >= 50) await awardBadge(userId, "CHALLENGE_50");
+      for (const b of challengeBadges) {
+        const threshold = extractThreshold(b.code);
+        if (threshold && completedCount >= threshold) {
+          await awardBadge(userId, b.code);
+        }
+      }
+    }
   }
 }

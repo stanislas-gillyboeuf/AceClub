@@ -1,3 +1,6 @@
+import { getLevelConfig as getConfigFromDb } from "../../../lib/game-config-service";
+
+// Sync fallback defaults (used when DB is not available)
 export const LEVEL_CONFIG = {
   BASE_ACES: 100,
   GROWTH_RATE: 1.15,
@@ -10,6 +13,7 @@ export const ACES_REWARDS = {
   CHALLENGE_BASE: 150,
 } as const;
 
+// Sync versions (fallback only)
 export function getAcesRequiredForLevel(level: number): number {
   if (level <= 1) return 0;
   return Math.floor(LEVEL_CONFIG.BASE_ACES * Math.pow(LEVEL_CONFIG.GROWTH_RATE, level - 2));
@@ -50,6 +54,41 @@ export function calculateLevelFromAces(totalAces: number): LevelInfo {
 
   return {
     level: LEVEL_CONFIG.MAX_LEVEL,
+    currentLevelAces: 0,
+    acesToNextLevel: 0,
+    progressPercent: 100,
+  };
+}
+
+// Async versions (DB-driven)
+export async function getAcesRequiredForLevelAsync(level: number): Promise<number> {
+  if (level <= 1) return 0;
+  const config = await getConfigFromDb();
+  return Math.floor(config.BASE_ACES * Math.pow(config.GROWTH_RATE, level - 2));
+}
+
+export async function calculateLevelFromAcesAsync(totalAces: number): Promise<LevelInfo> {
+  const config = await getConfigFromDb();
+  let level = 1;
+  let remainingAces = totalAces;
+
+  while (level < config.MAX_LEVEL) {
+    const acesNeeded =
+      level + 1 <= 1 ? 0 : Math.floor(config.BASE_ACES * Math.pow(config.GROWTH_RATE, level - 1));
+    if (remainingAces < acesNeeded) {
+      return {
+        level,
+        currentLevelAces: remainingAces,
+        acesToNextLevel: acesNeeded - remainingAces,
+        progressPercent: acesNeeded > 0 ? (remainingAces / acesNeeded) * 100 : 0,
+      };
+    }
+    remainingAces -= acesNeeded;
+    level++;
+  }
+
+  return {
+    level: config.MAX_LEVEL,
     currentLevelAces: 0,
     acesToNextLevel: 0,
     progressPercent: 100,

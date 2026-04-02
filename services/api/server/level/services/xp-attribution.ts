@@ -1,7 +1,8 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "../../../db";
 import { userLevel, acesTransaction } from "../../../db/schema/level/schema";
-import { ACES_REWARDS, calculateLevelFromAces } from "./xp-calculator";
+import { getAcesRewards } from "../../../lib/game-config-service";
+import { calculateLevelFromAcesAsync } from "./xp-calculator";
 import type { MatchParticipant } from "../../../db/schema/match/type";
 
 export async function attributeMatchAces(
@@ -9,10 +10,12 @@ export async function attributeMatchAces(
   participants: MatchParticipant[],
   multiplier: number = 1.0,
 ): Promise<void> {
+  const rewards = await getAcesRewards();
+
   for (const participant of participants) {
     const userId = participant.userId;
 
-    const participationAces = Math.floor(ACES_REWARDS.MATCH_PARTICIPATION * multiplier);
+    const participationAces = Math.floor(rewards.MATCH_PARTICIPATION * multiplier);
     await addAcesTransaction(userId, {
       type: "match_participation",
       amount: participationAces,
@@ -23,7 +26,7 @@ export async function attributeMatchAces(
     });
 
     if (participant.isWinner) {
-      const victoryAces = Math.floor(ACES_REWARDS.MATCH_VICTORY * multiplier);
+      const victoryAces = Math.floor(rewards.MATCH_VICTORY * multiplier);
       await addAcesTransaction(userId, {
         type: "match_victory",
         amount: victoryAces,
@@ -92,7 +95,7 @@ async function recalculateUserLevel(userId: string): Promise<void> {
 
   if (!levelData) return;
 
-  const levelInfo = calculateLevelFromAces(levelData.totalAces);
+  const levelInfo = await calculateLevelFromAcesAsync(levelData.totalAces);
 
   if (levelInfo.level !== levelData.currentLevel) {
     await db

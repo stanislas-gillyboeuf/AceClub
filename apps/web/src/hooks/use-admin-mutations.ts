@@ -426,3 +426,151 @@ export function useProcessDeletionRequest() {
     },
   })
 }
+
+// Game Config
+export function useUpdateGameConfig() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { id: string; value: string }) =>
+      apiClient(`/admin/game-config/${data.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ value: data.value }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-game-config"] })
+    },
+  })
+}
+
+export function useResetGameConfig() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () =>
+      apiClient("/admin/game-config/reset", {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-game-config"] })
+    },
+  })
+}
+
+// Challenge Templates
+export function useCreateChallengeTemplate() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: {
+      code: string
+      type: string
+      difficulty: string
+      titleFr: string
+      titleEn: string
+      descriptionFr: string
+      descriptionEn: string
+      targetValue: number
+      acesReward: number
+      minLevel?: number
+      maxLevel?: number | null
+      isActive?: boolean
+    }) =>
+      apiClient("/admin/challenge-templates", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-challenge-templates"] })
+    },
+  })
+}
+
+export function useUpdateChallengeTemplate() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { id: string; [key: string]: unknown }) => {
+      const { id, ...rest } = data
+      return apiClient(`/admin/challenge-templates/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(rest),
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-challenge-templates"] })
+    },
+  })
+}
+
+export function useDeleteChallengeTemplate() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { id: string }) =>
+      apiClient(`/admin/challenge-templates/${data.id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-challenge-templates"] })
+    },
+  })
+}
+
+// Badges
+export function useCreateBadge() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: {
+      code: string
+      category: string
+      nameFr: string
+      nameEn: string
+      descriptionFr: string
+      descriptionEn: string
+      imageUrl: string
+      requiredLevel?: number | null
+      displayOrder?: number
+      isActive?: boolean
+    }) =>
+      apiClient("/admin/badges", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-badges"] })
+    },
+  })
+}
+
+export function useUpdateBadge() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { id: string; [key: string]: unknown }) => {
+      const { id, ...rest } = data
+      return apiClient(`/admin/badges/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(rest),
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-badges"] })
+    },
+  })
+}
+
+export function useDeleteBadge() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { id: string }) =>
+      apiClient(`/admin/badges/${data.id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-badges"] })
+    },
+  })
+}
