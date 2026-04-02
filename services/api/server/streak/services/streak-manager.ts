@@ -1,25 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../../db";
 import { userStreak } from "../../../db/schema/streak/schema";
-
-const STREAK_MULTIPLIERS: Record<number, number> = {
-  1: 1.0,
-  2: 1.1,
-  3: 1.2,
-  4: 1.2,
-  5: 1.3,
-  6: 1.3,
-  7: 1.3,
-  8: 1.5,
-  9: 1.5,
-  10: 1.5,
-  11: 1.5,
-};
-
-export function getStreakMultiplier(currentStreak: number): number {
-  if (currentStreak >= 12) return 2.0;
-  return STREAK_MULTIPLIERS[currentStreak] ?? 1.0;
-}
+import { getStreakMultiplier as getStreakMultiplierFromConfig } from "../../../lib/game-config-service";
 
 function getISOWeekInfo(date: Date): { week: number; year: number } {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -72,10 +54,11 @@ export async function updateUserStreak(
   }
 
   if (streak.lastActiveWeek === currentWeek && streak.lastActiveYear === currentYear) {
+    const multiplier = await getStreakMultiplierFromConfig(streak.currentStreak);
     return {
       newStreak: streak.currentStreak,
       streakBroken: false,
-      multiplier: getStreakMultiplier(streak.currentStreak),
+      multiplier,
     };
   }
 
@@ -106,9 +89,11 @@ export async function updateUserStreak(
     })
     .where(eq(userStreak.userId, userId));
 
+  const multiplier = await getStreakMultiplierFromConfig(newStreak);
+
   return {
     newStreak,
     streakBroken,
-    multiplier: getStreakMultiplier(newStreak),
+    multiplier,
   };
 }
