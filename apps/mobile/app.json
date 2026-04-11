@@ -57,7 +57,12 @@
       "expo-image",
       "expo-secure-store",
       "expo-web-browser",
-      "expo-audio",
+      [
+        "expo-audio",
+        {
+          "enableBackgroundPlayback": false
+        }
+      ],
       "expo-notifications",
       "expo-apple-authentication",
       [
