@@ -41,6 +41,7 @@ export default function CreateMatch() {
   const venue = useCreateMatchFormStore((s) => s.venue);
   const scheduledDate = useCreateMatchFormStore((s) => s.scheduledDate);
   const selectedSlot = useCreateMatchFormStore((s) => s.selectedSlot);
+  const isPast = useCreateMatchFormStore((s) => s.isPast);
   const resetForm = useCreateMatchFormStore((s) => s.reset);
   const resetStepper = useCreateMatchStepperStore((s) => s.reset);
 
@@ -80,15 +81,27 @@ export default function CreateMatch() {
   const handleCreate = useCallback(async () => {
     if (!me || !awayUser || !selectedSlot) return;
 
-    const scheduledAt = combineDateAndSlot(scheduledDate, selectedSlot);
+    const combinedAt = combineDateAndSlot(scheduledDate, selectedSlot);
+
+    const timingPayload = isPast
+      ? {
+          status: "finished" as const,
+          startedAt: combinedAt.toISOString(),
+          finishedAt: new Date(
+            combinedAt.getTime() + 90 * 60 * 1000
+          ).toISOString(),
+        }
+      : {
+          status: "scheduled" as const,
+          scheduledAt: combinedAt.toISOString(),
+        };
 
     createMatch.mutate(
       {
         createdBy: me.id,
-        status: "scheduled",
         type: matchType,
         createdAt: new Date().toISOString(),
-        scheduledAt: scheduledAt.toISOString(),
+        ...timingPayload,
         participants: [
           { userId: me.id, side: "home", isWinner: false },
           { userId: awayUser.id, side: "away", isWinner: false },
@@ -130,6 +143,7 @@ export default function CreateMatch() {
     selectedSlot,
     scheduledDate,
     matchType,
+    isPast,
     venue,
     createMatch,
     updateVenue,
@@ -204,7 +218,7 @@ export default function CreateMatch() {
         onBack={prev}
         onNext={handleNext}
         onCancel={handleDismiss}
-        lastStepLabel="Planifier le match"
+        lastStepLabel={isPast ? "Enregistrer le match" : "Planifier le match"}
       />
 
       {isCreating && (
