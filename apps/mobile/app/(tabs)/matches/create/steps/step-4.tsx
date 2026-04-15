@@ -18,8 +18,10 @@ export default function Step4() {
   const scheme = useColorScheme();
   const scheduledDate = useCreateMatchFormStore((s) => s.scheduledDate);
   const selectedSlot = useCreateMatchFormStore((s) => s.selectedSlot);
+  const isPast = useCreateMatchFormStore((s) => s.isPast);
   const setScheduledDate = useCreateMatchFormStore((s) => s.setScheduledDate);
   const setSelectedSlot = useCreateMatchFormStore((s) => s.setSelectedSlot);
+  const setIsPast = useCreateMatchFormStore((s) => s.setIsPast);
 
   const isAndroid = Platform.OS === "android";
 
@@ -27,16 +29,17 @@ export default function Step4() {
     DateTimePickerAndroid.open({
       value: scheduledDate,
       mode: "date",
-      minimumDate: new Date(),
+      minimumDate: isPast ? undefined : new Date(),
+      maximumDate: isPast ? new Date() : undefined,
       onChange: (_, date) => {
         if (date) setScheduledDate(date);
       },
     });
-  }, [scheduledDate, setScheduledDate]);
+  }, [scheduledDate, setScheduledDate, isPast]);
 
   const availableSlots = useMemo(
-    () => getAvailableSlots(scheduledDate),
-    [scheduledDate]
+    () => getAvailableSlots(scheduledDate, isPast),
+    [scheduledDate, isPast]
   );
 
   return (
@@ -47,8 +50,55 @@ export default function Step4() {
           { color: semanticColors.labelPrimary[scheme] },
         ]}
       >
-        Quand jouer ?
+        {isPast ? "Match passé" : "Quand jouer ?"}
       </Text>
+
+      <View style={styles.segmented}>
+        <Pressable
+          onPress={() => setIsPast(false)}
+          style={[
+            styles.segmentedItem,
+            !isPast && {
+              backgroundColor: colors.accentGreen,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.segmentedLabel,
+              {
+                color: !isPast
+                  ? "#fff"
+                  : semanticColors.labelSecondary[scheme],
+              },
+            ]}
+          >
+            À venir
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setIsPast(true)}
+          style={[
+            styles.segmentedItem,
+            isPast && {
+              backgroundColor: colors.accentGreen,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.segmentedLabel,
+              {
+                color: isPast
+                  ? "#fff"
+                  : semanticColors.labelSecondary[scheme],
+              },
+            ]}
+          >
+            Passé
+          </Text>
+        </Pressable>
+      </View>
 
       {isAndroid ? (
         <Pressable onPress={openDatePicker}>
@@ -61,10 +111,12 @@ export default function Step4() {
       ) : (
         <GlassView style={styles.datePickerCard}>
           <DateTimePicker
+            key={isPast ? "past" : "future"}
             value={scheduledDate}
             mode="date"
             display="compact"
-            minimumDate={new Date()}
+            minimumDate={isPast ? undefined : new Date()}
+            maximumDate={isPast ? new Date() : undefined}
             onChange={(_, date) => {
               if (date) setScheduledDate(date);
             }}
@@ -119,5 +171,21 @@ const styles = StyleSheet.create({
   timeLabel: {
     fontSize: 14,
     fontWeight: "500",
+  },
+  segmented: {
+    flexDirection: "row",
+    borderRadius: radii.md,
+    overflow: "hidden",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "#8E8E93",
+  },
+  segmentedItem: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  segmentedLabel: {
+    fontSize: 15,
+    fontWeight: "600",
   },
 });
