@@ -17,12 +17,14 @@ interface CreateMatchFormState {
   venue: Organization | null;
   scheduledDate: Date;
   selectedSlot: TimeSlot | null;
+  isPast: boolean;
 
   setMatchType: (type: MatchTypeValue) => void;
   setAwayUser: (user: UserSearchItem | null) => void;
   setVenue: (venue: Organization | null) => void;
   setScheduledDate: (date: Date) => void;
   setSelectedSlot: (slot: TimeSlot | null) => void;
+  setIsPast: (isPast: boolean) => void;
   reset: () => void;
 }
 
@@ -32,12 +34,14 @@ export const useCreateMatchFormStore = create<CreateMatchFormState>((set) => ({
   venue: null,
   scheduledDate: new Date(),
   selectedSlot: null,
+  isPast: false,
 
   setMatchType: (matchType) => set({ matchType }),
   setAwayUser: (awayUser) => set({ awayUser }),
   setVenue: (venue) => set({ venue }),
   setScheduledDate: (date) => set({ scheduledDate: date, selectedSlot: null }),
   setSelectedSlot: (selectedSlot) => set({ selectedSlot }),
+  setIsPast: (isPast) => set({ isPast, scheduledDate: new Date(), selectedSlot: null }),
   reset: () =>
     set({
       matchType: "match",
@@ -45,6 +49,7 @@ export const useCreateMatchFormStore = create<CreateMatchFormState>((set) => ({
       venue: null,
       scheduledDate: new Date(),
       selectedSlot: null,
+      isPast: false,
     }),
 }));
 
@@ -71,8 +76,12 @@ export function generateAllTimeSlots(): TimeSlot[] {
   return slots;
 }
 
-export function getAvailableSlots(date: Date): TimeSlot[] {
+export function getAvailableSlots(date: Date, isPast = false): TimeSlot[] {
   const all = generateAllTimeSlots();
+
+  // Pour un match passé, tous les créneaux sont disponibles
+  if (isPast) return all;
+
   const now = new Date();
   const isToday = date.toDateString() === now.toDateString();
 
