@@ -71,6 +71,22 @@ export default function CreateMatch() {
     router.dismiss();
   }, [resetForm, resetStepper]);
 
+  const handleCreated = useCallback(
+    (matchId: string) => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      resetForm();
+      resetStepper();
+      router.dismiss();
+      if (isPast) {
+        router.push({
+          pathname: "/matches/[id]",
+          params: { id: matchId, openEditScores: "1" },
+        });
+      }
+    },
+    [resetForm, resetStepper, isPast],
+  );
+
   useEffect(() => {
     return () => {
       resetForm();
@@ -114,19 +130,11 @@ export default function CreateMatch() {
             updateVenue.mutate(
               { id: data.match.id, venueOrganizationId: venue.id },
               {
-                onSettled: () => {
-                  Haptics.notificationAsync(
-                    Haptics.NotificationFeedbackType.Success
-                  );
-                  handleDismiss();
-                },
+                onSettled: () => handleCreated(data.match.id),
               }
             );
           } else {
-            Haptics.notificationAsync(
-              Haptics.NotificationFeedbackType.Success
-            );
-            handleDismiss();
+            handleCreated(data.match.id);
           }
         },
         onError: (err) => {
@@ -147,7 +155,7 @@ export default function CreateMatch() {
     venue,
     createMatch,
     updateVenue,
-    handleDismiss,
+    handleCreated,
   ]);
 
   const handleNext = useCallback(() => {
