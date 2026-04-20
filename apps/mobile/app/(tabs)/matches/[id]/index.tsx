@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect, useRef } from "react";
 import { View, ScrollView, Alert, ActivityIndicator, RefreshControl, StyleSheet, Platform, PlatformColor, Pressable } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -20,11 +20,23 @@ import { FeedbackCta } from "@/features/matches/components/feedback/feedback-cta
 import { VisibilityToggle } from "@/features/matches/components/feedback/visibility-toggle";
 
 export default function MatchDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, openEditScores } = useLocalSearchParams<{
+    id: string;
+    openEditScores?: string;
+  }>();
   const router = useRouter();
   const scheme = useColorScheme();
 
   const { data: matchDetail, isLoading, error, refetch } = useMatch(id);
+
+  const hasAutoOpenedEditScoresRef = useRef(false);
+  useEffect(() => {
+    if (openEditScores === "1" && !hasAutoOpenedEditScoresRef.current) {
+      hasAutoOpenedEditScoresRef.current = true;
+      router.setParams({ openEditScores: undefined });
+      router.push(`/matches/${id}/edit-scores`);
+    }
+  }, [openEditScores, id, router]);
   const { data: me } = useMe();
   const updateMatch = useUpdateMatch();
   const deleteMatch = useDeleteMatch();
