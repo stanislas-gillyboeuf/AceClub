@@ -55,6 +55,10 @@ export function ChatBottomBar({
   const recorderOffset = useSharedValue(0);
   const isHolding = useSharedValue(false);
 
+  const focusInput = useCallback(() => {
+    inputRef.current?.focus();
+  }, []);
+
   const handleSendText = useCallback(() => {
     const trimmed = text.trim();
     if (!trimmed) return;
@@ -182,7 +186,8 @@ export function ChatBottomBar({
           </GlassView>
         </Pressable>
 
-        <GlassView style={styles.inputRow}>
+        <Pressable style={styles.inputRow} onPress={focusInput}>
+          <GlassView style={styles.inputRowGlass}>
           {recorder.isRecording ? (
             <View style={styles.recordingIndicator}>
               <Trash2 size={18} color={colors.red500} />
@@ -211,7 +216,8 @@ export function ChatBottomBar({
             </TextInputWrapper>
           )}
 
-        </GlassView>
+          </GlassView>
+        </Pressable>
 
         {hasText ? (
           <Pressable
@@ -266,6 +272,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   inputRow: {
+    flex: 1,
+  },
+  inputRowGlass: {
     flex: 1,
     flexDirection: "row",
     alignItems: "flex-end",

@@ -91,6 +91,14 @@ export function DiscoverCard({ item, maxHeight }: DiscoverCardProps) {
         </GlassView>
       </View>
 
+      {/* Prominent level badge */}
+      <View style={[styles.levelCircle, { borderColor: tier.color }]}>
+        <Text style={styles.levelCircleLabel}>NIVEAU</Text>
+        <Text style={styles.levelCircleNumber}>
+          {item.user?.level ?? 1}
+        </Text>
+      </View>
+
       {/* Info overlay at bottom */}
       <View style={styles.infoOverlay}>
         <Text style={styles.nameText} numberOfLines={1}>
@@ -188,6 +196,31 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 12,
     fontWeight: "600",
+  },
+  levelCircle: {
+    position: "absolute",
+    top: 64,
+    right: 16,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 3,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  levelCircleLabel: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 9,
+    fontWeight: "700",
+    letterSpacing: 1,
+  },
+  levelCircleNumber: {
+    color: "#FFFFFF",
+    fontSize: 28,
+    fontWeight: "800",
+    lineHeight: 32,
+    fontVariant: ["tabular-nums"],
   },
   infoOverlay: {
     position: "absolute",
