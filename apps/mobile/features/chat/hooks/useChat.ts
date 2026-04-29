@@ -1,6 +1,7 @@
 import { useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { conversationService } from "@/services/conversation";
+import { queryKeys } from "@/lib/query-keys";
 import type { Conversation } from "@/types/conversation";
 import type { ChatMessage } from "../types";
 import { useMessages } from "./useMessages";
@@ -39,7 +40,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     confirmMessage,
     failMessage,
     encryptContent: e2ee.encryptContent,
-    onSendSuccess: () => queryClient.invalidateQueries({ queryKey: ["conversation", "list"] }),
+    onSendSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.conversation.list() }),
   });
 
   const ws = useChatWebSocket(conversation, currentUserId, {
@@ -49,7 +50,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     updateMessageReactions,
     messagesRef,
     retryFailedMessage: send.retryFailedMessage,
-    invalidateConversationList: () => queryClient.invalidateQueries({ queryKey: ["conversation", "list"] }),
+    invalidateConversationList: () => queryClient.invalidateQueries({ queryKey: queryKeys.conversation.list() }),
   });
 
   const reactions = useReactions(conversation.id, currentUserId, {
@@ -68,7 +69,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
       setHasMoreMessages(loaded.length >= 20);
       conversationService.markRead(conversation.id)
         .then(() => {
-          queryClient.setQueryData<Conversation[]>(["conversation", "list"], (old) => {
+          queryClient.setQueryData<Conversation[]>(queryKeys.conversation.list(), (old) => {
             if (!old) return old;
             return old.map((c) =>
               c.id === conversation.id ? { ...c, unreadCount: 0 } : c,
@@ -189,9 +190,9 @@ export function useChat(conversation: Conversation, currentUserId: string) {
         conversation.id,
         !conversation.isMuted,
       );
-      queryClient.invalidateQueries({ queryKey: ["conversation", "list"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversation.list() });
       queryClient.invalidateQueries({
-        queryKey: ["conversation", conversation.id],
+        queryKey: queryKeys.conversation.detail(conversation.id),
       });
     } catch (error) {
       setErrorMessageRef.current((error as Error).message);
@@ -201,7 +202,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
   const deleteConversation = useCallback(async () => {
     try {
       await conversationService.deleteConversation(conversation.id);
-      queryClient.invalidateQueries({ queryKey: ["conversation", "list"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversation.list() });
     } catch (error) {
       setErrorMessageRef.current((error as Error).message);
     }

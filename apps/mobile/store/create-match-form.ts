@@ -11,14 +11,16 @@ export interface TimeSlot {
   id: number;
 }
 
-interface CreateMatchFormState {
+interface CreateMatchFormData {
   matchType: MatchTypeValue;
   awayUser: UserSearchItem | null;
   venue: Organization | null;
   scheduledDate: Date;
   selectedSlot: TimeSlot | null;
   isPast: boolean;
+}
 
+interface CreateMatchFormState extends CreateMatchFormData {
   setMatchType: (type: MatchTypeValue) => void;
   setAwayUser: (user: UserSearchItem | null) => void;
   setVenue: (venue: Organization | null) => void;
@@ -28,13 +30,17 @@ interface CreateMatchFormState {
   reset: () => void;
 }
 
-export const useCreateMatchFormStore = create<CreateMatchFormState>((set) => ({
+const defaultState = (): CreateMatchFormData => ({
   matchType: "match",
   awayUser: null,
   venue: null,
   scheduledDate: new Date(),
   selectedSlot: null,
   isPast: false,
+});
+
+export const useCreateMatchFormStore = create<CreateMatchFormState>((set) => ({
+  ...defaultState(),
 
   setMatchType: (matchType) => set({ matchType }),
   setAwayUser: (awayUser) => set({ awayUser }),
@@ -42,15 +48,7 @@ export const useCreateMatchFormStore = create<CreateMatchFormState>((set) => ({
   setScheduledDate: (date) => set({ scheduledDate: date, selectedSlot: null }),
   setSelectedSlot: (selectedSlot) => set({ selectedSlot }),
   setIsPast: (isPast) => set({ isPast, scheduledDate: new Date(), selectedSlot: null }),
-  reset: () =>
-    set({
-      matchType: "match",
-      awayUser: null,
-      venue: null,
-      scheduledDate: new Date(),
-      selectedSlot: null,
-      isPast: false,
-    }),
+  reset: () => set(defaultState()),
 }));
 
 // --- Time slot utilities ---

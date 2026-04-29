@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { Organization } from "@/types/organization";
 import type { EventVisibility, EventStatus } from "@/types/event";
 
-interface CreateEventFormState {
+interface CreateEventFormData {
   name: string;
   description: string;
   coverImageUri: string | null;
@@ -19,7 +19,9 @@ interface CreateEventFormState {
   isFree: boolean;
   price: string;
   paymentLink: string;
+}
 
+interface CreateEventFormState extends CreateEventFormData {
   setStatus: (status: EventStatus) => void;
   setName: (name: string) => void;
   setDescription: (description: string) => void;
@@ -48,7 +50,7 @@ const defaultEndDate = () => {
   return d;
 };
 
-export const useCreateEventFormStore = create<CreateEventFormState>((set) => ({
+const defaultState = (): CreateEventFormData => ({
   name: "",
   description: "",
   coverImageUri: null,
@@ -65,6 +67,10 @@ export const useCreateEventFormStore = create<CreateEventFormState>((set) => ({
   isFree: true,
   price: "",
   paymentLink: "",
+});
+
+export const useCreateEventFormStore = create<CreateEventFormState>((set) => ({
+  ...defaultState(),
 
   setStatus: (status) => set({ status }),
   setName: (name) => set({ name }),
@@ -92,23 +98,5 @@ export const useCreateEventFormStore = create<CreateEventFormState>((set) => ({
     set(isFree ? { isFree, price: "", paymentLink: "" } : { isFree }),
   setPrice: (price) => set({ price }),
   setPaymentLink: (paymentLink) => set({ paymentLink }),
-  reset: () =>
-    set({
-      name: "",
-      description: "",
-      coverImageUri: null,
-      startDate: defaultStartDate(),
-      endDate: defaultEndDate(),
-      organization: null,
-      organizationId: null,
-      address: "",
-      locationLatitude: null,
-      locationLongitude: null,
-      maxParticipants: null,
-      visibility: "public",
-      status: "draft",
-      isFree: true,
-      price: "",
-      paymentLink: "",
-    }),
+  reset: () => set(defaultState()),
 }));

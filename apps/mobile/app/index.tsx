@@ -17,7 +17,7 @@ export default function Index() {
     return <Redirect href="/(auth)/sign-in" />;
   }
 
-  if (!(session.user as any).onboardingCompleted) {
+  if (!session.user.onboardingCompleted) {
     return <Redirect href="/(onboarding)" />;
   }
 

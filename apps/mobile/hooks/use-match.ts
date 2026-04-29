@@ -1,5 +1,13 @@
-import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { matchService } from "@/services/match";
+import { queryKeys } from "@/lib/query-keys";
+import { useOptimisticMutation } from "@/hooks/use-optimistic-mutation";
+import { getNextPageParamFromPagination } from "@/hooks/use-infinite-pagination";
 import type {
   MatchDetail,
   MatchWithParticipants,
@@ -8,6 +16,7 @@ import type {
   UpdateMatchRequest,
   UpdateMatchScoresRequest,
   CreateCommentRequest,
+  UpdateCommentRequest,
   CreateFeedbackRequest,
   UpdateFeedbackRequest,
 } from "@/types/match";
@@ -17,7 +26,7 @@ import type { User } from "@/types/user";
 
 export function useMatch(id: string) {
   return useQuery({
-    queryKey: ["match", id],
+    queryKey: queryKeys.match.detail(id),
     queryFn: () => matchService.getMatch(id),
     enabled: !!id,
   });
@@ -32,7 +41,7 @@ export function useMatches(params?: {
   limit?: number;
 }) {
   return useQuery({
-    queryKey: ["match", "list", params],
+    queryKey: queryKeys.match.list(params),
     queryFn: () => matchService.listMatches(params),
   });
 }
@@ -47,45 +56,19 @@ export function useInfiniteMatches(params?: {
   const limit = params?.limit ?? 20;
 
   return useInfiniteQuery({
-    queryKey: ["match", "infinite", params],
+    queryKey: queryKeys.match.infinite(params),
     queryFn: ({ pageParam = 1 }) =>
       matchService.listMatches({ ...params, page: pageParam, limit }),
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      if (lastPage.pagination.page < lastPage.pagination.totalPages) {
-        return lastPage.pagination.page + 1;
-      }
-      return undefined;
-    },
+    getNextPageParam: getNextPageParamFromPagination,
   });
 }
 
-// --- Helpers ---
-
-function getMe(queryClient: ReturnType<typeof useQueryClient>): User | undefined {
-  return queryClient.getQueryData<User>(["user", "me"]);
-}
-
-function getMatchDetail(queryClient: ReturnType<typeof useQueryClient>, id: string): MatchDetail | undefined {
-  return queryClient.getQueryData<MatchDetail>(["match", id]);
-}
-
-async function cancelAndSnapshot(queryClient: ReturnType<typeof useQueryClient>, id: string) {
-  await queryClient.cancelQueries({ queryKey: ["match", id] });
-  return getMatchDetail(queryClient, id);
-}
-
-function rollback(queryClient: ReturnType<typeof useQueryClient>, id: string, previous: MatchDetail | undefined) {
-  if (previous) {
-    queryClient.setQueryData(["match", id], previous);
-  }
-}
-
-function settleMatch(queryClient: ReturnType<typeof useQueryClient>, id: string) {
-  queryClient.invalidateQueries({ queryKey: ["match", id] });
-  queryClient.invalidateQueries({ queryKey: ["match", "list"] });
-  queryClient.invalidateQueries({ queryKey: ["match", "infinite"] });
-}
+const matchInvalidationKeys = (matchId: string) => [
+  queryKeys.match.detail(matchId),
+  queryKeys.match.lists(),
+  queryKeys.match.infiniteAll(),
+];
 
 // --- Mutations ---
 
@@ -94,289 +77,238 @@ export function useCreateMatch() {
   return useMutation({
     mutationFn: (data: CreateMatchRequest) => matchService.createMatch(data),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["match", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["match", "infinite"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.match.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.match.infiniteAll() });
     },
   });
 }
 
 export function useUpdateMatch() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateMatchRequest }) =>
-      matchService.updateMatch(id, data),
-    onMutate: async ({ id, data }) => {
-      const previous = await cancelAndSnapshot(queryClient, id);
-      if (previous) {
-        queryClient.setQueryData<MatchDetail>(["match", id], {
-          ...previous,
-          match: { ...previous.match, ...data },
-        });
-      }
-      return { previous };
-    },
-    onError: (_err, { id }, context) => {
-      rollback(queryClient, id, context?.previous);
-    },
-    onSettled: (_, __, { id }) => {
-      settleMatch(queryClient, id);
-    },
+  return useOptimisticMutation<
+    { id: string; data: UpdateMatchRequest },
+    unknown,
+    MatchDetail
+  >({
+    mutationFn: ({ id, data }) => matchService.updateMatch(id, data),
+    queryKey: ({ id }) => queryKeys.match.detail(id),
+    optimisticUpdate: (previous, { data }) => ({
+      ...previous,
+      match: { ...previous.match, ...data },
+    }),
+    invalidate: ({ id }) => matchInvalidationKeys(id),
   });
 }
 
 export function useUpdateMatchScores() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateMatchScoresRequest }) =>
-      matchService.updateMatchScores(id, data),
-    onMutate: async ({ id, data }) => {
-      const previous = await cancelAndSnapshot(queryClient, id);
-      if (previous) {
-        const updatedSets = previous.sets.map((existingSet) => {
-          const incoming = data.sets.find((s) => s.setNumber === existingSet.setNumber);
-          if (!incoming) return existingSet;
-          return {
-            ...existingSet,
-            scores: incoming.scores.map((s) => {
-              const existing = existingSet.scores?.find((es) => es.userId === s.userId);
-              return {
-                participantId: existing?.participantId ?? "",
-                userId: s.userId,
-                side: existing?.side ?? null,
-                games: s.score,
-              };
-            }),
-          };
-        });
-        // Add new sets that don't exist yet
-        for (const incoming of data.sets) {
-          if (!previous.sets.some((s) => s.setNumber === incoming.setNumber)) {
-            updatedSets.push({
-              id: `optimistic-${incoming.setNumber}`,
-              matchId: id,
-              setNumber: incoming.setNumber,
-              createdAt: new Date().toISOString(),
-              scores: incoming.scores.map((s) => ({
-                participantId: "",
-                userId: s.userId,
-                side: null,
-                games: s.score,
-              })),
-            });
-          }
+  return useOptimisticMutation<
+    { id: string; data: UpdateMatchScoresRequest },
+    unknown,
+    MatchDetail
+  >({
+    mutationFn: ({ id, data }) => matchService.updateMatchScores(id, data),
+    queryKey: ({ id }) => queryKeys.match.detail(id),
+    optimisticUpdate: (previous, { id, data }) => {
+      const updatedSets = previous.sets.map((existingSet) => {
+        const incoming = data.sets.find((s) => s.setNumber === existingSet.setNumber);
+        if (!incoming) return existingSet;
+        return {
+          ...existingSet,
+          scores: incoming.scores.map((s) => {
+            const existing = existingSet.scores?.find((es) => es.userId === s.userId);
+            return {
+              participantId: existing?.participantId ?? "",
+              userId: s.userId,
+              side: existing?.side ?? null,
+              games: s.score,
+            };
+          }),
+        };
+      });
+      for (const incoming of data.sets) {
+        if (!previous.sets.some((s) => s.setNumber === incoming.setNumber)) {
+          updatedSets.push({
+            id: `optimistic-${incoming.setNumber}`,
+            matchId: id,
+            setNumber: incoming.setNumber,
+            createdAt: new Date().toISOString(),
+            scores: incoming.scores.map((s) => ({
+              participantId: "",
+              userId: s.userId,
+              side: null,
+              games: s.score,
+            })),
+          });
         }
-        queryClient.setQueryData<MatchDetail>(["match", id], {
-          ...previous,
-          sets: updatedSets.sort((a, b) => a.setNumber - b.setNumber),
-        });
       }
-      return { previous };
+      return {
+        ...previous,
+        sets: updatedSets.sort((a, b) => a.setNumber - b.setNumber),
+      };
     },
-    onError: (_err, { id }, context) => {
-      rollback(queryClient, id, context?.previous);
-    },
-    onSettled: (_, __, { id }) => {
-      settleMatch(queryClient, id);
-    },
+    invalidate: ({ id }) => matchInvalidationKeys(id),
   });
 }
 
 export function useUpdateVenue() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, venueOrganizationId }: { id: string; venueOrganizationId: string | null }) =>
+  return useOptimisticMutation<
+    { id: string; venueOrganizationId: string | null },
+    unknown,
+    MatchDetail
+  >({
+    mutationFn: ({ id, venueOrganizationId }) =>
       matchService.updateVenue(id, venueOrganizationId),
-    onMutate: async ({ id, venueOrganizationId }) => {
-      const previous = await cancelAndSnapshot(queryClient, id);
-      if (previous) {
-        queryClient.setQueryData<MatchDetail>(["match", id], {
-          ...previous,
-          match: { ...previous.match, venueOrganizationId },
-          venueOrganization: venueOrganizationId === null ? null : previous.venueOrganization,
-        });
-      }
-      return { previous };
-    },
-    onError: (_err, { id }, context) => {
-      rollback(queryClient, id, context?.previous);
-    },
-    onSettled: (_, __, { id }) => {
-      settleMatch(queryClient, id);
-    },
+    queryKey: ({ id }) => queryKeys.match.detail(id),
+    optimisticUpdate: (previous, { venueOrganizationId }) => ({
+      ...previous,
+      match: { ...previous.match, venueOrganizationId },
+      venueOrganization: venueOrganizationId === null ? null : previous.venueOrganization,
+    }),
+    invalidate: ({ id }) => matchInvalidationKeys(id),
   });
 }
 
 export function useDeleteMatch() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => matchService.deleteMatch(id),
-    onMutate: async (id) => {
-      const previous = await cancelAndSnapshot(queryClient, id);
-      queryClient.removeQueries({ queryKey: ["match", id] });
-      return { previous, id };
-    },
-    onError: (_err, id, context) => {
-      rollback(queryClient, id, context?.previous);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["match", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["match", "infinite"] });
-    },
+  return useOptimisticMutation<string, unknown, MatchDetail>({
+    mutationFn: (id) => matchService.deleteMatch(id),
+    queryKey: (id) => queryKeys.match.detail(id),
+    removeOnMutate: true,
+    invalidate: () => [queryKeys.match.lists(), queryKeys.match.infiniteAll()],
   });
 }
 
 export function useCreateComment() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ matchId, data }: { matchId: string; data: CreateCommentRequest }) =>
-      matchService.createComment(matchId, data),
-    onMutate: async ({ matchId, data }) => {
-      const previous = await cancelAndSnapshot(queryClient, matchId);
-      if (previous) {
-        const me = getMe(queryClient);
-        const now = new Date().toISOString();
-        queryClient.setQueryData<MatchDetail>(["match", matchId], {
-          ...previous,
-          comments: [
-            ...(previous.comments ?? []),
-            {
-              id: `optimistic-${Date.now()}`,
-              matchId,
-              userId: me?.id ?? "",
-              content: data.content,
-              createdAt: now,
-              updatedAt: now,
-              user: me ? { id: me.id, name: me.name, image: me.image } : null,
-            },
-          ],
-        });
-      }
-      return { previous };
+  return useOptimisticMutation<
+    { matchId: string; data: CreateCommentRequest },
+    unknown,
+    MatchDetail
+  >({
+    mutationFn: ({ matchId, data }) => matchService.createComment(matchId, data),
+    queryKey: ({ matchId }) => queryKeys.match.detail(matchId),
+    optimisticUpdate: (previous, { matchId, data }) => {
+      const me = queryClient.getQueryData<User>(queryKeys.user.me());
+      const now = new Date().toISOString();
+      return {
+        ...previous,
+        comments: [
+          ...(previous.comments ?? []),
+          {
+            id: `optimistic-${Date.now()}`,
+            matchId,
+            userId: me?.id ?? "",
+            content: data.content,
+            createdAt: now,
+            updatedAt: now,
+            user: me ? { id: me.id, name: me.name, image: me.image } : null,
+          },
+        ],
+      };
     },
-    onError: (_err, { matchId }, context) => {
-      rollback(queryClient, matchId, context?.previous);
-    },
-    onSettled: (_, __, { matchId }) => {
-      settleMatch(queryClient, matchId);
-    },
+    invalidate: ({ matchId }) => matchInvalidationKeys(matchId),
   });
 }
 
 export function useUpdateComment() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ matchId, data }: { matchId: string; data: CreateCommentRequest }) =>
-      matchService.updateComment(matchId, data),
-    onMutate: async ({ matchId, data }) => {
-      const previous = await cancelAndSnapshot(queryClient, matchId);
-      if (previous) {
-        const me = getMe(queryClient);
-        queryClient.setQueryData<MatchDetail>(["match", matchId], {
-          ...previous,
-          comments: (previous.comments ?? []).map((c) =>
-            c.userId === me?.id
-              ? { ...c, content: data.content, updatedAt: new Date().toISOString() }
-              : c
-          ),
-        });
-      }
-      return { previous };
+  return useOptimisticMutation<
+    { matchId: string; data: UpdateCommentRequest },
+    unknown,
+    MatchDetail
+  >({
+    mutationFn: ({ matchId, data }) => matchService.updateComment(matchId, data),
+    queryKey: ({ matchId }) => queryKeys.match.detail(matchId),
+    optimisticUpdate: (previous, { data }) => {
+      const me = queryClient.getQueryData<User>(queryKeys.user.me());
+      return {
+        ...previous,
+        comments: (previous.comments ?? []).map((c) =>
+          c.userId === me?.id
+            ? { ...c, content: data.content, updatedAt: new Date().toISOString() }
+            : c
+        ),
+      };
     },
-    onError: (_err, { matchId }, context) => {
-      rollback(queryClient, matchId, context?.previous);
-    },
-    onSettled: (_, __, { matchId }) => {
-      settleMatch(queryClient, matchId);
-    },
+    invalidate: ({ matchId }) => matchInvalidationKeys(matchId),
   });
 }
 
 export function useDeleteComment() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (matchId: string) => matchService.deleteComment(matchId),
-    onMutate: async (matchId) => {
-      const previous = await cancelAndSnapshot(queryClient, matchId);
-      if (previous) {
-        const me = getMe(queryClient);
-        queryClient.setQueryData<MatchDetail>(["match", matchId], {
-          ...previous,
-          comments: (previous.comments ?? []).filter((c) => c.userId !== me?.id),
-        });
-      }
-      return { previous };
+  return useOptimisticMutation<string, unknown, MatchDetail>({
+    mutationFn: (matchId) => matchService.deleteComment(matchId),
+    queryKey: (matchId) => queryKeys.match.detail(matchId),
+    optimisticUpdate: (previous) => {
+      const me = queryClient.getQueryData<User>(queryKeys.user.me());
+      return {
+        ...previous,
+        comments: (previous.comments ?? []).filter((c) => c.userId !== me?.id),
+      };
     },
-    onError: (_err, matchId, context) => {
-      rollback(queryClient, matchId, context?.previous);
-    },
-    onSettled: (_, __, matchId) => {
-      settleMatch(queryClient, matchId);
-    },
+    invalidate: (matchId) => matchInvalidationKeys(matchId),
   });
 }
 
 export function useCreateFeedback() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ matchId, data }: { matchId: string; data: CreateFeedbackRequest }) =>
-      matchService.createFeedback(matchId, data),
-    onMutate: async ({ matchId, data }) => {
-      const previous = await cancelAndSnapshot(queryClient, matchId);
-      if (previous) {
-        const me = getMe(queryClient);
-        const now = new Date().toISOString();
-        queryClient.setQueryData<MatchDetail>(["match", matchId], {
-          ...previous,
-          myFeedback: {
-            id: `optimistic-${Date.now()}`,
-            matchId,
-            userId: me?.id ?? "",
-            sensation: data.sensation,
-            comment: data.comment ?? null,
-            visibleToClub: data.visibleToClub,
-            createdAt: now,
-            updatedAt: now,
-          },
-        });
-      }
-      return { previous };
+  return useOptimisticMutation<
+    { matchId: string; data: CreateFeedbackRequest },
+    unknown,
+    MatchDetail
+  >({
+    mutationFn: ({ matchId, data }) => matchService.createFeedback(matchId, data),
+    queryKey: ({ matchId }) => queryKeys.match.detail(matchId),
+    optimisticUpdate: (previous, { matchId, data }) => {
+      const me = queryClient.getQueryData<User>(queryKeys.user.me());
+      const now = new Date().toISOString();
+      return {
+        ...previous,
+        myFeedback: {
+          id: `optimistic-${Date.now()}`,
+          matchId,
+          userId: me?.id ?? "",
+          sensation: data.sensation,
+          comment: data.comment ?? null,
+          visibleToClub: data.visibleToClub,
+          createdAt: now,
+          updatedAt: now,
+        },
+      };
     },
-    onError: (_err, { matchId }, context) => {
-      rollback(queryClient, matchId, context?.previous);
-    },
-    onSettled: (_, __, { matchId }) => {
-      settleMatch(queryClient, matchId);
-    },
+    invalidate: ({ matchId }) => matchInvalidationKeys(matchId),
   });
 }
 
 export function useUpdateFeedback() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ matchId, data }: { matchId: string; data: UpdateFeedbackRequest }) =>
-      matchService.updateFeedback(matchId, data),
-    onMutate: async ({ matchId, data }) => {
-      const previous = await cancelAndSnapshot(queryClient, matchId);
-      if (previous && previous.myFeedback) {
-        queryClient.setQueryData<MatchDetail>(["match", matchId], {
-          ...previous,
-          myFeedback: {
-            ...previous.myFeedback,
-            ...(data.sensation !== undefined && data.sensation !== null && { sensation: data.sensation }),
-            ...(data.comment !== undefined && { comment: data.comment ?? null }),
-            ...(data.visibleToClub !== undefined && data.visibleToClub !== null && { visibleToClub: data.visibleToClub }),
-            updatedAt: new Date().toISOString(),
-          },
-        });
-      }
-      return { previous };
+  return useOptimisticMutation<
+    { matchId: string; data: UpdateFeedbackRequest },
+    unknown,
+    MatchDetail
+  >({
+    mutationFn: ({ matchId, data }) => matchService.updateFeedback(matchId, data),
+    queryKey: ({ matchId }) => queryKeys.match.detail(matchId),
+    optimisticUpdate: (previous, { data }) => {
+      if (!previous.myFeedback) return previous;
+      return {
+        ...previous,
+        myFeedback: {
+          ...previous.myFeedback,
+          ...(data.sensation !== undefined && data.sensation !== null && { sensation: data.sensation }),
+          ...(data.comment !== undefined && { comment: data.comment ?? null }),
+          ...(data.visibleToClub !== undefined && data.visibleToClub !== null && { visibleToClub: data.visibleToClub }),
+          updatedAt: new Date().toISOString(),
+        },
+      };
     },
-    onError: (_err, { matchId }, context) => {
-      rollback(queryClient, matchId, context?.previous);
-    },
-    onSettled: (_, __, { matchId }) => {
-      settleMatch(queryClient, matchId);
-    },
+    invalidate: ({ matchId }) => matchInvalidationKeys(matchId),
+  });
+}
+
+export function useDeleteFeedback() {
+  return useOptimisticMutation<string, unknown, MatchDetail>({
+    mutationFn: (matchId) => matchService.deleteFeedback(matchId),
+    queryKey: (matchId) => queryKeys.match.detail(matchId),
+    optimisticUpdate: (previous) => ({ ...previous, myFeedback: null }),
+    invalidate: (matchId) => matchInvalidationKeys(matchId),
   });
 }
 
@@ -386,65 +318,35 @@ export function useUploadMatchPhoto() {
     mutationFn: ({ matchId, uri, fileName, mimeType }: { matchId: string; uri: string; fileName: string; mimeType: string }) =>
       matchService.uploadMatchPhoto(matchId, uri, fileName, mimeType),
     onSuccess: (data, { matchId }) => {
-      // Eagerly update cache with server response to avoid waiting for refetch
-      const previous = getMatchDetail(queryClient, matchId);
+      const previous = queryClient.getQueryData<MatchDetail>(queryKeys.match.detail(matchId));
       if (previous && data?.photo) {
-        queryClient.setQueryData<MatchDetail>(["match", matchId], {
+        queryClient.setQueryData<MatchDetail>(queryKeys.match.detail(matchId), {
           ...previous,
           photos: [...(previous.photos ?? []), data.photo],
         });
       }
     },
-    onSettled: (_, __, { matchId }) => {
-      settleMatch(queryClient, matchId);
+    onSettled: (_data, _err, { matchId }) => {
+      for (const key of matchInvalidationKeys(matchId)) {
+        queryClient.invalidateQueries({ queryKey: key });
+      }
     },
   });
 }
 
 export function useDeleteMatchPhoto() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (matchId: string) => matchService.deleteMatchPhoto(matchId),
-    onMutate: async (matchId) => {
-      const previous = await cancelAndSnapshot(queryClient, matchId);
-      if (previous) {
-        const me = getMe(queryClient);
-        queryClient.setQueryData<MatchDetail>(["match", matchId], {
-          ...previous,
-          photos: (previous.photos ?? []).filter((p) => p.userId !== me?.id),
-        });
-      }
-      return { previous };
+  return useOptimisticMutation<string, unknown, MatchDetail>({
+    mutationFn: (matchId) => matchService.deleteMatchPhoto(matchId),
+    queryKey: (matchId) => queryKeys.match.detail(matchId),
+    optimisticUpdate: (previous) => {
+      const me = queryClient.getQueryData<User>(queryKeys.user.me());
+      return {
+        ...previous,
+        photos: (previous.photos ?? []).filter((p) => p.userId !== me?.id),
+      };
     },
-    onError: (_err, matchId, context) => {
-      rollback(queryClient, matchId, context?.previous);
-    },
-    onSettled: (_, __, matchId) => {
-      settleMatch(queryClient, matchId);
-    },
-  });
-}
-
-export function useDeleteFeedback() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (matchId: string) => matchService.deleteFeedback(matchId),
-    onMutate: async (matchId) => {
-      const previous = await cancelAndSnapshot(queryClient, matchId);
-      if (previous) {
-        queryClient.setQueryData<MatchDetail>(["match", matchId], {
-          ...previous,
-          myFeedback: null,
-        });
-      }
-      return { previous };
-    },
-    onError: (_err, matchId, context) => {
-      rollback(queryClient, matchId, context?.previous);
-    },
-    onSettled: (_, __, matchId) => {
-      settleMatch(queryClient, matchId);
-    },
+    invalidate: (matchId) => matchInvalidationKeys(matchId),
   });
 }
 
@@ -453,21 +355,16 @@ export function useToggleLike() {
   return useMutation({
     mutationFn: (matchId: string) => matchService.toggleLike(matchId),
     onMutate: async (matchId) => {
-      // Cancel ongoing queries for infinite lists
-      await queryClient.cancelQueries({ queryKey: ["match", "infinite"] });
-      await queryClient.cancelQueries({ queryKey: ["match", matchId] });
+      await queryClient.cancelQueries({ queryKey: queryKeys.match.infiniteAll() });
+      await queryClient.cancelQueries({ queryKey: queryKeys.match.detail(matchId) });
 
-      // Snapshot infinite queries
       const previousInfinite = queryClient.getQueriesData<{ pages: ListMatchesResponse[] }>({
-        queryKey: ["match", "infinite"],
+        queryKey: queryKeys.match.infiniteAll(),
       });
+      const previousDetail = queryClient.getQueryData<MatchDetail>(queryKeys.match.detail(matchId));
 
-      // Snapshot match detail
-      const previousDetail = getMatchDetail(queryClient, matchId);
-
-      // Optimistic update on infinite lists
       queryClient.setQueriesData<{ pages: ListMatchesResponse[]; pageParams: number[] }>(
-        { queryKey: ["match", "infinite"] },
+        { queryKey: queryKeys.match.infiniteAll() },
         (old) => {
           if (!old) return old;
           return {
@@ -488,9 +385,8 @@ export function useToggleLike() {
         },
       );
 
-      // Optimistic update on match detail
       if (previousDetail) {
-        queryClient.setQueryData<MatchDetail>(["match", matchId], {
+        queryClient.setQueryData<MatchDetail>(queryKeys.match.detail(matchId), {
           ...previousDetail,
           hasLiked: !previousDetail.hasLiked,
           likesCount: previousDetail.hasLiked
@@ -499,20 +395,24 @@ export function useToggleLike() {
         });
       }
 
-      return { previousInfinite, previousDetail, matchId };
+      return { previousInfinite, previousDetail };
     },
     onError: (_err, matchId, context) => {
-      // Rollback infinite queries
       if (context?.previousInfinite) {
         for (const [queryKey, data] of context.previousInfinite) {
           if (data) queryClient.setQueryData(queryKey, data);
         }
       }
-      // Rollback detail
-      rollback(queryClient, matchId, context?.previousDetail);
+      if (context?.previousDetail) {
+        queryClient.setQueryData(queryKeys.match.detail(matchId), context.previousDetail);
+      }
     },
     onSettled: (_, __, matchId) => {
-      settleMatch(queryClient, matchId);
+      for (const key of matchInvalidationKeys(matchId)) {
+        queryClient.invalidateQueries({ queryKey: key });
+      }
     },
   });
 }
+
+export type { MatchWithParticipants };

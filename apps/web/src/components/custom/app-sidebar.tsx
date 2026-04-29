@@ -6,7 +6,6 @@ import {
   Building2,
   CalendarDays,
   LayoutDashboard,
-  LifeBuoy,
   Settings,
   Swords,
   Target,
@@ -17,7 +16,6 @@ import {
 } from "lucide-react"
 
 import { NavMain } from "@/components/custom/nav-main"
-import { NavSecondary } from "@/components/custom/nav-secondary"
 import { NavUser } from "@/components/custom/nav-user"
 import {
   Sidebar,
@@ -84,14 +82,6 @@ const navMain = [
   },
 ]
 
-const navSecondary = [
-  {
-    title: "Support",
-    url: "#",
-    icon: LifeBuoy,
-  },
-]
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession()
 
@@ -128,7 +118,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} />
-        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

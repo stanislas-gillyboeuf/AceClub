@@ -1,8 +1,3 @@
-/**
- * API client for AceClub backend.
- * Uses cookies (Better Auth Expo) or Bearer token for auth.
- */
-
 import { Platform } from "react-native";
 import {
   getAuthHeaders,
@@ -21,13 +16,20 @@ function getBaseUrl() {
 
 export const BASE_URL = getBaseUrl();
 
+export interface ApiErrorContext {
+  method: string;
+  path: string;
+}
+
 export class ApiError extends Error {
   readonly status: number;
+  readonly context?: ApiErrorContext;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, context?: ApiErrorContext) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.context = context;
     Object.setPrototypeOf(this, ApiError.prototype);
   }
 }
@@ -36,13 +38,16 @@ const DEFAULT_FETCH_OPTIONS: RequestInit = {
   credentials: "omit",
 };
 
-async function request<T>(
+interface RawFetchOptions {
+  body?: unknown;
+  formData?: FormData;
+  params?: Record<string, string | number | boolean | undefined>;
+}
+
+async function rawFetch<T>(
   method: string,
   path: string,
-  options?: {
-    body?: unknown;
-    params?: Record<string, string | number | boolean | undefined>;
-  }
+  options?: RawFetchOptions
 ): Promise<T> {
   let url = `${BASE_URL}/api${path}`;
 
@@ -58,20 +63,25 @@ async function request<T>(
   }
 
   const headers = await getAuthHeaders();
-  if (options?.body) {
+  let body: BodyInit | undefined;
+
+  if (options?.body !== undefined) {
     headers["Content-Type"] = "application/json";
+    body = JSON.stringify(options.body);
+  } else if (options?.formData) {
+    body = options.formData;
   }
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     method,
     headers,
-    body: options?.body ? JSON.stringify(options.body) : undefined,
+    body,
   });
 
   if (!response.ok) {
     const text = await response.text();
-    throw new ApiError(response.status, text);
+    throw new ApiError(response.status, text, { method, path });
   }
 
   const text = await response.text();
@@ -80,71 +90,57 @@ async function request<T>(
   try {
     return JSON.parse(text) as T;
   } catch {
-    throw new ApiError(500, "Invalid JSON response");
+    throw new ApiError(500, "Invalid JSON response", { method, path });
   }
 }
 
-async function uploadMultipart<T>(
-  path: string,
+function buildUploadFormData(
   fileField: string,
   fileUri: string,
   fileName: string,
-  mimeType: string
-): Promise<T> {
-  const url = `${BASE_URL}/api${path}`;
+  mimeType: string,
+  extraFields?: Record<string, string>
+): FormData {
   const formData = new FormData();
   formData.append(fileField, {
     uri: fileUri,
     name: fileName,
     type: mimeType,
   } as unknown as Blob);
-
-  const headers = await getAuthHeaders();
-
-  const response = await fetch(url, {
-    ...DEFAULT_FETCH_OPTIONS,
-    method: "POST",
-    headers,
-    body: formData,
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new ApiError(response.status, text);
+  if (extraFields) {
+    for (const [key, value] of Object.entries(extraFields)) {
+      formData.append(key, value);
+    }
   }
-
-  const text = await response.text();
-  if (!text) return undefined as T;
-
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    throw new ApiError(500, "Invalid JSON response");
-  }
+  return formData;
 }
 
 export const api = {
   get: <T>(
     path: string,
     params?: Record<string, string | number | boolean | undefined>
-  ) => request<T>("GET", path, { params }),
+  ) => rawFetch<T>("GET", path, { params }),
 
   post: <T>(path: string, body?: unknown) =>
-    request<T>("POST", path, { body }),
+    rawFetch<T>("POST", path, { body }),
 
   put: <T>(path: string, body?: unknown) =>
-    request<T>("PUT", path, { body }),
+    rawFetch<T>("PUT", path, { body }),
 
   delete: <T>(path: string, body?: unknown) =>
-    request<T>("DELETE", path, { body }),
+    rawFetch<T>("DELETE", path, { body }),
 
   uploadMultipart: <T>(
     path: string,
     fileField: string,
     fileUri: string,
     fileName: string,
-    mimeType: string
-  ) => uploadMultipart<T>(path, fileField, fileUri, fileName, mimeType),
+    mimeType: string,
+    extraFields?: Record<string, string>
+  ) =>
+    rawFetch<T>("POST", path, {
+      formData: buildUploadFormData(fileField, fileUri, fileName, mimeType, extraFields),
+    }),
 };
 
 export { getAuthHeaders, getAuthForWebSocket, setAuthToken };

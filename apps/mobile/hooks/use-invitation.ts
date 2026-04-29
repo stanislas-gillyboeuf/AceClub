@@ -1,24 +1,25 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { invitationService } from "@/services/invitation";
+import { queryKeys } from "@/lib/query-keys";
 import type { CreateInvitationRequest } from "@/types/invitation";
 
 export function useInvitations(organizationId?: string) {
   return useQuery({
-    queryKey: ["invitation", "list", organizationId],
+    queryKey: queryKeys.invitation.list({ organizationId }),
     queryFn: () => invitationService.listInvitations(organizationId),
   });
 }
 
 export function useUserInvitations() {
   return useQuery({
-    queryKey: ["invitation", "user"],
+    queryKey: [...queryKeys.invitation.all, "user"] as const,
     queryFn: invitationService.listUserInvitations,
   });
 }
 
 export function useInvitation(id: string) {
   return useQuery({
-    queryKey: ["invitation", id],
+    queryKey: queryKeys.invitation.detail(id),
     queryFn: () => invitationService.getInvitation(id),
     enabled: !!id,
   });
@@ -29,7 +30,7 @@ export function useCreateInvitation() {
   return useMutation({
     mutationFn: (data: CreateInvitationRequest) => invitationService.createInvitation(data),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["invitation"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invitation.all });
     },
   });
 }
@@ -39,8 +40,8 @@ export function useAcceptInvitation() {
   return useMutation({
     mutationFn: (invitationId: string) => invitationService.acceptInvitation(invitationId),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["invitation"] });
-      queryClient.invalidateQueries({ queryKey: ["organization"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invitation.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.organization.all });
     },
   });
 }
@@ -50,7 +51,7 @@ export function useRejectInvitation() {
   return useMutation({
     mutationFn: (invitationId: string) => invitationService.rejectInvitation(invitationId),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["invitation"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invitation.all });
     },
   });
 }
@@ -60,7 +61,7 @@ export function useCancelInvitation() {
   return useMutation({
     mutationFn: (invitationId: string) => invitationService.cancelInvitation(invitationId),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["invitation"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invitation.all });
     },
   });
 }

@@ -5,6 +5,7 @@ import {
   setupNotificationListeners,
 } from "@/lib/notifications";
 import { notificationService } from "@/services/notification";
+import { logger } from "@/lib/logger";
 
 export function usePushNotifications(enabled = true) {
   useEffect(() => {
@@ -21,14 +22,11 @@ export function usePushNotifications(enabled = true) {
             platform: Platform.OS,
           });
         } catch (error) {
-          console.error(
-            "[PushNotifications] Failed to register token:",
-            error
-          );
+          logger.error("[PushNotifications] Failed to register token:", error);
         }
       })
-      .catch((error: any) =>
-        console.error("[PushNotifications] Registration error:", error)
+      .catch((error: unknown) =>
+        logger.error("[PushNotifications] Registration error:", error)
       );
 
     cleanup = setupNotificationListeners();

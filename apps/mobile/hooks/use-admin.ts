@@ -1,17 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminService } from "@/services/admin";
+import { queryKeys } from "@/lib/query-keys";
 import type { BanUserRequest, CreateUserRequest, SetRoleRequest } from "@/types/admin";
 
 export function useAdminUsers() {
   return useQuery({
-    queryKey: ["admin", "users"],
+    queryKey: queryKeys.admin.users(),
     queryFn: adminService.listUsers,
   });
 }
 
 export function useAdminUserSessions(userId: string) {
   return useQuery({
-    queryKey: ["admin", "sessions", userId],
+    queryKey: queryKeys.admin.sessions(userId),
     queryFn: () => adminService.listUserSessions(userId),
     enabled: !!userId,
   });
@@ -23,7 +24,7 @@ export function useRevokeUserSession() {
     mutationFn: (data: { userId: string; sessionId: string }) =>
       adminService.revokeUserSession(data),
     onSettled: (_data, _err, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "sessions", variables.userId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.sessions(variables.userId) });
     },
   });
 }
@@ -33,7 +34,7 @@ export function useRevokeUserSessions() {
   return useMutation({
     mutationFn: (userId: string) => adminService.revokeUserSessions(userId),
     onSettled: (_data, _err, userId) => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "sessions", userId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.sessions(userId) });
     },
   });
 }
@@ -43,7 +44,7 @@ export function useBanUser() {
   return useMutation({
     mutationFn: (data: BanUserRequest) => adminService.banUser(data),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
     },
   });
 }
@@ -53,7 +54,7 @@ export function useUnbanUser() {
   return useMutation({
     mutationFn: (userId: string) => adminService.unbanUser(userId),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
     },
   });
 }
@@ -63,7 +64,7 @@ export function useAdminCreateUser() {
   return useMutation({
     mutationFn: (data: CreateUserRequest) => adminService.createUser(data),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
     },
   });
 }
@@ -73,7 +74,7 @@ export function useSetRole() {
   return useMutation({
     mutationFn: (data: SetRoleRequest) => adminService.setRole(data),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
     },
   });
 }

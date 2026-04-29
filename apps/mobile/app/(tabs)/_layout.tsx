@@ -6,8 +6,8 @@ import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { useConversations } from "@/hooks/use-conversation";
 
 export default function TabLayout() {
-  const { data: session } = authClient.useSession();
-  const isReady = !!session?.user && !!(session.user as any).onboardingCompleted;
+  const { data: session, isPending } = authClient.useSession();
+  const isReady = !!session?.user && !!session.user.onboardingCompleted;
 
   usePushNotifications(isReady);
 
@@ -16,11 +16,15 @@ export default function TabLayout() {
     ? (conversations?.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) ?? 0)
     : 0;
 
+  if (isPending) {
+    return null;
+  }
+
   if (!session?.user) {
     return <Redirect href="/(auth)/sign-in" />;
   }
 
-  if (!(session.user as any).onboardingCompleted) {
+  if (!session.user.onboardingCompleted) {
     return <Redirect href="/(onboarding)" />;
   }
 
