@@ -41,6 +41,13 @@ export function FeedMatchRow({
     false;
 
   const structuredScore = getStructuredMatchScore(match);
+  const isTraining = match.type === "training";
+  const isZeroZeroTraining =
+    isTraining &&
+    (!structuredScore ||
+      structuredScore.sets.every(
+        (s) => s.homeGames === 0 && s.awayGames === 0,
+      ));
   const duration = formatMatchDuration(match);
   const date = formatMatchDate(match);
 
@@ -81,10 +88,12 @@ export function FeedMatchRow({
             </Text>
           </View>
         </View>
-        <BadgePill
-          label={currentUserWon ? "Victoire" : "Défaite"}
-          variant={currentUserWon ? "success" : "danger"}
-        />
+        {!isZeroZeroTraining && (
+          <BadgePill
+            label={currentUserWon ? "Victoire" : "Défaite"}
+            variant={currentUserWon ? "success" : "danger"}
+          />
+        )}
       </View>
 
       {/* Match photos */}
@@ -116,7 +125,7 @@ export function FeedMatchRow({
       )}
 
       {/* Set-by-set scores */}
-      {structuredScore ? (
+      {isZeroZeroTraining ? null : structuredScore ? (
         <View style={styles.scoresSection}>
           <SetScoresView
             score={structuredScore}
