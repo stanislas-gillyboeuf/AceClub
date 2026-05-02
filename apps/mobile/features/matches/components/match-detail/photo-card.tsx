@@ -78,7 +78,7 @@ export function PhotoCard({ matchDetail, currentUserId, isParticipant }: PhotoCa
               <>
                 <Camera size={24} color={colors.accentGreen} strokeWidth={1.5} />
                 <Text style={[styles.addPhotoText, { color: semanticColors.labelSecondary[scheme] }]}>
-                  Prendre une photo
+                  Ajouter une photo
                 </Text>
               </>
             )}

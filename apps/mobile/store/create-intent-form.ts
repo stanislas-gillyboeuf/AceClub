@@ -1,13 +1,15 @@
 import { create } from "zustand";
 import type { MatchIntentType } from "@/types/match-intent";
 
-interface CreateIntentFormState {
+interface CreateIntentFormData {
   intentType: MatchIntentType;
   date: Date;
   time: Date;
   duration: number | null;
   description: string;
+}
 
+interface CreateIntentFormState extends CreateIntentFormData {
   setIntentType: (type: MatchIntentType) => void;
   setDate: (date: Date) => void;
   setTime: (time: Date) => void;
@@ -22,29 +24,24 @@ function defaultTime(): Date {
   return d;
 }
 
-export const useCreateIntentFormStore = create<CreateIntentFormState>(
-  (set) => ({
-    intentType: "match",
-    date: new Date(),
-    time: defaultTime(),
-    duration: null,
-    description: "",
+const defaultState = (): CreateIntentFormData => ({
+  intentType: "match",
+  date: new Date(),
+  time: defaultTime(),
+  duration: null,
+  description: "",
+});
 
-    setIntentType: (intentType) => set({ intentType }),
-    setDate: (date) => set({ date }),
-    setTime: (time) => set({ time }),
-    setDuration: (duration) => set({ duration }),
-    setDescription: (description) => set({ description }),
-    reset: () =>
-      set({
-        intentType: "match",
-        date: new Date(),
-        time: defaultTime(),
-        duration: null,
-        description: "",
-      }),
-  })
-);
+export const useCreateIntentFormStore = create<CreateIntentFormState>((set) => ({
+  ...defaultState(),
+
+  setIntentType: (intentType) => set({ intentType }),
+  setDate: (date) => set({ date }),
+  setTime: (time) => set({ time }),
+  setDuration: (duration) => set({ duration }),
+  setDescription: (description) => set({ description }),
+  reset: () => set(defaultState()),
+}));
 
 // --- Utilities ---
 

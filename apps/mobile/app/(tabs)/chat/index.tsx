@@ -12,6 +12,7 @@ import {
 import { useRouter, Stack } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useConversations, useDeleteConversation } from "@/hooks/use-conversation";
+import { queryKeys } from "@/lib/query-keys";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -62,7 +63,7 @@ export default function ConversationListScreen() {
         refetch();
       }
       if (event.type === "newMessage") {
-        queryClient.invalidateQueries({ queryKey: ["conversation", "list"] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.conversation.list() });
       }
     });
 

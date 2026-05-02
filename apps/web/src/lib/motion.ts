@@ -26,24 +26,12 @@ export const MotionP = motion.p as React.FC<
   HTMLMotionProps<"p"> & { className?: string; children?: React.ReactNode }
 >;
 
-export const MotionSpan = motion.span as React.FC<
-  HTMLMotionProps<"span"> & { className?: string; children?: React.ReactNode }
->;
-
 export const MotionHeader = motion.header as React.FC<
   HTMLMotionProps<"header"> & { className?: string; children?: React.ReactNode }
 >;
 
 export const MotionHr = motion.hr as React.FC<
   HTMLMotionProps<"hr"> & { className?: string }
->;
-
-export const MotionNav = motion.nav as React.FC<
-  HTMLMotionProps<"nav"> & { className?: string; children?: React.ReactNode }
->;
-
-export const MotionA = motion.a as React.FC<
-  HTMLMotionProps<"a"> & { className?: string; children?: React.ReactNode; href?: string }
 >;
 
 export const MotionImg = motion.img as React.ForwardRefExoticComponent<

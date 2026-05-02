@@ -72,19 +72,29 @@ export function DiscoverDetailSheet({
             </View>
           )}
 
-          {/* Name */}
-          <Text
-            style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}
-            numberOfLines={1}
-          >
-            {displayName}
-          </Text>
+          {/* Name + prominent level */}
+          <View style={styles.titleRow}>
+            <Text
+              style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}
+              numberOfLines={1}
+            >
+              {displayName}
+            </Text>
+            <View style={[styles.levelBadge, { borderColor: tier.color }]}>
+              <Text style={[styles.levelBadgeNumber, { color: tier.color }]}>
+                {item.user?.level ?? 1}
+              </Text>
+            </View>
+          </View>
 
           {/* Info rows */}
           <View style={styles.infoRow}>
-            <TierIcon size={16} color={tier.color} strokeWidth={2} />
-            <Text style={[styles.infoText, { color: semanticColors.labelPrimary[scheme] }]}>
-              Niveau {item.user?.level ?? 1} · {tier.label}
+            <TierIcon size={18} color={tier.color} strokeWidth={2.5} />
+            <Text style={[styles.levelText, { color: tier.color }]}>
+              Niveau {item.user?.level ?? 1}
+            </Text>
+            <Text style={[styles.infoText, { color: semanticColors.labelSecondary[scheme] }]}>
+              · {tier.label}
             </Text>
           </View>
 
@@ -220,11 +230,34 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "rgba(0,0,0,0.15)",
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
     marginTop: 20,
     marginBottom: 16,
+  },
+  title: {
+    flex: 1,
+    fontSize: 28,
+    fontWeight: "700",
+  },
+  levelBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 3,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  levelBadgeNumber: {
+    fontSize: 24,
+    fontWeight: "800",
+    fontVariant: ["tabular-nums"],
+  },
+  levelText: {
+    fontSize: 17,
+    fontWeight: "700",
   },
   infoRow: {
     flexDirection: "row",

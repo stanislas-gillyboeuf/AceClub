@@ -38,7 +38,7 @@ export default function AdminLayout({
 
   return (
     <Providers>
-      <SidebarProvider open={false} onOpenChange={() => {}}>
+      <SidebarProvider defaultOpen={false}>
         <AppSidebar />
         <SidebarInset className="flex h-screen flex-col">
           <main className="flex flex-1 flex-col gap-4 p-4 overflow-auto">

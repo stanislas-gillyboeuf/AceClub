@@ -53,11 +53,6 @@ export const siteConfig = {
         href: "/#faq",
         description: "Réponses aux questions fréquentes.",
       },
-      {
-        title: "Témoignages",
-        href: "/#testimonials",
-        description: "Ce que nos utilisateurs disent de nous.",
-      },
     ],
     menuItems: [
       { title: "Accueil", href: "/" },
@@ -82,8 +77,6 @@ export const siteConfig = {
   links: {
     email: "contact@aceclub.app",
     twitter: "https://twitter.com/aceclub_app",
-    discord: "",
-    github: "",
     instagram: "https://instagram.com/aceclub_app",
   },
   features: [
@@ -319,88 +312,6 @@ export const siteConfig = {
         { href: "/cgu", text: "CGU" },
         { href: "/privacy", text: "Confidentialité" },
       ],
-    },
-  ],
-  testimonials: [
-    {
-      id: 1,
-      text: "AceClub a révolutionné notre club. Les membres jouent 3 fois plus qu'avant et l'ambiance est au top !",
-      name: "Marie Dupont",
-      role: "Présidente, TC Boulogne",
-      image:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    },
-    {
-      id: 2,
-      text: "Je trouve des partenaires de mon niveau en 5 minutes. Fini les messages dans tous les sens sur WhatsApp !",
-      name: "Thomas Martin",
-      role: "Membre, Padel Club Lyon",
-      image:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    },
-    {
-      id: 3,
-      text: "Les défis hebdomadaires motivent vraiment nos membres. On a jamais eu autant de participation aux events.",
-      name: "Pierre Durand",
-      role: "Responsable sportif, TC Marseille",
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    },
-    {
-      id: 4,
-      text: "Interface super intuitive. Même les membres les moins tech-savvy l'utilisent sans problème.",
-      name: "Sophie Bernard",
-      role: "Trésorière, TC Nantes",
-      image:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    },
-    {
-      id: 5,
-      text: "Le support est réactif et à l'écoute. Ils ont implémenté plusieurs de nos suggestions en quelques semaines.",
-      name: "Laurent Petit",
-      role: "Directeur, Padel Arena Paris",
-      image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    },
-    {
-      id: 6,
-      text: "Depuis qu'on utilise AceClub, le taux de remplissage de nos terrains a augmenté de 40%. Impressionnant !",
-      name: "Isabelle Moreau",
-      role: "Gérante, Tennis Club Bordeaux",
-      image:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    },
-    {
-      id: 7,
-      text: "Grâce à AceClub, j'ai rencontré plein de nouveaux joueurs de mon niveau. L'app est devenue indispensable.",
-      name: "Julien Leroy",
-      role: "Membre, TC Strasbourg",
-      image:
-        "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    },
-    {
-      id: 8,
-      text: "La messagerie intégrée évite les mails perdus et les SMS oubliés. Tout est centralisé, c'est parfait.",
-      name: "Camille Rousseau",
-      role: "Secrétaire, Padel Club Toulouse",
-      image:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    },
-    {
-      id: 9,
-      text: "Je joue maintenant 3 fois par semaine contre 1 fois avant AceClub. L'app m'a remotivé à fond !",
-      name: "François Blanc",
-      role: "Membre, TC Nice",
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-    },
-    {
-      id: 10,
-      text: "Les notifications de disponibilité sont géniales. Dès qu'un joueur de mon niveau est dispo, je suis prévenue.",
-      name: "Anne Fabre",
-      role: "Membre, TC Lille",
-      image:
-        "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
     },
   ],
 };

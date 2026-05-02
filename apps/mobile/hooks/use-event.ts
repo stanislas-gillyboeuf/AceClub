@@ -1,5 +1,7 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { eventService } from "@/services/event";
+import { queryKeys } from "@/lib/query-keys";
+import { getNextPageParamFromCursor } from "@/hooks/use-infinite-pagination";
 import type { CreateEventRequest, UpdateEventRequest, EventStatus, EventSortBy } from "@/types/event";
 
 // --- Queries ---
@@ -11,7 +13,7 @@ export function useMyEvents(params?: {
   offset?: number;
 }) {
   return useQuery({
-    queryKey: ["event", "my-events", params],
+    queryKey: queryKeys.event.myEvents(params),
     queryFn: () => eventService.listMyEvents(params),
   });
 }
@@ -27,18 +29,17 @@ export function useInfiniteEvents(params?: {
   const limit = params?.limit ?? 20;
 
   return useInfiniteQuery({
-    queryKey: ["event", "infinite", params],
+    queryKey: queryKeys.event.infinite(params),
     queryFn: ({ pageParam }) =>
       eventService.listEvents({ ...params, cursor: pageParam, limit }),
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) =>
-      lastPage.hasMore ? lastPage.nextCursor ?? undefined : undefined,
+    getNextPageParam: getNextPageParamFromCursor,
   });
 }
 
 export function useEvent(eventId: string) {
   return useQuery({
-    queryKey: ["event", eventId],
+    queryKey: queryKeys.event.detail(eventId),
     queryFn: () => eventService.getEvent(eventId),
     enabled: !!eventId,
   });
@@ -51,9 +52,9 @@ export function useRegisterEvent() {
   return useMutation({
     mutationFn: (eventId: string) => eventService.register(eventId),
     onSettled: (_data, _err, eventId) => {
-      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["event", "my-events"] });
-      queryClient.invalidateQueries({ queryKey: ["event", "infinite"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.detail(eventId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.myEventsAll() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.infiniteAll() });
     },
   });
 }
@@ -63,9 +64,9 @@ export function useCancelRegistration() {
   return useMutation({
     mutationFn: (eventId: string) => eventService.cancelRegistration(eventId),
     onSettled: (_data, _err, eventId) => {
-      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["event", "my-events"] });
-      queryClient.invalidateQueries({ queryKey: ["event", "infinite"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.detail(eventId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.myEventsAll() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.infiniteAll() });
     },
   });
 }
@@ -79,7 +80,7 @@ export function useAdminEvents(params?: {
   offset?: number;
 }) {
   return useQuery({
-    queryKey: ["event", "admin-list", params],
+    queryKey: queryKeys.event.adminList(params),
     queryFn: () => eventService.adminListEvents(params),
   });
 }
@@ -89,7 +90,7 @@ export function useCreateEvent() {
   return useMutation({
     mutationFn: (data: CreateEventRequest) => eventService.createEvent(data),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["event"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.all });
     },
   });
 }
@@ -99,9 +100,9 @@ export function useUpdateEvent() {
   return useMutation({
     mutationFn: (data: UpdateEventRequest) => eventService.updateEvent(data),
     onSettled: (_data, _err, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["event", variables.eventId] });
-      queryClient.invalidateQueries({ queryKey: ["event", "admin-list"] });
-      queryClient.invalidateQueries({ queryKey: ["event", "infinite"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.detail(variables.eventId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.adminListAll() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.infiniteAll() });
     },
   });
 }
@@ -112,9 +113,9 @@ export function useUpdateEventStatus() {
     mutationFn: (data: { eventId: string; status: EventStatus }) =>
       eventService.updateEventStatus(data),
     onSettled: (_data, _err, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["event", variables.eventId] });
-      queryClient.invalidateQueries({ queryKey: ["event", "admin-list"] });
-      queryClient.invalidateQueries({ queryKey: ["event", "infinite"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.detail(variables.eventId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.adminListAll() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.infiniteAll() });
     },
   });
 }
@@ -124,9 +125,9 @@ export function useDeleteEvent() {
   return useMutation({
     mutationFn: (eventId: string) => eventService.deleteEvent(eventId),
     onSettled: (_data, _err, eventId) => {
-      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["event", "admin-list"] });
-      queryClient.invalidateQueries({ queryKey: ["event", "infinite"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.detail(eventId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.adminListAll() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.event.infiniteAll() });
     },
   });
 }

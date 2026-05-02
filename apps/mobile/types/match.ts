@@ -164,6 +164,8 @@ export interface CreateCommentRequest {
   content: string;
 }
 
+export type UpdateCommentRequest = CreateCommentRequest;
+
 export interface CreateFeedbackRequest {
   sensation: string;
   comment?: string | null;

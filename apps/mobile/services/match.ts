@@ -12,6 +12,7 @@ import type {
   MatchPhoto,
   MatchFeedback,
   CreateCommentRequest,
+  UpdateCommentRequest,
   CreateFeedbackRequest,
   UpdateFeedbackRequest,
   DeleteResponse,
@@ -56,7 +57,7 @@ export const matchService = {
   createComment: (matchId: string, data: CreateCommentRequest) =>
     api.post<MatchComment>(`/match/${matchId}/comment`, data),
 
-  updateComment: (matchId: string, data: CreateCommentRequest) =>
+  updateComment: (matchId: string, data: UpdateCommentRequest) =>
     api.put<MatchComment>(`/match/${matchId}/comment`, data),
 
   deleteComment: (matchId: string) =>

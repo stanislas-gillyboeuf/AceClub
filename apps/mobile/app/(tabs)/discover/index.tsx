@@ -129,6 +129,9 @@ export default function DiscoverScreen() {
                         <MaterialIcons name="tune" size={24} color={colors.accentGreen} />
                       </Pressable>
                     )}
+                    <Pressable onPress={handleCreateIntent}>
+                      <MaterialIcons name="add-circle-outline" size={24} color={colors.accentGreen} />
+                    </Pressable>
                     <Pressable onPress={onOpenRequests} style={styles.headerButton}>
                       <MaterialIcons name="mail-outline" size={24} color={colors.accentGreen} />
                       {pendingCount > 0 && <View style={styles.badge} />}
@@ -141,6 +144,9 @@ export default function DiscoverScreen() {
       {Platform.OS === "ios" && (
         <>
           <Stack.Toolbar placement="right">
+            <Stack.Toolbar.Button onPress={handleCreateIntent} tintColor={colors.accentGreen}>
+              <Stack.Toolbar.Icon sf="plus.circle" />
+            </Stack.Toolbar.Button>
             <Stack.Toolbar.Button onPress={onOpenRequests} tintColor={colors.accentGreen}>
               <Stack.Toolbar.Icon sf="envelope.badge" />
               {pendingCount > 0 && <Stack.Toolbar.Badge>{pendingCount}</Stack.Toolbar.Badge>}

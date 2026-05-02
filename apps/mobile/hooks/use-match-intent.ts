@@ -1,10 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { matchIntentService } from "@/services/match-intent";
+import { queryKeys } from "@/lib/query-keys";
 import type { CreateMatchIntentRequest, SwipeRequest } from "@/types/match-intent";
 
 export function useMatchIntents(cursor?: string, limit = 20) {
   return useQuery({
-    queryKey: ["match-intent", "list", cursor, limit],
+    queryKey: queryKeys.matchIntent.list(cursor, limit),
     queryFn: () => matchIntentService.listMatchIntents(cursor, limit),
   });
 }
@@ -17,14 +18,14 @@ export function useDiscover(params?: {
   radius?: number;
 }) {
   return useQuery({
-    queryKey: ["match-intent", "discover", params],
+    queryKey: queryKeys.matchIntent.discover(params),
     queryFn: () => matchIntentService.discover(params),
   });
 }
 
 export function useMatchRequests() {
   return useQuery({
-    queryKey: ["match-intent", "requests"],
+    queryKey: queryKeys.matchIntent.requests(),
     queryFn: matchIntentService.listRequests,
     staleTime: 5 * 60 * 1000,
   });
@@ -35,7 +36,7 @@ export function useCreateMatchIntent() {
   return useMutation({
     mutationFn: (data: CreateMatchIntentRequest) => matchIntentService.createMatchIntent(data),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["match-intent"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.matchIntent.all });
     },
   });
 }
@@ -45,8 +46,8 @@ export function useSwipe() {
   return useMutation({
     mutationFn: (data: SwipeRequest) => matchIntentService.swipe(data),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["match-intent", "discover"] });
-      queryClient.invalidateQueries({ queryKey: ["match-intent", "requests"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.matchIntent.discoverAll() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.matchIntent.requests() });
     },
   });
 }
@@ -56,9 +57,9 @@ export function useAcceptRequest() {
   return useMutation({
     mutationFn: (id: string) => matchIntentService.acceptRequest(id),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["match-intent", "requests"] });
-      queryClient.invalidateQueries({ queryKey: ["match", "list"] });
-      queryClient.invalidateQueries({ queryKey: ["conversation"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.matchIntent.requests() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.match.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversation.all });
     },
   });
 }
@@ -68,7 +69,7 @@ export function useRejectRequest() {
   return useMutation({
     mutationFn: (id: string) => matchIntentService.rejectRequest(id),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["match-intent", "requests"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.matchIntent.requests() });
     },
   });
 }
@@ -78,7 +79,7 @@ export function useDeleteMatchIntent() {
   return useMutation({
     mutationFn: (id: string) => matchIntentService.deleteMatchIntent(id),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["match-intent"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.matchIntent.all });
     },
   });
 }

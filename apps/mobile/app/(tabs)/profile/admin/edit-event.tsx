@@ -7,32 +7,23 @@ import {
   Pressable,
   StyleSheet,
   Alert,
-  Platform,
   ActivityIndicator,
 } from "react-native";
 import { Stack, useRouter, useLocalSearchParams } from "expo-router";
-import { Image } from "expo-image";
-import * as ImagePicker from "expo-image-picker";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import {
-  ImagePlus,
-  Eye,
-  Users,
-  Building2,
-  Ticket,
-  Link,
-  Trash2,
-} from "lucide-react-native";
+import { Building2, Trash2 } from "lucide-react-native";
 
 import { useEvent, useUpdateEvent, useUpdateEventStatus, useDeleteEvent } from "@/hooks/use-event";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { uploadService } from "@/services/upload";
 import { GlassView } from "@/components/ui/glass-view";
 import Button from "@/components/ui/button";
 import { colors, semanticColors, spacing, radii } from "@/constants/theme";
 import { LocationPicker } from "@/features/events/components/LocationPicker";
-import { EVENT_STATUS_CONFIG, VISIBILITY_OPTIONS } from "@/features/events/lib/event-status";
-import { formatShortDate, formatTime } from "@/lib/format";
+import { EventCoverPicker } from "@/features/events/components/event-form/event-cover-picker";
+import { EventStatusSelector } from "@/features/events/components/event-form/event-status-selector";
+import { EventDateRangeField } from "@/features/events/components/event-form/event-date-range-field";
+import { EventOptionsSection } from "@/features/events/components/event-form/event-options-section";
+import { EventPricingSection } from "@/features/events/components/event-form/event-pricing-section";
+import { uploadEventCover } from "@/features/events/hooks/use-event-cover-upload";
 import type { EventVisibility, EventStatus } from "@/types/event";
 
 export default function EditEvent() {
@@ -44,7 +35,6 @@ export default function EditEvent() {
   const updateEventStatus = useUpdateEventStatus();
   const deleteEvent = useDeleteEvent();
 
-  // Local state
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [coverImageUri, setCoverImageUri] = useState<string | null>(null);
@@ -60,12 +50,9 @@ export default function EditEvent() {
   const [price, setPrice] = useState("");
   const [paymentLink, setPaymentLink] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showStartPicker, setShowStartPicker] = useState(Platform.OS === "ios");
-  const [showEndPicker, setShowEndPicker] = useState(Platform.OS === "ios");
   const [capacityText, setCapacityText] = useState("");
   const [hasLoaded, setHasLoaded] = useState(false);
 
-  // Pre-fill form when event data loads
   useEffect(() => {
     if (event && !hasLoaded) {
       setName(event.name);
@@ -87,18 +74,6 @@ export default function EditEvent() {
     }
   }, [event, hasLoaded]);
 
-  const handlePickCover = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (!result.canceled && result.assets[0]) {
-      setCoverImageUri(result.assets[0].uri);
-    }
-  };
-
   const handleCapacityChange = (text: string) => {
     setCapacityText(text);
     const n = parseInt(text, 10);
@@ -117,21 +92,7 @@ export default function EditEvent() {
     setIsSubmitting(true);
 
     try {
-      let coverImageUrl: string | undefined;
-
-      if (coverImageUri) {
-        if (coverImageUri.startsWith("http")) {
-          coverImageUrl = coverImageUri;
-        } else {
-          const fileName = `event_cover_${Date.now()}.jpg`;
-          const result = await uploadService.uploadUserImage(
-            coverImageUri,
-            fileName,
-            "image/jpeg",
-          );
-          coverImageUrl = result.imageUrl;
-        }
-      }
+      const coverImageUrl = coverImageUri ? await uploadEventCover(coverImageUri) : undefined;
 
       await updateEvent.mutateAsync({
         eventId,
@@ -145,19 +106,19 @@ export default function EditEvent() {
         longitude: locationLongitude ?? undefined,
         maxParticipants: maxParticipants,
         isFree,
-        price: isFree ? undefined : (parseInt(price, 10) || undefined),
-        paymentLink: isFree ? undefined : (paymentLink.trim() || undefined),
+        price: isFree ? undefined : parseInt(price, 10) || undefined,
+        paymentLink: isFree ? undefined : paymentLink.trim() || undefined,
         visibility,
       });
 
-      // Update status if changed
       if (status !== event?.status) {
         await updateEventStatus.mutateAsync({ eventId, status });
       }
 
       router.dismiss();
-    } catch (e: any) {
-      Alert.alert("Erreur", e.message ?? "Impossible de modifier l'event.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Impossible de modifier l'event.";
+      Alert.alert("Erreur", msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -177,8 +138,9 @@ export default function EditEvent() {
             try {
               await deleteEvent.mutateAsync(eventId);
               router.dismiss();
-            } catch (e: any) {
-              Alert.alert("Erreur", e.message ?? "Impossible de supprimer l'event.");
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : "Impossible de supprimer l'event.";
+              Alert.alert("Erreur", msg);
             }
           },
         },
@@ -207,36 +169,8 @@ export default function EditEvent() {
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
       >
-        {/* Cover Image */}
-        <Pressable onPress={handlePickCover}>
-          <GlassView style={styles.coverContainer}>
-            {coverImageUri ? (
-              <Image
-                source={{ uri: coverImageUri }}
-                style={styles.coverImage}
-                contentFit="cover"
-              />
-            ) : (
-              <View style={styles.coverPlaceholder}>
-                <ImagePlus
-                  size={32}
-                  color={semanticColors.labelTertiary[scheme]}
-                  strokeWidth={1.5}
-                />
-                <Text
-                  style={[
-                    styles.coverPlaceholderText,
-                    { color: semanticColors.labelSecondary[scheme] },
-                  ]}
-                >
-                  Ajouter une image de couverture
-                </Text>
-              </View>
-            )}
-          </GlassView>
-        </Pressable>
+        <EventCoverPicker imageUri={coverImageUri} onPick={setCoverImageUri} scheme={scheme} />
 
-        {/* Event Name */}
         <GlassView style={styles.fieldCard}>
           <TextInput
             value={name}
@@ -247,133 +181,16 @@ export default function EditEvent() {
           />
         </GlassView>
 
-        {/* Status */}
-        <GlassView style={styles.fieldCard}>
-          <Text
-            style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}
-          >
-            STATUT
-          </Text>
-          <View style={styles.statusGrid}>
-            {EVENT_STATUS_CONFIG.map((opt) => {
-              const isActive = status === opt.value;
-              return (
-                <Pressable
-                  key={opt.value}
-                  onPress={() => setStatus(opt.value)}
-                  style={[
-                    styles.statusChip,
-                    isActive && { backgroundColor: `${opt.color}20` },
-                  ]}
-                >
-                  <View style={[styles.statusDot, { backgroundColor: opt.color }]} />
-                  <Text
-                    style={[
-                      styles.statusChipText,
-                      { color: isActive ? opt.color : semanticColors.labelSecondary[scheme] },
-                      isActive && { fontWeight: "700" },
-                    ]}
-                  >
-                    {opt.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </GlassView>
+        <EventStatusSelector value={status} onChange={setStatus} scheme={scheme} />
 
-        {/* Date Section */}
-        <GlassView style={styles.fieldCard}>
-          <Text
-            style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}
-          >
-            DATES
-          </Text>
+        <EventDateRangeField
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          scheme={scheme}
+        />
 
-          {Platform.OS === "ios" ? (
-            <View style={styles.dateRow}>
-              <Text style={[styles.dateLabel, { color: semanticColors.labelPrimary[scheme] }]}>
-                Debut
-              </Text>
-              <DateTimePicker
-                value={startDate}
-                mode="datetime"
-                display="compact"
-                onChange={(_, d) => d && setStartDate(d)}
-                locale="fr-FR"
-                accentColor={colors.accentGreen}
-              />
-            </View>
-          ) : (
-            <Pressable
-              onPress={() => setShowStartPicker(true)}
-              style={styles.dateRow}
-            >
-              <Text style={[styles.dateLabel, { color: semanticColors.labelPrimary[scheme] }]}>
-                Debut
-              </Text>
-              <Text style={[styles.dateValue, { color: semanticColors.labelSecondary[scheme] }]}>
-                {formatShortDate(startDate.toISOString())} · {formatTime(startDate.toISOString())}
-              </Text>
-            </Pressable>
-          )}
-          {showStartPicker && Platform.OS === "android" && (
-            <DateTimePicker
-              value={startDate}
-              mode="datetime"
-              onChange={(_, d) => {
-                setShowStartPicker(false);
-                if (d) setStartDate(d);
-              }}
-            />
-          )}
-
-          <View
-            style={[styles.divider, { backgroundColor: semanticColors.divider[scheme] }]}
-          />
-
-          {Platform.OS === "ios" ? (
-            <View style={styles.dateRow}>
-              <Text style={[styles.dateLabel, { color: semanticColors.labelPrimary[scheme] }]}>
-                Fin
-              </Text>
-              <DateTimePicker
-                value={endDate}
-                mode="datetime"
-                display="compact"
-                onChange={(_, d) => d && setEndDate(d)}
-                minimumDate={startDate}
-                locale="fr-FR"
-                accentColor={colors.accentGreen}
-              />
-            </View>
-          ) : (
-            <Pressable
-              onPress={() => setShowEndPicker(true)}
-              style={styles.dateRow}
-            >
-              <Text style={[styles.dateLabel, { color: semanticColors.labelPrimary[scheme] }]}>
-                Fin
-              </Text>
-              <Text style={[styles.dateValue, { color: semanticColors.labelSecondary[scheme] }]}>
-                {formatShortDate(endDate.toISOString())} · {formatTime(endDate.toISOString())}
-              </Text>
-            </Pressable>
-          )}
-          {showEndPicker && Platform.OS === "android" && (
-            <DateTimePicker
-              value={endDate}
-              mode="datetime"
-              onChange={(_, d) => {
-                setShowEndPicker(false);
-                if (d) setEndDate(d);
-              }}
-              minimumDate={startDate}
-            />
-          )}
-        </GlassView>
-
-        {/* Club organisateur (read-only) */}
         <GlassView style={styles.rowCard}>
           <Building2
             size={20}
@@ -396,7 +213,6 @@ export default function EditEvent() {
           </Text>
         </GlassView>
 
-        {/* Lieu */}
         <LocationPicker
           address={address}
           latitude={locationLatitude}
@@ -408,7 +224,6 @@ export default function EditEvent() {
           }}
         />
 
-        {/* Description */}
         <GlassView style={styles.fieldCard}>
           <TextInput
             value={description}
@@ -421,199 +236,24 @@ export default function EditEvent() {
           />
         </GlassView>
 
-        {/* Options */}
-        <GlassView style={styles.fieldCard}>
-          <Text
-            style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}
-          >
-            OPTIONS
-          </Text>
+        <EventOptionsSection
+          visibility={visibility}
+          onVisibilityChange={setVisibility}
+          capacityText={capacityText}
+          onCapacityChange={handleCapacityChange}
+          scheme={scheme}
+        />
 
-          {/* Visibility */}
-          <View style={styles.optionRow}>
-            <Eye
-              size={20}
-              color={semanticColors.labelSecondary[scheme]}
-              strokeWidth={1.5}
-            />
-            <Text
-              style={[styles.rowLabel, { color: semanticColors.labelPrimary[scheme], flex: 1 }]}
-            >
-              Visibilite
-            </Text>
-            <View style={styles.visibilityPicker}>
-              {VISIBILITY_OPTIONS.map((opt) => (
-                <Pressable
-                  key={opt.value}
-                  onPress={() => setVisibility(opt.value)}
-                  style={[
-                    styles.visibilityOption,
-                    visibility === opt.value && styles.visibilityOptionActive,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.visibilityText,
-                      {
-                        color:
-                          visibility === opt.value
-                            ? "#FFFFFF"
-                            : semanticColors.labelSecondary[scheme],
-                      },
-                    ]}
-                  >
-                    {opt.label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
+        <EventPricingSection
+          isFree={isFree}
+          onIsFreeChange={setIsFree}
+          price={price}
+          onPriceChange={setPrice}
+          paymentLink={paymentLink}
+          onPaymentLinkChange={setPaymentLink}
+          scheme={scheme}
+        />
 
-          <View
-            style={[styles.divider, { backgroundColor: semanticColors.divider[scheme] }]}
-          />
-
-          {/* Capacity */}
-          <View style={styles.optionRow}>
-            <Users
-              size={20}
-              color={semanticColors.labelSecondary[scheme]}
-              strokeWidth={1.5}
-            />
-            <Text
-              style={[styles.rowLabel, { color: semanticColors.labelPrimary[scheme], flex: 1 }]}
-            >
-              Capacite
-            </Text>
-            <TextInput
-              value={capacityText}
-              onChangeText={handleCapacityChange}
-              placeholder="Illimite"
-              placeholderTextColor={semanticColors.labelTertiary[scheme]}
-              keyboardType="number-pad"
-              style={[styles.capacityInput, { color: semanticColors.labelPrimary[scheme] }]}
-            />
-          </View>
-        </GlassView>
-
-        {/* Tarif */}
-        <GlassView style={styles.fieldCard}>
-          <Text
-            style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}
-          >
-            TARIF
-          </Text>
-
-          <View style={styles.optionRow}>
-            <Ticket
-              size={20}
-              color={semanticColors.labelSecondary[scheme]}
-              strokeWidth={1.5}
-            />
-            <Text
-              style={[styles.rowLabel, { color: semanticColors.labelPrimary[scheme], flex: 1 }]}
-            >
-              Entree
-            </Text>
-            <View style={styles.visibilityPicker}>
-              <Pressable
-                onPress={() => setIsFree(true)}
-                style={[
-                  styles.visibilityOption,
-                  isFree && styles.visibilityOptionActive,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.visibilityText,
-                    {
-                      color: isFree
-                        ? "#FFFFFF"
-                        : semanticColors.labelSecondary[scheme],
-                    },
-                  ]}
-                >
-                  Gratuit
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setIsFree(false)}
-                style={[
-                  styles.visibilityOption,
-                  !isFree && styles.paidOptionActive,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.visibilityText,
-                    {
-                      color: !isFree
-                        ? "#FFFFFF"
-                        : semanticColors.labelSecondary[scheme],
-                    },
-                  ]}
-                >
-                  Payant
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-
-          {!isFree && (
-            <>
-              <View
-                style={[styles.divider, { backgroundColor: semanticColors.divider[scheme] }]}
-              />
-
-              <View style={styles.optionRow}>
-                <Text
-                  style={[styles.rowLabel, { color: semanticColors.labelPrimary[scheme], flex: 1, marginLeft: 30 }]}
-                >
-                  Prix
-                </Text>
-                <View style={styles.priceInputRow}>
-                  <TextInput
-                    value={price}
-                    onChangeText={setPrice}
-                    placeholder="0"
-                    placeholderTextColor={semanticColors.labelTertiary[scheme]}
-                    keyboardType="number-pad"
-                    style={[styles.priceInput, { color: semanticColors.labelPrimary[scheme] }]}
-                  />
-                  <Text
-                    style={[styles.priceSuffix, { color: semanticColors.labelSecondary[scheme] }]}
-                  >
-                    EUR
-                  </Text>
-                </View>
-              </View>
-
-              <View
-                style={[styles.divider, { backgroundColor: semanticColors.divider[scheme] }]}
-              />
-
-              <View style={styles.optionRow}>
-                <Link
-                  size={20}
-                  color={semanticColors.labelSecondary[scheme]}
-                  strokeWidth={1.5}
-                />
-                <TextInput
-                  value={paymentLink}
-                  onChangeText={setPaymentLink}
-                  placeholder="Lien de paiement (Lydia, PayPal...)"
-                  placeholderTextColor={semanticColors.labelTertiary[scheme]}
-                  keyboardType="url"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  style={[styles.addressInput, { color: semanticColors.labelPrimary[scheme] }]}
-                />
-              </View>
-            </>
-          )}
-        </GlassView>
-
-        {/* Submit */}
         <Button
           label="Enregistrer"
           onPress={handleSubmit}
@@ -621,7 +261,6 @@ export default function EditEvent() {
           loading={isSubmitting}
         />
 
-        {/* Delete */}
         <Pressable
           onPress={handleDelete}
           disabled={deleteEvent.isPending}
@@ -650,24 +289,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  coverContainer: {
-    borderRadius: radii.lg,
-    overflow: "hidden",
-    aspectRatio: 1,
-  },
-  coverImage: {
-    width: "100%",
-    height: "100%",
-  },
-  coverPlaceholder: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  coverPlaceholderText: {
-    fontSize: 14,
-  },
   fieldCard: {
     borderRadius: radii.md,
     padding: 14,
@@ -677,49 +298,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "600",
   },
-  statusGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  statusChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 8,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  statusChipText: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-    marginBottom: 2,
-  },
-  dateRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 4,
-  },
-  dateLabel: {
+  descriptionInput: {
     fontSize: 16,
-    fontWeight: "500",
-  },
-  dateValue: {
-    fontSize: 15,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
+    minHeight: 80,
   },
   rowCard: {
     borderRadius: radii.md,
@@ -730,60 +311,6 @@ const styles = StyleSheet.create({
   },
   rowLabel: {
     fontSize: 16,
-  },
-  addressInput: {
-    fontSize: 16,
-    flex: 1,
-  },
-  descriptionInput: {
-    fontSize: 16,
-    minHeight: 80,
-  },
-  optionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingVertical: 4,
-  },
-  visibilityPicker: {
-    flexDirection: "row",
-    borderRadius: 8,
-    overflow: "hidden",
-  },
-  visibilityOption: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  visibilityOptionActive: {
-    backgroundColor: colors.accentGreen,
-    borderRadius: 8,
-  },
-  paidOptionActive: {
-    backgroundColor: colors.accentOrange,
-    borderRadius: 8,
-  },
-  visibilityText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  capacityInput: {
-    fontSize: 16,
-    textAlign: "right",
-    width: 80,
-  },
-  priceInputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  priceInput: {
-    fontSize: 16,
-    textAlign: "right",
-    width: 60,
-  },
-  priceSuffix: {
-    fontSize: 16,
-    fontWeight: "500",
   },
   deleteButton: {
     flexDirection: "row",
