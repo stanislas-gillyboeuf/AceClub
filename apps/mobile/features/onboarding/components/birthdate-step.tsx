@@ -46,6 +46,8 @@ export function BirthdateStep({ dateOfBirth, onDateChange }: BirthdateStepProps)
           maximumDate={maxDate}
           minimumDate={minDate}
           locale="fr-FR"
+          textColor={colors.black}
+          themeVariant="light"
         />
       </Animated.View>
     </View>
