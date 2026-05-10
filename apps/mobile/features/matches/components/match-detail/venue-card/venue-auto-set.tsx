@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { MapPin } from "lucide-react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
+import { MapPin, Pencil } from "lucide-react-native";
+import { useRouter } from "expo-router";
 import { colors, semanticColors, spacing, radii } from "@/constants/theme";
 import { useUpdateVenue } from "@/hooks/use-match";
 import type { Organization } from "@/types/organization";
@@ -9,9 +10,11 @@ interface VenueAutoSetProps {
   matchId: string;
   organization: Organization;
   scheme: "light" | "dark";
+  canChange?: boolean;
 }
 
-export function VenueAutoSet({ matchId, organization, scheme }: VenueAutoSetProps) {
+export function VenueAutoSet({ matchId, organization, scheme, canChange }: VenueAutoSetProps) {
+  const router = useRouter();
   const updateVenue = useUpdateVenue();
   const didAutoSet = useRef(false);
 
@@ -31,9 +34,21 @@ export function VenueAutoSet({ matchId, organization, scheme }: VenueAutoSetProp
         },
       ]}
     >
-      <Text style={[styles.header, { color: semanticColors.labelTertiary[scheme] }]}>
-        LIEU
-      </Text>
+      <View style={styles.headerRow}>
+        <Text style={[styles.header, { color: semanticColors.labelTertiary[scheme] }]}>
+          LIEU
+        </Text>
+        {canChange && (
+          <Pressable
+            onPress={() => router.push(`/matches/${matchId}/change-venue` as any)}
+            hitSlop={8}
+            style={styles.changeButton}
+          >
+            <Pencil size={12} color={colors.accentGreen} strokeWidth={2.5} />
+            <Text style={styles.changeText}>Modifier</Text>
+          </Pressable>
+        )}
+      </View>
       <View style={styles.venueRow}>
         <MapPin size={14} color={colors.accentGreen} strokeWidth={2} />
         <View style={styles.venueInfo}>
@@ -60,11 +75,30 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     borderWidth: 0.5,
   },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
   header: {
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 1.5,
-    marginBottom: 12,
+  },
+  changeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: `${colors.accentGreen}18`,
+  },
+  changeText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: colors.accentGreen,
   },
   venueRow: {
     flexDirection: "row",

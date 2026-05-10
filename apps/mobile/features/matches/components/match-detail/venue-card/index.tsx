@@ -32,6 +32,8 @@ export function VenueCard({ matchDetail, isParticipant, isScheduled }: VenueCard
   const needsAutoSet =
     isScheduled && isParticipant && !venue && participantOrgs.length === 1;
 
+  const canChange = isScheduled && isParticipant;
+
   if (needsSelection) {
     return (
       <VenueSelection
@@ -48,9 +50,17 @@ export function VenueCard({ matchDetail, isParticipant, isScheduled }: VenueCard
         matchId={matchId}
         organization={participantOrgs[0]}
         scheme={scheme}
+        canChange={canChange}
       />
     );
   }
 
-  return <VenueReadOnly matchDetail={matchDetail} venue={venue} scheme={scheme} />;
+  return (
+    <VenueReadOnly
+      matchDetail={matchDetail}
+      venue={venue}
+      scheme={scheme}
+      canChange={canChange}
+    />
+  );
 }
