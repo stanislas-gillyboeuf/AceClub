@@ -28,6 +28,8 @@ export interface UserBrief {
   name: string;
   image?: string | null;
   level: number;
+  skillLevel?: string | null;
+  sport?: string | null;
   organization?: OrganizationBrief | null;
 }
 

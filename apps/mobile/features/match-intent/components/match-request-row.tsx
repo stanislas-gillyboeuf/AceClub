@@ -13,7 +13,7 @@ import {
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, radii, semanticColors, spacing } from "@/constants/theme";
 import { formatFullDate, formatTime, formatDuration } from "@/lib/format";
-import { getLevelTier } from "@/features/discover/lib/level-tiers";
+import { formatSkillLevel } from "@/lib/skill-levels";
 import type { MatchRequestWithDetails } from "@/types/match-intent";
 
 interface MatchRequestRowProps {
@@ -29,9 +29,7 @@ export function MatchRequestRow({ item, onAccept, onReject }: MatchRequestRowPro
   const isProcessing = isAccepting || isRejecting;
 
   const requesterName = item.requester?.name ?? "Joueur inconnu";
-  const level = item.requester?.level ?? 1;
-  const tier = getLevelTier(level);
-  const TierIcon = tier.icon;
+  const ranking = formatSkillLevel(item.requester?.skillLevel, item.requester?.sport);
 
   const intent = item.matchIntent;
   const intentType = intent?.type ?? "match";
@@ -73,13 +71,19 @@ export function MatchRequestRow({ item, onAccept, onReject }: MatchRequestRowPro
             {requesterName}
           </Text>
           <View style={styles.metaRow}>
-            <TierIcon size={12} color={tier.color} strokeWidth={2} />
-            <Text style={[styles.metaText, { color: semanticColors.labelSecondary[scheme] }]}>
-              Niv. {level}
-            </Text>
+            {ranking && (
+              <>
+                <Trophy size={12} color={colors.accentGreen} strokeWidth={2} />
+                <Text style={[styles.metaText, { color: semanticColors.labelSecondary[scheme] }]}>
+                  {ranking}
+                </Text>
+              </>
+            )}
             {item.requester?.organization && (
               <>
-                <Text style={[styles.metaDot, { color: semanticColors.labelTertiary[scheme] }]}>·</Text>
+                {ranking && (
+                  <Text style={[styles.metaDot, { color: semanticColors.labelTertiary[scheme] }]}>·</Text>
+                )}
                 <Building2 size={12} color={colors.accentGreen} strokeWidth={2} />
                 <Text
                   style={[styles.metaText, { color: semanticColors.labelSecondary[scheme] }]}

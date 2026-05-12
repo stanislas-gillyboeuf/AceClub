@@ -14,6 +14,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useMe } from "@/hooks/use-user";
 import { useMyLevel } from "@/hooks/use-level";
 import { useInfiniteMatches } from "@/hooks/use-match";
+import { useActiveMember } from "@/hooks/use-organization";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 import { LevelProgressCard } from "@/features/feed/components/level-progress-card";
@@ -34,6 +35,8 @@ export default function Feed() {
   const goToRanking = () => router.push("/(tabs)/feed/ranking");
   const goToProgression = () => router.push("/(tabs)/feed/progression");
 
+  const { data: activeMember } = useActiveMember();
+  const organizationId = activeMember?.organizationId;
 
   const {
     data: finishedData,
@@ -43,7 +46,12 @@ export default function Feed() {
     isLoading: finishedLoading,
     isRefetching,
     refetch,
-  } = useInfiniteMatches({ status: "finished", limit: 20 });
+  } = useInfiniteMatches({
+    status: "finished",
+    limit: 20,
+    organizationId,
+    participantOnly: false,
+  });
 
   const finishedMatches = useMemo(
     () => finishedData?.pages.flatMap((p) => p.matches) ?? [],

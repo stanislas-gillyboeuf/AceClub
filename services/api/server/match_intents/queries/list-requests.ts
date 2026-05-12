@@ -1,8 +1,8 @@
 import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { matchRequest } from "../../../db/schema";
-import { desc, eq } from "drizzle-orm";
+import { matchRequest, userPreference } from "../../../db/schema";
+import { desc, eq, inArray } from "drizzle-orm";
 
 export const listRequests = async (c: Context<HonoContext>) => {
   try {
@@ -21,12 +21,37 @@ export const listRequests = async (c: Context<HonoContext>) => {
             id: true,
             name: true,
             email: true,
+            image: true,
           },
         },
       },
     });
 
-    return c.json(requests);
+    const requesterIds = [...new Set(requests.map((r) => r.requesterId))];
+    const prefs = requesterIds.length
+      ? await db
+          .select({
+            userId: userPreference.userId,
+            skillLevel: userPreference.skillLevel,
+            sport: userPreference.sport,
+          })
+          .from(userPreference)
+          .where(inArray(userPreference.userId, requesterIds))
+      : [];
+    const prefMap = new Map(prefs.map((p) => [p.userId, p]));
+
+    const data = requests.map((r) => ({
+      ...r,
+      requester: r.requester
+        ? {
+            ...r.requester,
+            skillLevel: prefMap.get(r.requesterId)?.skillLevel ?? null,
+            sport: prefMap.get(r.requesterId)?.sport ?? null,
+          }
+        : r.requester,
+    }));
+
+    return c.json(data);
   } catch (error) {
     const errorMessage = (error as Error).message;
     console.error("💥 [LIST REQUESTS] Error message:", errorMessage);

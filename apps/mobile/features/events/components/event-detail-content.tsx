@@ -11,6 +11,7 @@ import {
   Users,
   CalendarDays,
   ExternalLink,
+  Ticket,
 } from "lucide-react-native";
 import { colors, semanticColors, radii, spacing } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -39,6 +40,9 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
   const isMutating = registerMutation.isPending || cancelMutation.isPending;
 
   const handleRegister = () => {
+    if (!event.isFree && event.paymentLink) {
+      Linking.openURL(event.paymentLink);
+    }
     registerMutation.mutate(eventId);
   };
 
@@ -108,6 +112,39 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
 
           <View style={[styles.divider, { backgroundColor: semanticColors.divider[scheme] }]} />
 
+          {/* Pricing */}
+          {!event.isFree && (
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: semanticColors.labelPrimary[scheme] }]}>
+                Tarif
+              </Text>
+              <GlassView style={styles.pricingCard}>
+                <View style={styles.infoRow}>
+                  <Ticket size={16} color={colors.accentGreen} strokeWidth={2} />
+                  <Text style={[styles.infoText, { color: semanticColors.labelPrimary[scheme] }]}>
+                    {event.price != null ? `${event.price} €` : "Payant"}
+                  </Text>
+                </View>
+                {event.paymentLink ? (
+                  status === "registered" ? (
+                    <Pressable onPress={() => Linking.openURL(event.paymentLink!)}>
+                      <View style={[styles.payButton, { backgroundColor: colors.accentGreen }]}>
+                        <Text style={styles.payButtonText}>
+                          {event.paymentLink.toLowerCase().includes("lydia") ? "Payer avec Lydia" : "Payer"}
+                        </Text>
+                        <ExternalLink size={16} color="#FFFFFF" strokeWidth={2} />
+                      </View>
+                    </Pressable>
+                  ) : (
+                    <Text style={[styles.payHint, { color: semanticColors.labelTertiary[scheme] }]}>
+                      Le lien de paiement s'ouvrira au moment de l'inscription.
+                    </Text>
+                  )
+                ) : null}
+              </GlassView>
+            </View>
+          )}
+
           {/* Host */}
           {event.organizationName ? (
             <View style={styles.section}>
@@ -159,7 +196,7 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
       >
         {status === null || status === "cancelled" ? (
           <Button
-            label="S'inscrire"
+            label={!event.isFree && event.paymentLink ? "S'inscrire et payer" : "S'inscrire"}
             onPress={handleRegister}
             disabled={isMutating}
             loading={isMutating}
@@ -328,6 +365,27 @@ const styles = StyleSheet.create({
   descriptionCard: {
     padding: spacing.card,
     borderRadius: radii.md,
+  },
+  pricingCard: {
+    padding: spacing.card,
+    borderRadius: radii.md,
+    gap: 12,
+  },
+  payButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: radii.md,
+  },
+  payButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  payHint: {
+    fontSize: 13,
   },
   descriptionText: {
     fontSize: 15,

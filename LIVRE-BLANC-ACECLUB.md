@@ -15,6 +15,11 @@
 7. [Structure du projet (où sont les fichiers)](#7-structure-du-projet-où-sont-les-fichiers)
 8. [Comment modifier quelque chose](#8-comment-modifier-quelque-chose)
 9. [Glossaire](#9-glossaire)
+10. [Builder l'app pour la distribuer (Expo + EAS)](#10-builder-lapp-pour-la-distribuer-expo--eas)
+11. [Déployer et mettre à jour l'app en production](#11-déployer-et-mettre-à-jour-lapp-en-production)
+12. [Déployer l'API et le site web (Railway)](#12-déployer-lapi-et-le-site-web-railway)
+13. [Pour aller plus loin](#13-pour-aller-plus-loin)
+14. [Trigger.dev (tâches en arrière-plan)](#14-triggerdev-tâches-en-arrière-plan)
 
 ---
 
@@ -42,7 +47,7 @@ L'app est disponible sur **iPhone** et **Android**. Il y a aussi un **site web**
 L'utilisateur peut se connecter avec :
 - **Apple** (Sign in with Apple)
 - **Google** (Google Sign-In)
-- **Email + mot de passe**
+- **Email + mot de passe** (développeur mode)
 
 Le système d'auth est géré par **Better Auth**, une librairie qui gère tout : sessions, tokens, cookies.
 
@@ -169,7 +174,7 @@ Le site web comprend :
 ```
 
 
-1. **L'app mobile** (ce que l'utilisateur voit) est codée en **React Native** avec **Expo**. C'est un framework qui permet d'écrire du code une seule fois et de le faire tourner sur iPhone ET Android.
+1. **L'app mobile** (ce que l'utilisateur voit) est codée en **React Native** avec **Expo** SDK 55. C'est un framework qui permet d'écrire du code une seule fois et de le faire tourner sur iPhone ET Android.
 
 2. **Le site web** est codé en **Next.js** (un framework basé sur React pour le web). Il sert pour le marketing (landing page) et l'administration.
 
@@ -564,3 +569,356 @@ git push
 | `git pull` | Récupérer les dernières modifications | Partout |
 
 ---
+
+## 10. Builder l'app pour la distribuer (Expo + EAS)
+
+Jusqu'ici on a fait tourner l'app sur ton simulateur en mode "développeur". Pour la donner à un testeur ou la publier sur l'App Store / Play Store, il faut **builder l'app** — c'est-à-dire la transformer en un vrai fichier installable (`.ipa` pour iPhone, `.aab` pour Android).
+
+On utilise pour ça **EAS Build**, le service cloud d'Expo qui compile l'app sur leurs serveurs (pas besoin que ton Mac fasse le boulot).
+
+### 10.1 Pourquoi pas Expo Go ?
+
+**Expo Go** est l'app gratuite sur l'App Store qui permet de tester rapidement des apps Expo "vanilla". **Mais AceClub ne tourne pas dans Expo Go** : on utilise des modules natifs (Liquid Glass iOS 26, Google Sign-In, expo-maps, notifications push avec APNS, etc.) qu'Expo Go ne supporte pas.
+
+À la place on utilise un **development build** : c'est une version "développeur" de l'app, signée et installable, qui se connecte au bundler Metro sur ton Mac pour le hot reload.
+
+### 10.2 Installer EAS CLI
+
+```bash
+bun add -g eas-cli
+eas login
+```
+
+Demande à un admin d'AceClub de t'ajouter à l'organisation Expo (project ID `55848fd1-bd32-4e6d-bd4b-d8d2066fcdc6`).
+
+### 10.3 Les 3 profils de build (`apps/mobile/eas.json`)
+
+| Profil | À quoi ça sert | Pointeur API |
+|--------|---------------|--------------|
+| **development** | Dev build avec hot reload, pour bosser au quotidien | celui de ton `.env` (localhost) |
+| **preview** | Build de test à filer à des testeurs internes (TestFlight) | `https://api.ace-club.app` (prod) |
+| **production** | Build officiel envoyé à l'App Store et Play Store | `https://api.ace-club.app` (prod) |
+
+### 10.4 Faire ton premier dev build (le plus utile au quotidien)
+
+```bash
+cd apps/mobile
+
+# Build pour le simulateur iPhone (gratuit, rapide, marche sans Apple Developer)
+eas build --profile development --platform ios
+
+# Build pour Android (émulateur ou téléphone)
+eas build --profile development --platform android
+```
+
+EAS fait le build sur ses serveurs (~10-15 min). À la fin, il te donne un lien `expo.dev/...` avec un bouton "Install" :
+- **Simulateur iOS** : drag-and-drop le `.tar.gz` sur le simulateur, ou `eas build:run -p ios --latest`
+- **Android** : scanne le QR code ou installe le `.apk`
+
+Une fois installé, tu lances Metro avec `bun start` et l'app dev build s'y connecte.
+
+### 10.5 Quand re-builder le dev client ?
+
+- **Tu modifies du JS/TS, des styles, des composants** → pas besoin de rebuilder, le hot reload suffit.
+- **Tu ajoutes une lib avec du code natif** (ex : `expo-haptics`, `expo-maps`) ou tu modifies `app.json` (plugins, permissions) → il **faut** rebuilder le dev client. Sinon l'app crashera au lancement.
+
+### 10.6 Builds physiques (vrai iPhone / vrai Android)
+
+Pour installer sur un **vrai iPhone** (utile pour tester l'appareil photo, les push notifs, GPS) :
+1. Inscris ton iPhone dans Apple Developer : `eas device:create`
+2. Modifie `eas.json` : passer `"simulator": false` dans le profil development
+3. Rebuild : `eas build --profile development --platform ios`
+4. EAS t'envoie un lien que tu ouvres depuis Safari sur l'iPhone → "Installer"
+
+Pour **Android** un simple `.apk` suffit, pas besoin de provisioning.
+
+---
+
+## 11. Déployer et mettre à jour l'app en production
+
+### 11.1 Les deux types de mise à jour
+
+C'est **le concept clé** à comprendre : il existe deux façons de mettre à jour une app mobile en prod.
+
+| Type | Quand ? | Comment ? | Délai utilisateur |
+|------|---------|-----------|-------------------|
+| **OTA (Over-The-Air)** | Tu changes uniquement du **JS/TS, des images, des styles** | `eas update` publie le nouveau JS — l'app le télécharge au prochain lancement | Quasi instantané, pas de review Apple |
+| **Build natif** | Tu changes le **code natif** (ajout d'un plugin, modif `app.json`, bump SDK Expo) | `eas build` recompile + `eas submit` envoie à l'App Store / Play Store | Review Apple (24-48h) puis update par l'utilisateur |
+
+**Analogie** : OTA = changer le contenu d'un site web (mise à jour immédiate). Build natif = ré-éditer une application installée sur ton ordi (faut la réinstaller).
+
+### 11.2 Le workflow magique : GitHub Releases
+
+Le repo a déjà tout câblé pour que tu n'aies **rien à faire à la main**. Le mécanisme :
+
+1. Tu pousses ton code sur la branche `dev`.
+2. Quand tu veux livrer, tu crées une **GitHub Release** avec un tag comme `v2.1.4` :
+   - Sur GitHub : Releases → Draft a new release → tag `v2.1.4` → Publish
+   - Ou en ligne de commande : `gh release create v2.1.4 --target dev --generate-notes`
+3. GitHub Actions (`.github/workflows/release.yml`) prend le relais :
+   - merge `dev` → `main`
+   - met à jour la version dans `apps/mobile/app.json`
+   - lance le workflow EAS de prod
+4. EAS calcule un **"fingerprint" natif** de l'app :
+   - **Si le fingerprint est identique à un build prod existant** = pas de changement natif → **OTA update automatique** sur la branch `production`. Les utilisateurs reçoivent la mise à jour en quelques minutes.
+   - **Si le fingerprint a changé** = code natif modifié → **nouveau build EAS + soumission automatique à l'App Store et au Play Store**.
+
+**Concrètement, pour livrer une feature :**
+- Push sur `dev` → Pull request → merge → GitHub Release → c'est livré.
+- Tu ne touches **jamais** `eas build` ou `eas submit` à la main pour la prod.
+
+### 11.3 Pré-requis côté GitHub
+
+Une seule fois, configurer le secret `EXPO_TOKEN` dans Settings → Secrets and variables → Actions du repo. C'est un token Expo (à créer sur expo.dev/accounts/<org>/settings/access-tokens). Sans ça, le workflow plante au step "Setup EAS".
+
+### 11.4 Soumissions manuelles (rare, pour hotfix)
+
+Si tu dois bypass GitHub Releases (urgence) :
+
+```bash
+cd apps/mobile
+
+# Forcer une OTA prod tout de suite
+eas update --branch production --message "fix: crash launcher"
+
+# Build prod manuel + soumission
+eas build --profile production --platform all
+eas submit --profile production --platform ios --latest
+eas submit --profile production --platform android --latest
+```
+
+### 11.5 TestFlight (beta testeurs avant prod)
+
+Le profil `preview` produit un build interne distribuable :
+
+```bash
+eas build --profile preview --platform ios
+```
+
+EAS uploade le `.ipa` sur App Store Connect → TestFlight → tes testeurs reçoivent une invitation par email pour installer la beta sur leur iPhone.
+
+---
+
+## 12. Déployer l'API et le site web (Railway)
+
+L'app mobile parle à une **API hébergée dans le cloud**. On utilise [Railway](https://railway.app) pour héberger :
+
+| Service | URL prod | Hébergement |
+|---------|----------|-------------|
+| **API** (Hono) | `https://api.ace-club.app` | Railway — déploiement auto sur push `main` |
+| **Site web** (Next.js) | (configuré via `apps/web/railway.toml`) | Railway |
+| **PostgreSQL** | Interne à Railway | Railway Postgres add-on |
+| **Redis** (pub/sub WebSocket) | Interne à Railway | Railway Redis add-on |
+| **MinIO** (stockage photos) | `https://bucket-production-4a13.up.railway.app` | Railway |
+
+### 12.1 Cycle de déploiement API/Web
+
+1. Tu merges une PR dans `main`.
+2. Railway détecte le push et redéploie automatiquement les services modifiés.
+3. Les variables d'environnement (`.env` de prod) sont configurées **dans le dashboard Railway** (pas dans le repo, c'est secret).
+4. Au bout de quelques minutes, la nouvelle version est en ligne.
+
+### 12.2 Les tâches programmées (cron)
+
+Les tâches récurrentes (envoyer une notif streak, expirer des challenges...) ne tournent **pas** sur Railway mais sur **Trigger.dev**, un service spécialisé. Détails complets en [§14](#14-triggerdev-tâches-en-arrière-plan). En résumé :
+
+| Tâche | Fréquence | Ce que ça fait |
+|-------|-----------|----------------|
+| `assign-weekly-challenges` | Lundis 09:00 UTC | Crée les nouveaux challenges hebdomadaires |
+| `expire-challenges` | Tous les jours 00:05 UTC | Expire les challenges dont la deadline est passée |
+| `cleanup-expired-intents` | Tous les jours 01:00 UTC | Supprime les match intents périmés |
+| `streak-warning` | Vendredis 18:00 UTC | Notif push à ceux qui vont perdre leur streak |
+| `update-monthly-badges` | Tous les jours minuit (Paris) | Met à jour les badges mensuels |
+
+### 12.3 Migrations de la base de données
+
+Quand tu modifies un schéma Drizzle (`services/api/db/schema/`) et que ça part en prod :
+
+```bash
+# 1. Générer le fichier SQL de migration en local
+cd services/api
+bun run drizzle:generate
+
+# 2. Commit + push + merge (Railway redéploie)
+# 3. Sur Railway : lancer la migration depuis le dashboard
+#    (ou ajouter `bun run drizzle:migrate` au startCommand de l'API si on l'automatise)
+```
+
+**Règle d'or** : tester la migration en local sur la DB Docker avant de pousser. Une migration cassée en prod = downtime.
+
+---
+
+## 13. Pour aller plus loin
+
+### 13.1 Récap du flow complet d'une nouvelle feature
+
+1. **Récupérer la dernière version** : `git pull` sur `dev`
+2. **Créer une branche** : `git checkout -b feat/ma-feature`
+3. **Coder** : modifier le mobile + l'API + éventuellement la DB
+4. **Tester en local** : Docker + API + Metro + dev build sur simulateur
+5. **Commit + push** : `git add . && git commit -m "feat: ..." && git push`
+6. **Pull Request** sur GitHub → review → merge dans `dev`
+7. **Release** : créer une GitHub Release `vX.Y.Z` quand on est prêts à livrer
+8. **EAS + Railway font le reste tout seuls** (OTA ou build, redéploiement API)
+
+### 13.2 Ce qui n'est pas couvert dans ce livre blanc
+
+- **Tests** : pas encore de suite de tests automatisés sur le mobile (chantier en cours, Phase 13 de la migration).
+- **Monitoring** : pas de Sentry/PostHog configuré pour l'instant — quand un user crash, on n'a pas la stack trace remontée.
+- **Feature flags** : il y a un système de feature flags en DB (`feature_flag` table) géré depuis le dashboard admin, mais pas documenté ici.
+
+### 13.3 Où demander de l'aide
+
+- **Pour comprendre le code** : `mgrep "ta question" --store "aceclub" -a -m 20` (cf. `CLAUDE.md`) — c'est un assistant IA qui répond avec la source.
+- **Pour les bugs prod** : dashboard Railway (logs) + Drizzle Studio (DB) + dashboard Expo (crash reports).
+- **Pour les soumissions stores** : dashboard App Store Connect + Google Play Console.
+
+### 13.4 Glossaire complémentaire
+
+| Terme | Explication simple |
+|-------|--------------------|
+| **EAS** | Expo Application Services. Le cloud d'Expo qui build, signe et soumet ton app. |
+| **OTA update** | Over-The-Air. Mise à jour du JS de l'app sans repasser par l'App Store. |
+| **Fingerprint** | Empreinte du code natif. EAS s'en sert pour décider OTA vs rebuild. |
+| **TestFlight** | App d'Apple pour distribuer des beta privées avant la sortie en prod. |
+| **App Store Connect** | Le dashboard Apple pour gérer les apps publiées. |
+| **Provisioning profile** | Un certificat qui autorise une app à tourner sur un iPhone donné. EAS le gère pour toi. |
+| **Railway** | L'hébergeur cloud où tournent l'API, le site, Postgres et Redis. |
+| **Cron** | Une tâche programmée qui tourne automatiquement à une heure donnée. |
+| **Dev build** | Une version "développeur" de l'app, hot-reloadable, qui remplace Expo Go. |
+
+---
+
+**Bienvenue chez AceClub.** Bon code.
+
+---
+
+## 14. Trigger.dev (tâches en arrière-plan)
+
+### 14.1 C'est quoi et pourquoi on en a besoin
+
+Une API "classique" répond à une requête en quelques millisecondes : l'utilisateur clique, le serveur répond. Mais certaines choses ne tiennent pas dans une requête :
+
+- **Tâches récurrentes** : "tous les lundis matin, distribuer des nouveaux challenges à 50 000 joueurs" — ça prend plusieurs minutes, faut le faire automatiquement.
+- **Tâches longues** : envoyer 10 000 notifications push, redimensionner une vidéo, faire appel à OpenAI sur une grosse génération.
+- **Tâches qui doivent retry** : si une notif APNS échoue, on veut réessayer dans 30 secondes, puis dans 2 minutes, etc.
+
+**Trigger.dev** est un service externe spécialisé là-dedans. On lui dit "voici une fonction TypeScript, exécute-la tous les lundis à 9h UTC, retry 3 fois si elle plante, log-moi tout". Il s'occupe du planning, des retries, des logs, de la scalabilité.
+
+**Analogie** : si l'API est le serveur du restaurant, Trigger.dev est le **commis en cuisine** qui prépare des plats en parallèle pendant que le serveur continue de prendre les commandes.
+
+### 14.2 Comment c'est branché ici
+
+Tout est dans `services/api/trigger/` :
+
+```
+services/api/
+├── trigger.config.ts            ← config : projet Trigger.dev, retries, etc.
+└── trigger/
+    ├── assign-weekly-challenges.ts   ← lundi 09:00 UTC
+    ├── expire-challenges.ts          ← daily 00:05 UTC
+    ├── cleanup-expired-intents.ts    ← daily 01:00 UTC
+    ├── streak-warning.ts             ← vendredi 18:00 UTC
+    ├── update-monthly-badges.ts      ← daily minuit Paris
+    └── index.ts                      ← barrel export
+```
+
+Chaque tâche est une **fonction TypeScript** qui ressemble à ça :
+
+```typescript
+import { schedules } from "@trigger.dev/sdk";
+
+export const streakWarningTask = schedules.task({
+  id: "streak-warning",
+  cron: { pattern: "0 18 * * 5", timezone: "UTC" },  // vendredi 18:00 UTC
+  run: async (payload) => {
+    // ... la logique : récupérer les users en streak, envoyer les notifs
+    return { success: true };
+  },
+});
+```
+
+Le `cron pattern` est la **syntaxe cron standard** : `minute heure jour-du-mois mois jour-de-la-semaine`. `0 18 * * 5` = minute 0, heure 18, n'importe quel jour/mois, jour de la semaine 5 (vendredi).
+
+### 14.3 Les 5 tâches actuelles, en détail
+
+| Tâche | Quand | Ce que ça fait concrètement |
+|-------|-------|------------------------------|
+| **`assign-weekly-challenges`** | Lundi 09:00 UTC (`0 9 * * 1`) | Appelle `assignWeeklyChallenges()` qui pour chaque joueur sélectionne 3 challenges hebdo selon son niveau, crée des rows `user_challenge`, prépare les rewards. |
+| **`expire-challenges`** | Daily 00:05 UTC (`5 0 * * *`) | Passe tous les `user_challenge` dont `expiresAt < now` à l'état `expired`. Empêche un joueur de compléter un challenge dont la fenêtre est passée. |
+| **`cleanup-expired-intents`** | Daily 01:00 UTC (`0 1 * * *`) | Supprime les `match_intent` dont la date est passée. Évite que Discover affiche des intentions périmées. |
+| **`streak-warning`** | Vendredi 18:00 UTC (`0 18 * * 5`) | Trouve tous les joueurs avec un streak actif qui n'ont pas joué cette semaine et leur envoie une notif push "Plus que 2 jours pour garder ton streak !". |
+| **`update-monthly-badges`** | Daily 00:00 Europe/Paris (`0 0 * * *`) | Recalcule l'éligibilité aux badges mensuels (ex: "20 matchs ce mois-ci") et débloque ceux qui passent le seuil. |
+
+### 14.4 Les retries automatiques
+
+Configuré dans `trigger.config.ts` (cf. lignes 7-15) : chaque tâche qui plante est **rejouée jusqu'à 3 fois**, avec un délai exponentiel (1s, 2s, 4s, 8s... jusqu'à 30s max) + un peu de randomisation pour éviter les "thundering herds" si plusieurs tâches échouent en même temps.
+
+`enabledInDev: false` = en local on ne retry pas (sinon on s'embrouille avec des doublons quand on debug).
+
+### 14.5 Développer localement une tâche Trigger.dev
+
+```bash
+cd services/api
+
+# Lancer le "dev server" Trigger.dev en local
+bun run trigger:dev
+```
+
+Ça ouvre une connexion entre ta machine et le cloud Trigger.dev. Tu peux :
+- Voir tes tâches sur https://cloud.trigger.dev/orgs/.../projects/proj_zqlindsznuttfkofouqq
+- **Trigger manuellement** une tâche depuis le dashboard (bouton "Test") — utile pour tester sans attendre vendredi 18h.
+- Voir les logs en temps réel dans le terminal et dans le dashboard.
+
+**Workflow type pour ajouter une nouvelle tâche planifiée** :
+1. Créer `services/api/trigger/ma-nouvelle-tache.ts` sur le modèle existant.
+2. Lancer `bun run trigger:dev` — Trigger.dev détecte la nouvelle tâche et l'enregistre.
+3. Cliquer "Test" dans le dashboard pour la déclencher manuellement.
+4. Commit + push.
+5. Au prochain `bun run trigger:deploy` (cf. §14.6), le cron sera enregistré pour de bon en prod.
+
+### 14.6 Déployer en production
+
+Trigger.dev ne se déploie **pas** automatiquement avec l'API Railway. Il faut une commande explicite :
+
+```bash
+cd services/api
+bun run trigger:deploy
+```
+
+Ça :
+1. Bundle le code des tâches (avec `pg` en externe, cf. `trigger.config.ts:18`).
+2. Upload sur Trigger.dev cloud.
+3. Met à jour les crons (création / suppression / modification de pattern).
+
+À faire après chaque modification de `trigger/`. **Tu peux automatiser** ce déploiement en ajoutant le step au workflow GitHub Actions, mais ce n'est pas fait aujourd'hui.
+
+### 14.7 Quand utiliser Trigger.dev vs un appel API direct ?
+
+| Cas | Outil |
+|-----|-------|
+| Action immédiate suite à un clic user (envoyer un message, créer un match) | Endpoint Hono classique, dans `server/<domaine>/mutations/` |
+| Action récurrente automatique (daily, weekly, monthly) | Tâche Trigger.dev `schedules.task` |
+| Action longue déclenchée par un user (générer un rapport IA, traiter une vidéo) | Tâche Trigger.dev déclenchée depuis Hono avec `myTask.trigger({...})`, puis on renvoie `202 Accepted` au user pour qu'il ne bloque pas |
+| Action fan-out (envoyer 5000 notifs en parallèle) | Tâche Trigger.dev avec `batchTrigger` pour paralléliser |
+
+Pour l'instant AceClub n'utilise Trigger.dev **que pour les 5 schedules** ci-dessus. C'est l'endroit naturel où mettre du traitement IA, du resize d'images uploadées, des rapports d'analytics, etc.
+
+### 14.8 Variables d'environnement Trigger.dev
+
+Côté API, deux clés sont nécessaires (cf. `.env.example`) :
+
+- `TRIGGER_SECRET_KEY` : token serveur, format `tr_dev_xxx` (dev) ou `tr_prod_xxx` (prod). Récupérable dans le dashboard Trigger.dev → Settings → API Keys.
+- (côté `trigger.config.ts`, le `project` est en dur : `proj_zqlindsznuttfkofouqq` — c'est l'identifiant public du projet, pas un secret).
+
+En prod sur Railway, mettre `TRIGGER_SECRET_KEY` avec un token `tr_prod_...` pour que les tâches qui appellent l'API (push notifs via l'API mobile, par exemple) puissent s'authentifier.
+
+## 15.8 Possibilité de migration des services 
+
+### 15.1 Github Repo
+
+Il est possible de faire un transfère de repo Github permettant la possibilité d'acquérir le code source de la plateforme. Il nécessitera donc le besoin d'une reconnexion des serveurs Railway, permettant la mise à jour automatique des commits sur le serveur et d'effectuer les migrations pour la base de données. 
+
+Si cela n'est pas fait alors l'API de l'application ne sera pas mis à jour. 
+
+###

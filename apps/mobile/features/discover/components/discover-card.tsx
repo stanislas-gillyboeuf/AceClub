@@ -22,6 +22,7 @@ import {
 } from "@/lib/format";
 import type { MatchIntentWithUser } from "@/types/match-intent";
 import { getLevelTier } from "@/features/discover/lib/level-tiers";
+import { formatSkillLevel } from "@/lib/skill-levels";
 
 interface DiscoverCardProps {
   item: MatchIntentWithUser;
@@ -34,6 +35,7 @@ export function DiscoverCard({ item, maxHeight }: DiscoverCardProps) {
   const idealHeight = cardWidth / 0.7;
   const cardHeight = maxHeight ? Math.min(idealHeight, maxHeight - 16) : idealHeight;
   const tier = getLevelTier(item.user?.level ?? 1);
+  const ranking = formatSkillLevel(item.user?.skillLevel, item.user?.sport);
 
   const displayName = item.user?.name ?? "Joueur";
   const intentType = item.intent.type ?? "match";
@@ -105,11 +107,9 @@ export function DiscoverCard({ item, maxHeight }: DiscoverCardProps) {
           {displayName}
         </Text>
         <View style={styles.tagsContainer}>
-          <TagChip
-            icon={TypeIcon}
-            label={`Niv. ${item.user?.level ?? 1}`}
-            iconColor={tier.color}
-          />
+          {ranking && (
+            <TagChip icon={Trophy} label={ranking} iconColor={tier.color} />
+          )}
           {item.user?.organization && (
             <TagChip icon={Building2} label={item.user.organization.name} />
           )}
