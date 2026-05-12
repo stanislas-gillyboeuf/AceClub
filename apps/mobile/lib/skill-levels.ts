@@ -46,3 +46,12 @@ export function getSkillLevelDisplayName(value: string, sport: Sport): string | 
   const levels = getSkillLevels(sport);
   return levels.find((l) => l.value === value)?.displayName ?? null;
 }
+
+/** Tolerant formatter for a user's tennis/padel ranking ("classement"). Returns null if unknown. */
+export function formatSkillLevel(value?: string | null, sport?: string | null): string | null {
+  if (!value) return null;
+  if (sport === "tennis" || sport === "padel") {
+    return getSkillLevelDisplayName(value, sport) ?? value;
+  }
+  return value;
+}

@@ -21,6 +21,7 @@ import {
   formatDistance,
 } from "@/lib/format";
 import { getLevelTier } from "@/features/discover/lib/level-tiers";
+import { formatSkillLevel } from "@/lib/skill-levels";
 import type { MatchIntentWithUser } from "@/types/match-intent";
 
 interface DiscoverDetailSheetProps {
@@ -38,7 +39,7 @@ export function DiscoverDetailSheet({
 }: DiscoverDetailSheetProps) {
   const scheme = useColorScheme();
   const tier = getLevelTier(item.user?.level ?? 1);
-  const TierIcon = tier.icon;
+  const ranking = formatSkillLevel(item.user?.skillLevel, item.user?.sport);
 
   const displayName = item.user?.name ?? "Joueur";
   const intentType = item.intent.type ?? "match";
@@ -87,16 +88,15 @@ export function DiscoverDetailSheet({
             </View>
           </View>
 
-          {/* Info rows */}
-          <View style={styles.infoRow}>
-            <TierIcon size={18} color={tier.color} strokeWidth={2.5} />
-            <Text style={[styles.levelText, { color: tier.color }]}>
-              Niveau {item.user?.level ?? 1}
-            </Text>
-            <Text style={[styles.infoText, { color: semanticColors.labelSecondary[scheme] }]}>
-              · {tier.label}
-            </Text>
-          </View>
+
+          {ranking && (
+            <View style={styles.infoRow}>
+              <Trophy size={16} color={tier.color} strokeWidth={2} />
+              <Text style={[styles.infoText, { color: semanticColors.labelPrimary[scheme] }]}>
+                Classement {ranking}
+              </Text>
+            </View>
+          )}
 
           {item.user?.organization && (
             <View style={styles.infoRow}>

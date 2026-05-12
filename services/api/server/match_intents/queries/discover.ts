@@ -206,6 +206,8 @@ export const discover = async (c: Context<HonoContext>) => {
         user_email: userTable.email,
         user_image: userTable.image,
         user_level: sql<number>`coalesce(${userLevel.currentLevel}, 1)`.as("user_level"),
+        user_skill_level: intentOwnerPreference.skillLevel,
+        user_sport: intentOwnerPreference.sport,
         org_id: organization.id,
         org_name: organization.name,
         org_logo: organization.logo,
@@ -259,6 +261,8 @@ export const discover = async (c: Context<HonoContext>) => {
               email: row.user_email,
               image: row.user_image,
               level: Number(row.user_level) || 1,
+              skillLevel: row.user_skill_level ?? null,
+              sport: row.user_sport ?? null,
               organization:
                 row.org_id != null && row.org_name != null
                   ? {
