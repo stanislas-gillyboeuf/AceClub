@@ -63,18 +63,17 @@ export default function ChallengesPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<ChallengeTemplate | null>(null)
   const [form, setForm] = useState(EMPTY_FORM)
-  const [assignResult, setAssignResult] = useState<string | null>(null)
 
   const openCreate = () => {
     setEditingTemplate(null)
     setForm(EMPTY_FORM)
-    setAssignResult(null)
+    assignNowMutation.reset()
     setDialogOpen(true)
   }
 
   const openEdit = (template: ChallengeTemplate) => {
     setEditingTemplate(template)
-    setAssignResult(null)
+    assignNowMutation.reset()
     setForm({
       code: template.code,
       type: template.type,
@@ -298,9 +297,17 @@ export default function ChallengesPage() {
             </div>
           </div>
 
-          {assignResult && (
+          {assignNowMutation.data && (
             <p className="text-sm text-muted-foreground" role="status">
-              {assignResult}
+              Distribue a {assignNowMutation.data.assignedCount} joueur(s).
+              Ignore : {assignNowMutation.data.skippedCount}.
+            </p>
+          )}
+          {assignNowMutation.error && (
+            <p className="text-sm text-destructive" role="status">
+              {assignNowMutation.error instanceof Error
+                ? assignNowMutation.error.message
+                : "Echec de la distribution"}
             </p>
           )}
 
@@ -312,26 +319,11 @@ export default function ChallengesPage() {
               <Button
                 variant="secondary"
                 onClick={() => {
-                  setAssignResult(null)
                   const confirmed = window.confirm(
                     "Distribuer ce defi a tous les joueurs eligibles immediatement ?",
                   )
                   if (!confirmed) return
-                  assignNowMutation.mutate(
-                    { id: editingTemplate.id },
-                    {
-                      onSuccess: (data) => {
-                        setAssignResult(
-                          `Distribue a ${data.assignedCount} joueur(s). Ignore : ${data.skippedCount}.`,
-                        )
-                      },
-                      onError: (err) => {
-                        setAssignResult(
-                          err instanceof Error ? err.message : "Echec de la distribution",
-                        )
-                      },
-                    },
-                  )
+                  assignNowMutation.mutate({ id: editingTemplate.id })
                 }}
                 disabled={assignNowMutation.isPending}
               >

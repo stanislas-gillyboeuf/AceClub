@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import { eq } from "drizzle-orm";
+import { and, eq, gte, lte, sql, type SQL } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { challengeTemplate, userChallenge } from "../../../db/schema/challenge/schema";
@@ -35,71 +35,61 @@ export const assignChallengeTemplateNow = async (c: Context<HonoContext>) => {
   const { week, year } = getISOWeekInfo(now);
   const expiresAt = getWeekEndDate(now);
 
-  const allUsers = await db
-    .select({
-      userId: user.id,
-      currentLevel: userLevel.currentLevel,
-    })
+  const effectiveLevel = sql<number>`COALESCE(${userLevel.currentLevel}, 1)`;
+  const levelConditions: SQL[] = [gte(effectiveLevel, template.minLevel)];
+  if (template.maxLevel !== null) {
+    levelConditions.push(lte(effectiveLevel, template.maxLevel));
+  }
+
+  const eligibleUsers = await db
+    .select({ userId: user.id })
     .from(user)
-    .leftJoin(userLevel, eq(user.id, userLevel.userId));
+    .leftJoin(userLevel, eq(user.id, userLevel.userId))
+    .where(and(...levelConditions));
 
-  let assignedCount = 0;
-  let skippedCount = 0;
-  const notifiedUserIds: string[] = [];
+  if (eligibleUsers.length === 0) {
+    return c.json({ assignedCount: 0, skippedCount: 0 });
+  }
 
-  for (const u of allUsers) {
-    const level = u.currentLevel ?? 1;
-    if (level < template.minLevel) {
-      skippedCount++;
-      continue;
-    }
-    if (template.maxLevel !== null && level > template.maxLevel) {
-      skippedCount++;
-      continue;
-    }
-
-    const inserted = await db
-      .insert(userChallenge)
-      .values({
+  const inserted = await db
+    .insert(userChallenge)
+    .values(
+      eligibleUsers.map((u) => ({
         userId: u.userId,
         templateId: template.id,
         weekNumber: week,
         year,
         targetValue: template.targetValue,
         expiresAt,
-      })
-      .onConflictDoNothing({
-        target: [
-          userChallenge.userId,
-          userChallenge.templateId,
-          userChallenge.weekNumber,
-          userChallenge.year,
-        ],
-      })
-      .returning({ id: userChallenge.id });
+      })),
+    )
+    .onConflictDoNothing({
+      target: [
+        userChallenge.userId,
+        userChallenge.templateId,
+        userChallenge.weekNumber,
+        userChallenge.year,
+      ],
+    })
+    .returning({ userId: userChallenge.userId });
 
-    if (inserted.length > 0) {
-      assignedCount++;
-      notifiedUserIds.push(u.userId);
-    } else {
-      skippedCount++;
-    }
-  }
+  const assignedCount = inserted.length;
+  const skippedCount = eligibleUsers.length - assignedCount;
 
-  for (const userId of notifiedUserIds) {
-    try {
-      await sendNotificationToUser({
-        userId,
+  await Promise.allSettled(
+    inserted.map((row) =>
+      sendNotificationToUser({
+        userId: row.userId,
         type: "challenge_assigned",
         title: "Nouveau défi disponible 🎯",
         body: `${template.titleFr} — relève-le pour gagner ${template.acesReward} Aces !`,
         referenceId: template.id,
         referenceType: "challenge_template",
-      });
-    } catch (err) {
-      console.error(`[assignChallengeTemplateNow] push failed for ${userId}`, err);
-    }
-  }
+      }).catch((err) => {
+        console.error(`[assignChallengeTemplateNow] push failed for ${row.userId}`, err);
+      }),
+    ),
+  );
 
   return c.json({ assignedCount, skippedCount });
 };
