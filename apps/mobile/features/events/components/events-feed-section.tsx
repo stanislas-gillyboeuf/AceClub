@@ -40,8 +40,7 @@ export function EventsFeedSection() {
     return null;
   }
 
-  const hasMyEvents = (myEvents?.length ?? 0) > 0;
-  const title = hasMyEvents ? "Evenements" : "Evenements a decouvrir";
+  const title = myEvents?.length ? "Evenements" : "Evenements a decouvrir";
 
   return (
     <View style={styles.section}>
