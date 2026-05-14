@@ -1,40 +1,41 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Plus } from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   useNotificationSchedules,
   useNotificationTemplates,
-} from "@/hooks/use-admin-queries"
-import type {
-  NotificationSchedule,
-  NotificationType,
-} from "@/types/admin"
-import { NOTIFICATION_TYPE_LABELS } from "./notification-types"
-import { TemplateSheet } from "./template-sheet"
-import { ScheduleDialog } from "./schedule-dialog"
+} from "@/hooks/use-admin-queries";
+import type { NotificationSchedule, NotificationType } from "@/types/admin";
+import { NOTIFICATION_TYPE_LABELS } from "./notification-types";
+import { TemplateSheet } from "./template-sheet";
+import { ScheduleDialog } from "./schedule-dialog";
 
 export default function NotificationsAdminPage() {
-  const templatesQuery = useNotificationTemplates()
-  const schedulesQuery = useNotificationSchedules()
+  const templatesQuery = useNotificationTemplates();
+  const schedulesQuery = useNotificationSchedules();
 
-  const [selectedType, setSelectedType] = useState<NotificationType | null>(null)
-  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
-  const [editingSchedule, setEditingSchedule] = useState<NotificationSchedule | null>(null)
+  const [selectedType, setSelectedType] = useState<NotificationType | null>(
+    null,
+  );
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+  const [editingSchedule, setEditingSchedule] =
+    useState<NotificationSchedule | null>(null);
 
-  const templates = templatesQuery.data?.templates ?? []
-  const schedules = schedulesQuery.data?.schedules ?? []
+  const templates = templatesQuery.data?.templates ?? [];
+  const schedules = schedulesQuery.data?.schedules ?? [];
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Notifications</h1>
         <p className="text-muted-foreground">
-          Personnalisez les textes envoyés aux utilisateurs et planifiez des envois récurrents.
+          Personnalisez les textes envoyés aux utilisateurs et planifiez des
+          envois récurrents.
         </p>
       </div>
 
@@ -76,7 +77,8 @@ export default function NotificationsAdminPage() {
                         {tpl.description}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {tpl.activeVariantsCount} / {tpl.variantsCount} variante(s) active(s)
+                        {tpl.activeVariantsCount} / {tpl.variantsCount}{" "}
+                        variante(s) active(s)
                       </p>
                     </CardContent>
                   </Card>
@@ -90,8 +92,8 @@ export default function NotificationsAdminPage() {
           <div className="mb-4 flex justify-end">
             <Button
               onClick={() => {
-                setEditingSchedule(null)
-                setScheduleDialogOpen(true)
+                setEditingSchedule(null);
+                setScheduleDialogOpen(true);
               }}
             >
               <Plus className="mr-2 h-4 w-4" />
@@ -103,7 +105,8 @@ export default function NotificationsAdminPage() {
             <p className="text-sm text-muted-foreground">Chargement…</p>
           ) : schedules.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Aucune planification. Créez-en une pour envoyer des notifications récurrentes via trigger.dev.
+              Aucune planification. Créez-en une pour envoyer des notifications
+              récurrentes via trigger.dev.
             </p>
           ) : (
             <div className="space-y-2">
@@ -113,8 +116,8 @@ export default function NotificationsAdminPage() {
                   type="button"
                   className="w-full text-left"
                   onClick={() => {
-                    setEditingSchedule(s)
-                    setScheduleDialogOpen(true)
+                    setEditingSchedule(s);
+                    setScheduleDialogOpen(true);
                   }}
                 >
                   <Card className="transition hover:border-foreground/30">
@@ -142,7 +145,8 @@ export default function NotificationsAdminPage() {
                         </span>
                         {s.lastRunAt && (
                           <span>
-                            Dernier run : {new Date(s.lastRunAt).toLocaleString("fr-FR")}
+                            Dernier run :{" "}
+                            {new Date(s.lastRunAt).toLocaleString("fr-FR")}
                           </span>
                         )}
                       </div>
@@ -168,5 +172,5 @@ export default function NotificationsAdminPage() {
         schedule={editingSchedule}
       />
     </div>
-  )
+  );
 }

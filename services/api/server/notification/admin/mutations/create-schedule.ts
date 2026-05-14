@@ -59,7 +59,19 @@ export const createSchedule = async (c: Context<HonoContext>) => {
         triggerScheduleId,
         isActive: validated.isActive,
       })
-      .returning();
+      .returning({
+        id: notificationSchedule.id,
+        templateId: notificationSchedule.templateId,
+        name: notificationSchedule.name,
+        cronExpression: notificationSchedule.cronExpression,
+        timezone: notificationSchedule.timezone,
+        audience: notificationSchedule.audience,
+        defaultVariables: notificationSchedule.defaultVariables,
+        isActive: notificationSchedule.isActive,
+        lastRunAt: notificationSchedule.lastRunAt,
+        createdAt: notificationSchedule.createdAt,
+        updatedAt: notificationSchedule.updatedAt,
+      });
     return c.json(created, 201);
   } catch (err) {
     // DB insert failed → rollback the trigger.dev schedule we just created

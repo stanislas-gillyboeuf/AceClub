@@ -6,25 +6,12 @@ import {
   notificationTemplateVariant,
 } from "../../../../db/schema/notification/schema";
 import { eq, asc } from "drizzle-orm";
-import type { NotificationType } from "../../../../services/expo-push/notification-service";
-
-const VALID_TYPES: NotificationType[] = [
-  "match_request_accepted",
-  "invitation_accepted",
-  "new_match_request",
-  "match_reminder",
-  "challenge_assigned",
-  "streak_warning",
-  "new_message",
-  "match_liked",
-];
+import { z } from "zod";
+import { templateTypeParamValidator } from "../validators";
 
 export const getTemplate = async (c: Context<HonoContext>) => {
-  const rawType = c.req.param("type");
-  if (!VALID_TYPES.includes(rawType as NotificationType)) {
-    return c.json({ error: "BadRequest", message: "Invalid notification type" }, 400);
-  }
-  const type = rawType as NotificationType;
+  // @ts-ignore
+  const { type } = c.req.valid("param") as z.infer<typeof templateTypeParamValidator>;
 
   const [template] = await db
     .select()

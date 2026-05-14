@@ -12,7 +12,7 @@ import { relations } from "drizzle-orm";
 import { user } from "../auth/schema";
 import { ulid } from "ulid";
 
-export const NotificationType = pgEnum("notification_type", [
+export const NOTIFICATION_TYPES = [
   "match_request_accepted",
   "invitation_accepted",
   "new_match_request",
@@ -21,7 +21,11 @@ export const NotificationType = pgEnum("notification_type", [
   "streak_warning",
   "new_message",
   "match_liked",
-]);
+] as const;
+
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+export const notificationTypeEnum = pgEnum("notification_type", NOTIFICATION_TYPES);
 
 export const DevicePlatform = pgEnum("device_platform", ["ios", "android"]);
 
@@ -61,7 +65,7 @@ export const notification = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    type: NotificationType("type").notNull(),
+    type: notificationTypeEnum("type").notNull(),
     title: text("title").notNull(),
     body: text("body").notNull(),
     data: text("data"), // JSON stringified payload
@@ -86,7 +90,7 @@ export const notificationTemplate = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => ulid()),
-    type: NotificationType("type").notNull(),
+    type: notificationTypeEnum("type").notNull(),
     description: text("description").notNull(),
     availableVariables: jsonb("available_variables").$type<string[]>().notNull().default([]),
     isActive: boolean("is_active").default(true).notNull(),

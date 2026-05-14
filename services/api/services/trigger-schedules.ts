@@ -1,6 +1,7 @@
 import { schedules } from "@trigger.dev/sdk";
+import { SEND_SCHEDULED_NOTIFICATION_TASK_ID } from "../trigger/send-scheduled-notification";
 
-const TASK_ID = "send-scheduled-notification";
+const TASK_ID = SEND_SCHEDULED_NOTIFICATION_TASK_ID;
 
 export async function createTriggerSchedule(params: {
   scheduleId: string;

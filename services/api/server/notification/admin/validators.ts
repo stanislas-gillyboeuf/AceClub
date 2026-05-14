@@ -1,20 +1,14 @@
 import { z } from "zod";
-// @ts-ignore — cron-parser is added as a runtime dep; types ship with the package
-import { parseExpression } from "cron-parser";
+import { NOTIFICATION_TYPES } from "../../../db/schema/notification/schema";
 
-const NOTIFICATION_TYPES = [
-  "match_request_accepted",
-  "invitation_accepted",
-  "new_match_request",
-  "match_reminder",
-  "challenge_assigned",
-  "streak_warning",
-  "new_message",
-  "match_liked",
-] as const;
+export const notificationTypeValidator = z.enum(NOTIFICATION_TYPES);
+
+export const templateTypeParamValidator = z.object({
+  type: notificationTypeValidator,
+});
 
 export const upsertTemplateValidator = z.object({
-  type: z.enum(NOTIFICATION_TYPES),
+  type: notificationTypeValidator,
   description: z.string().min(1, "Description requise"),
   availableVariables: z.array(z.string().min(1)).default([]),
   isActive: z.boolean().default(true),
@@ -38,20 +32,13 @@ export const sendTestValidator = z.object({
   variables: z.record(z.string(), z.string()).default({}),
 });
 
+// Shape check only — trigger.dev validates the full semantics when the
+// schedule is registered, and surfaces a clear error to the admin handler.
+const CRON_SHAPE = /^[\d*/,\-?LW#]+(?:\s+[\d*/,\-?LW#]+){4,5}$/;
 const cronExpression = z
   .string()
   .min(1, "Expression cron requise")
-  .refine(
-    (value) => {
-      try {
-        parseExpression(value);
-        return true;
-      } catch {
-        return false;
-      }
-    },
-    { message: "Expression cron invalide" },
-  );
+  .regex(CRON_SHAPE, "Expression cron invalide");
 
 const audienceSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("all") }),

@@ -1,4 +1,4 @@
-import type { NotificationType } from "@/types/admin"
+import type { NotificationType } from "@/types/admin";
 
 export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   match_request_accepted: "Demande de match acceptée",
@@ -9,7 +9,7 @@ export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   streak_warning: "Streak en danger",
   new_message: "Nouveau message",
   match_liked: "Match liké",
-}
+};
 
 export const SAMPLE_VARIABLES: Record<string, string> = {
   accepterName: "Léa",
@@ -23,11 +23,11 @@ export const SAMPLE_VARIABLES: Record<string, string> = {
   messagePreview: "Hey, on confirme pour samedi ?",
   likerName: "Alex",
   userName: "Toi",
-}
+};
 
 export const CRON_PRESETS: { label: string; value: string }[] = [
   { label: "Tous les jours à 19h UTC", value: "0 19 * * *" },
   { label: "Lundi à 9h UTC", value: "0 9 * * 1" },
   { label: "Vendredi à 18h UTC", value: "0 18 * * 5" },
   { label: "1er du mois à 8h UTC", value: "0 8 1 * *" },
-]
+];

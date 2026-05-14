@@ -53,7 +53,19 @@ export const updateSchedule = async (c: Context<HonoContext>) => {
     .update(notificationSchedule)
     .set(merged)
     .where(eq(notificationSchedule.id, id))
-    .returning();
+    .returning({
+      id: notificationSchedule.id,
+      templateId: notificationSchedule.templateId,
+      name: notificationSchedule.name,
+      cronExpression: notificationSchedule.cronExpression,
+      timezone: notificationSchedule.timezone,
+      audience: notificationSchedule.audience,
+      defaultVariables: notificationSchedule.defaultVariables,
+      isActive: notificationSchedule.isActive,
+      lastRunAt: notificationSchedule.lastRunAt,
+      createdAt: notificationSchedule.createdAt,
+      updatedAt: notificationSchedule.updatedAt,
+    });
 
   return c.json(updated);
 };

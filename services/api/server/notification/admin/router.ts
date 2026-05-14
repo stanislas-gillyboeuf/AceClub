@@ -21,6 +21,7 @@ import {
   sendTestValidator,
   createScheduleValidator,
   updateScheduleValidator,
+  templateTypeParamValidator,
 } from "./validators";
 
 export const notificationAdminRouter = new Hono<HonoContext>();
@@ -30,7 +31,11 @@ notificationAdminRouter.use("/*", isAdmin);
 
 // Templates
 notificationAdminRouter.get("/templates", listTemplates);
-notificationAdminRouter.get("/templates/:type", getTemplate);
+notificationAdminRouter.get(
+  "/templates/:type",
+  zValidator("param", templateTypeParamValidator),
+  getTemplate,
+);
 notificationAdminRouter.post(
   "/templates",
   zValidator("json", upsertTemplateValidator),

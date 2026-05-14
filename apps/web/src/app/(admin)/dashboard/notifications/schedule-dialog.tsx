@@ -1,41 +1,41 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   useCreateNotificationSchedule,
   useDeleteNotificationSchedule,
   useUpdateNotificationSchedule,
-} from "@/hooks/use-admin-mutations"
+} from "@/hooks/use-admin-mutations";
 import type {
   NotificationSchedule,
   NotificationTemplateSummary,
-} from "@/types/admin"
-import { CRON_PRESETS, NOTIFICATION_TYPE_LABELS } from "./notification-types"
+} from "@/types/admin";
+import { CRON_PRESETS, NOTIFICATION_TYPE_LABELS } from "./notification-types";
 
 interface Props {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  templates: NotificationTemplateSummary[]
-  schedule: NotificationSchedule | null
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  templates: NotificationTemplateSummary[];
+  schedule: NotificationSchedule | null;
 }
 
 const DEFAULT_FORM = {
@@ -47,18 +47,23 @@ const DEFAULT_FORM = {
   audienceUserIds: "",
   defaultVariables: "{}",
   isActive: true,
-}
+};
 
-export function ScheduleDialog({ open, onOpenChange, templates, schedule }: Props) {
-  const [form, setForm] = useState(DEFAULT_FORM)
-  const [jsonError, setJsonError] = useState<string | null>(null)
+export function ScheduleDialog({
+  open,
+  onOpenChange,
+  templates,
+  schedule,
+}: Props) {
+  const [form, setForm] = useState(DEFAULT_FORM);
+  const [jsonError, setJsonError] = useState<string | null>(null);
 
-  const createMutation = useCreateNotificationSchedule()
-  const updateMutation = useUpdateNotificationSchedule()
-  const deleteMutation = useDeleteNotificationSchedule()
+  const createMutation = useCreateNotificationSchedule();
+  const updateMutation = useUpdateNotificationSchedule();
+  const deleteMutation = useDeleteNotificationSchedule();
 
   useEffect(() => {
-    if (!open) return
+    if (!open) return;
     if (schedule) {
       setForm({
         templateId: schedule.templateId,
@@ -72,37 +77,37 @@ export function ScheduleDialog({ open, onOpenChange, templates, schedule }: Prop
             : "",
         defaultVariables: JSON.stringify(schedule.defaultVariables, null, 2),
         isActive: schedule.isActive,
-      })
+      });
     } else {
-      setForm(DEFAULT_FORM)
+      setForm(DEFAULT_FORM);
     }
-    setJsonError(null)
-  }, [open, schedule])
+    setJsonError(null);
+  }, [open, schedule]);
 
   const handleSubmit = () => {
-    let defaultVariables: Record<string, string>
+    let defaultVariables: Record<string, string>;
     try {
-      defaultVariables = JSON.parse(form.defaultVariables || "{}")
+      defaultVariables = JSON.parse(form.defaultVariables || "{}");
     } catch {
-      setJsonError("JSON invalide")
-      return
+      setJsonError("JSON invalide");
+      return;
     }
-    setJsonError(null)
+    setJsonError(null);
 
     const audience =
       form.audienceType === "all"
         ? ({ type: "all" } as const)
-        : ({
+        : {
             type: "user_ids" as const,
             userIds: form.audienceUserIds
               .split(",")
               .map((s) => s.trim())
               .filter(Boolean),
-          })
+          };
 
     if (audience.type === "user_ids" && audience.userIds.length === 0) {
-      setJsonError("Au moins un userId requis")
-      return
+      setJsonError("Au moins un userId requis");
+      return;
     }
 
     if (schedule) {
@@ -117,7 +122,7 @@ export function ScheduleDialog({ open, onOpenChange, templates, schedule }: Prop
           isActive: form.isActive,
         },
         { onSuccess: () => onOpenChange(false) },
-      )
+      );
     } else {
       createMutation.mutate(
         {
@@ -130,11 +135,11 @@ export function ScheduleDialog({ open, onOpenChange, templates, schedule }: Prop
           isActive: form.isActive,
         },
         { onSuccess: () => onOpenChange(false) },
-      )
+      );
     }
-  }
+  };
 
-  const isPending = createMutation.isPending || updateMutation.isPending
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -179,7 +184,9 @@ export function ScheduleDialog({ open, onOpenChange, templates, schedule }: Prop
             <Label>Expression cron</Label>
             <Input
               value={form.cronExpression}
-              onChange={(e) => setForm({ ...form, cronExpression: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, cronExpression: e.target.value })
+              }
               placeholder="0 19 * * *"
             />
             <div className="mt-2 flex flex-wrap gap-1">
@@ -219,7 +226,9 @@ export function ScheduleDialog({ open, onOpenChange, templates, schedule }: Prop
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les utilisateurs</SelectItem>
-                <SelectItem value="user_ids">Utilisateurs spécifiques</SelectItem>
+                <SelectItem value="user_ids">
+                  Utilisateurs spécifiques
+                </SelectItem>
               </SelectContent>
             </Select>
             {form.audienceType === "user_ids" && (
@@ -239,7 +248,9 @@ export function ScheduleDialog({ open, onOpenChange, templates, schedule }: Prop
             <Label>Variables par défaut (JSON)</Label>
             <Textarea
               value={form.defaultVariables}
-              onChange={(e) => setForm({ ...form, defaultVariables: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, defaultVariables: e.target.value })
+              }
               rows={3}
               placeholder='{"userName": "Joueur"}'
               className="font-mono text-xs"
@@ -268,7 +279,7 @@ export function ScheduleDialog({ open, onOpenChange, templates, schedule }: Prop
                     deleteMutation.mutate(
                       { id: schedule.id },
                       { onSuccess: () => onOpenChange(false) },
-                    )
+                    );
                   }
                 }}
                 disabled={deleteMutation.isPending}
@@ -285,15 +296,11 @@ export function ScheduleDialog({ open, onOpenChange, templates, schedule }: Prop
               onClick={handleSubmit}
               disabled={isPending || !form.templateId || !form.name.trim()}
             >
-              {isPending
-                ? "Enregistrement…"
-                : schedule
-                  ? "Modifier"
-                  : "Créer"}
+              {isPending ? "Enregistrement…" : schedule ? "Modifier" : "Créer"}
             </Button>
           </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
