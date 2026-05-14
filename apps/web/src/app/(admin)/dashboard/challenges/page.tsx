@@ -20,6 +20,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { DataTable } from "@/components/custom/data-table"
 import { challengeTemplateColumns } from "@/components/custom/challenge-templates-columns"
 import { useChallengeTemplates } from "@/hooks/use-admin-queries"
@@ -61,6 +71,7 @@ export default function ChallengesPage() {
   const assignNowMutation = useAssignChallengeTemplateNow()
 
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [confirmAssignOpen, setConfirmAssignOpen] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<ChallengeTemplate | null>(null)
   const [form, setForm] = useState(EMPTY_FORM)
 
@@ -318,13 +329,7 @@ export default function ChallengesPage() {
             {editingTemplate && editingTemplate.isActive && (
               <Button
                 variant="secondary"
-                onClick={() => {
-                  const confirmed = window.confirm(
-                    "Distribuer ce defi a tous les joueurs eligibles immediatement ?",
-                  )
-                  if (!confirmed) return
-                  assignNowMutation.mutate({ id: editingTemplate.id })
-                }}
+                onClick={() => setConfirmAssignOpen(true)}
                 disabled={assignNowMutation.isPending}
               >
                 {assignNowMutation.isPending ? "Distribution..." : "Distribuer maintenant"}
@@ -350,6 +355,30 @@ export default function ChallengesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={confirmAssignOpen} onOpenChange={setConfirmAssignOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Distribuer ce defi maintenant ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tous les joueurs eligibles recevront ce defi pour la semaine en
+              cours et une notification push. Les joueurs deja servis cette
+              semaine pour ce defi seront ignores.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!editingTemplate) return
+                assignNowMutation.mutate({ id: editingTemplate.id })
+              }}
+            >
+              Distribuer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
