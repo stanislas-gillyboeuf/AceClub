@@ -246,8 +246,6 @@ export async function assignWeeklyChallenges(): Promise<void> {
       await sendNotificationToUser({
         userId: u.userId,
         type: "challenge_assigned",
-        title: "Nouveaux défis de la semaine 🎯",
-        body: "Tes défis hebdomadaires sont disponibles. Relève-les pour gagner des Aces !",
         referenceId: u.userId,
         referenceType: "user",
       });

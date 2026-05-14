@@ -67,8 +67,7 @@ export const toggleLike = async (c: Context<HonoContext>) => {
         sendNotificationToUser({
           userId: participant.userId,
           type: "match_liked",
-          title: "Nouveau like",
-          body: `${likerName} a aimé votre match`,
+          variables: { likerName },
           referenceId: matchId,
           referenceType: "match",
         }),

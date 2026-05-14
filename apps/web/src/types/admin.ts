@@ -371,6 +371,82 @@ export interface ListBadgesResponse {
   badges: AdminBadge[]
 }
 
+// Notifications admin
+export type NotificationType =
+  | "match_request_accepted"
+  | "invitation_accepted"
+  | "new_match_request"
+  | "match_reminder"
+  | "challenge_assigned"
+  | "streak_warning"
+  | "new_message"
+  | "match_liked"
+
+export interface NotificationTemplate {
+  id: string
+  type: NotificationType
+  description: string
+  availableVariables: string[]
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface NotificationTemplateSummary extends NotificationTemplate {
+  variantsCount: number
+  activeVariantsCount: number
+}
+
+export interface NotificationTemplateVariant {
+  id: string
+  templateId: string
+  title: string
+  body: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ListNotificationTemplatesResponse {
+  templates: NotificationTemplateSummary[]
+}
+
+export interface GetNotificationTemplateResponse {
+  template: NotificationTemplate
+  variants: NotificationTemplateVariant[]
+}
+
+export type NotificationAudience =
+  | { type: "all" }
+  | { type: "user_ids"; userIds: string[] }
+
+export interface NotificationSchedule {
+  id: string
+  templateId: string
+  templateType: NotificationType
+  name: string
+  cronExpression: string
+  timezone: string
+  audience: NotificationAudience
+  defaultVariables: Record<string, string>
+  isActive: boolean
+  lastRunAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ListNotificationSchedulesResponse {
+  schedules: NotificationSchedule[]
+}
+
+export interface SendTestNotificationResponse {
+  success: boolean
+  title: string
+  body: string
+  devicesNotified: number
+  devicesFound: number
+}
+
 export interface MatchDetailResponse {
   match: Omit<AdminMatch, "participants" | "sets" | "comments">
   participants: MatchParticipant[]

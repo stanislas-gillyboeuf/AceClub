@@ -3,6 +3,7 @@
 import * as React from "react"
 import {
   Award,
+  Bell,
   Building2,
   CalendarDays,
   LayoutDashboard,
@@ -79,6 +80,11 @@ const navMain = [
     title: "Badges",
     url: "/dashboard/badges",
     icon: Award,
+  },
+  {
+    title: "Notifications",
+    url: "/dashboard/notifications",
+    icon: Bell,
   },
 ]
 

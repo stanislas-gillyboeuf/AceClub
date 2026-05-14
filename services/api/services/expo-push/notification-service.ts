@@ -2,6 +2,7 @@ import { db } from "../../db";
 import { deviceToken, notification } from "../../db/schema";
 import { eq, and } from "drizzle-orm";
 import { sendPushNotification, isInvalidTokenError, type PushNotificationPayload } from "./index";
+import { resolveNotificationContent } from "./resolve-template";
 
 export type NotificationType =
   | "match_request_accepted"
@@ -16,20 +17,20 @@ export type NotificationType =
 interface SendNotificationParams {
   userId: string;
   type: NotificationType;
-  title: string;
-  body: string;
+  variables?: Record<string, string>;
   referenceId?: string;
   referenceType?: string;
   data?: Record<string, string>;
 }
 
 export async function sendNotificationToUser(params: SendNotificationParams): Promise<void> {
-  const { userId, type, title, body, referenceId, referenceType, data } = params;
+  const { userId, type, variables, referenceId, referenceType, data } = params;
+
+  const { title, body } = await resolveNotificationContent(type, variables ?? {});
 
   console.log(`[Notification] Sending notification to user ${userId}`);
   console.log(`[Notification] Type: ${type}, Title: ${title}`);
 
-  // 1. Enregistrer la notification dans l'historique
   const [newNotification] = await db
     .insert(notification)
     .values({
@@ -44,7 +45,6 @@ export async function sendNotificationToUser(params: SendNotificationParams): Pr
     })
     .returning();
 
-  // 2. Recuperer tous les device tokens actifs de l'utilisateur
   const tokens = await db
     .select()
     .from(deviceToken)
@@ -57,7 +57,6 @@ export async function sendNotificationToUser(params: SendNotificationParams): Pr
     return;
   }
 
-  // 3. Envoyer la push notification a chaque device
   for (const token of tokens) {
     const payload: PushNotificationPayload = {
       deviceToken: token.token,
@@ -75,14 +74,12 @@ export async function sendNotificationToUser(params: SendNotificationParams): Pr
     const result = await sendPushNotification(payload);
 
     if (!result.success && isInvalidTokenError(result.reason)) {
-      // Marquer le token comme inactif si l'envoi a echoue (token invalide)
       console.log(`Deactivating invalid token for user ${userId}`);
       await db
         .update(deviceToken)
         .set({ isActive: false, updatedAt: new Date() })
         .where(eq(deviceToken.id, token.id));
     } else if (result.success) {
-      // Mettre a jour lastUsedAt
       await db
         .update(deviceToken)
         .set({ lastUsedAt: new Date() })

@@ -234,6 +234,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
       : msgType === "image"
         ? "Photo"
         : plaintextPreview || decryptedContent.substring(0, 100);
+  const senderName = sender?.name || "Quelqu'un";
   Promise.all(
     otherParticipants
       .filter((p) => !p.isMuted && !isUserConnectedWs(p.userId))
@@ -241,8 +242,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
         sendNotificationToUser({
           userId: participant.userId,
           type: "new_message",
-          title: sender?.name || "Nouveau message",
-          body: notifBody,
+          variables: { senderName, messagePreview: notifBody },
           referenceId: conversationId,
           referenceType: "conversation",
           data: {

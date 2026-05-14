@@ -162,8 +162,7 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
     sendNotificationToUser({
       userId: request.requesterId,
       type: "match_request_accepted",
-      title: "Match confirmé ! 🎾",
-      body: `Top ! ${receiverInfo?.name ?? "Un joueur"} a accepté ton match`,
+      variables: { accepterName: receiverInfo?.name ?? "Un joueur" },
       referenceId: newMatch.id,
       referenceType: "match",
       data: {

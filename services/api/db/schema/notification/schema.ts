@@ -1,4 +1,13 @@
-import { pgTable, text, timestamp, boolean, index, pgEnum } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  index,
+  pgEnum,
+  jsonb,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { user } from "../auth/schema";
 import { ulid } from "ulid";
@@ -70,6 +79,85 @@ export const notification = pgTable(
   ],
 );
 
+// Templates personnalisables par type — un par type, avec N variantes random
+export const notificationTemplate = pgTable(
+  "notification_template",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    type: NotificationType("type").notNull(),
+    description: text("description").notNull(),
+    availableVariables: jsonb("available_variables").$type<string[]>().notNull().default([]),
+    isActive: boolean("is_active").default(true).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [uniqueIndex("notification_template_type_idx").on(table.type)],
+);
+
+export const notificationTemplateVariant = pgTable(
+  "notification_template_variant",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    templateId: text("template_id")
+      .notNull()
+      .references(() => notificationTemplate.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("notification_variant_template_idx").on(table.templateId),
+    index("notification_variant_template_active_idx").on(table.templateId, table.isActive),
+  ],
+);
+
+export type NotificationAudience = { type: "all" } | { type: "user_ids"; userIds: string[] };
+
+// Planifications créées par l'admin — exécutées par trigger.dev (schedule dynamique)
+export const notificationSchedule = pgTable(
+  "notification_schedule",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    templateId: text("template_id")
+      .notNull()
+      .references(() => notificationTemplate.id, { onDelete: "restrict" }),
+    name: text("name").notNull(),
+    cronExpression: text("cron_expression").notNull(),
+    timezone: text("timezone").default("UTC").notNull(),
+    audience: jsonb("audience").$type<NotificationAudience>().notNull(),
+    defaultVariables: jsonb("default_variables")
+      .$type<Record<string, string>>()
+      .notNull()
+      .default({}),
+    triggerScheduleId: text("trigger_schedule_id"),
+    isActive: boolean("is_active").default(true).notNull(),
+    lastRunAt: timestamp("last_run_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("notification_schedule_template_idx").on(table.templateId),
+    index("notification_schedule_active_idx").on(table.isActive),
+  ],
+);
+
 // Relations
 export const deviceTokenRelations = relations(deviceToken, ({ one }) => ({
   user: one(user, {
@@ -82,5 +170,27 @@ export const notificationRelations = relations(notification, ({ one }) => ({
   user: one(user, {
     fields: [notification.userId],
     references: [user.id],
+  }),
+}));
+
+export const notificationTemplateRelations = relations(notificationTemplate, ({ many }) => ({
+  variants: many(notificationTemplateVariant),
+  schedules: many(notificationSchedule),
+}));
+
+export const notificationTemplateVariantRelations = relations(
+  notificationTemplateVariant,
+  ({ one }) => ({
+    template: one(notificationTemplate, {
+      fields: [notificationTemplateVariant.templateId],
+      references: [notificationTemplate.id],
+    }),
+  }),
+);
+
+export const notificationScheduleRelations = relations(notificationSchedule, ({ one }) => ({
+  template: one(notificationTemplate, {
+    fields: [notificationSchedule.templateId],
+    references: [notificationTemplate.id],
   }),
 }));

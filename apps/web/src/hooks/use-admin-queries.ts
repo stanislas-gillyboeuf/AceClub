@@ -21,6 +21,10 @@ import type {
   ListChallengeTemplatesParams,
   ListChallengeTemplatesResponse,
   ListBadgesResponse,
+  ListNotificationTemplatesResponse,
+  GetNotificationTemplateResponse,
+  ListNotificationSchedulesResponse,
+  NotificationType,
 } from "@/types/admin"
 
 export function useAdminUsers(params: ListUsersParams) {
@@ -218,5 +222,36 @@ export function useAdminBadges() {
   return useQuery({
     queryKey: ["admin-badges"],
     queryFn: () => apiClient<ListBadgesResponse>("/admin/badges"),
+  })
+}
+
+export function useNotificationTemplates() {
+  return useQuery({
+    queryKey: ["admin-notification-templates"],
+    queryFn: () =>
+      apiClient<ListNotificationTemplatesResponse>(
+        "/admin/notification/templates",
+      ),
+  })
+}
+
+export function useNotificationTemplate(type: NotificationType | undefined) {
+  return useQuery({
+    queryKey: ["admin-notification-template", type],
+    queryFn: () =>
+      apiClient<GetNotificationTemplateResponse>(
+        `/admin/notification/templates/${type}`,
+      ),
+    enabled: !!type,
+  })
+}
+
+export function useNotificationSchedules() {
+  return useQuery({
+    queryKey: ["admin-notification-schedules"],
+    queryFn: () =>
+      apiClient<ListNotificationSchedulesResponse>(
+        "/admin/notification/schedules",
+      ),
   })
 }

@@ -574,3 +574,148 @@ export function useDeleteBadge() {
     },
   })
 }
+
+// Notifications admin
+function invalidateNotificationQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+) {
+  queryClient.invalidateQueries({ queryKey: ["admin-notification-templates"] })
+  queryClient.invalidateQueries({ queryKey: ["admin-notification-template"] })
+  queryClient.invalidateQueries({ queryKey: ["admin-notification-schedules"] })
+}
+
+export function useUpsertNotificationTemplate() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: {
+      type: string
+      description: string
+      availableVariables: string[]
+      isActive: boolean
+    }) =>
+      apiClient("/admin/notification/templates", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => invalidateNotificationQueries(queryClient),
+  })
+}
+
+export function useCreateNotificationVariant() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: {
+      templateId: string
+      title: string
+      body: string
+      isActive?: boolean
+    }) =>
+      apiClient("/admin/notification/variants", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => invalidateNotificationQueries(queryClient),
+  })
+}
+
+export function useUpdateNotificationVariant() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: {
+      id: string
+      title?: string
+      body?: string
+      isActive?: boolean
+    }) => {
+      const { id, ...rest } = data
+      return apiClient(`/admin/notification/variants/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(rest),
+      })
+    },
+    onSuccess: () => invalidateNotificationQueries(queryClient),
+  })
+}
+
+export function useDeleteNotificationVariant() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { id: string }) =>
+      apiClient(`/admin/notification/variants/${data.id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => invalidateNotificationQueries(queryClient),
+  })
+}
+
+export function useSendTestNotification() {
+  return useMutation({
+    mutationFn: (data: {
+      variantId: string
+      variables: Record<string, string>
+    }) =>
+      apiClient<{
+        success: boolean
+        title: string
+        body: string
+        devicesNotified: number
+        devicesFound: number
+      }>("/admin/notification/send-test", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+  })
+}
+
+export function useCreateNotificationSchedule() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: {
+      templateId: string
+      name: string
+      cronExpression: string
+      timezone: string
+      audience: { type: "all" } | { type: "user_ids"; userIds: string[] }
+      defaultVariables: Record<string, string>
+      isActive: boolean
+    }) =>
+      apiClient("/admin/notification/schedules", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => invalidateNotificationQueries(queryClient),
+  })
+}
+
+export function useUpdateNotificationSchedule() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: {
+      id: string
+      name?: string
+      cronExpression?: string
+      timezone?: string
+      audience?: { type: "all" } | { type: "user_ids"; userIds: string[] }
+      defaultVariables?: Record<string, string>
+      isActive?: boolean
+    }) => {
+      const { id, ...rest } = data
+      return apiClient(`/admin/notification/schedules/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(rest),
+      })
+    },
+    onSuccess: () => invalidateNotificationQueries(queryClient),
+  })
+}
+
+export function useDeleteNotificationSchedule() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { id: string }) =>
+      apiClient(`/admin/notification/schedules/${data.id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => invalidateNotificationQueries(queryClient),
+  })
+}

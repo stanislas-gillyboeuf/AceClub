@@ -56,8 +56,7 @@ export const streakWarningTask = schedules.task({
         await sendNotificationToUser({
           userId: streak.userId,
           type: "streak_warning",
-          title: "Ton streak est en danger 🔥",
-          body: `Psss, t'as pas encore joué cette semaine ! Tu risques de perdre ta série de ${streak.currentStreak} semaines`,
+          variables: { currentStreak: String(streak.currentStreak) },
           referenceId: streak.userId,
           referenceType: "user",
         });
