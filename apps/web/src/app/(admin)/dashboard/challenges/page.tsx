@@ -27,6 +27,7 @@ import {
   useCreateChallengeTemplate,
   useUpdateChallengeTemplate,
   useDeleteChallengeTemplate,
+  useAssignChallengeTemplateNow,
 } from "@/hooks/use-admin-mutations"
 import type { ChallengeTemplate } from "@/types/admin"
 
@@ -57,19 +58,23 @@ export default function ChallengesPage() {
   const createMutation = useCreateChallengeTemplate()
   const updateMutation = useUpdateChallengeTemplate()
   const deleteMutation = useDeleteChallengeTemplate()
+  const assignNowMutation = useAssignChallengeTemplateNow()
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<ChallengeTemplate | null>(null)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [assignResult, setAssignResult] = useState<string | null>(null)
 
   const openCreate = () => {
     setEditingTemplate(null)
     setForm(EMPTY_FORM)
+    setAssignResult(null)
     setDialogOpen(true)
   }
 
   const openEdit = (template: ChallengeTemplate) => {
     setEditingTemplate(template)
+    setAssignResult(null)
     setForm({
       code: template.code,
       type: template.type,
@@ -109,7 +114,10 @@ export default function ChallengesPage() {
         <div>
           <h1 className="text-2xl font-bold">Defis</h1>
           <p className="text-muted-foreground">
-            Gerer les modeles de defis hebdomadaires
+            Gerer les modeles de defis hebdomadaires. La distribution
+            automatique aux joueurs a lieu chaque lundi matin. Pour un defi
+            cree en milieu de semaine, utilise &laquo; Distribuer maintenant
+            &raquo; dans l&apos;ecran d&apos;edition.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -290,10 +298,46 @@ export default function ChallengesPage() {
             </div>
           </div>
 
+          {assignResult && (
+            <p className="text-sm text-muted-foreground" role="status">
+              {assignResult}
+            </p>
+          )}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Annuler
             </Button>
+            {editingTemplate && editingTemplate.isActive && (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setAssignResult(null)
+                  const confirmed = window.confirm(
+                    "Distribuer ce defi a tous les joueurs eligibles immediatement ?",
+                  )
+                  if (!confirmed) return
+                  assignNowMutation.mutate(
+                    { id: editingTemplate.id },
+                    {
+                      onSuccess: (data) => {
+                        setAssignResult(
+                          `Distribue a ${data.assignedCount} joueur(s). Ignore : ${data.skippedCount}.`,
+                        )
+                      },
+                      onError: (err) => {
+                        setAssignResult(
+                          err instanceof Error ? err.message : "Echec de la distribution",
+                        )
+                      },
+                    },
+                  )
+                }}
+                disabled={assignNowMutation.isPending}
+              >
+                {assignNowMutation.isPending ? "Distribution..." : "Distribuer maintenant"}
+              </Button>
+            )}
             {editingTemplate && (
               <Button
                 variant="destructive"

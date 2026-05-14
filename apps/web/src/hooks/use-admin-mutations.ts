@@ -517,6 +517,16 @@ export function useDeleteChallengeTemplate() {
   })
 }
 
+export function useAssignChallengeTemplateNow() {
+  return useMutation({
+    mutationFn: (data: { id: string }) =>
+      apiClient<{ assignedCount: number; skippedCount: number }>(
+        `/admin/challenge-templates/${data.id}/assign-now`,
+        { method: "POST" },
+      ),
+  })
+}
+
 // Badges
 export function useCreateBadge() {
   const queryClient = useQueryClient()

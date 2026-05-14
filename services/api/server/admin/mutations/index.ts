@@ -24,6 +24,7 @@ export * from "./reset-game-config";
 export * from "./create-challenge-template";
 export * from "./update-challenge-template";
 export * from "./delete-challenge-template";
+export * from "./assign-challenge-template-now";
 export * from "./create-badge";
 export * from "./update-badge";
 export * from "./delete-badge";
