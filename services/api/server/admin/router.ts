@@ -75,6 +75,7 @@ import {
   createChallengeTemplate,
   updateChallengeTemplate,
   deleteChallengeTemplate,
+  assignChallengeTemplateNow,
   createBadge,
   updateBadge,
   deleteBadge,
@@ -248,6 +249,8 @@ adminRouter.put(
 );
 
 adminRouter.delete("/challenge-templates/:id", deleteChallengeTemplate);
+
+adminRouter.post("/challenge-templates/:id/assign-now", assignChallengeTemplateNow);
 
 // Badges
 adminRouter.get("/badges", listBadges);

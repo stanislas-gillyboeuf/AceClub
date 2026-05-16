@@ -9,7 +9,7 @@ import { sendNotificationToUser } from "../../../services/expo-push/notification
 // Nombre de semaines à considérer pour éviter les répétitions
 const RECENT_WEEKS_TO_AVOID = 3;
 
-function getISOWeekInfo(date: Date): { week: number; year: number } {
+export function getISOWeekInfo(date: Date): { week: number; year: number } {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
@@ -18,7 +18,7 @@ function getISOWeekInfo(date: Date): { week: number; year: number } {
   return { week: weekNo, year: d.getUTCFullYear() };
 }
 
-function getWeekEndDate(date: Date): Date {
+export function getWeekEndDate(date: Date): Date {
   const d = new Date(date);
   const dayOfWeek = d.getDay();
   const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
