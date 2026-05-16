@@ -9,75 +9,58 @@ import { spacing } from "@/constants/theme";
 
 export function EventsFeedSection() {
   const router = useRouter();
-  const { data: myEvents, isLoading: myEventsLoading } = useMyEvents({
+  const { data: myEvents } = useMyEvents({
     status: "registered",
     timeFilter: "upcoming",
     limit: 10,
   });
 
-  const hasMyEvents = (myEvents?.length ?? 0) > 0;
-
-  const { data: discoverData, isLoading: discoverLoading } = useInfiniteEvents(
-    { sortBy: "upcoming", limit: 5 },
-  );
+  const { data: discoverData } = useInfiniteEvents({
+    sortBy: "upcoming",
+    limit: 5,
+  });
 
   const discoverEvents = useMemo(
     () => discoverData?.pages.flatMap((p) => p.data) ?? [],
     [discoverData],
   );
 
+  const events = useMemo(() => {
+    const registered = myEvents ?? [];
+    const registeredIds = new Set(registered.map((e) => e.id));
+    const others = discoverEvents.filter((e) => !registeredIds.has(e.id));
+    return [...registered, ...others];
+  }, [myEvents, discoverEvents]);
+
   const goToEvents = () => router.push("/(tabs)/feed/events");
   const goToEventDetail = (eventId: string) =>
     router.push({ pathname: "/(tabs)/feed/event-detail", params: { eventId } });
 
-  // User has registered events
-  if (hasMyEvents && myEvents) {
-    return (
-      <View style={styles.section}>
-        <SectionHeader title="Evenements" />
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.horizontalScroll}
-        >
-          {myEvents.map((event) => (
-            <EventPreviewCard
-              key={event.id}
-              event={event}
-              onPress={() => goToEventDetail(event.id)}
-            />
-          ))}
-          <DiscoverMoreCard onPress={goToEvents} />
-        </ScrollView>
-      </View>
-    );
+  if (events.length === 0) {
+    return null;
   }
 
-  // No registered events — show available events
-  if (!myEventsLoading && !hasMyEvents && discoverEvents.length > 0) {
-    return (
-      <View style={styles.section}>
-        <SectionHeader title="Evenements a decouvrir" />
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.horizontalScroll}
-        >
-          {discoverEvents.map((event) => (
-            <EventPreviewCard
-              key={event.id}
-              event={event}
-              onPress={() => goToEventDetail(event.id)}
-            />
-          ))}
-          <DiscoverMoreCard onPress={goToEvents} />
-        </ScrollView>
-      </View>
-    );
-  }
+  const title = myEvents?.length ? "Evenements" : "Evenements a decouvrir";
 
-  // Still loading or nothing to show
-  return null;
+  return (
+    <View style={styles.section}>
+      <SectionHeader title={title} />
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.horizontalScroll}
+      >
+        {events.map((event) => (
+          <EventPreviewCard
+            key={event.id}
+            event={event}
+            onPress={() => goToEventDetail(event.id)}
+          />
+        ))}
+        <DiscoverMoreCard onPress={goToEvents} />
+      </ScrollView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
