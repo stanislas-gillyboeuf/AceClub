@@ -2,15 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "../../../db";
 import { userStreak } from "../../../db/schema/streak/schema";
 import { getStreakMultiplier as getStreakMultiplierFromConfig } from "../../../lib/game-config-service";
-
-function getISOWeekInfo(date: Date): { week: number; year: number } {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const weekNo = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-  return { week: weekNo, year: d.getUTCFullYear() };
-}
+import { getISOWeekInfo } from "../../challenge/services/challenge-selector";
 
 function calculateWeeksDifference(
   prev: { week: number; year: number },
