@@ -1,0 +1,2 @@
+CREATE TYPE "public"."court_access_policy" AS ENUM('members_only', 'open');--> statement-breakpoint
+ALTER TABLE "court" ADD COLUMN "access_policy" "court_access_policy" DEFAULT 'members_only' NOT NULL;

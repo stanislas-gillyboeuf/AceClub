@@ -15,6 +15,7 @@ import { uploadRouter } from "./upload/router";
 import { conversationRouter } from "./conversation/router";
 import { eventRouter } from "./event/router";
 import { accountDeletionRequestRouter } from "./account-deletion-request/router";
+import { courtRouter } from "./court/router";
 
 export const serverRouter = new Hono();
 
@@ -34,3 +35,4 @@ serverRouter.route("/upload", uploadRouter);
 serverRouter.route("/conversation", conversationRouter);
 serverRouter.route("/event", eventRouter);
 serverRouter.route("/account-deletion-request", accountDeletionRequestRouter);
+serverRouter.route("/court", courtRouter);

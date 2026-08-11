@@ -5,6 +5,7 @@ import * as schema from "../../db/schema/index";
 import type { Database } from "./context";
 import { seedUsers } from "./users";
 import { seedOrganizations } from "./organizations";
+import { seedCourts } from "./courts";
 import { seedUserPreferences } from "./user-preferences";
 import { seedMatchIntents, seedSwipes, seedMatchRequests } from "./match-intents";
 import { seedMatches, seedSetsAndScores } from "./matches";
@@ -52,6 +53,8 @@ import {
   clubRequest,
   badge,
   userBadge,
+  court,
+  courtBooking,
 } from "../../db/schema/index";
 
 async function clearDatabase(db: Database): Promise<void> {
@@ -106,6 +109,10 @@ async function clearDatabase(db: Database): Promise<void> {
   // Club requests
   await db.delete(clubRequest);
 
+  // Courts
+  await db.delete(courtBooking);
+  await db.delete(court);
+
   // Organizations
   await db.delete(invitation);
   await db.delete(member);
@@ -140,6 +147,9 @@ export async function runSeed(): Promise<void> {
 
   // 2. Organizations (with guaranteed membership)
   const { orgIds, userToOrgs } = await seedOrganizations(db, { userIds });
+
+  // 2bis. Courts
+  await seedCourts(db, { orgIds });
 
   // 3. User preferences
   await seedUserPreferences(db, { userIds, userToOrgs });

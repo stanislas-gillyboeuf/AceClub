@@ -156,6 +156,21 @@ export const queryKeys = {
     };
   })(),
 
+  court: (() => {
+    const all = root("court");
+    return {
+      all,
+      list: (organizationId?: string) => [...all, "list", organizationId] as const,
+      availability: (courtId?: string, date?: string) =>
+        [...all, "availability", courtId, date] as const,
+      availabilityAll: () => [...all, "availability"] as const,
+      myBookings: (filter?: string) => [...all, "my-bookings", filter] as const,
+      myBookingsAll: () => [...all, "my-bookings"] as const,
+      bookingEnabled: (organizationId?: string) =>
+        [...all, "booking-enabled", organizationId] as const,
+    };
+  })(),
+
   notification: (() => {
     const all = root("notification");
     return {

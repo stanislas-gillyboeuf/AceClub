@@ -148,6 +148,20 @@
       "when": 1775117269243,
       "tag": "0021_yummy_union_jack",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1786433618432,
+      "tag": "0022_flashy_gideon",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1786460429410,
+      "tag": "0023_cultured_charles_xavier",
+      "breakpoints": true
     }
   ]
 }
