@@ -27,6 +27,7 @@ import { queryClient } from "@/lib/query-client";
 import { ProfileHeaderCard } from "@/features/profile/components/profile-header-card";
 import { ProfileBadgeSection } from "@/features/profile/components/profile-badge-section";
 import { MatchIntentList } from "@/features/profile/components/match-intent-list";
+import { CourtBookingCard } from "@/features/profile/components/court-booking-card";
 import { OrganizationCard } from "@/features/profile/components/organization-card";
 import { InvitationList } from "@/features/profile/components/invitation-list";
 import { canAccessHub } from "@/features/profile/lib/role-permissions";
@@ -205,6 +206,8 @@ export default function Profile() {
   // Navigation
   const openSettings = () => router.push("/(tabs)/profile/settings");
   const openCreateIntent = () => router.push("/(tabs)/profile/create-intent");
+  const openCourtBooking = () => router.push("/(tabs)/profile/court-booking");
+  const openMyBookings = () => router.push("/(tabs)/profile/court-booking/my-bookings");
 
   const isLoading = userLoading && !user;
 
@@ -273,6 +276,9 @@ export default function Profile() {
           onCreateNew={openCreateIntent}
           deletingId={deletingIntentId}
         />
+
+        {/* Court booking */}
+        <CourtBookingCard onPressBook={openCourtBooking} onPressMyBookings={openMyBookings} />
 
         {/* Invitations */}
         <InvitationList

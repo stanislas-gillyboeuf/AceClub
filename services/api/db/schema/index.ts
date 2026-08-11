@@ -14,3 +14,4 @@ export * from "./feature-flag";
 export * from "./e2ee";
 export * from "./account-deletion-request";
 export * from "./game-config";
+export * from "./court";
