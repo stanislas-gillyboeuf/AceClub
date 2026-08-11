@@ -17,6 +17,7 @@ import { useMyLevel } from "@/hooks/use-level";
 import { useMyBadges, useAllBadges } from "@/hooks/use-reward";
 import { useMatchIntents, useDeleteMatchIntent } from "@/hooks/use-match-intent";
 import { useMyOrganizations, useActiveMemberRole } from "@/hooks/use-organization";
+import { useCourtBookingEnabled } from "@/hooks/use-court";
 import { useUserInvitations, useAcceptInvitation, useRejectInvitation } from "@/hooks/use-invitation";
 import { useMatches } from "@/hooks/use-match";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -117,6 +118,7 @@ export default function Profile() {
   const currentUserId = user?.id ?? "";
   const matchIntents = intentsData?.data ?? [];
   const primaryOrg = orgs?.[0] ?? null;
+  const { data: courtBookingEnabled } = useCourtBookingEnabled(primaryOrg?.id);
   const pendingInvitations = (invitations ?? []).filter((i) => i.status === "pending");
   const badges = (badgesData?.badges ?? []).map((b) => ({ ...b, isUnlocked: true }));
   const totalBadges = allBadgesData?.badges?.length ?? 0;
@@ -277,8 +279,10 @@ export default function Profile() {
           deletingId={deletingIntentId}
         />
 
-        {/* Court booking */}
-        <CourtBookingCard onPressBook={openCourtBooking} onPressMyBookings={openMyBookings} />
+        {/* Court booking — gated behind the "court_booking" feature flag */}
+        {courtBookingEnabled && (
+          <CourtBookingCard onPressBook={openCourtBooking} onPressMyBookings={openMyBookings} />
+        )}
 
         {/* Invitations */}
         <InvitationList

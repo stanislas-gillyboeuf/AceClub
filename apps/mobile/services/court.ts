@@ -22,4 +22,7 @@ export const courtService = {
 
   cancelBooking: (bookingId: string) =>
     api.post<CourtBooking>("/court/cancel-booking", { bookingId }),
+
+  getBookingEnabled: (organizationId: string) =>
+    api.get<{ enabled: boolean }>("/court/booking-enabled", { organizationId }),
 };

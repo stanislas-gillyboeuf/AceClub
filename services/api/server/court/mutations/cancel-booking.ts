@@ -3,8 +3,9 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { courtBooking } from "../../../db/schema";
+import { courtBooking, court } from "../../../db/schema";
 import { cancelBookingValidator } from "../validators";
+import { canAccessCourt } from "../lib/access";
 
 export const cancelBooking = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -23,6 +24,23 @@ export const cancelBooking = async (c: Context<HonoContext>) => {
 
   if (booking.userId !== currentUser.id) {
     return c.json({ error: "Forbidden", message: "Not your booking" }, 403);
+  }
+
+  const [bookedCourt] = await db
+    .select({ organizationId: court.organizationId, accessPolicy: court.accessPolicy })
+    .from(court)
+    .where(eq(court.id, booking.courtId))
+    .limit(1);
+
+  if (bookedCourt) {
+    const allowed = await canAccessCourt(
+      currentUser.id,
+      bookedCourt.organizationId,
+      bookedCourt.accessPolicy,
+    );
+    if (!allowed) {
+      return c.json({ error: "Forbidden", message: "This court is reserved to club members" }, 403);
+    }
   }
 
   if (booking.status !== "confirmed") {

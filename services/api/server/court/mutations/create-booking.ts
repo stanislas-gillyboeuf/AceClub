@@ -7,6 +7,8 @@ import { courtBooking, court, organization } from "../../../db/schema";
 import { createBookingValidator } from "../validators";
 import { slotFromStartTime } from "../lib/slots";
 import { BookingConflictError } from "../lib/errors";
+import { canAccessCourt } from "../lib/access";
+import { resolveFeatureFlag } from "../../../lib/feature-flags";
 
 export const createBooking = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -14,13 +16,35 @@ export const createBooking = async (c: Context<HonoContext>) => {
   const validated = c.req.valid("json") as z.infer<typeof createBookingValidator>;
 
   const [targetCourt] = await db
-    .select({ id: court.id, isActive: court.isActive })
+    .select({
+      id: court.id,
+      isActive: court.isActive,
+      organizationId: court.organizationId,
+      accessPolicy: court.accessPolicy,
+    })
     .from(court)
     .where(eq(court.id, validated.courtId))
     .limit(1);
 
   if (!targetCourt || !targetCourt.isActive) {
     return c.json({ error: "NotFound", message: "Court not found" }, 404);
+  }
+
+  const allowed = await canAccessCourt(
+    currentUser.id,
+    targetCourt.organizationId,
+    targetCourt.accessPolicy,
+  );
+  if (!allowed) {
+    return c.json({ error: "Forbidden", message: "This court is reserved to club members" }, 403);
+  }
+
+  const bookingEnabled = await resolveFeatureFlag("court_booking", targetCourt.organizationId);
+  if (!bookingEnabled) {
+    return c.json(
+      { error: "Forbidden", message: "Court booking is not enabled for this club" },
+      403,
+    );
   }
 
   const { start, end } = slotFromStartTime(validated.date, validated.startTime);

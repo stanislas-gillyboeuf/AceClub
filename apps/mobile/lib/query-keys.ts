@@ -166,6 +166,8 @@ export const queryKeys = {
       availabilityAll: () => [...all, "availability"] as const,
       myBookings: (filter?: string) => [...all, "my-bookings", filter] as const,
       myBookingsAll: () => [...all, "my-bookings"] as const,
+      bookingEnabled: (organizationId?: string) =>
+        [...all, "booking-enabled", organizationId] as const,
     };
   })(),
 

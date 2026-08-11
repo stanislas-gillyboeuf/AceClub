@@ -19,6 +19,15 @@ export function useCourtAvailability(courtId?: string, date?: string) {
   });
 }
 
+export function useCourtBookingEnabled(organizationId?: string) {
+  return useQuery({
+    queryKey: queryKeys.court.bookingEnabled(organizationId),
+    queryFn: () => courtService.getBookingEnabled(organizationId!),
+    enabled: !!organizationId,
+    select: (data) => data.enabled,
+  });
+}
+
 export function useMyBookings(filter: MyBookingsFilter) {
   return useQuery({
     queryKey: queryKeys.court.myBookings(filter),

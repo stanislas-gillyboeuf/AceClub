@@ -4,7 +4,13 @@ import { Stack } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useMyOrganizations } from "@/hooks/use-organization";
-import { useCourts, useCourtAvailability, useCreateBooking, useCancelBooking } from "@/hooks/use-court";
+import {
+  useCourts,
+  useCourtAvailability,
+  useCreateBooking,
+  useCancelBooking,
+  useCourtBookingEnabled,
+} from "@/hooks/use-court";
 import { ApiError } from "@/lib/api";
 import { semanticColors, spacing } from "@/constants/theme";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -21,6 +27,8 @@ export default function CourtBookingScreen() {
 
   const { data: organizations, isLoading: orgsLoading } = useMyOrganizations();
   const organizationId = organizations?.[0]?.id;
+  const { data: bookingEnabled, isLoading: bookingEnabledLoading } =
+    useCourtBookingEnabled(organizationId);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedCourtId, setSelectedCourtId] = useState<string | null>(null);
@@ -134,13 +142,19 @@ export default function CourtBookingScreen() {
         contentContainerStyle={styles.scrollContent}
         contentInsetAdjustmentBehavior="automatic"
       >
-        {orgsLoading ? (
+        {orgsLoading || bookingEnabledLoading ? (
           <ActivityIndicator style={styles.loader} />
         ) : !organizationId ? (
           <EmptyState
             icon="Building2"
             title="Rejoins un club pour réserver un terrain"
             description="Tu dois faire partie d'un club pour accéder à ses terrains."
+          />
+        ) : !bookingEnabled ? (
+          <EmptyState
+            icon="CalendarOff"
+            title="Fonctionnalité indisponible"
+            description="La réservation de terrain n'est pas encore activée pour ton club."
           />
         ) : (
           <>

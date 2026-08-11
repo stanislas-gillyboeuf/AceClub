@@ -4,6 +4,7 @@ import { organization, user } from "../auth/schema";
 
 export const courtSurface = pgEnum("court_surface", ["clay", "hard", "grass", "carpet"]);
 export const courtBookingStatus = pgEnum("court_booking_status", ["confirmed", "cancelled"]);
+export const courtAccessPolicy = pgEnum("court_access_policy", ["members_only", "open"]);
 
 export const court = pgTable(
   "court",
@@ -18,6 +19,7 @@ export const court = pgTable(
     surface: courtSurface("surface"),
     indoor: boolean("indoor").notNull().default(false),
     isActive: boolean("is_active").notNull().default(true),
+    accessPolicy: courtAccessPolicy("access_policy").notNull().default("members_only"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [index("court_organizationId_idx").on(table.organizationId)],

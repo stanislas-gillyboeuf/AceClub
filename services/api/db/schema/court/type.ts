@@ -7,3 +7,4 @@ export type NewCourtBooking = typeof courtBooking.$inferInsert;
 
 export type CourtSurfaceType = "clay" | "hard" | "grass" | "carpet";
 export type CourtBookingStatusType = "confirmed" | "cancelled";
+export type CourtAccessPolicyType = "members_only" | "open";

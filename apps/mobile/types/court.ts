@@ -1,5 +1,6 @@
 export type CourtSurface = "clay" | "hard" | "grass" | "carpet";
 export type CourtBookingStatus = "confirmed" | "cancelled";
+export type CourtAccessPolicy = "members_only" | "open";
 
 export interface Court {
   id: string;
@@ -8,6 +9,7 @@ export interface Court {
   surface: CourtSurface | null;
   indoor: boolean;
   isActive: boolean;
+  accessPolicy: CourtAccessPolicy;
   createdAt: string;
 }
 
