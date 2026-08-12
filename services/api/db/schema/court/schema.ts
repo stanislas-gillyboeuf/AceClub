@@ -1,10 +1,15 @@
-import { boolean, index, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgEnum, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { ulid } from "ulid";
 import { organization, user } from "../auth/schema";
 
 export const courtSurface = pgEnum("court_surface", ["clay", "hard", "grass", "carpet"]);
 export const courtBookingStatus = pgEnum("court_booking_status", ["confirmed", "cancelled"]);
 export const courtAccessPolicy = pgEnum("court_access_policy", ["members_only", "open"]);
+export const courtCancellationPolicy = pgEnum("court_cancellation_policy", [
+  "anytime",
+  "window",
+  "disabled",
+]);
 
 export const court = pgTable(
   "court",
@@ -20,6 +25,10 @@ export const court = pgTable(
     indoor: boolean("indoor").notNull().default(false),
     isActive: boolean("is_active").notNull().default(true),
     accessPolicy: courtAccessPolicy("access_policy").notNull().default("members_only"),
+    pricePerHour: integer("price_per_hour"),
+    slotDurationMinutes: integer("slot_duration_minutes").notNull().default(60),
+    cancellationPolicy: courtCancellationPolicy("cancellation_policy").notNull().default("anytime"),
+    cancellationWindowHours: integer("cancellation_window_hours"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [index("court_organizationId_idx").on(table.organizationId)],
@@ -40,6 +49,8 @@ export const courtBooking = pgTable(
     startAt: timestamp("start_at").notNull(),
     endAt: timestamp("end_at").notNull(),
     status: courtBookingStatus("status").notNull().default("confirmed"),
+    purpose: text("purpose"),
+    bookedAsClub: boolean("booked_as_club").notNull().default(false),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -51,4 +62,26 @@ export const courtBooking = pgTable(
     index("court_booking_startAt_idx").on(table.startAt),
     index("court_booking_courtId_startAt_idx").on(table.courtId, table.startAt),
   ],
+);
+
+export const courtSettings = pgTable(
+  "court_settings",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    openingHour: integer("opening_hour").notNull().default(8),
+    closingHour: integer("closing_hour").notNull().default(22),
+    maxBookingsPerWeekWeekday: integer("max_bookings_per_week_weekday"),
+    maxBookingsPerWeekWeekend: integer("max_bookings_per_week_weekend"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [uniqueIndex("court_settings_organizationId_uidx").on(table.organizationId)],
 );

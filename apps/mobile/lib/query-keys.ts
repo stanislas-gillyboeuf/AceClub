@@ -161,6 +161,8 @@ export const queryKeys = {
     return {
       all,
       list: (organizationId?: string) => [...all, "list", organizationId] as const,
+      listAllForOrg: (organizationId?: string) =>
+        [...all, "list-all-for-org", organizationId] as const,
       availability: (courtId?: string, date?: string) =>
         [...all, "availability", courtId, date] as const,
       availabilityAll: () => [...all, "availability"] as const,
@@ -168,6 +170,9 @@ export const queryKeys = {
       myBookingsAll: () => [...all, "my-bookings"] as const,
       bookingEnabled: (organizationId?: string) =>
         [...all, "booking-enabled", organizationId] as const,
+      settings: (organizationId?: string) => [...all, "settings", organizationId] as const,
+      weeklyQuota: (organizationId?: string) =>
+        [...all, "weekly-quota", organizationId] as const,
     };
   })(),
 

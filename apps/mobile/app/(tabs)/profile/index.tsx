@@ -208,8 +208,11 @@ export default function Profile() {
   // Navigation
   const openSettings = () => router.push("/(tabs)/profile/settings");
   const openCreateIntent = () => router.push("/(tabs)/profile/create-intent");
-  const openCourtBooking = () => router.push("/(tabs)/profile/court-booking");
-  const openMyBookings = () => router.push("/(tabs)/profile/court-booking/my-bookings");
+  const openCourtBooking = () => {
+    if (!primaryOrg?.id) return;
+    router.push(`/court-booking/${primaryOrg.id}`);
+  };
+  const openMyBookings = () => router.push("/court-booking/my-bookings");
 
   const isLoading = userLoading && !user;
 

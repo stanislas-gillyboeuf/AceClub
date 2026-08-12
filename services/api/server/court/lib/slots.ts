@@ -1,26 +1,43 @@
-export const OPENING_HOUR = 8;
-export const CLOSING_HOUR = 22;
-export const SLOT_DURATION_MIN = 60;
-
 export interface DaySlot {
-  startTime: string; // "HH:00"
+  startTime: string; // "HH:mm"
   start: Date;
   end: Date;
 }
 
-/** Build the fixed 1h slots for a given "YYYY-MM-DD" date, from opening to closing hour. */
-export function buildDaySlots(date: string): DaySlot[] {
+interface SlotConfig {
+  openingHour: number;
+  closingHour: number;
+  slotDurationMinutes: number;
+}
+
+/** Build the fixed slots for a given "YYYY-MM-DD" date, from opening to closing hour. */
+export function buildDaySlots(date: string, config: SlotConfig): DaySlot[] {
   const slots: DaySlot[] = [];
-  for (let hour = OPENING_HOUR; hour < CLOSING_HOUR; hour++) {
-    const start = new Date(`${date}T${String(hour).padStart(2, "0")}:00:00`);
-    const end = new Date(start.getTime() + SLOT_DURATION_MIN * 60 * 1000);
-    slots.push({ startTime: `${String(hour).padStart(2, "0")}:00`, start, end });
+  const dayStartMinutes = config.openingHour * 60;
+  const dayEndMinutes = config.closingHour * 60;
+
+  for (
+    let startMinutes = dayStartMinutes;
+    startMinutes + config.slotDurationMinutes <= dayEndMinutes;
+    startMinutes += config.slotDurationMinutes
+  ) {
+    const start = new Date(`${date}T00:00:00`);
+    start.setMinutes(startMinutes);
+    const end = new Date(start.getTime() + config.slotDurationMinutes * 60 * 1000);
+    const hh = String(Math.floor(startMinutes / 60)).padStart(2, "0");
+    const mm = String(startMinutes % 60).padStart(2, "0");
+    slots.push({ startTime: `${hh}:${mm}`, start, end });
   }
+
   return slots;
 }
 
-export function slotFromStartTime(date: string, startTime: string): { start: Date; end: Date } {
+export function slotFromStartTime(
+  date: string,
+  startTime: string,
+  slotDurationMinutes: number,
+): { start: Date; end: Date } {
   const start = new Date(`${date}T${startTime}:00`);
-  const end = new Date(start.getTime() + SLOT_DURATION_MIN * 60 * 1000);
+  const end = new Date(start.getTime() + slotDurationMinutes * 60 * 1000);
   return { start, end };
 }
