@@ -87,7 +87,7 @@ export default function BookingRulesScreen() {
     <>
       <Stack.Screen options={{ title: "Règles de réservation" }} />
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        <Text style={styles.sectionLabel}>HORAIRES D'OUVERTURE</Text>
+        <Text style={styles.sectionLabel}>HORAIRES D&apos;OUVERTURE</Text>
         <View style={styles.hourRow}>
           <View style={styles.hourField}>
             <Text style={styles.hourLabel}>Ouverture</Text>

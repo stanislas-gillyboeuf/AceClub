@@ -180,7 +180,7 @@ export default function CourtBookingScreen() {
           <View style={styles.emptyWrap}>
             <Text style={styles.emptyTitle}>Fonctionnalité indisponible</Text>
             <Text style={styles.emptyDescription}>
-              La réservation de terrain n'est pas encore activée pour ton club.
+              La réservation de terrain n&apos;est pas encore activée pour ton club.
             </Text>
           </View>
         ) : (
