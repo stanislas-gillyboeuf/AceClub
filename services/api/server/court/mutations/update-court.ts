@@ -29,6 +29,11 @@ export const updateCourt = async (c: Context<HonoContext>) => {
   if (body.indoor !== undefined) updateData.indoor = body.indoor;
   if (body.isActive !== undefined) updateData.isActive = body.isActive;
   if (body.accessPolicy !== undefined) updateData.accessPolicy = body.accessPolicy;
+  if (body.pricePerHour !== undefined) updateData.pricePerHour = body.pricePerHour;
+  if (body.slotDurationMinutes !== undefined) updateData.slotDurationMinutes = body.slotDurationMinutes;
+  if (body.cancellationPolicy !== undefined) updateData.cancellationPolicy = body.cancellationPolicy;
+  if (body.cancellationWindowHours !== undefined)
+    updateData.cancellationWindowHours = body.cancellationWindowHours;
 
   const [updated] = await db
     .update(court)

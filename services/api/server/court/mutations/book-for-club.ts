@@ -4,27 +4,22 @@ import { eq } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { court, organization } from "../../../db/schema";
-import { createBookingValidator } from "../validators";
-import { slotFromStartTime } from "../lib/slots";
+import { bookForClubValidator } from "../validators";
 import { BookingConflictError } from "../lib/errors";
-import { canAccessCourt } from "../lib/access";
 import { resolveFeatureFlag } from "../../../lib/feature-flags";
 import { createLockedBooking } from "../lib/booking-overlap";
-import { getCourtSettings } from "../lib/settings";
-import { countWeeklyBookings, isWeekend } from "../lib/quota";
+import { assertOrgAdmin } from "../../../middleware/org-member";
 
-export const createBooking = async (c: Context<HonoContext>) => {
+export const bookForClub = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
   // @ts-ignore
-  const validated = c.req.valid("json") as z.infer<typeof createBookingValidator>;
+  const validated = c.req.valid("json") as z.infer<typeof bookForClubValidator>;
 
   const [targetCourt] = await db
     .select({
       id: court.id,
       isActive: court.isActive,
       organizationId: court.organizationId,
-      accessPolicy: court.accessPolicy,
-      slotDurationMinutes: court.slotDurationMinutes,
     })
     .from(court)
     .where(eq(court.id, validated.courtId))
@@ -34,13 +29,12 @@ export const createBooking = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Court not found" }, 404);
   }
 
-  const allowed = await canAccessCourt(
-    currentUser.id,
-    targetCourt.organizationId,
-    targetCourt.accessPolicy,
-  );
-  if (!allowed) {
-    return c.json({ error: "Forbidden", message: "This court is reserved to club members" }, 403);
+  const isOrgAdmin = await assertOrgAdmin(currentUser.id, targetCourt.organizationId);
+  if (!isOrgAdmin && currentUser.role !== "admin") {
+    return c.json(
+      { error: "Forbidden", message: "Only club admins can book on behalf of the club" },
+      403,
+    );
   }
 
   const bookingEnabled = await resolveFeatureFlag("court_booking", targetCourt.organizationId);
@@ -51,33 +45,15 @@ export const createBooking = async (c: Context<HonoContext>) => {
     );
   }
 
-  const { start, end } = slotFromStartTime(
-    validated.date,
-    validated.startTime,
-    targetCourt.slotDurationMinutes,
-  );
+  const start = new Date(validated.startAt);
+  const end = new Date(validated.endAt);
+
+  if (end.getTime() <= start.getTime()) {
+    return c.json({ error: "BadRequest", message: "endAt must be after startAt" }, 400);
+  }
 
   if (start.getTime() < Date.now()) {
     return c.json({ error: "BadRequest", message: "Cannot book a slot in the past" }, 400);
-  }
-
-  const settings = await getCourtSettings(targetCourt.organizationId);
-  const usage = await countWeeklyBookings(currentUser.id, targetCourt.organizationId, start);
-  const requestIsWeekend = isWeekend(start);
-  const limit = requestIsWeekend
-    ? settings.maxBookingsPerWeekWeekend
-    : settings.maxBookingsPerWeekWeekday;
-  const used = requestIsWeekend ? usage.weekend : usage.weekday;
-
-  if (limit !== null && used >= limit) {
-    const label = requestIsWeekend ? "en week-end" : "en semaine";
-    return c.json(
-      {
-        error: "Forbidden",
-        message: `Tu as déjà atteint ta limite de ${limit} réservation${limit > 1 ? "s" : ""} ${label} pour cette semaine`,
-      },
-      403,
-    );
   }
 
   try {
@@ -86,6 +62,8 @@ export const createBooking = async (c: Context<HonoContext>) => {
       userId: currentUser.id,
       start,
       end,
+      purpose: validated.purpose,
+      bookedAsClub: true,
     });
 
     const [enriched] = await db

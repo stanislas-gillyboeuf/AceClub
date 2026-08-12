@@ -10,8 +10,8 @@ import {
   RefreshControl,
   Alert,
 } from "react-native";
-import { Stack } from "expo-router";
-import { Copy, Eye, EyeOff, RefreshCw } from "lucide-react-native";
+import { Stack, router } from "expo-router";
+import { Copy, Eye, EyeOff, RefreshCw, ChevronRight, MapPin } from "lucide-react-native";
 
 import { useMyOrganizations, useActiveMemberRole, useMembers, useOrganizationPin, useToggleOrganizationPin, useRegenerateOrganizationPin } from "@/hooks/use-organization";
 import { useAdminEvents } from "@/hooks/use-event";
@@ -93,12 +93,50 @@ export default function AdminHub() {
         {/* Events Section */}
         <OrgHubEventsSection events={events ?? []} isLoading={eventsLoading} />
 
+        {/* Courts Section */}
+        <CourtsSection />
+
         {/* PIN Section — owner only */}
         {isOwner && <PinSection organizationId={orgId} />}
 
         <View style={{ height: 40 }} />
       </ScrollView>
     </>
+  );
+}
+
+function CourtsSection() {
+  const scheme = useColorScheme();
+
+  return (
+    <View style={styles.section}>
+      <Text style={[styles.sectionTitle, { color: semanticColors.labelPrimary[scheme] }]}>
+        Terrains
+      </Text>
+      <GlassView style={styles.courtsCard}>
+        <Pressable
+          onPress={() => router.push("/court-booking/manage-courts")}
+          style={styles.courtsRow}
+        >
+          <MapPin size={18} color={semanticColors.labelSecondary[scheme]} strokeWidth={1.5} />
+          <Text style={[styles.courtsRowLabel, { color: semanticColors.labelPrimary[scheme] }]}>
+            Gérer mes terrains
+          </Text>
+          <ChevronRight size={16} color={semanticColors.labelTertiary[scheme]} strokeWidth={2} />
+        </Pressable>
+        <View style={[styles.divider, { backgroundColor: semanticColors.divider[scheme] }]} />
+        <Pressable
+          onPress={() => router.push("/court-booking/booking-rules")}
+          style={styles.courtsRow}
+        >
+          <MapPin size={18} color={semanticColors.labelSecondary[scheme]} strokeWidth={1.5} />
+          <Text style={[styles.courtsRowLabel, { color: semanticColors.labelPrimary[scheme] }]}>
+            Règles de réservation
+          </Text>
+          <ChevronRight size={16} color={semanticColors.labelTertiary[scheme]} strokeWidth={2} />
+        </Pressable>
+      </GlassView>
+    </View>
   );
 }
 
@@ -199,6 +237,22 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     padding: 14,
     gap: 12,
+  },
+  courtsCard: {
+    borderRadius: radii.md,
+    padding: 4,
+  },
+  courtsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+  },
+  courtsRowLabel: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "500",
   },
   pinToggleRow: {
     flexDirection: "row",

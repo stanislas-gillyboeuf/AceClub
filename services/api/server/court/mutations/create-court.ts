@@ -27,6 +27,10 @@ export const createCourt = async (c: Context<HonoContext>) => {
       surface: body.surface,
       indoor: body.indoor,
       accessPolicy: body.accessPolicy,
+      pricePerHour: body.pricePerHour,
+      slotDurationMinutes: body.slotDurationMinutes,
+      cancellationPolicy: body.cancellationPolicy,
+      cancellationWindowHours: body.cancellationWindowHours,
     })
     .returning();
 

@@ -32,6 +32,8 @@ export const listMyBookings = async (c: Context<HonoContext>) => {
       startAt: courtBooking.startAt,
       endAt: courtBooking.endAt,
       status: courtBooking.status,
+      purpose: courtBooking.purpose,
+      bookedAsClub: courtBooking.bookedAsClub,
       createdAt: courtBooking.createdAt,
       courtName: court.name,
       organizationId: court.organizationId,
