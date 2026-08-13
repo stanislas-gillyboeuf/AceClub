@@ -173,6 +173,13 @@ export const queryKeys = {
       settings: (organizationId?: string) => [...all, "settings", organizationId] as const,
       weeklyQuota: (organizationId?: string) =>
         [...all, "weekly-quota", organizationId] as const,
+      board: (organizationId?: string, sport?: string, date?: string) =>
+        [...all, "board", organizationId, sport, date] as const,
+      boardAll: () => [...all, "board"] as const,
+      booking: (bookingId?: string) => [...all, "booking", bookingId] as const,
+      frequentPartners: () => [...all, "frequent-partners"] as const,
+      searchMembers: (organizationId?: string, query?: string) =>
+        [...all, "search-members", organizationId, query] as const,
     };
   })(),
 

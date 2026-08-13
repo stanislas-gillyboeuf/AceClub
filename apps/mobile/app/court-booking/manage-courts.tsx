@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { View, Text, FlatList, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { Stack, router } from "expo-router";
-import { courtColors, courtFonts } from "@/features/court-booking/theme";
+import { courtColors } from "@/features/court-booking/theme";
 import { useMyOrganizations, useActiveMemberRole } from "@/hooks/use-organization";
 import { useAllCourtsForOrg, useUpdateCourt } from "@/hooks/use-court";
 import { CourtRow } from "@/features/court-booking/components/admin/court-row";
@@ -78,7 +78,7 @@ export default function ManageCourtsScreen() {
         }
         ListEmptyComponent={
           isLoading ? (
-            <ActivityIndicator style={styles.loader} color={courtColors.ball} />
+            <ActivityIndicator style={styles.loader} color={courtColors.chartreuse} />
           ) : (
             <View style={styles.empty}>
               <Text style={styles.emptyTitle}>Aucun terrain</Text>
@@ -96,7 +96,7 @@ export default function ManageCourtsScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: courtColors.ink,
+    backgroundColor: courtColors.ink900,
   },
   listContent: {
     paddingHorizontal: 20,
@@ -104,16 +104,16 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   addButton: {
-    backgroundColor: courtColors.ball,
+    backgroundColor: courtColors.chartreuse,
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: "center",
     marginBottom: 16,
   },
   addButtonText: {
-    fontFamily: courtFonts.bodyBold,
+    fontWeight: "700",
     fontSize: 15,
-    color: courtColors.ink,
+    color: courtColors.ink900,
   },
   row: {
     marginBottom: 10,
@@ -127,14 +127,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   emptyTitle: {
-    fontFamily: courtFonts.bodyBold,
+    fontWeight: "700",
     fontSize: 15,
     color: courtColors.chalk,
   },
   emptyDescription: {
-    fontFamily: courtFonts.bodyRegular,
     fontSize: 13.5,
-    color: courtColors.mist,
+    color: courtColors.chalkDim,
     textAlign: "center",
   },
 });

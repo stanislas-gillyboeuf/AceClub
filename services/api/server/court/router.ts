@@ -10,8 +10,20 @@ import {
   getBookingEnabled,
   getSettings,
   getWeeklyQuota,
+  getBoard,
+  getBooking,
+  getFrequentPartners,
+  searchMembers,
 } from "./queries";
-import { createBooking, cancelBooking, createCourt, updateCourt, upsertSettings, bookForClub } from "./mutations";
+import {
+  createBooking,
+  cancelBooking,
+  createCourt,
+  updateCourt,
+  upsertSettings,
+  bookForClub,
+  joinBooking,
+} from "./mutations";
 import {
   listCourtsValidator,
   listAllForOrgValidator,
@@ -26,6 +38,9 @@ import {
   upsertSettingsValidator,
   weeklyQuotaValidator,
   bookForClubValidator,
+  boardQueryValidator,
+  searchMembersValidator,
+  joinBookingValidator,
 } from "./validators";
 
 export const courtRouter = new Hono<HonoContext>();
@@ -48,11 +63,16 @@ courtRouter.get(
 );
 courtRouter.get("/settings", zValidator("query", courtSettingsQueryValidator), getSettings);
 courtRouter.get("/my-weekly-quota", zValidator("query", weeklyQuotaValidator), getWeeklyQuota);
+courtRouter.get("/board", zValidator("query", boardQueryValidator), getBoard);
+courtRouter.get("/booking/:bookingId", getBooking);
+courtRouter.get("/frequent-partners", getFrequentPartners);
+courtRouter.get("/search-members", zValidator("query", searchMembersValidator), searchMembers);
 
 // --- Bookings ---
 courtRouter.post("/book", zValidator("json", createBookingValidator), createBooking);
 courtRouter.post("/book-for-club", zValidator("json", bookForClubValidator), bookForClub);
 courtRouter.post("/cancel-booking", zValidator("json", cancelBookingValidator), cancelBooking);
+courtRouter.post("/join-booking", zValidator("json", joinBookingValidator), joinBooking);
 
 // --- Court management (club admins) ---
 courtRouter.post("/create", zValidator("json", createCourtValidator), createCourt);

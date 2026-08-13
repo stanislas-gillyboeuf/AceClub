@@ -2,7 +2,10 @@ import { api } from "@/lib/api";
 import type {
   Court,
   CourtAvailability,
+  CourtBoard,
   CourtBooking,
+  BookingDetail,
+  FrequentPartner,
   CreateBookingRequest,
   BookForClubRequest,
   MyBookingsFilter,
@@ -11,6 +14,7 @@ import type {
   CourtSettings,
   UpsertSettingsRequest,
   WeeklyQuota,
+  CourtSport,
 } from "@/types/court";
 
 export const courtService = {
@@ -50,4 +54,17 @@ export const courtService = {
 
   getWeeklyQuota: (organizationId: string) =>
     api.get<WeeklyQuota>("/court/my-weekly-quota", { organizationId }),
+
+  getBoard: (organizationId: string, sport: CourtSport, date: string) =>
+    api.get<CourtBoard>("/court/board", { organizationId, sport, date }),
+
+  getBooking: (bookingId: string) => api.get<BookingDetail>(`/court/booking/${bookingId}`),
+
+  getFrequentPartners: () => api.get<FrequentPartner[]>("/court/frequent-partners"),
+
+  searchMembers: (organizationId: string, query: string) =>
+    api.get<FrequentPartner[]>("/court/search-members", { organizationId, query }),
+
+  joinBooking: (data: { bookingId: string; userId?: string; guestName?: string }) =>
+    api.post("/court/join-booking", data),
 };

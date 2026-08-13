@@ -38,6 +38,10 @@ export default function TabLayout() {
         <NativeTabs.Trigger.Icon sf={{ default: "sportscourt", selected: "sportscourt.fill" }} md="sports_tennis" />
         <NativeTabs.Trigger.Label>Matches</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="booking">
+        <NativeTabs.Trigger.Icon sf={{ default: "calendar", selected: "calendar" }} md="event" />
+        <NativeTabs.Trigger.Label>Réserver</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="chat">
         <NativeTabs.Trigger.Icon sf={{ default: "message", selected: "message.fill" }} md="chat" />
         <NativeTabs.Trigger.Label>Chat</NativeTabs.Trigger.Label>

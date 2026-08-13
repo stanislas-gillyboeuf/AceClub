@@ -135,6 +135,17 @@ function CourtsSection() {
           </Text>
           <ChevronRight size={16} color={semanticColors.labelTertiary[scheme]} strokeWidth={2} />
         </Pressable>
+        <View style={[styles.divider, { backgroundColor: semanticColors.divider[scheme] }]} />
+        <Pressable
+          onPress={() => router.push("/(tabs)/booking")}
+          style={styles.courtsRow}
+        >
+          <MapPin size={18} color={semanticColors.labelSecondary[scheme]} strokeWidth={1.5} />
+          <Text style={[styles.courtsRowLabel, { color: semanticColors.labelPrimary[scheme] }]}>
+            Aperçu du tableau de réservation
+          </Text>
+          <ChevronRight size={16} color={semanticColors.labelTertiary[scheme]} strokeWidth={2} />
+        </Pressable>
       </GlassView>
     </View>
   );

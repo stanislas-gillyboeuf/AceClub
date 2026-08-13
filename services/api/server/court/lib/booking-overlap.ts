@@ -1,7 +1,12 @@
 import { and, eq, gt, lt, sql } from "drizzle-orm";
 import { db } from "../../../db";
-import { courtBooking } from "../../../db/schema";
+import { courtBooking, courtBookingParticipant } from "../../../db/schema";
 import { BookingConflictError } from "./errors";
+
+interface BookingParticipantInput {
+  userId?: string;
+  guestName?: string;
+}
 
 interface CreateLockedBookingParams {
   courtId: string;
@@ -10,6 +15,7 @@ interface CreateLockedBookingParams {
   end: Date;
   purpose?: string | null;
   bookedAsClub?: boolean;
+  participants?: BookingParticipantInput[];
 }
 
 /**
@@ -51,6 +57,17 @@ export async function createLockedBooking(params: CreateLockedBookingParams) {
         bookedAsClub: params.bookedAsClub ?? false,
       })
       .returning();
+
+    if (params.participants && params.participants.length > 0) {
+      await tx.insert(courtBookingParticipant).values(
+        params.participants.map((participant, slotIndex) => ({
+          bookingId: created.id,
+          slotIndex,
+          userId: participant.userId ?? null,
+          guestName: participant.guestName ?? null,
+        })),
+      );
+    }
 
     return created;
   });

@@ -8,6 +8,7 @@ import type {
   CreateCourtRequest,
   UpdateCourtRequest,
   UpsertSettingsRequest,
+  CourtSport,
 } from "@/types/court";
 
 export function useCourts(organizationId?: string) {
@@ -57,6 +58,51 @@ export function useCreateBooking() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.court.availabilityAll() });
       queryClient.invalidateQueries({ queryKey: queryKeys.court.myBookingsAll() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.court.boardAll() });
+    },
+  });
+}
+
+export function useCourtBoard(organizationId?: string, sport?: CourtSport, date?: string) {
+  return useQuery({
+    queryKey: queryKeys.court.board(organizationId, sport, date),
+    queryFn: () => courtService.getBoard(organizationId!, sport!, date!),
+    enabled: !!organizationId && !!sport && !!date,
+  });
+}
+
+export function useCourtBookingDetail(bookingId?: string) {
+  return useQuery({
+    queryKey: queryKeys.court.booking(bookingId),
+    queryFn: () => courtService.getBooking(bookingId!),
+    enabled: !!bookingId,
+  });
+}
+
+export function useFrequentPartners() {
+  return useQuery({
+    queryKey: queryKeys.court.frequentPartners(),
+    queryFn: () => courtService.getFrequentPartners(),
+  });
+}
+
+export function useSearchMembers(organizationId?: string, query?: string) {
+  return useQuery({
+    queryKey: queryKeys.court.searchMembers(organizationId, query),
+    queryFn: () => courtService.searchMembers(organizationId!, query!),
+    enabled: !!organizationId && !!query && query.length > 0,
+  });
+}
+
+export function useJoinBooking() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { bookingId: string; userId?: string; guestName?: string }) =>
+      courtService.joinBooking(data),
+    onSettled: (_data, _err, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.court.booking(variables.bookingId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.court.myBookingsAll() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.court.boardAll() });
     },
   });
 }

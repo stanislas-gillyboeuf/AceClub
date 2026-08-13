@@ -24,6 +24,7 @@ export const createCourt = async (c: Context<HonoContext>) => {
     .values({
       organizationId: body.organizationId,
       name: body.name,
+      sport: body.sport,
       surface: body.surface,
       indoor: body.indoor,
       accessPolicy: body.accessPolicy,
