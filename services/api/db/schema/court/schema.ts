@@ -10,6 +10,7 @@ export const courtCancellationPolicy = pgEnum("court_cancellation_policy", [
   "window",
   "disabled",
 ]);
+export const courtSport = pgEnum("court_sport", ["tennis", "padel"]);
 
 export const court = pgTable(
   "court",
@@ -21,6 +22,7 @@ export const court = pgTable(
       .notNull()
       .references(() => organization.id),
     name: text("name").notNull(),
+    sport: courtSport("sport").notNull().default("tennis"),
     surface: courtSurface("surface"),
     indoor: boolean("indoor").notNull().default(false),
     isActive: boolean("is_active").notNull().default(true),
@@ -61,6 +63,28 @@ export const courtBooking = pgTable(
     index("court_booking_userId_idx").on(table.userId),
     index("court_booking_startAt_idx").on(table.startAt),
     index("court_booking_courtId_startAt_idx").on(table.courtId, table.startAt),
+  ],
+);
+
+export const courtBookingParticipant = pgTable(
+  "court_booking_participant",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    bookingId: text("booking_id")
+      .notNull()
+      .references(() => courtBooking.id, { onDelete: "cascade" }),
+    slotIndex: integer("slot_index").notNull(),
+    userId: text("user_id").references(() => user.id),
+    guestName: text("guest_name"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("court_booking_participant_bookingId_slotIndex_uidx").on(
+      table.bookingId,
+      table.slotIndex,
+    ),
   ],
 );
 

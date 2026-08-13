@@ -9,16 +9,22 @@ import {
   StyleSheet,
 } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
-import { courtColors, courtFonts } from "@/features/court-booking/theme";
+import { courtColors } from "@/features/court-booking/theme";
 import { useMyOrganizations } from "@/hooks/use-organization";
 import { useAllCourtsForOrg, useCreateCourt, useUpdateCourt } from "@/hooks/use-court";
 import Button from "@/components/ui/button";
 import {
   SLOT_DURATIONS,
+  type CourtSport,
   type CourtSurface,
   type CourtCancellationPolicy,
   type CourtAccessPolicy,
 } from "@/types/court";
+
+const SPORT_OPTIONS: { value: CourtSport; label: string }[] = [
+  { value: "tennis", label: "Tennis" },
+  { value: "padel", label: "Padel" },
+];
 
 const SURFACE_OPTIONS: { value: CourtSurface; label: string }[] = [
   { value: "clay", label: "Terre battue" },
@@ -51,6 +57,7 @@ export default function CourtFormScreen() {
   const updateCourt = useUpdateCourt();
 
   const [name, setName] = useState("");
+  const [sport, setSport] = useState<CourtSport>("tennis");
   const [surface, setSurface] = useState<CourtSurface | undefined>(undefined);
   const [indoor, setIndoor] = useState(false);
   const [pricePerHour, setPricePerHour] = useState("");
@@ -62,6 +69,7 @@ export default function CourtFormScreen() {
   useEffect(() => {
     if (!existing) return;
     setName(existing.name);
+    setSport(existing.sport);
     setSurface(existing.surface ?? undefined);
     setIndoor(existing.indoor);
     setPricePerHour(existing.pricePerHour != null ? String(existing.pricePerHour) : "");
@@ -88,7 +96,8 @@ export default function CourtFormScreen() {
         {
           courtId,
           name: name.trim(),
-          surface,
+          sport,
+          surface: sport === "tennis" ? surface : undefined,
           indoor,
           pricePerHour: pricePerHour.trim() ? Number(pricePerHour) : null,
           slotDurationMinutes: slotDurationMinutes as (typeof SLOT_DURATIONS)[number],
@@ -106,7 +115,8 @@ export default function CourtFormScreen() {
         {
           organizationId,
           name: name.trim(),
-          surface,
+          sport,
+          surface: sport === "tennis" ? surface : undefined,
           indoor,
           pricePerHour: pricePerHour.trim() ? Number(pricePerHour) : undefined,
           slotDurationMinutes: slotDurationMinutes as (typeof SLOT_DURATIONS)[number],
@@ -133,18 +143,24 @@ export default function CourtFormScreen() {
             value={name}
             onChangeText={setName}
             placeholder="Ex : Court 1"
-            placeholderTextColor={courtColors.mist}
+            placeholderTextColor={courtColors.chalkDim}
             style={styles.input}
           />
         </Field>
 
-        <Field label="SURFACE">
-          <SegmentedOptions
-            options={SURFACE_OPTIONS}
-            value={surface}
-            onChange={setSurface}
-          />
+        <Field label="SPORT">
+          <SegmentedOptions options={SPORT_OPTIONS} value={sport} onChange={setSport} />
         </Field>
+
+        {sport === "tennis" && (
+          <Field label="SURFACE">
+            <SegmentedOptions
+              options={SURFACE_OPTIONS}
+              value={surface}
+              onChange={setSurface}
+            />
+          </Field>
+        )}
 
         <Field label="EMPLACEMENT">
           <SegmentedOptions
@@ -162,7 +178,7 @@ export default function CourtFormScreen() {
             value={pricePerHour}
             onChangeText={setPricePerHour}
             placeholder="Ex : 20"
-            placeholderTextColor={courtColors.mist}
+            placeholderTextColor={courtColors.chalkDim}
             keyboardType="numeric"
             style={styles.input}
           />
@@ -187,7 +203,7 @@ export default function CourtFormScreen() {
               value={cancellationWindowHours}
               onChangeText={setCancellationWindowHours}
               placeholder="Nombre d'heures avant le créneau"
-              placeholderTextColor={courtColors.mist}
+              placeholderTextColor={courtColors.chalkDim}
               keyboardType="numeric"
               style={[styles.input, styles.inputSpaced]}
             />
@@ -252,7 +268,7 @@ function SegmentedOptions<T>({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: courtColors.ink,
+    backgroundColor: courtColors.ink900,
   },
   content: {
     padding: 20,
@@ -263,19 +279,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   fieldLabel: {
-    fontFamily: courtFonts.bodySemiBold,
+    fontWeight: "600",
     fontSize: 11,
     letterSpacing: 0.6,
-    color: courtColors.mist,
+    color: courtColors.chalkDim,
   },
   input: {
-    backgroundColor: courtColors.ink2,
+    backgroundColor: courtColors.ink700,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: courtColors.pineLine,
+    borderColor: courtColors.line,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    fontFamily: courtFonts.bodyRegular,
     fontSize: 15,
     color: courtColors.chalk,
   },
@@ -288,24 +303,24 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   option: {
-    backgroundColor: courtColors.ink2,
+    backgroundColor: courtColors.ink700,
     borderRadius: 9,
     borderWidth: 1,
-    borderColor: courtColors.pineLine,
+    borderColor: courtColors.line,
     paddingVertical: 9,
     paddingHorizontal: 13,
   },
   optionActive: {
-    backgroundColor: courtColors.ball,
-    borderColor: courtColors.ball,
+    backgroundColor: courtColors.chartreuse,
+    borderColor: courtColors.chartreuse,
   },
   optionText: {
-    fontFamily: courtFonts.bodySemiBold,
+    fontWeight: "600",
     fontSize: 13,
     color: courtColors.chalk,
   },
   optionTextActive: {
-    color: courtColors.ink,
+    color: courtColors.ink900,
   },
   actions: {
     marginTop: 8,

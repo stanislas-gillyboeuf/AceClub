@@ -25,6 +25,7 @@ export const updateCourt = async (c: Context<HonoContext>) => {
 
   const updateData: Record<string, unknown> = {};
   if (body.name !== undefined) updateData.name = body.name;
+  if (body.sport !== undefined) updateData.sport = body.sport;
   if (body.surface !== undefined) updateData.surface = body.surface;
   if (body.indoor !== undefined) updateData.indoor = body.indoor;
   if (body.isActive !== undefined) updateData.isActive = body.isActive;

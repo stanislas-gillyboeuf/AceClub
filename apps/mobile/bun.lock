@@ -6,9 +6,6 @@
       "name": "mobile",
       "dependencies": {
         "@better-auth/expo": "^1.6.4",
-        "@expo-google-fonts/bebas-neue": "^0.4.1",
-        "@expo-google-fonts/ibm-plex-mono": "^0.4.1",
-        "@expo-google-fonts/manrope": "^0.4.2",
         "@expo/vector-icons": "^15.1.1",
         "@react-native-community/datetimepicker": "8.6.0",
         "@react-native-google-signin/google-signin": "^16.1.2",
@@ -304,12 +301,6 @@
     "@eslint/object-schema": ["@eslint/object-schema@2.1.7", "", {}, "sha512-VtAOaymWVfZcmZbp6E2mympDIHvyjXs/12LqWYjVw6qjrfF+VK+fyG33kChz3nnK+SU5/NeHOqrTEHS8sXO3OA=="],
 
     "@eslint/plugin-kit": ["@eslint/plugin-kit@0.4.1", "", { "dependencies": { "@eslint/core": "^0.17.0", "levn": "^0.4.1" } }, "sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA=="],
-
-    "@expo-google-fonts/bebas-neue": ["@expo-google-fonts/bebas-neue@0.4.1", "", {}, "sha512-Ibnf0EQgMUj01tT/ws64RlsMQmOvDP+UDFW93bld0C/WwaOaCGWKgNnqxNkKxmL73y2kpT8EB4dkSNUOyAOEJA=="],
-
-    "@expo-google-fonts/ibm-plex-mono": ["@expo-google-fonts/ibm-plex-mono@0.4.1", "", {}, "sha512-/yYz1mPZq8Nd4tSiH0SBDPEdJUqiOGBwVgSrQvLuw7SPh6C7ezBzmi6eFyHY4QaQwjHDmOLSBKsxzq8ZDFXVAg=="],
-
-    "@expo-google-fonts/manrope": ["@expo-google-fonts/manrope@0.4.2", "", {}, "sha512-BZsKe8d9BJrVnIQIZcTS7/Kac0TbXnqs/+8EBSiQxrmK6GoCO6eTkmr50D1weIk/EoF20pTmAkpWICnovATr/g=="],
 
     "@expo-google-fonts/material-symbols": ["@expo-google-fonts/material-symbols@0.4.22", "", {}, "sha512-Kgn/eYeb5s/pxVkRWQLgZOdaC6SpOofUVc7mtadUQc1OwEy9meDupWCvfWE7+Y8Rh9kFpQe9UxJNvmfmV4pqHA=="],
 

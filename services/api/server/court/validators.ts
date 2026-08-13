@@ -1,8 +1,10 @@
 import { z } from "zod";
+import { PADEL_TEAM_SIZE } from "./lib/padel";
 
 const courtSurfaceEnum = z.enum(["clay", "hard", "grass", "carpet"]);
 const courtAccessPolicyEnum = z.enum(["members_only", "open"]);
 const courtCancellationPolicyEnum = z.enum(["anytime", "window", "disabled"]);
+export const sportEnum = z.enum(["tennis", "padel"]);
 const SLOT_DURATIONS = [30, 45, 60, 90, 120] as const;
 const slotDurationEnum = z
   .number()
@@ -19,6 +21,7 @@ export const createCourtValidator = z
   .object({
     organizationId: z.string().min(1, "Organization ID is required"),
     name: z.string().min(1, "Name is required"),
+    sport: sportEnum.optional().default("tennis"),
     surface: courtSurfaceEnum.optional(),
     indoor: z.boolean().optional().default(false),
     accessPolicy: courtAccessPolicyEnum.optional().default("members_only"),
@@ -35,6 +38,7 @@ export const updateCourtValidator = z
   .object({
     courtId: z.string().min(1, "Court ID is required"),
     name: z.string().min(1).optional(),
+    sport: sportEnum.optional(),
     surface: courtSurfaceEnum.optional(),
     indoor: z.boolean().optional(),
     isActive: z.boolean().optional(),
@@ -56,6 +60,27 @@ export const listCourtsValidator = z.object({
   organizationId: z.string().min(1, "Organization ID is required"),
 });
 
+export const boardQueryValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  sport: sportEnum,
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+});
+
+export const searchMembersValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  query: z.string().min(1).max(80),
+});
+
+export const joinBookingValidator = z
+  .object({
+    bookingId: z.string().min(1, "Booking ID is required"),
+    userId: z.string().min(1).optional(),
+    guestName: z.string().min(1).max(80).optional(),
+  })
+  .refine((data) => Boolean(data.userId) !== Boolean(data.guestName), {
+    message: "Provide exactly one of userId or guestName",
+  });
+
 export const listAllForOrgValidator = z.object({
   organizationId: z.string().min(1, "Organization ID is required"),
 });
@@ -65,10 +90,20 @@ export const listAvailabilityValidator = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
 });
 
+export const participantValidator = z
+  .object({
+    userId: z.string().min(1).optional(),
+    guestName: z.string().min(1).max(80).optional(),
+  })
+  .refine((data) => Boolean(data.userId) !== Boolean(data.guestName), {
+    message: "Provide exactly one of userId or guestName",
+  });
+
 export const createBookingValidator = z.object({
   courtId: z.string().min(1, "Court ID is required"),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
   startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Start time must be in HH:mm format"),
+  participants: z.array(participantValidator).max(PADEL_TEAM_SIZE).optional().default([]),
 });
 
 export const bookForClubValidator = z.object({
@@ -83,7 +118,7 @@ export const cancelBookingValidator = z.object({
 });
 
 export const listMyBookingsValidator = z.object({
-  filter: z.enum(["upcoming", "past"]).default("upcoming"),
+  filter: z.enum(["upcoming", "past", "all"]).default("upcoming"),
 });
 
 export const courtSettingsQueryValidator = z.object({

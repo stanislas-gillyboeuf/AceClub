@@ -1,9 +1,9 @@
 import { Context } from "hono";
 import { z } from "zod";
-import { and, eq, gte, lt, or, asc, desc } from "drizzle-orm";
+import { and, eq, gte, inArray, lt, or, asc, desc } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { courtBooking, court, organization } from "../../../db/schema";
+import { courtBooking, court, courtBookingParticipant, organization } from "../../../db/schema";
 import { listMyBookingsValidator } from "../validators";
 
 export const listMyBookings = async (c: Context<HonoContext>) => {
@@ -20,10 +20,12 @@ export const listMyBookings = async (c: Context<HonoContext>) => {
           eq(courtBooking.status, "confirmed"),
           gte(courtBooking.startAt, now),
         )
-      : and(
-          eq(courtBooking.userId, currentUser.id),
-          or(lt(courtBooking.startAt, now), eq(courtBooking.status, "cancelled")),
-        );
+      : query.filter === "past"
+        ? and(
+            eq(courtBooking.userId, currentUser.id),
+            or(lt(courtBooking.startAt, now), eq(courtBooking.status, "cancelled")),
+          )
+        : eq(courtBooking.userId, currentUser.id);
 
   const rows = await db
     .select({
@@ -36,6 +38,7 @@ export const listMyBookings = async (c: Context<HonoContext>) => {
       bookedAsClub: courtBooking.bookedAsClub,
       createdAt: courtBooking.createdAt,
       courtName: court.name,
+      sport: court.sport,
       organizationId: court.organizationId,
       organizationName: organization.name,
     })
@@ -45,5 +48,20 @@ export const listMyBookings = async (c: Context<HonoContext>) => {
     .where(conditions)
     .orderBy(query.filter === "upcoming" ? asc(courtBooking.startAt) : desc(courtBooking.startAt));
 
-  return c.json(rows);
+  const bookingIds = rows.map((r) => r.id);
+  const participantRows = bookingIds.length
+    ? await db
+        .select({ bookingId: courtBookingParticipant.bookingId, guestName: courtBookingParticipant.guestName })
+        .from(courtBookingParticipant)
+        .where(inArray(courtBookingParticipant.bookingId, bookingIds))
+    : [];
+
+  const participantCountByBooking = new Map<string, number>();
+  for (const p of participantRows) {
+    participantCountByBooking.set(p.bookingId, (participantCountByBooking.get(p.bookingId) ?? 0) + 1);
+  }
+
+  return c.json(
+    rows.map((row) => ({ ...row, participantCount: participantCountByBooking.get(row.id) ?? 0 })),
+  );
 };

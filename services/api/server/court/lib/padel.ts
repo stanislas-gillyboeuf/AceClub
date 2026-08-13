@@ -1,0 +1,2 @@
+export const PADEL_TEAM_SIZE = 3;
+export const PADEL_TEAM_COMPLETION_WINDOW_HOURS = 4;

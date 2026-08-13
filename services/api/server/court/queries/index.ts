@@ -5,3 +5,7 @@ export { listMyBookings } from "./list-my-bookings";
 export { getBookingEnabled } from "./booking-enabled";
 export { getSettings } from "./get-settings";
 export { getWeeklyQuota } from "./get-weekly-quota";
+export { getBoard } from "./get-board";
+export { getBooking } from "./get-booking";
+export { getFrequentPartners } from "./get-frequent-partners";
+export { searchMembers } from "./search-members";

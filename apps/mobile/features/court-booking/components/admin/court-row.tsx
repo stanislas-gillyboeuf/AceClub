@@ -1,5 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { courtColors, courtFonts } from "../../theme";
+import { courtColors, courtFontMono } from "../../theme";
 import type { Court } from "@/types/court";
 
 const SURFACE_LABELS: Record<string, string> = {
@@ -54,10 +54,10 @@ export function CourtRow({ court, onEdit, onToggleActive, isToggling }: CourtRow
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: courtColors.ink2,
+    backgroundColor: courtColors.ink700,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: courtColors.pineLine,
+    borderColor: courtColors.line,
     padding: 14,
     gap: 10,
   },
@@ -68,22 +68,22 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   name: {
-    fontFamily: courtFonts.bodyBold,
+    fontWeight: "700",
     fontSize: 16,
     color: courtColors.chalk,
   },
   textMuted: {
-    color: courtColors.mist,
+    color: courtColors.chalkDim,
   },
   meta: {
-    fontFamily: courtFonts.mono,
+    fontFamily: courtFontMono,
     fontSize: 12,
-    color: courtColors.mist,
+    color: courtColors.chalkDim,
   },
   price: {
-    fontFamily: courtFonts.mono,
+    fontFamily: courtFontMono,
     fontSize: 12,
-    color: courtColors.ball,
+    color: courtColors.chartreuse,
   },
   actions: {
     flexDirection: "row",
@@ -93,25 +93,25 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   actionText: {
-    fontFamily: courtFonts.bodySemiBold,
+    fontWeight: "600",
     fontSize: 13,
-    color: courtColors.ball,
+    color: courtColors.chartreuse,
   },
   destructiveText: {
-    fontFamily: courtFonts.bodySemiBold,
+    fontWeight: "600",
     fontSize: 13,
-    color: courtColors.clay,
+    color: courtColors.rust,
   },
   reactivateButton: {
     alignSelf: "flex-start",
-    backgroundColor: courtColors.ball,
+    backgroundColor: courtColors.chartreuse,
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,
   },
   reactivateText: {
-    fontFamily: courtFonts.bodySemiBold,
+    fontWeight: "600",
     fontSize: 13,
-    color: courtColors.ink,
+    color: courtColors.ink900,
   },
 });

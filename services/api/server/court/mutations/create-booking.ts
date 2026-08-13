@@ -1,9 +1,9 @@
 import { Context } from "hono";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { court, organization } from "../../../db/schema";
+import { court, organization, user } from "../../../db/schema";
 import { createBookingValidator } from "../validators";
 import { slotFromStartTime } from "../lib/slots";
 import { BookingConflictError } from "../lib/errors";
@@ -12,6 +12,7 @@ import { resolveFeatureFlag } from "../../../lib/feature-flags";
 import { createLockedBooking } from "../lib/booking-overlap";
 import { getCourtSettings } from "../lib/settings";
 import { countWeeklyBookings, isWeekend } from "../lib/quota";
+import { PADEL_TEAM_SIZE } from "../lib/padel";
 
 export const createBooking = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -25,6 +26,7 @@ export const createBooking = async (c: Context<HonoContext>) => {
       organizationId: court.organizationId,
       accessPolicy: court.accessPolicy,
       slotDurationMinutes: court.slotDurationMinutes,
+      sport: court.sport,
     })
     .from(court)
     .where(eq(court.id, validated.courtId))
@@ -32,6 +34,19 @@ export const createBooking = async (c: Context<HonoContext>) => {
 
   if (!targetCourt || !targetCourt.isActive) {
     return c.json({ error: "NotFound", message: "Court not found" }, 404);
+  }
+
+  if (targetCourt.sport === "tennis" && validated.participants.length !== 1) {
+    return c.json(
+      { error: "BadRequest", message: "Un partenaire est requis pour réserver un court de tennis" },
+      400,
+    );
+  }
+  if (targetCourt.sport === "padel" && validated.participants.length > PADEL_TEAM_SIZE) {
+    return c.json(
+      { error: "BadRequest", message: `Maximum ${PADEL_TEAM_SIZE} coéquipiers en padel` },
+      400,
+    );
   }
 
   const allowed = await canAccessCourt(
@@ -86,6 +101,7 @@ export const createBooking = async (c: Context<HonoContext>) => {
       userId: currentUser.id,
       start,
       end,
+      participants: validated.participants,
     });
 
     const [enriched] = await db
@@ -95,7 +111,21 @@ export const createBooking = async (c: Context<HonoContext>) => {
       .where(eq(court.id, booking.courtId))
       .limit(1);
 
-    return c.json({ ...booking, ...enriched }, 201);
+    const participantUserIds = validated.participants
+      .map((p) => p.userId)
+      .filter((id): id is string => Boolean(id));
+    const participantUsers = participantUserIds.length
+      ? await db
+          .select({ id: user.id, name: user.name })
+          .from(user)
+          .where(inArray(user.id, participantUserIds))
+      : [];
+    const participants = validated.participants.map((p) => ({
+      userId: p.userId ?? null,
+      name: p.guestName ?? participantUsers.find((u) => u.id === p.userId)?.name ?? null,
+    }));
+
+    return c.json({ ...booking, ...enriched, participants }, 201);
   } catch (error) {
     if (error instanceof BookingConflictError) {
       return c.json({ error: "Conflict", message: error.message }, 409);

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, Platform, StyleSheet } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { courtColors, courtFonts } from "../../theme";
+import { courtColors, courtFontMono } from "../../theme";
 import { formatTime } from "@/lib/format";
 import Button from "@/components/ui/button";
 
@@ -85,7 +85,7 @@ export function ClubBookingForm({ date, onSubmit, onCancel, isLoading }: ClubBoo
         value={purpose}
         onChangeText={setPurpose}
         placeholder="Ex : Cours collectif débutants"
-        placeholderTextColor={courtColors.mist}
+        placeholderTextColor={courtColors.chalkDim}
         style={styles.input}
       />
 
@@ -117,7 +117,7 @@ function TimeField({ label, time, onChange, show, onPress, onDismiss }: TimeFiel
           display="compact"
           onChange={(_, d) => d && onChange(d)}
           locale="fr-FR"
-          accentColor={courtColors.ball}
+          accentColor={courtColors.chartreuse}
           themeVariant="dark"
         />
       </View>
@@ -147,15 +147,15 @@ function TimeField({ label, time, onChange, show, onPress, onDismiss }: TimeFiel
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 20,
-    backgroundColor: courtColors.ink2,
+    backgroundColor: courtColors.ink700,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: courtColors.pineLine,
+    borderColor: courtColors.line,
     padding: 18,
     gap: 14,
   },
   title: {
-    fontFamily: courtFonts.display,
+    fontWeight: "800",
     fontSize: 20,
     color: courtColors.chalk,
   },
@@ -168,19 +168,19 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   label: {
-    fontFamily: courtFonts.bodySemiBold,
+    fontWeight: "600",
     fontSize: 11,
     letterSpacing: 0.6,
-    color: courtColors.mist,
+    color: courtColors.chalkDim,
   },
   androidTimeButton: {
-    backgroundColor: courtColors.ink,
+    backgroundColor: courtColors.ink900,
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
   androidTimeText: {
-    fontFamily: courtFonts.mono,
+    fontFamily: courtFontMono,
     fontSize: 15,
     color: courtColors.chalk,
   },
@@ -190,33 +190,32 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   suggestion: {
-    backgroundColor: courtColors.ink,
+    backgroundColor: courtColors.ink900,
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: courtColors.pineLine,
+    borderColor: courtColors.line,
   },
   suggestionActive: {
-    backgroundColor: courtColors.ball,
-    borderColor: courtColors.ball,
+    backgroundColor: courtColors.chartreuse,
+    borderColor: courtColors.chartreuse,
   },
   suggestionText: {
-    fontFamily: courtFonts.bodyMedium,
+    fontWeight: "500",
     fontSize: 13,
     color: courtColors.chalk,
   },
   suggestionTextActive: {
-    color: courtColors.ink,
+    color: courtColors.ink900,
   },
   input: {
-    backgroundColor: courtColors.ink,
+    backgroundColor: courtColors.ink900,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: courtColors.pineLine,
+    borderColor: courtColors.line,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    fontFamily: courtFonts.bodyRegular,
     fontSize: 14,
     color: courtColors.chalk,
   },

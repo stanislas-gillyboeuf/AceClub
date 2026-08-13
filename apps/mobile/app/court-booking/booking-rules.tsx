@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { View, Text, TextInput, Pressable, ScrollView, Alert, StyleSheet } from "react-native";
 import { Stack, router } from "expo-router";
-import { courtColors, courtFonts } from "@/features/court-booking/theme";
+import { courtColors, courtFontMono } from "@/features/court-booking/theme";
 import { useMyOrganizations, useActiveMemberRole } from "@/hooks/use-organization";
 import { useCourtSettings, useUpsertSettings } from "@/hooks/use-court";
 import Button from "@/components/ui/button";
@@ -171,7 +171,7 @@ function LimitField({ label, limited, onToggleLimited, value, onChangeValue }: L
           value={value}
           onChangeText={onChangeValue}
           placeholder="Nombre de réservations"
-          placeholderTextColor={courtColors.mist}
+          placeholderTextColor={courtColors.chalkDim}
           keyboardType="numeric"
           style={styles.limitInput}
         />
@@ -183,7 +183,7 @@ function LimitField({ label, limited, onToggleLimited, value, onChangeValue }: L
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: courtColors.ink,
+    backgroundColor: courtColors.ink900,
   },
   content: {
     padding: 20,
@@ -191,10 +191,10 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
   },
   sectionLabel: {
-    fontFamily: courtFonts.bodyBold,
+    fontWeight: "700",
     fontSize: 12,
     letterSpacing: 1,
-    color: courtColors.mist,
+    color: courtColors.chalkDim,
     marginTop: 8,
   },
   hourRow: {
@@ -206,36 +206,36 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: courtColors.ink2,
+    backgroundColor: courtColors.ink700,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: courtColors.pineLine,
+    borderColor: courtColors.line,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
   hourLabel: {
     flex: 1,
-    fontFamily: courtFonts.bodyMedium,
+    fontWeight: "500",
     fontSize: 13,
     color: courtColors.chalk,
   },
   hourInput: {
-    fontFamily: courtFonts.mono,
+    fontFamily: courtFontMono,
     fontSize: 16,
-    color: courtColors.ball,
+    color: courtColors.chartreuse,
     minWidth: 28,
     textAlign: "right",
   },
   hourSuffix: {
-    fontFamily: courtFonts.mono,
+    fontFamily: courtFontMono,
     fontSize: 16,
-    color: courtColors.ball,
+    color: courtColors.chartreuse,
   },
   limitField: {
-    backgroundColor: courtColors.ink2,
+    backgroundColor: courtColors.ink700,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: courtColors.pineLine,
+    borderColor: courtColors.line,
     padding: 14,
     gap: 10,
   },
@@ -246,13 +246,13 @@ const styles = StyleSheet.create({
   },
   limitLabel: {
     flex: 1,
-    fontFamily: courtFonts.bodyMedium,
+    fontWeight: "500",
     fontSize: 14,
     color: courtColors.chalk,
   },
   toggleRow: {
     flexDirection: "row",
-    backgroundColor: courtColors.ink,
+    backgroundColor: courtColors.ink900,
     borderRadius: 8,
     padding: 2,
   },
@@ -262,24 +262,24 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   toggleOptionActive: {
-    backgroundColor: courtColors.ball,
+    backgroundColor: courtColors.chartreuse,
   },
   toggleText: {
-    fontFamily: courtFonts.bodySemiBold,
+    fontWeight: "600",
     fontSize: 12,
-    color: courtColors.mist,
+    color: courtColors.chalkDim,
   },
   toggleTextActive: {
-    color: courtColors.ink,
+    color: courtColors.ink900,
   },
   limitInput: {
-    backgroundColor: courtColors.ink,
+    backgroundColor: courtColors.ink900,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: courtColors.pineLine,
+    borderColor: courtColors.line,
     paddingVertical: 9,
     paddingHorizontal: 12,
-    fontFamily: courtFonts.mono,
+    fontFamily: courtFontMono,
     fontSize: 15,
     color: courtColors.chalk,
   },
@@ -294,14 +294,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   emptyTitle: {
-    fontFamily: courtFonts.bodyBold,
+    fontWeight: "700",
     fontSize: 15,
     color: courtColors.chalk,
   },
   emptyDescription: {
-    fontFamily: courtFonts.bodyRegular,
     fontSize: 13.5,
-    color: courtColors.mist,
+    color: courtColors.chalkDim,
     textAlign: "center",
   },
 });
