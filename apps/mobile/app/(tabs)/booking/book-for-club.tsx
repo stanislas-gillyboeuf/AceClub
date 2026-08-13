@@ -4,11 +4,13 @@ import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { courtColors } from "@/features/court-booking/theme";
 import { ClubBookingForm } from "@/features/court-booking/components/admin/club-booking-form";
+import { useTabBarClearance } from "@/features/court-booking/lib/layout";
 import { useMyOrganizations } from "@/hooks/use-organization";
 import { useCourts, useBookForClub } from "@/hooks/use-court";
 
 export default function BookForClubScreen() {
   const insets = useSafeAreaInsets();
+  const tabBarClearance = useTabBarClearance();
   const { data: orgs } = useMyOrganizations();
   const primaryOrg = orgs?.[0] ?? null;
   const { data: courts, isLoading } = useCourts(primaryOrg?.id);
@@ -34,7 +36,7 @@ export default function BookForClubScreen() {
         <Text style={styles.backText}>← Retour</Text>
       </Pressable>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + tabBarClearance }]}>
         <Text style={styles.title}>Réserver pour le club</Text>
         <Text style={styles.subtitle}>Cours, tournois, événements — choisis d&apos;abord un terrain.</Text>
 

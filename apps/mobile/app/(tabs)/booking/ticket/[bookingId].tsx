@@ -5,9 +5,11 @@ import { courtColors } from "@/features/court-booking/theme";
 import { PerforatedTicket } from "@/features/court-booking/components/perforated-ticket";
 import { PartnerSearchExpand } from "@/features/court-booking/components/partner-search-expand";
 import { ConfettiBurst } from "@/features/court-booking/components/confetti-burst";
+import { useTabBarClearance } from "@/features/court-booking/lib/layout";
 import { useCourtBookingDetail, useCancelBooking, useJoinBooking, useFrequentPartners } from "@/hooks/use-court";
 
 export default function TicketScreen() {
+  const tabBarClearance = useTabBarClearance();
   const { bookingId, justBooked } = useLocalSearchParams<{ bookingId: string; justBooked?: string }>();
   const { data: booking, isLoading } = useCourtBookingDetail(bookingId);
   const cancelBooking = useCancelBooking();
@@ -47,7 +49,11 @@ export default function TicketScreen() {
   const suggestions = (frequentPartners ?? []).filter((p) => !usedIds.has(p.userId));
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} contentInsetAdjustmentBehavior="automatic">
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={[styles.content, { paddingBottom: 20 + tabBarClearance }]}
+      contentInsetAdjustmentBehavior="automatic"
+    >
       <Pressable onPress={() => router.back()} style={styles.backButton}>
         <Text style={styles.backText}>← Retour</Text>
       </Pressable>

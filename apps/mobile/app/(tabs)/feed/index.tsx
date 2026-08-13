@@ -17,6 +17,7 @@ import { useInfiniteMatches } from "@/hooks/use-match";
 import { useActiveMember } from "@/hooks/use-organization";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
+import { MessagesHeaderButton } from "@/features/chat/components/MessagesHeaderButton";
 import { LevelProgressCard } from "@/features/feed/components/level-progress-card";
 import { FeedMatchRow } from "@/features/feed/components/feed-match-row";
 import { EventsFeedSection } from "@/features/events/components/events-feed-section";
@@ -75,6 +76,8 @@ export default function Feed() {
       <Stack.Screen
         options={{
           title: "Activite",
+          headerLeft:
+            Platform.OS === "android" ? () => <MessagesHeaderButton /> : undefined,
           headerRight:
             Platform.OS === "android"
               ? () => (
@@ -87,9 +90,14 @@ export default function Feed() {
       />
 
       {Platform.OS === "ios" && (
-        <Stack.Toolbar placement="right">
-          <Stack.Toolbar.Button icon="trophy" onPress={goToRanking} tintColor={colors.accentGreen} />
-        </Stack.Toolbar>
+        <>
+          <Stack.Toolbar placement="left">
+            <Stack.Toolbar.Button icon="message" onPress={() => router.push("/chat")} tintColor={colors.accentGreen} />
+          </Stack.Toolbar>
+          <Stack.Toolbar placement="right">
+            <Stack.Toolbar.Button icon="trophy" onPress={goToRanking} tintColor={colors.accentGreen} />
+          </Stack.Toolbar>
+        </>
       )}
 
       <Animated.FlatList

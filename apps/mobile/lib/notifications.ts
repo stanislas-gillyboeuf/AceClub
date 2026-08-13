@@ -78,7 +78,7 @@ function handleNotificationResponse(
       if (data.referenceId) {
         router.navigate(`/conversation/${data.referenceId}` as any);
       } else {
-        router.navigate("/(tabs)/chat");
+        router.navigate("/chat");
       }
       break;
 

@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { courtColors, courtFontMono } from "@/features/court-booking/theme";
 import { BookingCalendar } from "@/features/court-booking/components/booking-calendar";
 import { AgendaList } from "@/features/court-booking/components/agenda-list";
+import { useTabBarClearance } from "@/features/court-booking/lib/layout";
 import { useMyBookings } from "@/hooks/use-court";
 import type { CourtBooking } from "@/types/court";
 
@@ -16,6 +17,7 @@ const EMPTY_BOOKINGS: CourtBooking[] = [];
 
 export default function MyBookingsScreen() {
   const insets = useSafeAreaInsets();
+  const tabBarClearance = useTabBarClearance();
   const { data: bookings, isLoading } = useMyBookings("all");
   const [month, setMonth] = useState(() => {
     const d = new Date();
@@ -50,7 +52,7 @@ export default function MyBookingsScreen() {
         <Text style={styles.backText}>← Retour</Text>
       </Pressable>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + tabBarClearance }]}>
         <Text style={styles.eyebrow}>AceClub</Text>
         <Text style={styles.title}>Mes réservations</Text>
         <Text style={styles.subtitle}>Tes créneaux, passés et à venir</Text>

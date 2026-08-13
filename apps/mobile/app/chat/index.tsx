@@ -96,7 +96,7 @@ export default function ConversationListScreen() {
   );
 
   const handleNewConversation = useCallback(() => {
-    router.push("/(tabs)/chat/new");
+    router.push("/chat/new");
   }, [router]);
 
   const filteredConversations = conversations?.filter((c) => {

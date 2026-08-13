@@ -1,29 +1,45 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { View, Text, ScrollView, Pressable, ActivityIndicator, StyleSheet, type GestureResponderEvent } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ChevronsLeftRight } from "lucide-react-native";
+import { ChevronsLeftRight, Calendar } from "lucide-react-native";
 import { courtColors, courtFontMono } from "@/features/court-booking/theme";
 import { SportToggle } from "@/features/court-booking/components/sport-toggle";
 import { CourtTypeChipRow } from "@/features/court-booking/components/court-type-chip-row";
 import { DayChipRow } from "@/features/court-booking/components/day-chip-row";
 import { BookingBoard } from "@/features/court-booking/components/booking-board";
+import { ClubSelector } from "@/features/court-booking/components/club-selector";
 import { WhoBookedPopover, type PopoverState } from "@/features/court-booking/components/who-booked-popover";
 import { buildCourtTypeFilters } from "@/features/court-booking/lib/court-filters";
 import { toDateKey, formatFullDay } from "@/features/court-booking/lib/date";
-import { useMyOrganizations, useActiveMemberRole } from "@/hooks/use-organization";
+import { useMyOrganizations, useActiveMember } from "@/hooks/use-organization";
 import { useCourtBookingEnabled, useCourtBoard } from "@/hooks/use-court";
 import type { BoardCourt, BoardHourCell, CourtSport } from "@/types/court";
-import type { MemberRole } from "@/types/common";
+
+function isToday(date: Date): boolean {
+  return date.toDateString() === new Date().toDateString();
+}
 
 export default function BookingBoardScreen() {
   const insets = useSafeAreaInsets();
   const { data: orgs } = useMyOrganizations();
-  const primaryOrg = orgs?.[0] ?? null;
-  const { data: memberRole } = useActiveMemberRole();
-  const isClubAdmin = ["owner", "admin"].includes((memberRole?.role ?? "") as MemberRole);
+  const { data: activeMember } = useActiveMember();
 
-  const { data: bookingEnabled, isLoading: bookingEnabledLoading } = useCourtBookingEnabled(primaryOrg?.id);
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!selectedOrgId && orgs && orgs.length > 0) setSelectedOrgId(orgs[0].id);
+  }, [orgs, selectedOrgId]);
+
+  // Admin actions only apply to the club that's actually the active session context —
+  // viewing another club's board here doesn't grant admin rights over it.
+  const isClubAdmin =
+    !!activeMember &&
+    activeMember.organizationId === selectedOrgId &&
+    (activeMember.role === "owner" || activeMember.role === "admin");
+
+  const { data: bookingEnabled, isLoading: bookingEnabledLoading } = useCourtBookingEnabled(
+    selectedOrgId ?? undefined,
+  );
 
   const [sport, setSport] = useState<CourtSport>("tennis");
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -32,14 +48,13 @@ export default function BookingBoardScreen() {
     return d;
   });
   const [courtTypeKey, setCourtTypeKey] = useState("any");
-  const [fullMode, setFullMode] = useState(false);
   const [popover, setPopover] = useState<PopoverState | null>(null);
 
   const dateKey = toDateKey(selectedDate);
   const dayIndex = Math.round((selectedDate.getTime() - new Date().setHours(0, 0, 0, 0)) / 86_400_000);
   const dateLabel = formatFullDay(selectedDate, dayIndex);
 
-  const { data: board, isLoading: boardLoading } = useCourtBoard(primaryOrg?.id, sport, dateKey);
+  const { data: board, isLoading: boardLoading } = useCourtBoard(selectedOrgId ?? undefined, sport, dateKey);
 
   const filters = useMemo(() => buildCourtTypeFilters(sport, board?.courts ?? []), [sport, board]);
   const activeFilter = filters.find((f) => f.key === courtTypeKey) ?? filters[0];
@@ -48,8 +63,15 @@ export default function BookingBoardScreen() {
     [board, activeFilter],
   );
 
+  const scrollToHour = isToday(selectedDate) ? new Date().getHours() : undefined;
+
   const handleSelectSport = (next: CourtSport) => {
     setSport(next);
+    setCourtTypeKey("any");
+  };
+
+  const handleSelectClub = (id: string) => {
+    setSelectedOrgId(id);
     setCourtTypeKey("any");
   };
 
@@ -57,7 +79,7 @@ export default function BookingBoardScreen() {
     router.push({
       pathname: "/(tabs)/booking/confirm",
       params: {
-        organizationId: primaryOrg?.id ?? "",
+        organizationId: selectedOrgId ?? "",
         courtId: court.id,
         courtName: court.name,
         courtTag: courtTag(court),
@@ -89,12 +111,13 @@ export default function BookingBoardScreen() {
             </Pressable>
           )}
           <View>
-            <Text style={styles.eyebrow}>AceClub{primaryOrg ? ` · ${primaryOrg.name}` : ""}</Text>
+            <ClubSelector clubs={orgs ?? []} selectedId={selectedOrgId} onSelect={handleSelectClub} />
             <Text style={styles.title}>Réserver</Text>
           </View>
         </View>
-        <Pressable onPress={() => router.push("/(tabs)/booking/my-bookings")}>
-          <Text style={styles.linkButton}>Mes réservations</Text>
+        <Pressable onPress={() => router.push("/(tabs)/booking/my-bookings")} style={styles.myBookingsButton}>
+          <Calendar size={14} color={courtColors.ink900} strokeWidth={2.5} />
+          <Text style={styles.myBookingsButtonText}>Mes réservations</Text>
         </Pressable>
       </View>
 
@@ -110,7 +133,9 @@ export default function BookingBoardScreen() {
           </View>
         ) : (
           <>
-            <SportToggle sport={sport} onChange={handleSelectSport} />
+            <View style={styles.sportToggleWrap}>
+              <SportToggle sport={sport} onChange={handleSelectSport} />
+            </View>
 
             <Text style={styles.sectionLabel}>Court</Text>
             <CourtTypeChipRow filters={filters} selectedKey={activeFilter.key} onSelect={setCourtTypeKey} />
@@ -120,24 +145,15 @@ export default function BookingBoardScreen() {
             </Text>
             <DayChipRow selectedDate={selectedDate} onSelect={setSelectedDate} />
 
-            <View style={styles.headerActions}>
-              {!fullMode && (
-                <View style={styles.legend}>
-                  <View style={styles.legendItem}>
-                    <View style={[styles.dot, styles.dotFree]} />
-                    <Text style={styles.legendText}>Libre</Text>
-                  </View>
-                  <View style={styles.legendItem}>
-                    <View style={[styles.dot, styles.dotBooked]} />
-                    <Text style={styles.legendText}>Réservé</Text>
-                  </View>
-                </View>
-              )}
-              <Pressable onPress={() => setFullMode((v) => !v)} style={[styles.toggleBtn, fullMode && styles.toggleBtnOn]}>
-                <Text style={[styles.toggleBtnText, fullMode && styles.toggleBtnTextOn]}>
-                  {fullMode ? "Vue simple" : "Tout voir"}
-                </Text>
-              </Pressable>
+            <View style={styles.legend}>
+              <View style={styles.legendItem}>
+                <View style={[styles.dot, styles.dotFree]} />
+                <Text style={styles.legendText}>Libre</Text>
+              </View>
+              <View style={styles.legendItem}>
+                <View style={[styles.dot, styles.dotBooked]} />
+                <Text style={styles.legendText}>Réservé</Text>
+              </View>
             </View>
 
             {boardLoading ? (
@@ -150,7 +166,7 @@ export default function BookingBoardScreen() {
               <>
                 <BookingBoard
                   courts={filteredCourts}
-                  fullMode={fullMode}
+                  scrollToHour={scrollToHour}
                   onSelectFree={handleSelectFree}
                   onSelectBooked={handleSelectBooked}
                 />
@@ -215,30 +231,33 @@ const styles = StyleSheet.create({
     color: courtColors.chalk,
     fontSize: 16,
   },
-  eyebrow: {
-    fontFamily: courtFontMono,
-    fontSize: 11,
-    letterSpacing: 1.4,
-    textTransform: "uppercase",
-    color: courtColors.chartreuseDim,
-  },
   title: {
     fontWeight: "800",
     fontSize: 26,
     color: courtColors.chalk,
     marginTop: 2,
   },
-  linkButton: {
-    fontFamily: courtFontMono,
-    fontSize: 11,
-    color: courtColors.chalkDim,
-    textDecorationLine: "underline",
-    paddingTop: 8,
+  myBookingsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: courtColors.chartreuse,
+    borderRadius: 99,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  myBookingsButtonText: {
+    fontWeight: "700",
+    fontSize: 12,
+    color: courtColors.ink900,
   },
   content: {
     paddingTop: 18,
     paddingBottom: 48,
     gap: 14,
+  },
+  sportToggleWrap: {
+    paddingHorizontal: 20,
   },
   sectionLabel: {
     fontFamily: courtFontMono,
@@ -252,15 +271,10 @@ const styles = StyleSheet.create({
     opacity: 0.6,
     textTransform: "none",
   },
-  headerActions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-  },
   legend: {
     flexDirection: "row",
     gap: 14,
+    paddingHorizontal: 20,
   },
   legendItem: {
     flexDirection: "row",
@@ -284,27 +298,6 @@ const styles = StyleSheet.create({
     backgroundColor: courtColors.rustDim,
     borderWidth: 1,
     borderColor: courtColors.rust,
-  },
-  toggleBtn: {
-    backgroundColor: courtColors.ink700,
-    borderWidth: 1,
-    borderColor: courtColors.line,
-    borderRadius: 9,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  toggleBtnOn: {
-    backgroundColor: courtColors.chartreuse,
-    borderColor: courtColors.chartreuse,
-  },
-  toggleBtnText: {
-    fontFamily: courtFontMono,
-    fontSize: 10.5,
-    color: courtColors.chalkDim,
-  },
-  toggleBtnTextOn: {
-    color: courtColors.ink900,
-    fontWeight: "600",
   },
   scrollHint: {
     flexDirection: "row",

@@ -22,6 +22,7 @@ import { useDiscoverDetailStore } from "@/store/discover-detail";
 import { colors, semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { MatchIntentWithUser } from "@/types/match-intent";
+import { MessagesHeaderButton } from "@/features/chat/components/MessagesHeaderButton";
 
 const RADIUS_OPTIONS: { label: string; value: number | undefined }[] = [
   { label: "5 km", value: 5 },
@@ -120,6 +121,8 @@ export default function DiscoverScreen() {
     <>
       <Stack.Screen
         options={{
+          headerLeft:
+            Platform.OS === "android" ? () => <MessagesHeaderButton /> : undefined,
           headerRight:
             Platform.OS === "android"
               ? () => (
@@ -152,8 +155,11 @@ export default function DiscoverScreen() {
               {pendingCount > 0 && <Stack.Toolbar.Badge>{pendingCount}</Stack.Toolbar.Badge>}
             </Stack.Toolbar.Button>
           </Stack.Toolbar>
-          {!isDiscoveryRestricted && (
-            <Stack.Toolbar placement="left">
+          <Stack.Toolbar placement="left">
+            <Stack.Toolbar.Button onPress={() => router.push("/chat")} tintColor={colors.accentGreen}>
+              <Stack.Toolbar.Icon sf="message" />
+            </Stack.Toolbar.Button>
+            {!isDiscoveryRestricted && (
               <Stack.Toolbar.Menu
                 icon="line.3.horizontal.decrease.circle"
                 label={selectedRadius ? `${selectedRadius} km` : "Tous"}
@@ -169,8 +175,8 @@ export default function DiscoverScreen() {
                   </Stack.Toolbar.MenuAction>
                 ))}
               </Stack.Toolbar.Menu>
-            </Stack.Toolbar>
-          )}
+            )}
+          </Stack.Toolbar>
         </>
       )}
       <ScrollView

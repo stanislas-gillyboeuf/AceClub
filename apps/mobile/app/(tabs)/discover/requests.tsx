@@ -35,7 +35,7 @@ export default function MatchRequests() {
         if (result.conversationId) {
           router.dismiss();
           setTimeout(() => {
-            router.push(`/(tabs)/chat`);
+            router.push(`/chat`);
           }, 300);
         } else {
           router.dismiss();

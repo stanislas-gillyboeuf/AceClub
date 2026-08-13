@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { View, Text, Pressable, ScrollView, StyleSheet, type GestureResponderEvent, type TextStyle, type ViewStyle } from "react-native";
 import { courtColors, courtFontMono } from "../theme";
 import { SURFACE_LABELS } from "../lib/court-filters";
@@ -10,14 +11,25 @@ const ROW_HEIGHT = 54;
 
 interface BookingBoardProps {
   courts: BoardCourt[];
-  fullMode: boolean;
+  /** When set, the board auto-scrolls horizontally to this hour on mount/update (used for "today"). */
+  scrollToHour?: number;
   onSelectFree: (court: BoardCourt, hour: number) => void;
   onSelectBooked: (court: BoardCourt, cell: BoardHourCell, event: GestureResponderEvent) => void;
 }
 
-export function BookingBoard({ courts, fullMode, onSelectFree, onSelectBooked }: BookingBoardProps) {
+export function BookingBoard({ courts, scrollToHour, onSelectFree, onSelectBooked }: BookingBoardProps) {
+  const scrollRef = useRef<ScrollView>(null);
+  const hours = courts[0]?.hours.map((h) => h.hour) ?? [];
+
+  useEffect(() => {
+    if (scrollToHour == null || hours.length === 0) return;
+    const index = Math.max(hours.indexOf(scrollToHour), 0);
+    scrollRef.current?.scrollTo({ x: index * HOUR_COL_WIDTH, animated: false });
+    // Re-run whenever the board's court data identity changes (new day/sport fetched) while targeting "today".
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scrollToHour, courts]);
+
   if (courts.length === 0) return null;
-  const hours = courts[0].hours.map((h) => h.hour);
 
   return (
     <View style={styles.wrap}>
@@ -37,7 +49,7 @@ export function BookingBoard({ courts, fullMode, onSelectFree, onSelectBooked }:
         ))}
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} horizontal showsHorizontalScrollIndicator={false}>
         <View>
           <View style={styles.hourRow}>
             {hours.map((h) => (
@@ -52,7 +64,6 @@ export function BookingBoard({ courts, fullMode, onSelectFree, onSelectBooked }:
                 <Cell
                   key={cell.hour}
                   cell={cell}
-                  fullMode={fullMode}
                   onPress={(e) =>
                     cell.status === "free" || cell.status === "mine"
                       ? onSelectFree(court, cell.hour)
@@ -79,11 +90,10 @@ function courtTag(court: BoardCourt): string {
 
 interface CellProps {
   cell: BoardHourCell;
-  fullMode: boolean;
   onPress: (event: GestureResponderEvent) => void;
 }
 
-function Cell({ cell, fullMode, onPress }: CellProps) {
+function Cell({ cell, onPress }: CellProps) {
   const interactive = cell.status === "free" || cell.status === "mine" || cell.status === "booked";
 
   let content: string | null = null;
@@ -95,16 +105,14 @@ function Cell({ cell, fullMode, onPress }: CellProps) {
     cellStyle = styles.cellFree;
     textStyle = styles.textOnChartreuse;
   } else if (cell.status === "mine") {
-    content = fullMode ? "VOUS" : `${cell.hour}h`;
+    content = "VOUS";
     cellStyle = styles.cellMine;
     textStyle = styles.textChartreuse;
   } else if (cell.status === "booked") {
-    if (fullMode) {
-      content = "●";
-      cellStyle = cell.bookedAsClub ? styles.cellBookedClub : styles.cellBookedFull;
-      textStyle = cell.bookedAsClub ? styles.textAmber : styles.textRust;
-    }
-  } else if (cell.status === "past" && fullMode) {
+    content = "●";
+    cellStyle = cell.bookedAsClub ? styles.cellBookedClub : styles.cellBookedFull;
+    textStyle = cell.bookedAsClub ? styles.textAmber : styles.textRust;
+  } else if (cell.status === "past") {
     content = `${cell.hour}h`;
     cellStyle = styles.cellPast;
     textStyle = styles.textFaint;
@@ -118,7 +126,6 @@ function Cell({ cell, fullMode, onPress }: CellProps) {
         style={[styles.cell, cellStyle, { width: HOUR_COL_WIDTH - 8 }]}
       >
         {content && <Text style={[styles.cellText, textStyle]}>{content}</Text>}
-        {cell.status === "booked" && !fullMode && <View style={styles.quietDot} />}
       </Pressable>
     </View>
   );
@@ -240,11 +247,4 @@ const styles = StyleSheet.create({
   textRust: { color: courtColors.rust },
   textAmber: { color: courtColors.amber },
   textFaint: { color: courtColors.chalkFaint },
-  quietDot: {
-    position: "absolute",
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: courtColors.line,
-  },
 });
