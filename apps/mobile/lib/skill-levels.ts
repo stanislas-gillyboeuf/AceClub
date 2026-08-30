@@ -31,12 +31,10 @@ export const tennisLevels: SkillLevel[] = [
   { value: "Négatif", displayName: "Négatif" },
 ];
 
-export const padelLevels: SkillLevel[] = [
-  { value: "Débutant", displayName: "Débutant" },
-  { value: "Intermédiaire", displayName: "Intermédiaire" },
-  { value: "Avancé", displayName: "Avancé" },
-  { value: "Expert", displayName: "Expert" },
-];
+export const padelLevels: SkillLevel[] = Array.from({ length: 10 }, (_, i) => {
+  const value = String(i + 1);
+  return { value, displayName: value };
+});
 
 export function getSkillLevels(sport: Sport): SkillLevel[] {
   return sport === "tennis" ? tennisLevels : padelLevels;

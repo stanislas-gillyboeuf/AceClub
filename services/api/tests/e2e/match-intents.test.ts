@@ -85,15 +85,15 @@ describe("Match Intents API (/api/match-intents)", () => {
     });
   });
 
-  describe("POST /api/match-intents/swipe", () => {
-    it("should handle swipe action", async () => {
+  describe("POST /api/match-intents/:id/request", () => {
+    it("should create a request to join an intent", async () => {
       if (!intentId) return;
       const res = await post(
-        "/api/match-intents/swipe",
-        { intentId, direction: "right" },
+        `/api/match-intents/${intentId}/request`,
+        {},
         { headers: otherHeaders },
       );
-      // Could be 200 or 400 depending on intent validity
+      // Could be 201 (created) or 404/400 depending on intent state
       expect([200, 201, 400, 404]).toContain(res.status);
     });
   });

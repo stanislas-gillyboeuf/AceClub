@@ -1,4 +1,4 @@
-import type { ReplyTo, ReactionGroup } from "@/types/conversation";
+import type { ReplyTo, ReactionGroup, MatchRequestCardInfo } from "@/types/conversation";
 
 export type MessageSendStatus = "sending" | "sent" | "read" | "failed";
 
@@ -23,4 +23,6 @@ export interface ChatMessage {
   replyToId?: string | null;
   replyTo?: ReplyTo | null;
   reactions?: ReactionGroup[];
+  matchRequestId?: string | null;
+  matchRequest?: MatchRequestCardInfo | null;
 }

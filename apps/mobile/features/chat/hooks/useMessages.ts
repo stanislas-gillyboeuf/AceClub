@@ -106,6 +106,19 @@ export function useMessages() {
     [],
   );
 
+  const updateMatchRequestStatus = useCallback(
+    (matchRequestId: string, status: "accepted" | "rejected") => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.matchRequestId === matchRequestId && m.matchRequest
+            ? { ...m, matchRequest: { ...m.matchRequest, status } }
+            : m,
+        ),
+      );
+    },
+    [],
+  );
+
   return {
     messages,
     setMessages,
@@ -122,5 +135,6 @@ export function useMessages() {
     mergeMessages,
     markAllAsRead,
     updateMessageReactions,
+    updateMatchRequestStatus,
   };
 }

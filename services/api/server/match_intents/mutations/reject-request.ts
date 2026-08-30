@@ -1,8 +1,11 @@
 import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { matchRequest } from "../../../db/schema";
+import { matchRequest, user } from "../../../db/schema";
 import { and, eq } from "drizzle-orm";
+import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
+import { findOrCreateDirectConversation } from "../lib/conversation";
+import { broadcastMatchRequestUpdate } from "../lib/broadcast";
 
 export const rejectRequest = async (c: Context<HonoContext>) => {
   try {
@@ -13,7 +16,6 @@ export const rejectRequest = async (c: Context<HonoContext>) => {
 
     const requestId = c.req.param("id");
 
-    // Récupérer la demande
     const [request] = await db
       .select()
       .from(matchRequest)
@@ -28,15 +30,26 @@ export const rejectRequest = async (c: Context<HonoContext>) => {
       return c.json({ error: "Request already responded to" }, 400);
     }
 
-    // Marquer la demande comme rejetée
     const [updatedRequest] = await db
       .update(matchRequest)
-      .set({
-        status: "rejected",
-        respondedAt: new Date(),
-      })
+      .set({ status: "rejected", respondedAt: new Date() })
       .where(eq(matchRequest.id, requestId))
       .returning();
+
+    const [receiverInfo] = await db.select({ name: user.name }).from(user).where(eq(user.id, userId)).limit(1);
+    const conversationId = await findOrCreateDirectConversation(userId, request.requesterId);
+
+    sendNotificationToUser({
+      userId: request.requesterId,
+      type: "new_message",
+      title: receiverInfo?.name ?? "Réponse",
+      body: "Ta demande a été déclinée.",
+      referenceId: conversationId,
+      referenceType: "conversation",
+      data: { conversationId },
+    }).catch((err) => console.error("[REJECT REQUEST] Failed to send notification:", err));
+
+    broadcastMatchRequestUpdate(request.id, "rejected", [userId, request.requesterId]);
 
     return c.json({
       request: updatedRequest,

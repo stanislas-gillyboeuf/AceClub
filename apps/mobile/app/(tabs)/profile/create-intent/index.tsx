@@ -12,6 +12,7 @@ import { Stack, router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useCreateMatchIntent } from "@/hooks/use-match-intent";
+import { usePreferences } from "@/hooks/use-user";
 import {
   useCreateIntentFormStore,
   combineDateAndTime,
@@ -25,6 +26,8 @@ import { colors, semanticColors } from "@/constants/theme";
 export default function CreateIntent() {
   const scheme = useColorScheme();
   const createIntent = useCreateMatchIntent();
+  const { data: preferences } = usePreferences();
+  const isPadel = preferences?.sport === "padel";
 
   const {
     canGoPrev,
@@ -34,27 +37,36 @@ export default function CreateIntent() {
     prev,
     currentStep,
   } = useIntentStepperActions();
+  const setTotalSteps = useCreateIntentStepperStore((s) => s.setTotalSteps);
 
   const intentType = useCreateIntentFormStore((s) => s.intentType);
   const date = useCreateIntentFormStore((s) => s.date);
   const time = useCreateIntentFormStore((s) => s.time);
+  const isFlexibleDate = useCreateIntentFormStore((s) => s.isFlexibleDate);
   const duration = useCreateIntentFormStore((s) => s.duration);
   const description = useCreateIntentFormStore((s) => s.description);
+  const teammates = useCreateIntentFormStore((s) => s.teammates);
   const resetForm = useCreateIntentFormStore((s) => s.reset);
   const resetStepper = useCreateIntentStepperStore((s) => s.reset);
 
   const isCreating = createIntent.isPending;
 
-  // Step validation
+  useEffect(() => {
+    setTotalSteps(isPadel ? 5 : 4);
+  }, [isPadel, setTotalSteps]);
+
+  // Step validation — index 3 is "Coéquipiers" (padel only, optional) or "Description" (tennis)
   const canProceed = (() => {
     switch (currentStep) {
       case 0: // Activity type - always valid (has default)
         return true;
       case 1: // Date & time
-        return isTimeValid(date, time);
+        return isFlexibleDate || isTimeValid(date, time);
       case 2: // Duration
         return duration !== null;
-      case 3: // Description - always valid (optional)
+      case 3: // Teammates (padel, optional) or Description (tennis, optional)
+        return true;
+      case 4: // Description (padel only) - always valid (optional)
         return true;
       default:
         return false;
@@ -78,14 +90,18 @@ export default function CreateIntent() {
     const combined = combineDateAndTime(date, time);
     const dateStr = `${combined.getFullYear()}-${String(combined.getMonth() + 1).padStart(2, "0")}-${String(combined.getDate()).padStart(2, "0")}`;
     const timeStr = `${String(combined.getHours()).padStart(2, "0")}:${String(combined.getMinutes()).padStart(2, "0")}`;
+    const teammateUserIds = isPadel
+      ? teammates.filter((t): t is NonNullable<typeof t> => t !== null).map((t) => t.id)
+      : undefined;
 
     createIntent.mutate(
       {
-        date: dateStr,
-        time: timeStr,
+        ...(isFlexibleDate ? {} : { date: dateStr, time: timeStr }),
+        isFlexibleDate,
         duration: duration ?? 90,
         type: intentType,
         description: description.trim() || undefined,
+        teammateUserIds,
       },
       {
         onSuccess: () => {
@@ -99,7 +115,7 @@ export default function CreateIntent() {
         },
       }
     );
-  }, [date, time, duration, intentType, description, createIntent, handleDismiss]);
+  }, [date, time, isFlexibleDate, duration, intentType, description, teammates, isPadel, createIntent, handleDismiss]);
 
   const handleNext = useCallback(() => {
     if (isLastStep) {
@@ -110,12 +126,11 @@ export default function CreateIntent() {
     }
   }, [isLastStep, next, handleCreate]);
 
-  const stepTitle = [
-    "Type d'activité",
-    "Quand ?",
-    "Durée",
-    "Description",
-  ][currentStep];
+  const stepTitle = (
+    isPadel
+      ? ["Type d'activité", "Quand ?", "Durée", "Coéquipiers", "Description"]
+      : ["Type d'activité", "Quand ?", "Durée", "Description"]
+  )[currentStep];
 
   return (
     <>
@@ -156,7 +171,7 @@ export default function CreateIntent() {
         contentInsetAdjustmentBehavior="automatic"
         keyboardDismissMode="on-drag"
       >
-        <Stepper />
+        <Stepper isPadel={isPadel} />
       </ScrollView>
 
       <StepperNav

@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { useState } from "react";
+import { View, Text, StyleSheet, Pressable, Alert, ActivityIndicator } from "react-native";
 import * as Haptics from "expo-haptics";
 import Animated, {
   useSharedValue,
@@ -9,7 +10,10 @@ import Animated, {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { Reply, AlertCircle } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { colors, semanticColors, radii } from "@/constants/theme";
+import { Avatar } from "@/components/ui/avatar";
+import { useAcceptRequest, useRejectRequest } from "@/hooks/use-match-intent";
+import { formatSkillLevel } from "@/lib/skill-levels";
 import { VoiceMessageContent } from "./VoiceMessageContent";
 import { ImageMessageContent } from "./ImageMessageContent";
 import { InBubbleReplyPreview } from "./ReplyPreview";
@@ -29,6 +33,7 @@ interface MessageBubbleProps {
   onLongPress: () => void;
   onSwipeReply: () => void;
   onToggleReaction: (emoji: string) => void;
+  onRequestStatusChange: (matchRequestId: string, status: "accepted" | "rejected") => void;
 }
 
 export function MessageBubble({
@@ -39,6 +44,7 @@ export function MessageBubble({
   onLongPress,
   onSwipeReply,
   onToggleReaction,
+  onRequestStatusChange,
 }: MessageBubbleProps) {
   const scheme = useColorScheme();
   const isFromMe = message.isFromMe;
@@ -145,7 +151,11 @@ export function MessageBubble({
                       isFromMe={isFromMe}
                     />
                   )}
-                  <MessageContent message={message} scheme={scheme} />
+                  <MessageContent
+                    message={message}
+                    scheme={scheme}
+                    onRequestStatusChange={onRequestStatusChange}
+                  />
                 </View>
 
                 {message.sendStatus === "failed" && (
@@ -175,9 +185,11 @@ export function MessageBubble({
 function MessageContent({
   message,
   scheme,
+  onRequestStatusChange,
 }: {
   message: ChatMessage;
   scheme: "light" | "dark";
+  onRequestStatusChange: (matchRequestId: string, status: "accepted" | "rejected") => void;
 }) {
   switch (message.type) {
     case "voice":
@@ -185,6 +197,14 @@ function MessageContent({
       return <VoiceMessageContent message={message} />;
     case "image":
       return <ImageMessageContent message={message} />;
+    case "match_request":
+      return (
+        <MatchRequestContent
+          message={message}
+          scheme={scheme}
+          onRequestStatusChange={onRequestStatusChange}
+        />
+      );
     default:
       return (
         <Text
@@ -201,6 +221,122 @@ function MessageContent({
         </Text>
       );
   }
+}
+
+function MatchRequestContent({
+  message,
+  scheme,
+  onRequestStatusChange,
+}: {
+  message: ChatMessage;
+  scheme: "light" | "dark";
+  onRequestStatusChange: (matchRequestId: string, status: "accepted" | "rejected") => void;
+}) {
+  const acceptMutation = useAcceptRequest();
+  const rejectMutation = useRejectRequest();
+  const [isResponding, setIsResponding] = useState(false);
+
+  const info = message.matchRequest;
+  if (!info) {
+    return (
+      <Text
+        style={[
+          styles.textContent,
+          { color: message.isFromMe ? colors.white : semanticColors.labelPrimary[scheme] },
+        ]}
+      >
+        {message.content}
+      </Text>
+    );
+  }
+
+  const textColor = message.isFromMe ? colors.white : semanticColors.labelPrimary[scheme];
+  const subColor = message.isFromMe ? "rgba(255,255,255,0.75)" : semanticColors.labelSecondary[scheme];
+  const level = formatSkillLevel(info.requesterSkillLevel, info.requesterSport);
+
+  const handleAccept = async () => {
+    setIsResponding(true);
+    try {
+      await acceptMutation.mutateAsync(info.id);
+      onRequestStatusChange(info.id, "accepted");
+    } catch {
+      Alert.alert("Erreur", "Impossible d'accepter la demande. Réessaie.");
+    } finally {
+      setIsResponding(false);
+    }
+  };
+
+  const handleReject = async () => {
+    setIsResponding(true);
+    try {
+      await rejectMutation.mutateAsync(info.id);
+      onRequestStatusChange(info.id, "rejected");
+    } catch {
+      Alert.alert("Erreur", "Impossible de refuser la demande. Réessaie.");
+    } finally {
+      setIsResponding(false);
+    }
+  };
+
+  return (
+    <View style={styles.requestCard}>
+      <View style={styles.requestHeader}>
+        <Avatar imageUrl={message.sender?.image} name={message.sender?.name} size={36} />
+        <View style={styles.requestHeaderText}>
+          <Text style={[styles.requestName, { color: textColor }]} numberOfLines={1}>
+            {message.sender?.name ?? "Joueur"}
+          </Text>
+          <Text style={[styles.requestSub, { color: subColor }]} numberOfLines={1}>
+            {[info.requesterOrganizationName, level].filter(Boolean).join(" · ") || "Nouveau joueur"}
+          </Text>
+        </View>
+      </View>
+
+      <Text style={[styles.textContent, { color: textColor, paddingHorizontal: 0, paddingTop: 4 }]}>
+        {message.content}
+      </Text>
+
+      {info.status === "pending" && info.isReceiver ? (
+        <View style={styles.requestActions}>
+          <Pressable
+            disabled={isResponding}
+            onPress={handleReject}
+            style={({ pressed }) => [
+              styles.requestButton,
+              styles.requestButtonSecondary,
+              { borderColor: subColor },
+              pressed && { opacity: 0.7 },
+            ]}
+          >
+            <Text style={[styles.requestButtonText, { color: textColor }]}>Refuser</Text>
+          </Pressable>
+          <Pressable
+            disabled={isResponding}
+            onPress={handleAccept}
+            style={({ pressed }) => [
+              styles.requestButton,
+              { backgroundColor: colors.accentGreen },
+              pressed && { opacity: 0.85 },
+            ]}
+          >
+            {isResponding ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text style={[styles.requestButtonText, { color: "#FFFFFF" }]}>Accepter</Text>
+            )}
+          </Pressable>
+        </View>
+      ) : (
+        <Text style={[styles.requestStatus, { color: subColor }]}>
+          {info.status === "pending"
+            ? "En attente de réponse"
+            : info.status === "accepted"
+              ? "Demande acceptée"
+              : "Demande refusée"}
+        </Text>
+      )}
+    </View>
+  );
 }
 
 function getBubbleRadius(isFromMe: boolean, groupPosition: GroupPosition) {
@@ -275,5 +411,50 @@ const styles = StyleSheet.create({
   reactionsLeft: {
     paddingRight: 50,
     paddingLeft: 4,
+  },
+  requestCard: {
+    padding: 12,
+    gap: 8,
+    minWidth: 220,
+  },
+  requestHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  requestHeaderText: {
+    flex: 1,
+    gap: 1,
+  },
+  requestName: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  requestSub: {
+    fontSize: 12.5,
+  },
+  requestActions: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 2,
+  },
+  requestButton: {
+    flex: 1,
+    height: 36,
+    borderRadius: radii.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  requestButtonSecondary: {
+    borderWidth: 1,
+  },
+  requestButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  requestStatus: {
+    fontSize: 12.5,
+    fontStyle: "italic",
+    marginTop: 2,
   },
 });

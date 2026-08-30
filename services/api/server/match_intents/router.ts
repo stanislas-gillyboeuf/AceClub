@@ -2,11 +2,11 @@ import { Hono } from "hono";
 import type { HonoContext } from "../../types/hono";
 import { zValidator } from "@hono/zod-validator";
 import { requireAuth } from "../../middleware/auth";
-import { createMatchIntentValidator } from "./validators";
+import { createMatchIntentValidator, createRequestValidator } from "./validators";
 import {
   createMatchIntent,
   deleteMatchIntent,
-  swipe,
+  createRequest,
   acceptRequest,
   rejectRequest,
 } from "./mutations";
@@ -24,6 +24,6 @@ matchIntentRouter.get("/requests", listRequests); // Mes demandes reçues
 // Mutations
 matchIntentRouter.post("/", zValidator("json", createMatchIntentValidator), createMatchIntent); // Créer une intent
 matchIntentRouter.delete("/:id", deleteMatchIntent); // Supprimer une intent (owner only)
-matchIntentRouter.post("/swipe", swipe); // Swiper sur une intent
+matchIntentRouter.post("/:id/request", zValidator("json", createRequestValidator), createRequest); // Demander à rejoindre une intent
 matchIntentRouter.post("/requests/:id/accept", acceptRequest); // Accepter une demande
 matchIntentRouter.post("/requests/:id/reject", rejectRequest); // Refuser une demande

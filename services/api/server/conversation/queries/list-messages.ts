@@ -8,6 +8,9 @@ import {
   messageReaction,
 } from "../../../db/schema/conversation/schema";
 import { user } from "../../../db/schema/auth/schema";
+import { userPreference } from "../../../db/schema/user-preference/schema";
+import { member, organization } from "../../../db/schema/auth/schema";
+import { matchRequest as matchRequestTable } from "../../../db/schema/match_intents/schema";
 import { eq, and, desc, lt, inArray } from "drizzle-orm";
 import { decryptMessageContent } from "../lib/decrypt-content";
 
@@ -65,6 +68,7 @@ export const listMessages = async (c: Context<HonoContext>) => {
         attachmentWidth: message.attachmentWidth,
         attachmentHeight: message.attachmentHeight,
         replyToId: message.replyToId,
+        matchRequestId: message.matchRequestId,
       })
       .from(message)
       .innerJoin(user, eq(message.senderId, user.id))
@@ -150,6 +154,62 @@ export const listMessages = async (c: Context<HonoContext>) => {
     }
   }
 
+  // Batch-fetch live match_request status + requester mini-profile for match_request messages
+  const matchRequestIds = messages
+    .filter((m) => m.messageType === "match_request" && m.matchRequestId)
+    .map((m) => m.matchRequestId as string);
+
+  const matchRequestMap = new Map<
+    string,
+    { id: string; status: string; slotIndex: number | null; receiverId: string }
+  >();
+  const requesterProfileMap = new Map<
+    string,
+    { sport: string | null; skillLevel: string | null; organizationName: string | null }
+  >();
+
+  if (matchRequestIds.length > 0) {
+    const requestRows = await db
+      .select({
+        id: matchRequestTable.id,
+        status: matchRequestTable.status,
+        slotIndex: matchRequestTable.slotIndex,
+        receiverId: matchRequestTable.receiverId,
+        requesterId: matchRequestTable.requesterId,
+      })
+      .from(matchRequestTable)
+      .where(inArray(matchRequestTable.id, matchRequestIds));
+
+    for (const r of requestRows) {
+      matchRequestMap.set(r.id, { id: r.id, status: r.status, slotIndex: r.slotIndex, receiverId: r.receiverId });
+    }
+
+    const requesterIds = [...new Set(requestRows.map((r) => r.requesterId))];
+    if (requesterIds.length > 0) {
+      const profileRows = await db
+        .select({
+          userId: userPreference.userId,
+          sport: userPreference.sport,
+          skillLevel: userPreference.skillLevel,
+          organizationName: organization.name,
+        })
+        .from(userPreference)
+        .leftJoin(member, eq(userPreference.userId, member.userId))
+        .leftJoin(organization, eq(member.organizationId, organization.id))
+        .where(inArray(userPreference.userId, requesterIds));
+
+      for (const p of profileRows) {
+        if (!requesterProfileMap.has(p.userId)) {
+          requesterProfileMap.set(p.userId, {
+            sport: p.sport,
+            skillLevel: p.skillLevel,
+            organizationName: p.organizationName,
+          });
+        }
+      }
+    }
+  }
+
   return c.json(
     messages.map((msg) => {
       const repliedTo = msg.replyToId ? replyToMap.get(msg.replyToId) : null;
@@ -182,6 +242,25 @@ export const listMessages = async (c: Context<HonoContext>) => {
         attachmentWidth: msg.attachmentWidth,
         attachmentHeight: msg.attachmentHeight,
         replyToId: msg.replyToId,
+        matchRequestId: msg.matchRequestId,
+        matchRequest:
+          msg.messageType === "match_request" && msg.matchRequestId
+            ? (() => {
+                const request = matchRequestMap.get(msg.matchRequestId);
+                const profile = requesterProfileMap.get(msg.senderId);
+                return request
+                  ? {
+                      id: request.id,
+                      status: request.status,
+                      slotIndex: request.slotIndex,
+                      isReceiver: request.receiverId === currentUser.id,
+                      requesterSport: profile?.sport ?? null,
+                      requesterSkillLevel: profile?.skillLevel ?? null,
+                      requesterOrganizationName: profile?.organizationName ?? null,
+                    }
+                  : null;
+              })()
+            : null,
         replyTo: repliedTo
           ? {
               id: repliedTo.id,

@@ -31,6 +31,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     mergeMessages,
     markAllAsRead,
     updateMessageReactions,
+    updateMatchRequestStatus,
   } = msgState;
   const e2ee = useEncryption(conversation.id, conversation.encryptionKey);
   const reply = useReplyState();
@@ -48,6 +49,7 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     mergeMessages,
     markAllAsRead,
     updateMessageReactions,
+    updateMatchRequestStatus,
     messagesRef,
     retryFailedMessage: send.retryFailedMessage,
     invalidateConversationList: () => queryClient.invalidateQueries({ queryKey: queryKeys.conversation.list() }),
@@ -228,5 +230,6 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     setReplyingTo: reply.setReplyingTo,
     clearReply: reply.clearReply,
     toggleReaction: reactions.toggleReaction,
+    updateMatchRequestStatus,
   };
 }

@@ -9,10 +9,11 @@ import {
   integer,
 } from "drizzle-orm/pg-core";
 import { user } from "../auth/schema";
+import { matchRequest } from "../match_intents/schema";
 import { ulid } from "ulid";
 
 export const ConversationType = pgEnum("conversation_type", ["match", "group", "direct"]);
-export const MessageType = pgEnum("message_type", ["text", "voice", "image"]);
+export const MessageType = pgEnum("message_type", ["text", "voice", "image", "match_request"]);
 
 export const conversation = pgTable(
   "conversation",
@@ -95,6 +96,9 @@ export const message = pgTable(
     isEncrypted: boolean("is_encrypted").notNull().default(false),
     // Reply to another message
     replyToId: text("reply_to_id"),
+    // For type "match_request": the request this message renders/actions on.
+    // Status is read live from match_request, never duplicated here.
+    matchRequestId: text("match_request_id").references(() => matchRequest.id),
   },
   (table) => [
     index("message_conversationId_idx").on(table.conversationId),

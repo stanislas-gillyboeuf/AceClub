@@ -14,6 +14,7 @@ export type WebSocketEvent =
   | { type: "messageRead"; conversationId: string; userId: string }
   | { type: "newReaction"; messageId: string; conversationId: string; emoji: string; user: { id: string; name: string } }
   | { type: "reactionRemoved"; messageId: string; conversationId: string; emoji: string; userId: string }
+  | { type: "matchRequestUpdated"; matchRequestId: string; status: "accepted" | "rejected" }
   | { type: "error"; error: Error };
 
 type EventListener = (event: WebSocketEvent) => void;
@@ -206,6 +207,16 @@ class WebSocketManager {
               conversationId: json.conversationId,
               emoji: json.emoji,
               userId: json.userId,
+            });
+          }
+          break;
+
+        case "match_request_updated":
+          if (json.matchRequestId && json.status) {
+            this.emit({
+              type: "matchRequestUpdated",
+              matchRequestId: json.matchRequestId,
+              status: json.status,
             });
           }
           break;

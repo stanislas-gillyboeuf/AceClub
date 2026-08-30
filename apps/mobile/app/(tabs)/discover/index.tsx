@@ -1,24 +1,24 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
   Pressable,
   Modal,
   ActivityIndicator,
-  ScrollView,
+  FlatList,
+  RefreshControl,
   StyleSheet,
   Platform,
 } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { GlassView } from "@/components/ui/glass-view";
 import * as Location from "expo-location";
-import { Stack, useRouter, useFocusEffect } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Check } from "lucide-react-native";
-import { DiscoverCardStack } from "@/features/discover/components/discover-card-stack";
-import { useDiscoverState } from "@/features/discover/hooks/use-discover-state";
-import { useMatchRequests } from "@/hooks/use-match-intent";
-import { useDiscoverDetailStore } from "@/store/discover-detail";
+import { PartnerRequestCard } from "@/features/discover/components/PartnerRequestCard";
+import { DiscoverFilters } from "@/features/discover/components/DiscoverFilters";
+import { useDiscoverList } from "@/features/discover/hooks/use-discover-list";
+import { EmptyState } from "@/components/ui/empty-state";
 import { colors, semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { MatchIntentWithUser } from "@/types/match-intent";
@@ -37,38 +37,23 @@ export default function DiscoverScreen() {
   const router = useRouter();
   const {
     items,
+    sport,
+    changeSport,
+    selectedLevels,
+    toggleLevel,
     isLoading,
-    isSwiping,
-    matchMessage,
-    didMatch,
+    isRefreshing,
+    isFetchingMore,
+    hasMore,
+    loadMore,
     isDiscoveryRestricted,
     selectedRadius,
     setSelectedRadius,
-    like,
-    pass,
     updateLocation,
-  } = useDiscoverState();
+    refresh,
+  } = useDiscoverList();
 
-  const { data: matchRequests } = useMatchRequests();
-  const pendingCount = (matchRequests ?? []).filter((r) => r.status === "pending").length;
-
-  const { setSelectedItem, consumeAction } = useDiscoverDetailStore();
   const [showRadiusMenu, setShowRadiusMenu] = useState(false);
-
-  // Use refs to avoid stale closures in useFocusEffect
-  const likeRef = useRef(like);
-  likeRef.current = like;
-  const passRef = useRef(pass);
-  passRef.current = pass;
-
-  // Consume pending action (like/pass) when returning from detail screen
-  useFocusEffect(
-    useCallback(() => {
-      const action = consumeAction();
-      if (action === "like") likeRef.current();
-      else if (action === "pass") passRef.current();
-    }, [consumeAction])
-  );
 
   useEffect(() => {
     if (isDiscoveryRestricted) return;
@@ -88,19 +73,6 @@ export default function DiscoverScreen() {
     })();
   }, [isDiscoveryRestricted, updateLocation]);
 
-  const handleCardPress = useCallback((item: MatchIntentWithUser) => {
-    setSelectedItem(item);
-    router.push("/(tabs)/discover/detail");
-  }, [setSelectedItem, router]);
-
-  const onOpenRequests = () => {
-    router.push("/(tabs)/discover/requests");
-  };
-
-  const handleCreateIntent = useCallback(() => {
-    router.push("/(tabs)/discover/create-intent");
-  }, [router]);
-
   const handleRadiusSelect = useCallback(
     (value: number | undefined) => {
       setSelectedRadius(value);
@@ -109,137 +81,131 @@ export default function DiscoverScreen() {
     [setSelectedRadius]
   );
 
-  if (isLoading && items.length === 0) {
-    return (
-      <View style={[styles.loadingContainer, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-        <ActivityIndicator size="large" color={colors.accentGreen} />
+  const renderItem = useCallback(
+    ({ item }: { item: MatchIntentWithUser }) => (
+      <View style={styles.cardWrapper}>
+        <PartnerRequestCard item={item} />
       </View>
-    );
-  }
+    ),
+    []
+  );
 
   return (
     <>
       <Stack.Screen
         options={{
+          title: "Trouver un partenaire",
+          headerLargeTitle: true,
           headerLeft:
             Platform.OS === "android" ? () => <MessagesHeaderButton /> : undefined,
           headerRight:
             Platform.OS === "android"
-              ? () => (
-                  <View style={{ flexDirection: "row", gap: 12 }}>
-                    {!isDiscoveryRestricted && (
-                      <Pressable onPress={() => setShowRadiusMenu(true)}>
-                        <MaterialIcons name="tune" size={24} color={colors.accentGreen} />
-                      </Pressable>
-                    )}
-                    <Pressable onPress={handleCreateIntent}>
-                      <MaterialIcons name="add-circle-outline" size={24} color={colors.accentGreen} />
+              ? () =>
+                  !isDiscoveryRestricted ? (
+                    <Pressable onPress={() => setShowRadiusMenu(true)}>
+                      <MaterialIcons name="tune" size={24} color={colors.accentGreen} />
                     </Pressable>
-                    <Pressable onPress={onOpenRequests} style={styles.headerButton}>
-                      <MaterialIcons name="mail-outline" size={24} color={colors.accentGreen} />
-                      {pendingCount > 0 && <View style={styles.badge} />}
-                    </Pressable>
-                  </View>
-                )
+                  ) : null
               : undefined,
         }}
       />
       {Platform.OS === "ios" && (
-        <>
-          <Stack.Toolbar placement="right">
-            <Stack.Toolbar.Button onPress={handleCreateIntent} tintColor={colors.accentGreen}>
-              <Stack.Toolbar.Icon sf="plus.circle" />
-            </Stack.Toolbar.Button>
-            <Stack.Toolbar.Button onPress={onOpenRequests} tintColor={colors.accentGreen}>
-              <Stack.Toolbar.Icon sf="envelope.badge" />
-              {pendingCount > 0 && <Stack.Toolbar.Badge>{pendingCount}</Stack.Toolbar.Badge>}
-            </Stack.Toolbar.Button>
-          </Stack.Toolbar>
-          <Stack.Toolbar placement="left">
-            <Stack.Toolbar.Button onPress={() => router.push("/chat")} tintColor={colors.accentGreen}>
-              <Stack.Toolbar.Icon sf="message" />
-            </Stack.Toolbar.Button>
-            {!isDiscoveryRestricted && (
-              <Stack.Toolbar.Menu
-                icon="line.3.horizontal.decrease.circle"
-                label={selectedRadius ? `${selectedRadius} km` : "Tous"}
-                tintColor={colors.accentGreen}
-              >
-                {RADIUS_OPTIONS.map((option) => (
-                  <Stack.Toolbar.MenuAction
-                    key={option.label}
-                    icon={selectedRadius === option.value ? "checkmark" : undefined}
-                    onPress={() => handleRadiusSelect(option.value)}
-                  >
-                    {option.label}
-                  </Stack.Toolbar.MenuAction>
-                ))}
-              </Stack.Toolbar.Menu>
-            )}
-          </Stack.Toolbar>
-        </>
-      )}
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        scrollEnabled={false}
-        style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
-      >
-        <GestureHandlerRootView>
-          <DiscoverCardStack
-            items={items}
-            isLoading={isLoading}
-            isSwiping={isSwiping}
-            matchMessage={matchMessage}
-            didMatch={didMatch}
-            onLike={like}
-            onPass={pass}
-            onCardPress={handleCardPress}
-            onCreateIntent={handleCreateIntent}
-          />
-        </GestureHandlerRootView>
-      </ScrollView>
-
-        <Modal
-          visible={showRadiusMenu}
-          animationType="fade"
-          transparent
-          onRequestClose={() => setShowRadiusMenu(false)}
-        >
-          <Pressable style={styles.menuOverlay} onPress={() => setShowRadiusMenu(false)}>
-            <GlassView style={styles.menuContainer}>
-              <Text style={[styles.menuTitle, { color: semanticColors.labelPrimary[scheme] }]}>
-                Rayon de recherche
-              </Text>
+        <Stack.Toolbar placement="left">
+          <Stack.Toolbar.Button onPress={() => router.push("/chat")} tintColor={colors.accentGreen}>
+            <Stack.Toolbar.Icon sf="message" />
+          </Stack.Toolbar.Button>
+          {!isDiscoveryRestricted && (
+            <Stack.Toolbar.Menu
+              icon="line.3.horizontal.decrease.circle"
+              title={selectedRadius ? `${selectedRadius} km` : "Tous"}
+              tintColor={colors.accentGreen}
+            >
               {RADIUS_OPTIONS.map((option) => (
-                <Pressable
+                <Stack.Toolbar.MenuAction
                   key={option.label}
-                  style={[
-                    styles.menuItem,
-                    { borderBottomColor: semanticColors.borderColor[scheme] },
-                  ]}
+                  icon={selectedRadius === option.value ? "checkmark" : undefined}
                   onPress={() => handleRadiusSelect(option.value)}
                 >
-                  <Text
-                    style={[
-                      styles.menuItemText,
-                      {
-                        color:
-                          selectedRadius === option.value
-                            ? colors.accentGreen
-                            : semanticColors.labelPrimary[scheme],
-                      },
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                  {selectedRadius === option.value && (
-                    <Check size={18} color={colors.accentGreen} strokeWidth={2.5} />
-                  )}
-                </Pressable>
+                  {option.label}
+                </Stack.Toolbar.MenuAction>
               ))}
-            </GlassView>
-          </Pressable>
-        </Modal>
+            </Stack.Toolbar.Menu>
+          )}
+        </Stack.Toolbar>
+      )}
+      <FlatList
+        style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
+        contentContainerStyle={styles.listContent}
+        data={items}
+        keyExtractor={(item) => item.intent.id}
+        renderItem={renderItem}
+        ListHeaderComponent={
+          <DiscoverFilters
+            sport={sport}
+            onSportChange={changeSport}
+            selectedLevels={selectedLevels}
+            onToggleLevel={toggleLevel}
+          />
+        }
+        ListEmptyComponent={
+          isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.accentGreen} />
+            </View>
+          ) : (
+            <EmptyState
+              icon="UsersRound"
+              title="Aucune recherche pour l'instant"
+              description="Reviens plus tard ou crée ta propre recherche de partenaire."
+            />
+          )
+        }
+        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={refresh} />}
+        onEndReached={hasMore ? loadMore : undefined}
+        onEndReachedThreshold={0.4}
+        ListFooterComponent={isFetchingMore ? <ActivityIndicator style={{ marginVertical: 16 }} /> : null}
+        contentInsetAdjustmentBehavior="automatic"
+      />
+
+      <Modal
+        visible={showRadiusMenu}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setShowRadiusMenu(false)}
+      >
+        <Pressable style={styles.menuOverlay} onPress={() => setShowRadiusMenu(false)}>
+          <GlassView style={styles.menuContainer}>
+            <Text style={[styles.menuTitle, { color: semanticColors.labelPrimary[scheme] }]}>
+              Rayon de recherche
+            </Text>
+            {RADIUS_OPTIONS.map((option) => (
+              <Pressable
+                key={option.label}
+                style={[styles.menuItem, { borderBottomColor: semanticColors.borderColor[scheme] }]}
+                onPress={() => handleRadiusSelect(option.value)}
+              >
+                <Text
+                  style={[
+                    styles.menuItemText,
+                    {
+                      color:
+                        selectedRadius === option.value
+                          ? colors.accentGreen
+                          : semanticColors.labelPrimary[scheme],
+                    },
+                  ]}
+                >
+                  {option.label}
+                </Text>
+                {selectedRadius === option.value && (
+                  <Check size={18} color={colors.accentGreen} strokeWidth={2.5} />
+                )}
+              </Pressable>
+            ))}
+          </GlassView>
+        </Pressable>
+      </Modal>
     </>
   );
 }
@@ -248,10 +214,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  listContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 100,
+  },
+  cardWrapper: {
+    // spacing handled by ItemSeparatorComponent
+  },
   loadingContainer: {
-    flex: 1,
+    paddingTop: 60,
     alignItems: "center",
-    justifyContent: "center",
   },
   menuOverlay: {
     flex: 1,
@@ -280,17 +252,5 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     fontSize: 16,
-  },
-  headerButton: {
-    position: "relative",
-  },
-  badge: {
-    position: "absolute",
-    top: -2,
-    right: -2,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "red",
   },
 });

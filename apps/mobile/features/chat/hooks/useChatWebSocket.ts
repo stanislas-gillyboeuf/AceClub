@@ -13,6 +13,7 @@ interface UseChatWebSocketDeps {
     messageId: string,
     updater: (reactions: ChatMessage["reactions"]) => ChatMessage["reactions"],
   ) => void;
+  updateMatchRequestStatus: (matchRequestId: string, status: "accepted" | "rejected") => void;
   messagesRef: React.MutableRefObject<ChatMessage[]>;
   retryFailedMessage: (msg: ChatMessage) => Promise<void>;
   invalidateConversationList: () => void;
@@ -154,6 +155,11 @@ export function useChatWebSocket(
               })
               .filter((g) => g.count > 0);
           });
+          break;
+        }
+
+        case "matchRequestUpdated": {
+          d.updateMatchRequestStatus(event.matchRequestId, event.status);
           break;
         }
       }
