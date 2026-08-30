@@ -1,5 +1,6 @@
-import { ScrollView, View, Text, Pressable, StyleSheet } from "react-native";
-import { courtColors, courtFontMono } from "../theme";
+import { ScrollView, Text, Pressable, StyleSheet } from "react-native";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { nextDays, formatChipWeekday, toDateKey } from "../lib/date";
 
 interface DayChipRowProps {
@@ -10,6 +11,7 @@ interface DayChipRowProps {
 const DAYS = nextDays(7);
 
 export function DayChipRow({ selectedDate, onSelect }: DayChipRowProps) {
+  const scheme = useColorScheme();
   const selectedKey = toDateKey(selectedDate);
 
   return (
@@ -20,12 +22,30 @@ export function DayChipRow({ selectedDate, onSelect }: DayChipRowProps) {
           <Pressable
             key={date.toISOString()}
             onPress={() => onSelect(date)}
-            style={[styles.chip, active && styles.chipActive]}
+            style={[
+              styles.chip,
+              {
+                borderColor: active ? colors.accentGreen : semanticColors.borderColor[scheme],
+                backgroundColor: active ? colors.accentGreen : semanticColors.systemGray6[scheme],
+              },
+            ]}
           >
-            <Text style={[styles.dname, active && styles.textActive]}>
+            <Text
+              style={[
+                styles.dname,
+                { color: active ? colors.white : semanticColors.labelSecondary[scheme] },
+              ]}
+            >
               {formatChipWeekday(date, index)}
             </Text>
-            <Text style={[styles.dnum, active && styles.textActive]}>{date.getDate()}</Text>
+            <Text
+              style={[
+                styles.dnum,
+                { color: active ? colors.white : semanticColors.labelPrimary[scheme] },
+              ]}
+            >
+              {date.getDate()}
+            </Text>
           </Pressable>
         );
       })}
@@ -45,27 +65,16 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: courtColors.line,
-    backgroundColor: courtColors.ink700,
     alignItems: "center",
   },
-  chipActive: {
-    backgroundColor: courtColors.chartreuse,
-    borderColor: courtColors.chartreuse,
-  },
   dname: {
-    fontFamily: courtFontMono,
     fontSize: 8.5,
+    fontWeight: "600",
     textTransform: "uppercase",
-    color: courtColors.chalkDim,
   },
   dnum: {
     fontWeight: "700",
     fontSize: 16,
     marginTop: 2,
-    color: courtColors.chalk,
-  },
-  textActive: {
-    color: courtColors.ink900,
   },
 });

@@ -47,10 +47,12 @@ export function DiscoverCard({ item, maxHeight }: DiscoverCardProps) {
       {/* Photo background */}
       {item.user?.image ? (
         <Image
+          recyclingKey={item.user.image}
           source={{ uri: item.user.image }}
           style={StyleSheet.absoluteFill}
           contentFit="cover"
           transition={200}
+          cachePolicy="memory-disk"
         />
       ) : (
         <LinearGradient

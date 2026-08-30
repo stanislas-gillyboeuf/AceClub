@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
-import { courtColors } from "../theme";
+import { semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useSearchMembers } from "@/hooks/use-court";
 import type { FrequentPartner } from "@/types/court";
 
@@ -25,11 +26,17 @@ interface PartnerSearchExpandProps {
 }
 
 export function PartnerSearchExpand({ organizationId, suggestions, onSelect }: PartnerSearchExpandProps) {
+  const scheme = useColorScheme();
   const [query, setQuery] = useState("");
   const { data: results } = useSearchMembers(organizationId, query.length >= 2 ? query : undefined);
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: semanticColors.systemGray6[scheme], borderColor: semanticColors.borderColor[scheme] },
+      ]}
+    >
       {suggestions.length > 0 && (
         <View style={styles.avatarRow}>
           {suggestions.map((partner) => (
@@ -38,10 +45,17 @@ export function PartnerSearchExpand({ organizationId, suggestions, onSelect }: P
               onPress={() => onSelect({ userId: partner.userId, name: partner.name })}
               style={styles.avatarChip}
             >
-              <View style={styles.avatarCircle}>
-                <Text style={styles.avatarText}>{initials(partner.name)}</Text>
+              <View
+                style={[
+                  styles.avatarCircle,
+                  { backgroundColor: semanticColors.cardBackground[scheme], borderColor: semanticColors.borderColor[scheme] },
+                ]}
+              >
+                <Text style={[styles.avatarText, { color: semanticColors.labelSecondary[scheme] }]}>
+                  {initials(partner.name)}
+                </Text>
               </View>
-              <Text style={styles.avatarLabel} numberOfLines={1}>
+              <Text style={[styles.avatarLabel, { color: semanticColors.labelSecondary[scheme] }]} numberOfLines={1}>
                 {partner.name.split(" ")[0]}
               </Text>
             </Pressable>
@@ -53,8 +67,15 @@ export function PartnerSearchExpand({ organizationId, suggestions, onSelect }: P
         value={query}
         onChangeText={setQuery}
         placeholder="Ou tape un nom…"
-        placeholderTextColor={courtColors.chalkFaint}
-        style={styles.input}
+        placeholderTextColor={semanticColors.labelTertiary[scheme]}
+        style={[
+          styles.input,
+          {
+            backgroundColor: semanticColors.cardBackground[scheme],
+            borderColor: semanticColors.borderColor[scheme],
+            color: semanticColors.labelPrimary[scheme],
+          },
+        ]}
         onSubmitEditing={() => {
           if (query.trim().length > 0) onSelect({ guestName: query.trim(), name: query.trim() });
         }}
@@ -68,7 +89,7 @@ export function PartnerSearchExpand({ organizationId, suggestions, onSelect }: P
               onPress={() => onSelect({ userId: member.userId, name: member.name })}
               style={styles.resultRow}
             >
-              <Text style={styles.resultText}>{member.name}</Text>
+              <Text style={[styles.resultText, { color: semanticColors.labelPrimary[scheme] }]}>{member.name}</Text>
             </Pressable>
           ))}
         </View>
@@ -81,10 +102,8 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 8,
     padding: 12,
-    backgroundColor: courtColors.ink650,
     borderRadius: 11,
     borderWidth: 1,
-    borderColor: courtColors.line,
   },
   avatarRow: {
     flexDirection: "row",
@@ -101,27 +120,20 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: courtColors.ink700,
     borderWidth: 1.5,
-    borderColor: courtColors.line,
     alignItems: "center",
     justifyContent: "center",
   },
   avatarText: {
     fontWeight: "600",
     fontSize: 12,
-    color: courtColors.chalkDim,
   },
   avatarLabel: {
     fontSize: 9.5,
-    color: courtColors.chalkDim,
     textAlign: "center",
   },
   input: {
-    backgroundColor: courtColors.ink700,
     borderWidth: 1,
-    borderColor: courtColors.line,
-    color: courtColors.chalk,
     fontWeight: "600",
     fontSize: 13.5,
     paddingVertical: 10,
@@ -137,7 +149,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   resultText: {
-    color: courtColors.chalk,
     fontWeight: "600",
     fontSize: 13,
   },

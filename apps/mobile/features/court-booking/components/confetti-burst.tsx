@@ -7,9 +7,9 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
-import { courtColors } from "../theme";
+import { colors } from "@/constants/theme";
 
-const COLORS = [courtColors.chartreuse, courtColors.chalk, courtColors.chartreuseDim];
+const COLORS = [colors.accentGreen, colors.accentOrange, colors.gray400];
 const COUNT = 10;
 
 function Particle({ index }: { index: number }) {

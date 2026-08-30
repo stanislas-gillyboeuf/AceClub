@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { View, Text, ScrollView, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { courtColors, courtFontMono } from "@/features/court-booking/theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { BookingCalendar } from "@/features/court-booking/components/booking-calendar";
 import { AgendaList } from "@/features/court-booking/components/agenda-list";
 import { useTabBarClearance } from "@/features/court-booking/lib/layout";
@@ -16,6 +17,7 @@ function sameDay(a: Date, b: Date): boolean {
 const EMPTY_BOOKINGS: CourtBooking[] = [];
 
 export default function MyBookingsScreen() {
+  const scheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const tabBarClearance = useTabBarClearance();
   const { data: bookings, isLoading } = useMyBookings("all");
@@ -47,18 +49,22 @@ export default function MyBookingsScreen() {
   const openTicket = (booking: CourtBooking) => router.push(`/(tabs)/booking/ticket/${booking.id}`);
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top + 12 }]}>
+    <View
+      style={[styles.screen, { paddingTop: insets.top + 12, backgroundColor: semanticColors.primaryBackground[scheme] }]}
+    >
       <Pressable onPress={() => router.back()} style={styles.backButton}>
-        <Text style={styles.backText}>← Retour</Text>
+        <Text style={[styles.backText, { color: semanticColors.labelSecondary[scheme] }]}>← Retour</Text>
       </Pressable>
 
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + tabBarClearance }]}>
-        <Text style={styles.eyebrow}>AceClub</Text>
-        <Text style={styles.title}>Mes réservations</Text>
-        <Text style={styles.subtitle}>Tes créneaux, passés et à venir</Text>
+        <Text style={[styles.eyebrow, { color: colors.accentGreen }]}>AceClub</Text>
+        <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>Mes réservations</Text>
+        <Text style={[styles.subtitle, { color: semanticColors.labelSecondary[scheme] }]}>
+          Tes créneaux, passés et à venir
+        </Text>
 
         {isLoading ? (
-          <ActivityIndicator style={styles.loader} color={courtColors.chartreuse} />
+          <ActivityIndicator style={styles.loader} color={colors.accentGreen} />
         ) : (
           <>
             <BookingCalendar
@@ -98,38 +104,33 @@ export default function MyBookingsScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: courtColors.ink900,
   },
   backButton: {
     paddingHorizontal: 18,
     paddingBottom: 18,
   },
   backText: {
-    fontFamily: courtFontMono,
     fontSize: 12,
-    color: courtColors.chalkDim,
+    fontWeight: "600",
   },
   content: {
     paddingHorizontal: 18,
     paddingBottom: 60,
   },
   eyebrow: {
-    fontFamily: courtFontMono,
     fontSize: 11,
+    fontWeight: "600",
     letterSpacing: 1.4,
     textTransform: "uppercase",
-    color: courtColors.chartreuseDim,
   },
   title: {
     fontWeight: "800",
     fontSize: 26,
-    color: courtColors.chalk,
     marginTop: 2,
     marginBottom: 3,
   },
   subtitle: {
     fontSize: 12,
-    color: courtColors.chalkDim,
     marginBottom: 8,
   },
   loader: {

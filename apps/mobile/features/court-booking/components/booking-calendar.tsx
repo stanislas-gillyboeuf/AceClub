@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { courtColors, courtFontMono } from "../theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { CourtBooking } from "@/types/court";
 
 const WEEKDAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
@@ -26,6 +27,7 @@ export function BookingCalendar({
   onPrevMonth,
   onNextMonth,
 }: BookingCalendarProps) {
+  const scheme = useColorScheme();
   const now = new Date();
   const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
   const startOffset = (firstDay.getDay() + 6) % 7; // Monday-first
@@ -39,18 +41,26 @@ export function BookingCalendar({
   return (
     <View>
       <View style={styles.nav}>
-        <Pressable onPress={onPrevMonth} style={styles.navButton}>
-          <Text style={styles.navButtonText}>‹</Text>
+        <Pressable
+          onPress={onPrevMonth}
+          style={[styles.navButton, { borderColor: semanticColors.borderColor[scheme], backgroundColor: semanticColors.systemGray6[scheme] }]}
+        >
+          <Text style={[styles.navButtonText, { color: semanticColors.labelPrimary[scheme] }]}>‹</Text>
         </Pressable>
-        <Text style={styles.monthLabel}>{capitalize(monthFormatter.format(month))}</Text>
-        <Pressable onPress={onNextMonth} style={styles.navButton}>
-          <Text style={styles.navButtonText}>›</Text>
+        <Text style={[styles.monthLabel, { color: semanticColors.labelPrimary[scheme] }]}>
+          {capitalize(monthFormatter.format(month))}
+        </Text>
+        <Pressable
+          onPress={onNextMonth}
+          style={[styles.navButton, { borderColor: semanticColors.borderColor[scheme], backgroundColor: semanticColors.systemGray6[scheme] }]}
+        >
+          <Text style={[styles.navButtonText, { color: semanticColors.labelPrimary[scheme] }]}>›</Text>
         </Pressable>
       </View>
 
       <View style={styles.grid}>
         {WEEKDAYS.map((w) => (
-          <Text key={w} style={styles.weekday}>
+          <Text key={w} style={[styles.weekday, { color: semanticColors.labelTertiary[scheme] }]}>
             {w}
           </Text>
         ))}
@@ -73,18 +83,31 @@ export function BookingCalendar({
               onPress={() => onSelectDate(isSelected ? null : date)}
               style={[
                 styles.day,
-                hasBooking && styles.dayHasBooking,
-                isToday && styles.dayToday,
-                isSelected && styles.daySelected,
+                hasBooking && { backgroundColor: semanticColors.systemGray6[scheme] },
+                isToday && { borderWidth: 1.5, borderColor: semanticColors.labelSecondary[scheme] },
+                isSelected && { backgroundColor: colors.accentGreen },
               ]}
             >
-              <Text style={[styles.dayNumber, isSelected && styles.dayNumberSelected]}>{date.getDate()}</Text>
+              <Text
+                style={[
+                  styles.dayNumber,
+                  { color: isSelected ? colors.white : semanticColors.labelSecondary[scheme] },
+                  isSelected && { fontWeight: "700" },
+                ]}
+              >
+                {date.getDate()}
+              </Text>
               {hasBooking && (
                 <View
                   style={[
                     styles.calDot,
-                    isPast ? styles.calDotPast : styles.calDotUpcoming,
-                    isSelected && styles.calDotSelected,
+                    {
+                      backgroundColor: isSelected
+                        ? colors.white
+                        : isPast
+                          ? semanticColors.labelTertiary[scheme]
+                          : colors.accentGreen,
+                    },
                   ]}
                 />
               )}
@@ -95,12 +118,12 @@ export function BookingCalendar({
 
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.calDot, styles.calDotUpcoming]} />
-          <Text style={styles.legendText}>À venir</Text>
+          <View style={[styles.calDot, { backgroundColor: colors.accentGreen }]} />
+          <Text style={[styles.legendText, { color: semanticColors.labelSecondary[scheme] }]}>À venir</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.calDot, styles.calDotPast]} />
-          <Text style={styles.legendText}>Passée</Text>
+          <View style={[styles.calDot, { backgroundColor: semanticColors.labelTertiary[scheme] }]} />
+          <Text style={[styles.legendText, { color: semanticColors.labelSecondary[scheme] }]}>Passée</Text>
         </View>
       </View>
     </View>
@@ -125,19 +148,15 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: courtColors.line,
-    backgroundColor: courtColors.ink700,
     alignItems: "center",
     justifyContent: "center",
   },
   navButtonText: {
-    color: courtColors.chalk,
     fontSize: 16,
   },
   monthLabel: {
     fontWeight: "800",
     fontSize: 17,
-    color: courtColors.chalk,
   },
   grid: {
     flexDirection: "row",
@@ -146,10 +165,9 @@ const styles = StyleSheet.create({
   weekday: {
     width: CELL,
     textAlign: "center",
-    fontFamily: courtFontMono,
     fontSize: 9.5,
+    fontWeight: "600",
     textTransform: "uppercase",
-    color: courtColors.chalkFaint,
     paddingBottom: 6,
   },
   dayEmpty: {
@@ -164,38 +182,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 3,
   },
-  dayHasBooking: {
-    backgroundColor: courtColors.ink700,
-  },
-  dayToday: {
-    borderWidth: 1.5,
-    borderColor: courtColors.chalkDim,
-  },
-  daySelected: {
-    backgroundColor: courtColors.chartreuse,
-  },
   dayNumber: {
-    fontFamily: courtFontMono,
     fontSize: 12.5,
-    color: courtColors.chalkDim,
-  },
-  dayNumberSelected: {
-    color: courtColors.ink900,
-    fontWeight: "700",
+    fontVariant: ["tabular-nums"],
   },
   calDot: {
     width: 5,
     height: 5,
     borderRadius: 2.5,
-  },
-  calDotUpcoming: {
-    backgroundColor: courtColors.chartreuse,
-  },
-  calDotPast: {
-    backgroundColor: courtColors.chalkFaint,
-  },
-  calDotSelected: {
-    backgroundColor: courtColors.ink900,
   },
   legend: {
     flexDirection: "row",
@@ -209,8 +203,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   legendText: {
-    fontFamily: courtFontMono,
     fontSize: 11,
-    color: courtColors.chalkDim,
   },
 });

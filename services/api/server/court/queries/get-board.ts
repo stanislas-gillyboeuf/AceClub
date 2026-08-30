@@ -7,6 +7,7 @@ import { court, courtBooking, user } from "../../../db/schema";
 import { boardQueryValidator } from "../validators";
 import { canAccessCourt } from "../lib/access";
 import { getCourtSettings } from "../lib/settings";
+import { zonedDateTime } from "../lib/timezone";
 
 function bookedByLabel(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -46,8 +47,8 @@ export const getBoard = async (c: Context<HonoContext>) => {
     .map((row) => row.court);
 
   const courtIds = accessibleCourts.map((c) => c.id);
-  const dayStart = new Date(`${query.date}T00:00:00`);
-  const dayEnd = new Date(`${query.date}T23:59:59`);
+  const dayStart = zonedDateTime(query.date, "00:00");
+  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
   const bookings =
     courtIds.length === 0
@@ -79,10 +80,8 @@ export const getBoard = async (c: Context<HonoContext>) => {
 
   const courts = accessibleCourts.map((c) => {
     const hours = hourList.map((hour) => {
-      const slotStart = new Date(`${query.date}T00:00:00`);
-      slotStart.setHours(hour, 0, 0, 0);
-      const slotEnd = new Date(slotStart);
-      slotEnd.setHours(hour + 1);
+      const slotStart = zonedDateTime(query.date, `${String(hour).padStart(2, "0")}:00`);
+      const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
 
       if (slotStart.getTime() < now.getTime()) {
         return { hour, status: "past" as const };
