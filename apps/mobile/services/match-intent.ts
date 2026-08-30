@@ -7,9 +7,9 @@ import type {
   MatchIntentWithUser,
   MatchRequestWithDetails,
   CreateMatchIntentRequest,
+  CreateRequestRequest,
+  CreateRequestResponse,
   MatchIntent,
-  SwipeRequest,
-  SwipeResponse,
   AcceptMatchRequestResponse,
   RejectMatchRequestResponse,
 } from "@/types/match-intent";
@@ -20,16 +20,20 @@ function mapDiscoverItem(raw: DiscoverItemRaw): MatchIntentWithUser {
     intent: {
       id: raw.id,
       userId: raw.userId,
-      type: raw.type,
-      status: raw.status,
-      date: raw.date,
-      time: raw.time,
-      duration: raw.duration,
+      type: raw.type as MatchIntent["type"],
+      status: raw.status as MatchIntent["status"],
+      date: raw.date ?? null,
+      time: raw.time ?? null,
+      isFlexibleDate: raw.isFlexibleDate,
+      duration: raw.duration ?? 60,
       description: raw.description,
       createdAt: raw.createdAt,
     },
     user: raw.user,
     distance: raw.distance,
+    myRequestStatus: raw.myRequestStatus,
+    myRequestSlotIndex: raw.myRequestSlotIndex,
+    teammates: raw.teammates,
   };
 }
 
@@ -43,10 +47,14 @@ export const matchIntentService = {
     latitude?: number;
     longitude?: number;
     radius?: number;
+    sport?: "tennis" | "padel";
+    levels?: string[];
   }): Promise<DiscoverResponse> => {
+    const { levels, ...rest } = params ?? {};
     const raw = await api.get<DiscoverResponseRaw>("/match-intents/discover", {
       limit: params?.limit ?? 20,
-      ...params,
+      ...rest,
+      levels: levels && levels.length > 0 ? levels.join(",") : undefined,
     });
     return {
       data: raw.data.map(mapDiscoverItem),
@@ -61,8 +69,8 @@ export const matchIntentService = {
   createMatchIntent: (data: CreateMatchIntentRequest) =>
     api.post<MatchIntent>("/match-intents", data),
 
-  swipe: (data: SwipeRequest) =>
-    api.post<SwipeResponse>("/match-intents/swipe", data),
+  createRequest: (matchIntentId: string, data: CreateRequestRequest) =>
+    api.post<CreateRequestResponse>(`/match-intents/${matchIntentId}/request`, data),
 
   acceptRequest: (id: string) =>
     api.post<AcceptMatchRequestResponse>(`/match-intents/requests/${id}/accept`),

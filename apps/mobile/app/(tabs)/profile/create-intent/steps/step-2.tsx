@@ -22,8 +22,10 @@ export default function Step2() {
   const time = useCreateIntentFormStore((s) => s.time);
   const setDate = useCreateIntentFormStore((s) => s.setDate);
   const setTime = useCreateIntentFormStore((s) => s.setTime);
+  const isFlexibleDate = useCreateIntentFormStore((s) => s.isFlexibleDate);
+  const setIsFlexibleDate = useCreateIntentFormStore((s) => s.setIsFlexibleDate);
 
-  const valid = isTimeValid(date, time);
+  const valid = isFlexibleDate || isTimeValid(date, time);
 
   const isAndroid = Platform.OS === "android";
 
@@ -58,6 +60,27 @@ export default function Step2() {
         Quand êtes-vous disponible ?
       </Text>
 
+      <Pressable
+        onPress={() => setIsFlexibleDate(!isFlexibleDate)}
+        style={styles.flexibleRow}
+      >
+        <GlassView style={styles.flexibleCard}>
+          <Text style={[styles.pickerLabel, { color: semanticColors.labelPrimary[scheme] }]}>
+            Peu importe la date
+          </Text>
+          <View
+            style={[
+              styles.checkbox,
+              {
+                borderColor: isFlexibleDate ? colors.accentGreen : semanticColors.labelSecondary[scheme],
+                backgroundColor: isFlexibleDate ? colors.accentGreen : "transparent",
+              },
+            ]}
+          />
+        </GlassView>
+      </Pressable>
+
+      {!isFlexibleDate && (
       <View style={styles.pickersColumn}>
         {/* Date picker */}
         {isAndroid ? (
@@ -131,10 +154,11 @@ export default function Step2() {
           </GlassView>
         )}
       </View>
+      )}
 
       {!valid && (
         <Text style={styles.errorText}>
-          L'heure doit être au moins 1h dans le futur
+          L&apos;heure doit être au moins 1h dans le futur
         </Text>
       )}
     </View>
@@ -149,6 +173,23 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "600",
+  },
+  flexibleRow: {
+    marginBottom: -4,
+  },
+  flexibleCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: radii.md,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 5,
+    borderWidth: 2,
   },
   pickersColumn: {
     gap: 12,

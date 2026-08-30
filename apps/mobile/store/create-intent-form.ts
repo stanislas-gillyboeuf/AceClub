@@ -1,20 +1,25 @@
 import { create } from "zustand";
 import type { MatchIntentType } from "@/types/match-intent";
+import type { UserSearchItem } from "@/types/user";
 
 interface CreateIntentFormData {
   intentType: MatchIntentType;
   date: Date;
   time: Date;
+  isFlexibleDate: boolean;
   duration: number | null;
   description: string;
+  teammates: (UserSearchItem | null)[];
 }
 
 interface CreateIntentFormState extends CreateIntentFormData {
   setIntentType: (type: MatchIntentType) => void;
   setDate: (date: Date) => void;
   setTime: (time: Date) => void;
+  setIsFlexibleDate: (isFlexibleDate: boolean) => void;
   setDuration: (duration: number | null) => void;
   setDescription: (description: string) => void;
+  setTeammate: (slotIndex: number, user: UserSearchItem | null) => void;
   reset: () => void;
 }
 
@@ -28,8 +33,10 @@ const defaultState = (): CreateIntentFormData => ({
   intentType: "match",
   date: new Date(),
   time: defaultTime(),
+  isFlexibleDate: false,
   duration: null,
   description: "",
+  teammates: [null, null, null],
 });
 
 export const useCreateIntentFormStore = create<CreateIntentFormState>((set) => ({
@@ -38,8 +45,15 @@ export const useCreateIntentFormStore = create<CreateIntentFormState>((set) => (
   setIntentType: (intentType) => set({ intentType }),
   setDate: (date) => set({ date }),
   setTime: (time) => set({ time }),
+  setIsFlexibleDate: (isFlexibleDate) => set({ isFlexibleDate }),
   setDuration: (duration) => set({ duration }),
   setDescription: (description) => set({ description }),
+  setTeammate: (slotIndex, user) =>
+    set((state) => {
+      const teammates = [...state.teammates];
+      teammates[slotIndex] = user;
+      return { teammates };
+    }),
   reset: () => set(defaultState()),
 }));
 

@@ -3,14 +3,15 @@ import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import {
   matchIntent,
-  matchIntentSwipe,
+  matchIntentTeammate,
+  matchRequest,
   user as userTable,
   member,
   organization,
   userPreference,
 } from "../../../db/schema";
 import { userLevel } from "../../../db/schema/level/schema";
-import { and, desc, eq, gte, lt, ne, notExists, or, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lt, ne, or, isNull, sql } from "drizzle-orm";
 import { resolveFeatureFlag } from "../../../lib/feature-flags";
 import { alias } from "drizzle-orm/pg-core";
 
@@ -27,6 +28,11 @@ export const discover = async (c: Context<HonoContext>) => {
     const userLat = c.req.query("latitude") ? parseFloat(c.req.query("latitude")!) : null;
     const userLng = c.req.query("longitude") ? parseFloat(c.req.query("longitude")!) : null;
     const radius = c.req.query("radius") ? parseFloat(c.req.query("radius")!) : null;
+
+    const sportParam = c.req.query("sport");
+    const requestedSport = sportParam === "tennis" || sportParam === "padel" ? sportParam : null;
+    const levelsParam = c.req.query("levels");
+    const requestedLevels = levelsParam ? levelsParam.split(",").filter(Boolean) : null;
 
     const hasLocation = userLat !== null && userLng !== null;
 
@@ -58,17 +64,6 @@ export const discover = async (c: Context<HonoContext>) => {
       eq(matchIntent.status, "pending"),
       ne(matchIntent.userId, userId),
       or(isNull(matchIntent.date), gte(matchIntent.date, now)),
-      notExists(
-        db
-          .select()
-          .from(matchIntentSwipe)
-          .where(
-            and(
-              eq(matchIntentSwipe.matchIntentId, matchIntent.id),
-              eq(matchIntentSwipe.swiperUserId, userId),
-            ),
-          ),
-      ),
     ];
 
     // When restrict_discovery is enabled, hard filter to same organization only
@@ -76,9 +71,14 @@ export const discover = async (c: Context<HonoContext>) => {
       conditions.push(eq(intentOwnerMember.organizationId, currentUserOrgId));
     }
 
-    // Filter by sport: only show intents from users with the same sport
-    if (currentUserSport) {
-      conditions.push(eq(intentOwnerPreference.sport, currentUserSport));
+    // Filter by sport: explicit query param wins, otherwise fall back to the viewer's own sport
+    const effectiveSport = requestedSport ?? currentUserSport;
+    if (effectiveSport) {
+      conditions.push(eq(intentOwnerPreference.sport, effectiveSport));
+    }
+
+    if (requestedLevels && requestedLevels.length > 0) {
+      conditions.push(inArray(intentOwnerPreference.skillLevel, requestedLevels));
     }
 
     // Build scoring expression
@@ -197,6 +197,7 @@ export const discover = async (c: Context<HonoContext>) => {
         userId: matchIntent.userId,
         date: matchIntent.date,
         time: matchIntent.time,
+        isFlexibleDate: matchIntent.isFlexibleDate,
         duration: matchIntent.duration,
         description: matchIntent.description,
         status: matchIntent.status,
@@ -242,17 +243,64 @@ export const discover = async (c: Context<HonoContext>) => {
     const slice = hasMore ? uniqueRows.slice(0, limit) : uniqueRows;
     const nextCursor = hasMore && slice.length > 0 ? slice[slice.length - 1].id : null;
 
+    const intentIds = slice.map((row) => row.id);
+
+    const myRequests = intentIds.length
+      ? await db
+          .select({
+            matchIntentId: matchRequest.matchIntentId,
+            slotIndex: matchRequest.slotIndex,
+            status: matchRequest.status,
+          })
+          .from(matchRequest)
+          .where(and(inArray(matchRequest.matchIntentId, intentIds), eq(matchRequest.requesterId, userId)))
+      : [];
+    const myRequestByIntent = new Map(myRequests.map((r) => [r.matchIntentId, r]));
+
+    const padelIntentIds = slice.filter((row) => row.user_sport === "padel").map((row) => row.id);
+    const teammateRows = padelIntentIds.length
+      ? await db
+          .select({
+            matchIntentId: matchIntentTeammate.matchIntentId,
+            slotIndex: matchIntentTeammate.slotIndex,
+            userId: matchIntentTeammate.userId,
+            name: userTable.name,
+            image: userTable.image,
+          })
+          .from(matchIntentTeammate)
+          .leftJoin(userTable, eq(matchIntentTeammate.userId, userTable.id))
+          .where(inArray(matchIntentTeammate.matchIntentId, padelIntentIds))
+      : [];
+    const teammatesByIntent = new Map<string, typeof teammateRows>();
+    for (const row of teammateRows) {
+      const list = teammatesByIntent.get(row.matchIntentId) ?? [];
+      list.push(row);
+      teammatesByIntent.set(row.matchIntentId, list);
+    }
+
     const data = slice.map((row) => ({
       id: row.id,
       type: row.type,
       userId: row.userId,
       date: row.date,
       time: row.time,
+      isFlexibleDate: row.isFlexibleDate,
       duration: row.duration,
       description: row.description,
       status: row.status,
       createdAt: row.createdAt,
       distance: row.distance != null ? Number(row.distance) : null,
+      myRequestStatus: myRequestByIntent.get(row.id)?.status ?? null,
+      myRequestSlotIndex: myRequestByIntent.get(row.id)?.slotIndex ?? null,
+      teammates:
+        row.user_sport === "padel"
+          ? (teammatesByIntent.get(row.id) ?? []).map((t) => ({
+              slotIndex: t.slotIndex,
+              userId: t.userId,
+              name: t.name,
+              image: t.image,
+            }))
+          : null,
       user:
         row.user_id != null && row.user_name != null && row.user_email != null
           ? {

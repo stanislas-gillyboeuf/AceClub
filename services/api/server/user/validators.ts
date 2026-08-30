@@ -54,7 +54,7 @@ const TENNIS_LEVELS = [
   "NC",
 ] as const;
 
-const PADEL_LEVELS = ["Débutant", "Intermédiaire", "Avancé", "Expert"] as const;
+const PADEL_LEVELS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"] as const;
 
 export const completeOnboardingValidator = z
   .object({

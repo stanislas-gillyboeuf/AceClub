@@ -6,6 +6,7 @@ export interface StepperState {
   next: () => void;
   prev: () => void;
   goTo: (step: number) => void;
+  setTotalSteps: (totalSteps: number) => void;
   reset: () => void;
 }
 
@@ -35,6 +36,7 @@ export function createStepperStore(
       }
     },
     goTo: (step) => set({ currentStep: step }),
-    reset: () => set({ currentStep: initialStep }),
+    setTotalSteps: (totalSteps) => set({ totalSteps }),
+    reset: () => set({ currentStep: initialStep, totalSteps: options.totalSteps }),
   }));
 }

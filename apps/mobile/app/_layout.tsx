@@ -19,6 +19,7 @@ import { queryClient } from "@/lib/query-client";
 import { GoogleSignin } from "@/lib/google-signin";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { OfflineSheet } from "@/components/offline-sheet";
+import { DiscoverFab } from "@/components/ui/discover-fab";
 
 if (GoogleSignin) {
   GoogleSignin.configure({
@@ -57,6 +58,7 @@ function RootNavigator() {
           }}
         />
       </Stack>
+      <DiscoverFab />
       <OfflineSheet />
     </View>
   );

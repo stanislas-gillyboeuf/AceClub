@@ -3,7 +3,9 @@ import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { createMatchIntentValidator } from "../validators";
 import { db } from "../../../db";
-import { matchIntent } from "../../../db/schema/match_intents/schema";
+import { matchIntent, matchIntentTeammate } from "../../../db/schema/match_intents/schema";
+import { userPreference } from "../../../db/schema/user-preference/schema";
+import { eq } from "drizzle-orm";
 
 export const createMatchIntent = async (c: Context<HonoContext>) => {
   try {
@@ -13,10 +15,25 @@ export const createMatchIntent = async (c: Context<HonoContext>) => {
     if (!userId) {
       return c.json({ error: "User not authenticated" }, 401);
     }
-    const dateObj = new Date(`${validated.date}T${validated.time}:00`);
-    if (isNaN(dateObj.getTime())) {
-      return c.json({ error: "Invalid date or time format" }, 400);
+
+    let dateObj: Date | null = null;
+    if (!validated.isFlexibleDate) {
+      dateObj = new Date(`${validated.date}T${validated.time}:00`);
+      if (isNaN(dateObj.getTime())) {
+        return c.json({ error: "Invalid date or time format" }, 400);
+      }
     }
+
+    const teammateUserIds = [...new Set(validated.teammateUserIds)].filter((id) => id !== userId);
+    if (teammateUserIds.length !== validated.teammateUserIds.length) {
+      return c.json({ error: "BadRequest", message: "Invalid teammates list" }, 400);
+    }
+
+    const [preference] = await db
+      .select({ sport: userPreference.sport })
+      .from(userPreference)
+      .where(eq(userPreference.userId, userId))
+      .limit(1);
 
     const [createdMatchIntent] = await db
       .insert(matchIntent)
@@ -24,11 +41,22 @@ export const createMatchIntent = async (c: Context<HonoContext>) => {
         userId: userId,
         date: dateObj,
         time: dateObj,
+        isFlexibleDate: validated.isFlexibleDate,
         duration: validated.duration,
         type: validated.type,
         description: validated.description,
       })
       .returning();
+
+    if (teammateUserIds.length > 0 && preference?.sport === "padel") {
+      await db.insert(matchIntentTeammate).values(
+        teammateUserIds.map((teammateUserId, index) => ({
+          matchIntentId: createdMatchIntent.id,
+          slotIndex: index,
+          userId: teammateUserId,
+        })),
+      );
+    }
 
     return c.json(createdMatchIntent, 201);
   } catch (error) {

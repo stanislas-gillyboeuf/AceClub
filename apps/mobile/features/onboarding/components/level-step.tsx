@@ -67,8 +67,6 @@ function PadelGrid({
   selectedLevel: string | null;
   onSelect: (value: string) => void;
 }) {
-  const padelIcons = ["1", "2", "3", "4"];
-
   return (
     <View style={styles.grid}>
       {levels.map((level, index) => {
@@ -78,7 +76,7 @@ function PadelGrid({
             key={level.value}
             entering={() => {
               'worklet';
-              const d = 300 + index * 100;
+              const d = 200 + index * 50;
               return {
                 initialValues: { opacity: 0, transform: [{ scale: 0.96 }] },
                 animations: {
@@ -87,7 +85,7 @@ function PadelGrid({
                 },
               };
             }}
-            style={styles.gridItem}
+            style={styles.gridItemSmall}
           >
             <Pressable
               onPress={() => onSelect(level.value)}
@@ -95,10 +93,10 @@ function PadelGrid({
                 pressed && { transform: [{ scale: 0.98 }] },
               ]}
             >
-              <GlassView style={styles.padelTile}>
+              <GlassView style={styles.padelTileSmall}>
                 {isSelected && (
-                  <View style={styles.tileCheck}>
-                    <Check size={12} color={colors.white} />
+                  <View style={styles.tileCheckSmall}>
+                    <Check size={10} color={colors.white} />
                   </View>
                 )}
                 <View
@@ -113,10 +111,9 @@ function PadelGrid({
                       isSelected && styles.padelIconTextSelected,
                     ]}
                   >
-                    {padelIcons[index]}
+                    {level.displayName}
                   </Text>
                 </View>
-                <Text style={styles.padelLabel}>{level.displayName}</Text>
               </GlassView>
             </Pressable>
           </Animated.View>
@@ -199,57 +196,52 @@ const styles = StyleSheet.create({
     color: colors.gray500,
     lineHeight: 22,
   },
-  // Padel grid
+  // Padel grid (1-10 scale)
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "center",
     paddingHorizontal: 20,
     gap: 12,
   },
-  gridItem: {
-    width: "47%",
-  },
-  padelTile: {
+  gridItemSmall: {},
+  padelTileSmall: {
+    width: 60,
+    height: 60,
     borderRadius: 16,
-    padding: 20,
     alignItems: "center",
+    justifyContent: "center",
     position: "relative",
   },
-  tileCheck: {
+  tileCheckSmall: {
     position: "absolute",
-    top: 8,
-    right: 8,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    top: 4,
+    right: 4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     backgroundColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
   },
   padelIconCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: colors.gray100,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 10,
   },
   padelIconCircleSelected: {
     backgroundColor: `${colors.accentGreen}20`,
   },
   padelIconText: {
-    fontSize: 22,
+    fontSize: 17,
     fontWeight: "700",
     color: colors.gray500,
   },
   padelIconTextSelected: {
     color: colors.accentGreen,
-  },
-  padelLabel: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: colors.black,
   },
   // Tennis list
   tennisListContent: {

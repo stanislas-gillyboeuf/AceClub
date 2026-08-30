@@ -7,8 +7,9 @@ export type MatchRequestStatus = "pending" | "accepted" | "rejected";
 export interface MatchIntent {
   id: string;
   userId: string;
-  date: string;
-  time: string;
+  date: string | null;
+  time: string | null;
+  isFlexibleDate: boolean;
   duration: number;
   type: MatchIntentType;
   description?: string | null;
@@ -33,10 +34,20 @@ export interface UserBrief {
   organization?: OrganizationBrief | null;
 }
 
+export interface TeammateBrief {
+  slotIndex: number;
+  userId: string;
+  name: string | null;
+  image: string | null;
+}
+
 export interface MatchIntentWithUser {
   intent: MatchIntent;
   user?: UserBrief | null;
   distance?: number | null;
+  myRequestStatus: MatchRequestStatus | null;
+  myRequestSlotIndex: number | null;
+  teammates: TeammateBrief[] | null;
 }
 
 export interface ListMatchIntentsResponse {
@@ -52,11 +63,15 @@ export interface DiscoverItemRaw {
   status: string;
   date?: string | null;
   time?: string | null;
+  isFlexibleDate: boolean;
   duration?: number | null;
   description?: string | null;
   createdAt: string;
   distance?: number | null;
   user?: UserBrief | null;
+  myRequestStatus: MatchRequestStatus | null;
+  myRequestSlotIndex: number | null;
+  teammates: TeammateBrief[] | null;
 }
 
 /** Raw API response from /match-intents/discover */
@@ -74,21 +89,23 @@ export interface DiscoverResponse {
 }
 
 export interface CreateMatchIntentRequest {
-  date: string;
-  time: string;
+  date?: string;
+  time?: string;
+  isFlexibleDate?: boolean;
   duration: number;
   type?: MatchIntentType;
   description?: string;
+  teammateUserIds?: string[];
 }
 
-export interface SwipeRequest {
-  matchIntentId: string;
-  action: "like" | "pass";
+export interface CreateRequestRequest {
+  slotIndex?: number;
 }
 
-export interface SwipeResponse {
-  matchRequest?: MatchRequest | null;
-  message?: string | null;
+export interface CreateRequestResponse {
+  request: MatchRequest;
+  conversationId: string;
+  message: unknown;
 }
 
 export interface MatchRequest {
@@ -96,7 +113,8 @@ export interface MatchRequest {
   matchIntentId: string;
   requesterId: string;
   receiverId: string;
-  status: string;
+  slotIndex: number | null;
+  status: MatchRequestStatus;
   createdAt: string;
   respondedAt?: string | null;
 }
@@ -117,6 +135,7 @@ export interface AcceptMatchRequestResponse {
   request?: MatchRequest | null;
   requester?: UserContact | null;
   conversationId?: string | null;
+  teamComplete?: boolean;
   message?: string | null;
 }
 

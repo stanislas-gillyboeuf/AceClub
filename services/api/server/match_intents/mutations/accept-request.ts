@@ -1,11 +1,14 @@
 import { Context } from "hono";
 import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { matchRequest, matchIntent, match, matchParticipant, user } from "../../../db/schema";
-import { conversation, conversationParticipant } from "../../../db/schema/conversation/schema";
+import { matchRequest, matchIntent, matchIntentTeammate, match, matchParticipant, user } from "../../../db/schema";
+import { conversation } from "../../../db/schema/conversation/schema";
 import { and, eq, ne, sql } from "drizzle-orm";
 import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
-import { generateConversationKey } from "../../conversation/lib/generate-key";
+import { broadcastMatchRequestUpdate } from "../lib/broadcast";
+import { findOrCreateDirectConversation } from "../lib/conversation";
+
+const PADEL_TEAM_SIZE = 3;
 
 export const acceptRequest = async (c: Context<HonoContext>) => {
   try {
@@ -30,7 +33,6 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
       return c.json({ error: "Request already responded to" }, 400);
     }
 
-    // Récupérer l'intent
     const [intent] = await db
       .select()
       .from(matchIntent)
@@ -41,174 +43,175 @@ export const acceptRequest = async (c: Context<HonoContext>) => {
       return c.json({ error: "Match intent not found" }, 404);
     }
 
-    // Chercher une conversation existante entre les deux joueurs
-    let conversationId: string;
-    const [existingConversation] = await db
-      .select({ id: conversation.id })
-      .from(conversation)
-      .where(
-        and(
-          sql`EXISTS (SELECT 1 FROM conversation_participant WHERE conversation_id = ${conversation.id} AND user_id = ${intent.userId})`,
-          sql`EXISTS (SELECT 1 FROM conversation_participant WHERE conversation_id = ${conversation.id} AND user_id = ${request.requesterId})`,
-          sql`(SELECT COUNT(*) FROM conversation_participant WHERE conversation_id = ${conversation.id}) = 2`,
-        ),
-      )
-      .limit(1);
-
-    if (existingConversation) {
-      // Réutiliser la conversation existante
-      conversationId = existingConversation.id;
-    } else {
-      // Créer une nouvelle conversation (sans matchId)
-      const [newConversation] = await db
-        .insert(conversation)
-        .values({
-          type: "match",
-          encryptionKey: generateConversationKey(),
-        })
-        .returning();
-
-      conversationId = newConversation.id;
-
-      // Ajouter les participants à la conversation
-      await db.insert(conversationParticipant).values([
-        {
-          conversationId: conversationId,
-          userId: intent.userId,
-        },
-        {
-          conversationId: conversationId,
-          userId: request.requesterId,
-        },
-      ]);
+    if (request.slotIndex != null) {
+      return acceptPadelSlotRequest(c, request, intent, userId);
     }
-
-    // Créer le vrai match avec conversationId
-    const [newMatch] = await db
-      .insert(match)
-      .values({
-        createdBy: intent.userId,
-        conversationId: conversationId,
-        status: "scheduled",
-        type: intent.type ?? "match",
-        scheduledAt: intent.date ?? undefined,
-      })
-      .returning();
-
-    // Ajouter les participants
-    await db.insert(matchParticipant).values([
-      {
-        matchId: newMatch.id,
-        userId: intent.userId,
-        side: "home",
-      },
-      {
-        matchId: newMatch.id,
-        userId: request.requesterId,
-        side: "away",
-      },
-    ]);
-
-    // Marquer la demande courante comme acceptée
-    const [updatedRequest] = await db
-      .update(matchRequest)
-      .set({
-        status: "accepted",
-        respondedAt: new Date(),
-      })
-      .where(eq(matchRequest.id, requestId))
-      .returning();
-
-    // Refuser automatiquement toutes les autres demandes encore en attente
-    await db
-      .update(matchRequest)
-      .set({
-        status: "rejected",
-        respondedAt: new Date(),
-      })
-      .where(
-        and(
-          eq(matchRequest.matchIntentId, request.matchIntentId),
-          ne(matchRequest.id, request.id),
-          eq(matchRequest.status, "pending"),
-        ),
-      );
-
-    await db
-      .update(matchIntent)
-      .set({ status: "accepted" })
-      .where(eq(matchIntent.id, request.matchIntentId));
-
-    const [requesterInfo] = await db
-      .select({
-        id: user.id,
-        name: user.name,
-        image: user.image,
-        phoneNumber: user.phoneNumber,
-      })
-      .from(user)
-      .where(eq(user.id, request.requesterId))
-      .limit(1);
-
-    // Recuperer le nom de l'utilisateur qui accepte pour la notification
-    const [receiverInfo] = await db
-      .select({ name: user.name })
-      .from(user)
-      .where(eq(user.id, userId))
-      .limit(1);
-
-    // Envoyer notification au demandeur (celui qui a fait la requete)
-    console.log(`[ACCEPT REQUEST] Sending notification to requester: ${request.requesterId}`);
-    sendNotificationToUser({
-      userId: request.requesterId,
-      type: "match_request_accepted",
-      title: "Match confirmé ! 🎾",
-      body: `Top ! ${receiverInfo?.name ?? "Un joueur"} a accepté ton match`,
-      referenceId: newMatch.id,
-      referenceType: "match",
-      data: {
-        matchId: newMatch.id,
-        conversationId: conversationId,
-      },
-    }).catch((err) => console.error("[ACCEPT REQUEST] Failed to send notification:", err));
-
-    // Fetch conversation details for immediate client navigation
-    const [convDetails] = await db
-      .select({
-        id: conversation.id,
-        type: conversation.type,
-        createdAt: conversation.createdAt,
-        encryptionKey: conversation.encryptionKey,
-      })
-      .from(conversation)
-      .where(eq(conversation.id, conversationId))
-      .limit(1);
-
-    return c.json({
-      request: updatedRequest,
-      match: newMatch,
-      requester: requesterInfo ?? null,
-      conversationId: conversationId,
-      conversation: convDetails
-        ? {
-            id: convDetails.id,
-            type: convDetails.type,
-            createdAt: convDetails.createdAt.toISOString(),
-            encryptionKey: convDetails.encryptionKey || null,
-            otherParticipant: requesterInfo
-              ? {
-                  id: requesterInfo.id,
-                  name: requesterInfo.name,
-                  image: requesterInfo.image,
-                }
-              : null,
-          }
-        : null,
-      message: "Match created successfully!",
-    });
+    return acceptTennisRequest(c, request, intent, userId);
   } catch (error) {
     const errorMessage = (error as Error).message;
     console.error("💥 [ACCEPT REQUEST] Error message:", errorMessage);
     return c.json({ error: (error as Error).message }, 500);
   }
 };
+
+type RequestRow = typeof matchRequest.$inferSelect;
+type IntentRow = typeof matchIntent.$inferSelect;
+
+async function acceptTennisRequest(c: Context<HonoContext>, request: RequestRow, intent: IntentRow, userId: string) {
+  const conversationId = await findOrCreateDirectConversation(intent.userId, request.requesterId);
+
+  const [newMatch] = await db
+    .insert(match)
+    .values({
+      createdBy: intent.userId,
+      conversationId,
+      status: "scheduled",
+      type: intent.type ?? "match",
+      scheduledAt: intent.date ?? undefined,
+    })
+    .returning();
+
+  await db.insert(matchParticipant).values([
+    { matchId: newMatch.id, userId: intent.userId, side: "home" },
+    { matchId: newMatch.id, userId: request.requesterId, side: "away" },
+  ]);
+
+  const [updatedRequest] = await db
+    .update(matchRequest)
+    .set({ status: "accepted", respondedAt: new Date() })
+    .where(eq(matchRequest.id, request.id))
+    .returning();
+
+  await db
+    .update(matchRequest)
+    .set({ status: "rejected", respondedAt: new Date() })
+    .where(
+      and(
+        eq(matchRequest.matchIntentId, request.matchIntentId),
+        ne(matchRequest.id, request.id),
+        eq(matchRequest.status, "pending"),
+      ),
+    );
+
+  await db.update(matchIntent).set({ status: "accepted" }).where(eq(matchIntent.id, request.matchIntentId));
+
+  const [requesterInfo] = await db
+    .select({ id: user.id, name: user.name, image: user.image, phoneNumber: user.phoneNumber })
+    .from(user)
+    .where(eq(user.id, request.requesterId))
+    .limit(1);
+  const [receiverInfo] = await db.select({ name: user.name }).from(user).where(eq(user.id, userId)).limit(1);
+
+  sendNotificationToUser({
+    userId: request.requesterId,
+    type: "match_request_accepted",
+    title: "Match confirmé ! 🎾",
+    body: `Top ! ${receiverInfo?.name ?? "Un joueur"} a accepté ton match`,
+    referenceId: newMatch.id,
+    referenceType: "match",
+    data: { matchId: newMatch.id, conversationId },
+  }).catch((err) => console.error("[ACCEPT REQUEST] Failed to send notification:", err));
+
+  broadcastMatchRequestUpdate(request.id, "accepted", [intent.userId, request.requesterId]);
+
+  const [convDetails] = await db
+    .select({
+      id: conversation.id,
+      type: conversation.type,
+      createdAt: conversation.createdAt,
+      encryptionKey: conversation.encryptionKey,
+    })
+    .from(conversation)
+    .where(eq(conversation.id, conversationId))
+    .limit(1);
+
+  return c.json({
+    request: updatedRequest,
+    match: newMatch,
+    requester: requesterInfo ?? null,
+    conversationId,
+    conversation: convDetails
+      ? {
+          id: convDetails.id,
+          type: convDetails.type,
+          createdAt: convDetails.createdAt.toISOString(),
+          encryptionKey: convDetails.encryptionKey || null,
+          otherParticipant: requesterInfo
+            ? { id: requesterInfo.id, name: requesterInfo.name, image: requesterInfo.image }
+            : null,
+        }
+      : null,
+    message: "Match created successfully!",
+  });
+}
+
+async function acceptPadelSlotRequest(c: Context<HonoContext>, request: RequestRow, intent: IntentRow, userId: string) {
+  const slotIndex = request.slotIndex!;
+
+  const [inserted] = await db
+    .insert(matchIntentTeammate)
+    .values({ matchIntentId: intent.id, slotIndex, userId: request.requesterId })
+    .onConflictDoNothing({ target: [matchIntentTeammate.matchIntentId, matchIntentTeammate.slotIndex] })
+    .returning();
+
+  if (!inserted) {
+    await db
+      .update(matchRequest)
+      .set({ status: "rejected", respondedAt: new Date() })
+      .where(eq(matchRequest.id, request.id));
+    broadcastMatchRequestUpdate(request.id, "rejected", [intent.userId, request.requesterId]);
+    return c.json({ error: "Conflict", message: "Ce slot vient d'être pris par un autre joueur" }, 409);
+  }
+
+  const [updatedRequest] = await db
+    .update(matchRequest)
+    .set({ status: "accepted", respondedAt: new Date() })
+    .where(eq(matchRequest.id, request.id))
+    .returning();
+
+  // Auto-reject other pending requests targeting the same now-filled slot.
+  await db
+    .update(matchRequest)
+    .set({ status: "rejected", respondedAt: new Date() })
+    .where(
+      and(
+        eq(matchRequest.matchIntentId, request.matchIntentId),
+        eq(matchRequest.slotIndex, slotIndex),
+        ne(matchRequest.id, request.id),
+        eq(matchRequest.status, "pending"),
+      ),
+    );
+
+  const [{ count: filledSlots }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(matchIntentTeammate)
+    .where(eq(matchIntentTeammate.matchIntentId, intent.id));
+
+  if (filledSlots >= PADEL_TEAM_SIZE) {
+    await db.update(matchIntent).set({ status: "accepted" }).where(eq(matchIntent.id, intent.id));
+  }
+
+  const conversationId = await findOrCreateDirectConversation(intent.userId, request.requesterId);
+  const [receiverInfo] = await db.select({ name: user.name }).from(user).where(eq(user.id, userId)).limit(1);
+
+  sendNotificationToUser({
+    userId: request.requesterId,
+    type: "new_message",
+    title: receiverInfo?.name ?? "Padel",
+    body: "Ta demande pour rejoindre l'équipe a été acceptée !",
+    referenceId: conversationId,
+    referenceType: "conversation",
+    data: { conversationId },
+  }).catch((err) => console.error("[ACCEPT REQUEST] Failed to send notification:", err));
+
+  broadcastMatchRequestUpdate(request.id, "accepted", [intent.userId, request.requesterId]);
+
+  return c.json({
+    request: updatedRequest,
+    teammate: inserted,
+    teamComplete: filledSlots >= PADEL_TEAM_SIZE,
+    conversationId,
+    message: "Teammate slot filled",
+  });
+}
+

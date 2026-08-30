@@ -41,6 +41,8 @@ function apiMessageToChatMessage(msg: any, currentUserId: string): ChatMessage {
     replyToId: msg.replyToId ?? null,
     replyTo: msg.replyTo ?? null,
     reactions: msg.reactions ?? [],
+    matchRequestId: msg.matchRequestId ?? null,
+    matchRequest: msg.matchRequest ?? null,
   };
 }
 

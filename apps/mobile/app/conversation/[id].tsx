@@ -84,6 +84,7 @@ function ChatContent({
     setReplyingTo,
     clearReply,
     toggleReaction,
+    updateMatchRequestStatus,
   } = useChat(conversation, currentUserId);
 
   useEffect(() => {
@@ -158,6 +159,7 @@ function ChatContent({
             onLongPress={() => setContextMenuMessage(item)}
             onSwipeReply={() => setReplyingTo(item)}
             onToggleReaction={(emoji) => toggleReaction(item.id, emoji)}
+            onRequestStatusChange={updateMatchRequestStatus}
           />
           {showDeliveryStatus && (
             <Text style={[styles.deliveryStatus, { color: semanticColors.labelSecondary[scheme] }]}>
@@ -167,7 +169,7 @@ function ChatContent({
         </View>
       );
     },
-    [messages, scheme, retryFailedMessage, deleteMessage, setReplyingTo, toggleReaction],
+    [messages, scheme, retryFailedMessage, deleteMessage, setReplyingTo, toggleReaction, updateMatchRequestStatus],
   );
 
   const renderLoadMore = useCallback(() => {

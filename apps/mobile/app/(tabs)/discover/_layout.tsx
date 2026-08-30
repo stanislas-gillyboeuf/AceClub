@@ -11,24 +11,6 @@ export default function DiscoverLayout() {
         options={{ title: "Trouver un partenaire", headerLargeTitle: true }}
       />
       <Stack.Screen
-        name="requests"
-        options={{
-          presentation: formSheet,
-          sheetGrabberVisible: Platform.OS === "ios",
-          title: "Demandes de match",
-          headerTransparent: Platform.OS === "ios",
-        }}
-      />
-      <Stack.Screen
-        name="detail"
-        options={{
-          presentation: formSheet,
-          sheetGrabberVisible: Platform.OS === "ios",
-          title: "",
-          headerTransparent: Platform.OS === "ios",
-        }}
-      />
-      <Stack.Screen
         name="create-intent"
         options={{
           title: "Nouvelle dispo",

@@ -30,11 +30,13 @@ const intentDateFormatter = new Intl.DateTimeFormat("fr-FR", {
 });
 
 function formatIntentDate(intent: MatchIntent): string {
+  if (!intent.date) return "Date flexible";
   const formatted = intentDateFormatter.format(new Date(intent.date));
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
-function formatIntentTime(timeStr: string): string {
+function formatIntentTime(timeStr: string | null): string {
+  if (!timeStr) return "À définir";
   const date = new Date(timeStr);
   if (isNaN(date.getTime())) return timeStr;
   const h = date.getHours();
@@ -83,7 +85,7 @@ export function SwipeableIntentRow({
 
   const isMatch = intent.type === "match";
   const accentColor = isMatch ? colors.accentGreen : colors.accentOrange;
-  const relativeLabel = getRelativeLabel(intent.date);
+  const relativeLabel = intent.date ? getRelativeLabel(intent.date) : null;
 
   return (
     <ReanimatedSwipeable

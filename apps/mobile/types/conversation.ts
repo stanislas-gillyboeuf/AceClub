@@ -47,6 +47,16 @@ export interface ReactionGroup {
   hasReacted: boolean;
 }
 
+export interface MatchRequestCardInfo {
+  id: string;
+  status: "pending" | "accepted" | "rejected";
+  slotIndex: number | null;
+  isReceiver: boolean;
+  requesterSport: string | null;
+  requesterSkillLevel: string | null;
+  requesterOrganizationName: string | null;
+}
+
 export interface Message {
   id: string;
   conversationId: string;
@@ -64,6 +74,8 @@ export interface Message {
   replyToId?: string | null;
   replyTo?: ReplyTo | null;
   reactions?: ReactionGroup[];
+  matchRequestId?: string | null;
+  matchRequest?: MatchRequestCardInfo | null;
 }
 
 export interface Conversation {

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { matchIntentService } from "@/services/match-intent";
 import { queryKeys } from "@/lib/query-keys";
-import type { CreateMatchIntentRequest, SwipeRequest } from "@/types/match-intent";
+import type { CreateMatchIntentRequest, CreateRequestRequest } from "@/types/match-intent";
 
 export function useMatchIntents(cursor?: string, limit = 20) {
   return useQuery({
@@ -16,6 +16,8 @@ export function useDiscover(params?: {
   latitude?: number;
   longitude?: number;
   radius?: number;
+  sport?: "tennis" | "padel";
+  levels?: string[];
 }) {
   return useQuery({
     queryKey: queryKeys.matchIntent.discover(params),
@@ -41,13 +43,14 @@ export function useCreateMatchIntent() {
   });
 }
 
-export function useSwipe() {
+export function useCreateMatchRequest() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: SwipeRequest) => matchIntentService.swipe(data),
+    mutationFn: ({ matchIntentId, data }: { matchIntentId: string; data: CreateRequestRequest }) =>
+      matchIntentService.createRequest(matchIntentId, data),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.matchIntent.discoverAll() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.matchIntent.requests() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversation.all });
     },
   });
 }
