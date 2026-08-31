@@ -55,6 +55,9 @@ const TENNIS_LEVELS = [
 ] as const;
 
 const PADEL_LEVELS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"] as const;
+// Accepted alongside PADEL_LEVELS so clients still on an older build (pre-numeric-scale)
+// don't get rejected while they update — old accounts may also still carry these values.
+const LEGACY_PADEL_LEVELS = ["Débutant", "Intermédiaire", "Avancé", "Expert"] as const;
 
 export const completeOnboardingValidator = z
   .object({
@@ -71,7 +74,10 @@ export const completeOnboardingValidator = z
     (data) => {
       if (data.sport === "tennis")
         return (TENNIS_LEVELS as readonly string[]).includes(data.skillLevel);
-      return (PADEL_LEVELS as readonly string[]).includes(data.skillLevel);
+      return (
+        (PADEL_LEVELS as readonly string[]).includes(data.skillLevel) ||
+        (LEGACY_PADEL_LEVELS as readonly string[]).includes(data.skillLevel)
+      );
     },
     { message: "Invalid skill level for the selected sport", path: ["skillLevel"] },
   );
@@ -116,7 +122,10 @@ export const updateProfileValidator = z
       if (data.skillLevel && data.sport) {
         if (data.sport === "tennis")
           return (TENNIS_LEVELS as readonly string[]).includes(data.skillLevel);
-        return (PADEL_LEVELS as readonly string[]).includes(data.skillLevel);
+        return (
+          (PADEL_LEVELS as readonly string[]).includes(data.skillLevel) ||
+          (LEGACY_PADEL_LEVELS as readonly string[]).includes(data.skillLevel)
+        );
       }
       return true;
     },
