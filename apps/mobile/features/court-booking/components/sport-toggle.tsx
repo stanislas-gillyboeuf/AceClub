@@ -1,6 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { bookingGreen } from "../theme";
 import type { CourtSport } from "@/types/court";
 
 interface SportToggleProps {
@@ -29,12 +30,12 @@ export function SportToggle({ sport, onChange }: SportToggleProps) {
           <Pressable
             key={option.key}
             onPress={() => onChange(option.key)}
-            style={[styles.button, active && { backgroundColor: colors.accentGreen }]}
+            style={[styles.button, active && { backgroundColor: bookingGreen.bright }]}
           >
             <Text
               style={[
                 styles.label,
-                { color: active ? colors.white : semanticColors.labelSecondary[scheme] },
+                { color: active ? bookingGreen.onBright : semanticColors.labelSecondary[scheme] },
               ]}
             >
               {option.label}

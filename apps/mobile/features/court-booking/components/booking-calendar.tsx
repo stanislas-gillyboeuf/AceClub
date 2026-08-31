@@ -1,6 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { bookingGreen } from "../theme";
 import type { CourtBooking } from "@/types/court";
 
 const WEEKDAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
@@ -85,13 +86,13 @@ export function BookingCalendar({
                 styles.day,
                 hasBooking && { backgroundColor: semanticColors.systemGray6[scheme] },
                 isToday && { borderWidth: 1.5, borderColor: semanticColors.labelSecondary[scheme] },
-                isSelected && { backgroundColor: colors.accentGreen },
+                isSelected && { backgroundColor: bookingGreen.bright },
               ]}
             >
               <Text
                 style={[
                   styles.dayNumber,
-                  { color: isSelected ? colors.white : semanticColors.labelSecondary[scheme] },
+                  { color: isSelected ? bookingGreen.onBright : semanticColors.labelSecondary[scheme] },
                   isSelected && { fontWeight: "700" },
                 ]}
               >
@@ -103,10 +104,10 @@ export function BookingCalendar({
                     styles.calDot,
                     {
                       backgroundColor: isSelected
-                        ? colors.white
+                        ? bookingGreen.onBright
                         : isPast
                           ? semanticColors.labelTertiary[scheme]
-                          : colors.accentGreen,
+                          : bookingGreen.bright,
                     },
                   ]}
                 />
@@ -118,7 +119,7 @@ export function BookingCalendar({
 
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.calDot, { backgroundColor: colors.accentGreen }]} />
+          <View style={[styles.calDot, { backgroundColor: bookingGreen.bright }]} />
           <Text style={[styles.legendText, { color: semanticColors.labelSecondary[scheme] }]}>À venir</Text>
         </View>
         <View style={styles.legendItem}>

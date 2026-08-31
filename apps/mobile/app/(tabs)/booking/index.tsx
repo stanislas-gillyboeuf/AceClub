@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronsLeftRight, Calendar } from "lucide-react-native";
 import { colors, semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { bookingGreen } from "@/features/court-booking/theme";
 import { SportToggle } from "@/features/court-booking/components/sport-toggle";
 import { CourtTypeChipRow } from "@/features/court-booking/components/court-type-chip-row";
 import { DayChipRow } from "@/features/court-booking/components/day-chip-row";
@@ -121,14 +122,14 @@ export default function BookingBoardScreen() {
           </View>
         </View>
         <Pressable onPress={() => router.push("/(tabs)/booking/my-bookings")} style={styles.myBookingsButton}>
-          <Calendar size={14} color={colors.white} strokeWidth={2.5} />
+          <Calendar size={14} color={bookingGreen.onBright} strokeWidth={2.5} />
           <Text style={styles.myBookingsButtonText}>Mes réservations</Text>
         </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {bookingEnabledLoading ? (
-          <ActivityIndicator style={styles.loader} color={colors.accentGreen} />
+          <ActivityIndicator style={styles.loader} color={bookingGreen.bright} />
         ) : !bookingEnabled ? (
           <View style={styles.emptyWrap}>
             <Text style={[styles.emptyTitle, { color: semanticColors.labelPrimary[scheme] }]}>
@@ -154,7 +155,7 @@ export default function BookingBoardScreen() {
 
             <View style={styles.legend}>
               <View style={styles.legendItem}>
-                <View style={[styles.dot, { backgroundColor: colors.accentGreen }]} />
+                <View style={[styles.dot, { backgroundColor: bookingGreen.bright }]} />
                 <Text style={[styles.legendText, { color: semanticColors.labelSecondary[scheme] }]}>Libre</Text>
               </View>
               <View style={styles.legendItem}>
@@ -164,7 +165,7 @@ export default function BookingBoardScreen() {
             </View>
 
             {boardLoading ? (
-              <ActivityIndicator style={styles.loader} color={colors.accentGreen} />
+              <ActivityIndicator style={styles.loader} color={bookingGreen.bright} />
             ) : filteredCourts.length === 0 ? (
               <View style={styles.emptyWrap}>
                 <Text style={[styles.emptyTitle, { color: semanticColors.labelPrimary[scheme] }]}>
@@ -191,10 +192,10 @@ export default function BookingBoardScreen() {
             {isClubAdmin && (
               <View style={styles.adminLinks}>
                 <Pressable onPress={() => router.push("/court-booking/booking-rules")}>
-                  <Text style={[styles.adminLinkText, { color: colors.accentGreen }]}>Gérer les règles →</Text>
+                  <Text style={[styles.adminLinkText, { color: bookingGreen.dim }]}>Gérer les règles →</Text>
                 </Pressable>
                 <Pressable onPress={() => router.push("/(tabs)/booking/book-for-club")}>
-                  <Text style={[styles.adminLinkText, { color: colors.accentGreen }]}>Réserver pour le club →</Text>
+                  <Text style={[styles.adminLinkText, { color: bookingGreen.dim }]}>Réserver pour le club →</Text>
                 </Pressable>
               </View>
             )}
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: colors.accentGreen,
+    backgroundColor: bookingGreen.bright,
     borderRadius: 99,
     paddingVertical: 8,
     paddingHorizontal: 14,
@@ -262,7 +263,7 @@ const styles = StyleSheet.create({
   myBookingsButtonText: {
     fontWeight: "700",
     fontSize: 12,
-    color: colors.white,
+    color: bookingGreen.onBright,
   },
   content: {
     paddingTop: 18,

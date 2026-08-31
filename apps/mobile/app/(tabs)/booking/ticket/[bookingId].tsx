@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Pressable, Alert, ActivityIndicator, StyleSheet
 import { router, useLocalSearchParams } from "expo-router";
 import { colors, semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { bookingGreen } from "@/features/court-booking/theme";
 import { PerforatedTicket } from "@/features/court-booking/components/perforated-ticket";
 import { PartnerSearchExpand } from "@/features/court-booking/components/partner-search-expand";
 import { ConfettiBurst } from "@/features/court-booking/components/confetti-burst";
@@ -39,7 +40,7 @@ export default function TicketScreen() {
   if (isLoading || !booking) {
     return (
       <View style={[styles.loading, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-        <ActivityIndicator color={colors.accentGreen} />
+        <ActivityIndicator color={bookingGreen.bright} />
       </View>
     );
   }
@@ -88,7 +89,7 @@ export default function TicketScreen() {
             }}
           />
         )}
-        <Pressable onPress={() => router.back()} style={[styles.primaryButton, { backgroundColor: colors.accentGreen }]}>
+        <Pressable onPress={() => router.back()} style={[styles.primaryButton, { backgroundColor: bookingGreen.bright }]}>
           <Text style={styles.primaryButtonText}>Terminé</Text>
         </Pressable>
         {!isPast && (
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   primaryButtonText: {
-    color: colors.white,
+    color: bookingGreen.onBright,
     fontWeight: "800",
     fontSize: 14,
   },

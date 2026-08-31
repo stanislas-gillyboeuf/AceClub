@@ -20,3 +20,17 @@ export const courtColors = {
 
 /** No custom family — the system font stack (San Francisco on iOS) matches the reference design. */
 export const courtFontMono = Platform.select({ ios: "Menlo", android: "monospace", default: "monospace" });
+
+/**
+ * Flashy accent restored for the light-themed player screens (index/confirm/my-bookings/ticket/
+ * book-for-club and their components) — the light background/card system stays, only the green
+ * accent goes back to the original chartreuse instead of the muted brand green.
+ */
+export const bookingGreen = {
+  /** Fills, borders, active backgrounds — the bright neon accent itself. */
+  bright: courtColors.chartreuse,
+  /** Standalone text/icons on a light background — chartreuse itself is unreadable there. */
+  dim: courtColors.chartreuseDim,
+  /** Text/icons drawn on top of a bright chartreuse fill. */
+  onBright: courtColors.ink900,
+} as const;

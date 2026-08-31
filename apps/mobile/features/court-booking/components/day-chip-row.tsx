@@ -1,6 +1,7 @@
 import { ScrollView, Text, Pressable, StyleSheet } from "react-native";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { bookingGreen } from "../theme";
 import { nextDays, formatChipWeekday, toDateKey } from "../lib/date";
 
 interface DayChipRowProps {
@@ -25,15 +26,15 @@ export function DayChipRow({ selectedDate, onSelect }: DayChipRowProps) {
             style={[
               styles.chip,
               {
-                borderColor: active ? colors.accentGreen : semanticColors.borderColor[scheme],
-                backgroundColor: active ? colors.accentGreen : semanticColors.systemGray6[scheme],
+                borderColor: active ? bookingGreen.bright : semanticColors.borderColor[scheme],
+                backgroundColor: active ? bookingGreen.bright : semanticColors.systemGray6[scheme],
               },
             ]}
           >
             <Text
               style={[
                 styles.dname,
-                { color: active ? colors.white : semanticColors.labelSecondary[scheme] },
+                { color: active ? bookingGreen.onBright : semanticColors.labelSecondary[scheme] },
               ]}
             >
               {formatChipWeekday(date, index)}
@@ -41,7 +42,7 @@ export function DayChipRow({ selectedDate, onSelect }: DayChipRowProps) {
             <Text
               style={[
                 styles.dnum,
-                { color: active ? colors.white : semanticColors.labelPrimary[scheme] },
+                { color: active ? bookingGreen.onBright : semanticColors.labelPrimary[scheme] },
               ]}
             >
               {date.getDate()}

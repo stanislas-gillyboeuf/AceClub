@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, Platform, StyleSheet } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { useColorScheme, type ColorScheme } from "@/hooks/use-color-scheme";
+import { bookingGreen } from "../../theme";
 import { formatTime } from "@/lib/format";
 import Button from "@/components/ui/button";
 
@@ -87,12 +88,12 @@ export function ClubBookingForm({ date, onSubmit, onCancel, isLoading }: ClubBoo
               style={[
                 styles.suggestion,
                 {
-                  backgroundColor: active ? colors.accentGreen : semanticColors.systemGray6[scheme],
-                  borderColor: active ? colors.accentGreen : semanticColors.borderColor[scheme],
+                  backgroundColor: active ? bookingGreen.bright : semanticColors.systemGray6[scheme],
+                  borderColor: active ? bookingGreen.bright : semanticColors.borderColor[scheme],
                 },
               ]}
             >
-              <Text style={[styles.suggestionText, { color: active ? colors.white : semanticColors.labelPrimary[scheme] }]}>
+              <Text style={[styles.suggestionText, { color: active ? bookingGreen.onBright : semanticColors.labelPrimary[scheme] }]}>
                 {s}
               </Text>
             </Pressable>
@@ -143,7 +144,7 @@ function TimeField({ label, time, onChange, show, onPress, onDismiss, scheme }: 
           display="compact"
           onChange={(_, d) => d && onChange(d)}
           locale="fr-FR"
-          accentColor={colors.accentGreen}
+          accentColor={bookingGreen.bright}
           themeVariant={scheme}
         />
       </View>

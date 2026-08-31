@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { colors, semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { bookingGreen } from "@/features/court-booking/theme";
 import { PartnerSlotRow } from "@/features/court-booking/components/partner-slot-row";
 import { PartnerSearchExpand } from "@/features/court-booking/components/partner-search-expand";
 import { buildCancellationText } from "@/features/court-booking/lib/cancellation";
@@ -119,7 +120,7 @@ export default function ConfirmBookingScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <Text style={[styles.eyebrow, { color: colors.accentGreen }]}>Réserver · {isPadel ? "Padel" : "Tennis"}</Text>
+      <Text style={[styles.eyebrow, { color: bookingGreen.dim }]}>Réserver · {isPadel ? "Padel" : "Tennis"}</Text>
       <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>{`${hour}h–${hour + 1}h`}</Text>
       <Text style={[styles.subtitle, { color: semanticColors.labelSecondary[scheme] }]}>
         {params.courtName} · {params.courtTag} · {params.dateLabel}
@@ -198,14 +199,14 @@ export default function ConfirmBookingScreen() {
           style={[
             styles.confirmButton,
             canConfirm
-              ? { backgroundColor: colors.accentGreen }
+              ? { backgroundColor: bookingGreen.bright }
               : { backgroundColor: semanticColors.systemGray6[scheme], borderWidth: 1, borderColor: semanticColors.borderColor[scheme] },
           ]}
         >
           <Text
             style={[
               styles.confirmButtonText,
-              { color: canConfirm ? colors.white : semanticColors.labelTertiary[scheme] },
+              { color: canConfirm ? bookingGreen.onBright : semanticColors.labelTertiary[scheme] },
             ]}
           >
             {createBooking.isPending ? "…" : "Confirmer"}

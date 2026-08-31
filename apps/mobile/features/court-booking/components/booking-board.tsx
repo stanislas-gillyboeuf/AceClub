@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { View, Text, Pressable, ScrollView, StyleSheet, type GestureResponderEvent, type TextStyle, type ViewStyle } from "react-native";
 import { colors, semanticColors } from "@/constants/theme";
 import { useColorScheme, type ColorScheme } from "@/hooks/use-color-scheme";
+import { bookingGreen } from "../theme";
 import { SURFACE_LABELS } from "../lib/court-filters";
 import type { BoardCourt, BoardHourCell } from "@/types/court";
 
@@ -125,12 +126,12 @@ function Cell({ cell, scheme, borderColor, onPress }: CellProps) {
 
   if (cell.status === "free") {
     content = `${cell.hour}h`;
-    cellStyle = { backgroundColor: colors.accentGreen };
-    textStyle = { color: colors.white };
+    cellStyle = { backgroundColor: bookingGreen.bright };
+    textStyle = { color: bookingGreen.onBright };
   } else if (cell.status === "mine") {
     content = "VOUS";
-    cellStyle = { backgroundColor: semanticColors.systemGray6[scheme], borderWidth: 1.5, borderColor: colors.accentGreen };
-    textStyle = { color: colors.accentGreen };
+    cellStyle = { backgroundColor: semanticColors.systemGray6[scheme], borderWidth: 1.5, borderColor: bookingGreen.bright };
+    textStyle = { color: bookingGreen.dim };
   } else if (cell.status === "booked") {
     content = "●";
     const accent = cell.bookedAsClub ? colors.accentOrange : colors.red500;

@@ -8,8 +8,9 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { colors } from "@/constants/theme";
+import { bookingGreen } from "../theme";
 
-const COLORS = [colors.accentGreen, colors.accentOrange, colors.gray400];
+const COLORS = [bookingGreen.bright, colors.accentOrange, colors.gray400];
 const COUNT = 10;
 
 function Particle({ index }: { index: number }) {

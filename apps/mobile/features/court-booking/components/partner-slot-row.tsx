@@ -1,6 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { bookingGreen } from "../theme";
 
 function initials(name: string): string {
   return name
@@ -27,7 +28,7 @@ export function PartnerSlotRow({ label, name, onPress, onRemove }: PartnerSlotRo
         styles.row,
         {
           backgroundColor: semanticColors.systemGray6[scheme],
-          borderColor: name ? colors.accentGreen : semanticColors.borderColor[scheme],
+          borderColor: name ? bookingGreen.bright : semanticColors.borderColor[scheme],
           borderStyle: name ? "solid" : "dashed",
         },
       ]}
@@ -36,12 +37,12 @@ export function PartnerSlotRow({ label, name, onPress, onRemove }: PartnerSlotRo
         style={[
           styles.avatar,
           {
-            backgroundColor: name ? colors.accentGreen : semanticColors.cardBackground[scheme],
-            borderColor: name ? colors.accentGreen : semanticColors.borderColor[scheme],
+            backgroundColor: name ? bookingGreen.bright : semanticColors.cardBackground[scheme],
+            borderColor: name ? bookingGreen.bright : semanticColors.borderColor[scheme],
           },
         ]}
       >
-        <Text style={[styles.avatarText, { color: name ? colors.white : semanticColors.labelSecondary[scheme] }]}>
+        <Text style={[styles.avatarText, { color: name ? bookingGreen.onBright : semanticColors.labelSecondary[scheme] }]}>
           {name ? initials(name) : "+"}
         </Text>
       </View>

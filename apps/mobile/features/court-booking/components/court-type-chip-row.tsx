@@ -1,6 +1,7 @@
 import { ScrollView, Text, Pressable, StyleSheet } from "react-native";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { bookingGreen } from "../theme";
 import type { CourtTypeFilter } from "../lib/court-filters";
 
 interface CourtTypeChipRowProps {
@@ -23,12 +24,12 @@ export function CourtTypeChipRow({ filters, selectedKey, onSelect }: CourtTypeCh
             style={[
               styles.chip,
               {
-                borderColor: active ? colors.accentGreen : semanticColors.borderColor[scheme],
-                backgroundColor: active ? colors.accentGreen : semanticColors.systemGray6[scheme],
+                borderColor: active ? bookingGreen.bright : semanticColors.borderColor[scheme],
+                backgroundColor: active ? bookingGreen.bright : semanticColors.systemGray6[scheme],
               },
             ]}
           >
-            <Text style={[styles.label, { color: active ? colors.white : semanticColors.labelSecondary[scheme] }]}>
+            <Text style={[styles.label, { color: active ? bookingGreen.onBright : semanticColors.labelSecondary[scheme] }]}>
               {filter.label}
             </Text>
           </Pressable>

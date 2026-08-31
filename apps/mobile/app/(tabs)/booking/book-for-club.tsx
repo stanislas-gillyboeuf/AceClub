@@ -2,8 +2,9 @@ import { useState } from "react";
 import { View, Text, Pressable, ScrollView, ActivityIndicator, Alert, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { bookingGreen } from "@/features/court-booking/theme";
 import { ClubBookingForm } from "@/features/court-booking/components/admin/club-booking-form";
 import { useTabBarClearance } from "@/features/court-booking/lib/layout";
 import { useMyOrganizations } from "@/hooks/use-organization";
@@ -45,7 +46,7 @@ export default function BookForClubScreen() {
         </Text>
 
         {isLoading ? (
-          <ActivityIndicator color={colors.accentGreen} style={styles.loader} />
+          <ActivityIndicator color={bookingGreen.bright} style={styles.loader} />
         ) : (
           <View style={styles.courtRow}>
             {(courts ?? []).map((court) => {
@@ -57,12 +58,12 @@ export default function BookForClubScreen() {
                   style={[
                     styles.courtChip,
                     {
-                      backgroundColor: active ? colors.accentGreen : semanticColors.systemGray6[scheme],
-                      borderColor: active ? colors.accentGreen : semanticColors.borderColor[scheme],
+                      backgroundColor: active ? bookingGreen.bright : semanticColors.systemGray6[scheme],
+                      borderColor: active ? bookingGreen.bright : semanticColors.borderColor[scheme],
                     },
                   ]}
                 >
-                  <Text style={[styles.courtChipText, { color: active ? colors.white : semanticColors.labelSecondary[scheme] }]}>
+                  <Text style={[styles.courtChipText, { color: active ? bookingGreen.onBright : semanticColors.labelSecondary[scheme] }]}>
                     {court.name}
                   </Text>
                 </Pressable>

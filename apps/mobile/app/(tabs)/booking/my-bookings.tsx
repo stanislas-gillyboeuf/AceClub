@@ -2,8 +2,9 @@ import { useMemo, useState } from "react";
 import { View, Text, ScrollView, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { bookingGreen } from "@/features/court-booking/theme";
 import { BookingCalendar } from "@/features/court-booking/components/booking-calendar";
 import { AgendaList } from "@/features/court-booking/components/agenda-list";
 import { useTabBarClearance } from "@/features/court-booking/lib/layout";
@@ -57,14 +58,14 @@ export default function MyBookingsScreen() {
       </Pressable>
 
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + tabBarClearance }]}>
-        <Text style={[styles.eyebrow, { color: colors.accentGreen }]}>AceClub</Text>
+        <Text style={[styles.eyebrow, { color: bookingGreen.dim }]}>AceClub</Text>
         <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>Mes réservations</Text>
         <Text style={[styles.subtitle, { color: semanticColors.labelSecondary[scheme] }]}>
           Tes créneaux, passés et à venir
         </Text>
 
         {isLoading ? (
-          <ActivityIndicator style={styles.loader} color={colors.accentGreen} />
+          <ActivityIndicator style={styles.loader} color={bookingGreen.bright} />
         ) : (
           <>
             <BookingCalendar

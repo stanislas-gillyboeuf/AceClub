@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { View, Text, Pressable, Modal, StyleSheet } from "react-native";
 import { ChevronDown, Check } from "lucide-react-native";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { bookingGreen } from "../theme";
 
 interface ClubOption {
   id: string;
@@ -30,13 +31,13 @@ export function ClubSelector({ clubs, selectedId, onSelect }: ClubSelectorProps)
         hitSlop={6}
       >
         <Text
-          style={[styles.eyebrow, { color: colors.accentGreen }]}
+          style={[styles.eyebrow, { color: bookingGreen.dim }]}
           numberOfLines={1}
           ellipsizeMode="tail"
         >
           AceClub{selected ? ` · ${selected.name}` : ""}
         </Text>
-        {canSwitch && <ChevronDown size={12} color={colors.accentGreen} strokeWidth={2.5} />}
+        {canSwitch && <ChevronDown size={12} color={bookingGreen.dim} strokeWidth={2.5} />}
       </Pressable>
 
       <Modal transparent visible={open} animationType="fade" onRequestClose={() => setOpen(false)}>
@@ -63,7 +64,7 @@ export function ClubSelector({ clubs, selectedId, onSelect }: ClubSelectorProps)
                   >
                     {club.name}
                   </Text>
-                  {club.id === selectedId && <Check size={16} color={colors.accentGreen} strokeWidth={2.5} />}
+                  {club.id === selectedId && <Check size={16} color={bookingGreen.dim} strokeWidth={2.5} />}
                 </Pressable>
               ))}
             </View>

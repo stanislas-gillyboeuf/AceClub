@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDiscover } from "@/hooks/use-match-intent";
+import { usePreferences } from "@/hooks/use-user";
 import type { MatchIntentWithUser } from "@/types/match-intent";
 
 interface LocationState {
@@ -8,7 +9,9 @@ interface LocationState {
 }
 
 export function useDiscoverList() {
+  const { data: preferences } = usePreferences();
   const [sport, setSport] = useState<"tennis" | "padel">("tennis");
+  const [hasAppliedOwnSport, setHasAppliedOwnSport] = useState(false);
   const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
   const [selectedRadius, setSelectedRadius] = useState<number | undefined>(undefined);
   const [location, setLocation] = useState<LocationState>({ latitude: null, longitude: null });
@@ -30,6 +33,15 @@ export function useDiscoverList() {
 
   const discoverQuery = useDiscover(queryParams);
   const isDiscoveryRestricted = discoverQuery.data?.isDiscoveryRestricted ?? false;
+
+  // Default the sport toggle to the viewer's own registered sport (once), instead of always
+  // starting on tennis — otherwise a padel-only player sees an empty feed until they toggle manually.
+  useEffect(() => {
+    if (!hasAppliedOwnSport && preferences?.sport) {
+      setSport(preferences.sport === "padel" ? "padel" : "tennis");
+      setHasAppliedOwnSport(true);
+    }
+  }, [hasAppliedOwnSport, preferences?.sport]);
 
   // Reset the accumulated list whenever a filter changes (new cursor-less fetch)
   useEffect(() => {
