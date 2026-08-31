@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, Platform, StyleSheet } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { courtColors, courtFontMono } from "../../theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme, type ColorScheme } from "@/hooks/use-color-scheme";
 import { formatTime } from "@/lib/format";
 import Button from "@/components/ui/button";
 
@@ -21,6 +22,7 @@ function combine(date: Date, time: Date): Date {
 }
 
 export function ClubBookingForm({ date, onSubmit, onCancel, isLoading }: ClubBookingFormProps) {
+  const scheme = useColorScheme();
   const [startTime, setStartTime] = useState(() => {
     const d = new Date(date);
     d.setHours(9, 0, 0, 0);
@@ -45,8 +47,13 @@ export function ClubBookingForm({ date, onSubmit, onCancel, isLoading }: ClubBoo
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Réserver pour le club</Text>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: semanticColors.cardBackground[scheme], borderColor: semanticColors.borderColor[scheme] },
+      ]}
+    >
+      <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>Réserver pour le club</Text>
 
       <View style={styles.timeRow}>
         <TimeField
@@ -56,6 +63,7 @@ export function ClubBookingForm({ date, onSubmit, onCancel, isLoading }: ClubBoo
           show={showAndroidPicker === "start"}
           onPress={() => setShowAndroidPicker("start")}
           onDismiss={() => setShowAndroidPicker(null)}
+          scheme={scheme}
         />
         <TimeField
           label="Fin"
@@ -64,29 +72,46 @@ export function ClubBookingForm({ date, onSubmit, onCancel, isLoading }: ClubBoo
           show={showAndroidPicker === "end"}
           onPress={() => setShowAndroidPicker("end")}
           onDismiss={() => setShowAndroidPicker(null)}
+          scheme={scheme}
         />
       </View>
 
-      <Text style={styles.label}>MOTIF</Text>
+      <Text style={[styles.label, { color: semanticColors.labelSecondary[scheme] }]}>MOTIF</Text>
       <View style={styles.suggestions}>
-        {PURPOSE_SUGGESTIONS.map((s) => (
-          <Pressable
-            key={s}
-            onPress={() => setPurpose(s)}
-            style={[styles.suggestion, purpose === s && styles.suggestionActive]}
-          >
-            <Text style={[styles.suggestionText, purpose === s && styles.suggestionTextActive]}>
-              {s}
-            </Text>
-          </Pressable>
-        ))}
+        {PURPOSE_SUGGESTIONS.map((s) => {
+          const active = purpose === s;
+          return (
+            <Pressable
+              key={s}
+              onPress={() => setPurpose(s)}
+              style={[
+                styles.suggestion,
+                {
+                  backgroundColor: active ? colors.accentGreen : semanticColors.systemGray6[scheme],
+                  borderColor: active ? colors.accentGreen : semanticColors.borderColor[scheme],
+                },
+              ]}
+            >
+              <Text style={[styles.suggestionText, { color: active ? colors.white : semanticColors.labelPrimary[scheme] }]}>
+                {s}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
       <TextInput
         value={purpose}
         onChangeText={setPurpose}
         placeholder="Ex : Cours collectif débutants"
-        placeholderTextColor={courtColors.chalkDim}
-        style={styles.input}
+        placeholderTextColor={semanticColors.labelTertiary[scheme]}
+        style={[
+          styles.input,
+          {
+            backgroundColor: semanticColors.systemGray6[scheme],
+            borderColor: semanticColors.borderColor[scheme],
+            color: semanticColors.labelPrimary[scheme],
+          },
+        ]}
       />
 
       <View style={styles.actions}>
@@ -104,21 +129,22 @@ interface TimeFieldProps {
   show: boolean;
   onPress: () => void;
   onDismiss: () => void;
+  scheme: ColorScheme;
 }
 
-function TimeField({ label, time, onChange, show, onPress, onDismiss }: TimeFieldProps) {
+function TimeField({ label, time, onChange, show, onPress, onDismiss, scheme }: TimeFieldProps) {
   if (Platform.OS === "ios") {
     return (
       <View style={styles.timeField}>
-        <Text style={styles.label}>{label.toUpperCase()}</Text>
+        <Text style={[styles.label, { color: semanticColors.labelSecondary[scheme] }]}>{label.toUpperCase()}</Text>
         <DateTimePicker
           value={time}
           mode="time"
           display="compact"
           onChange={(_, d) => d && onChange(d)}
           locale="fr-FR"
-          accentColor={courtColors.chartreuse}
-          themeVariant="dark"
+          accentColor={colors.accentGreen}
+          themeVariant={scheme}
         />
       </View>
     );
@@ -126,9 +152,14 @@ function TimeField({ label, time, onChange, show, onPress, onDismiss }: TimeFiel
 
   return (
     <View style={styles.timeField}>
-      <Text style={styles.label}>{label.toUpperCase()}</Text>
-      <Pressable onPress={onPress} style={styles.androidTimeButton}>
-        <Text style={styles.androidTimeText}>{formatTime(time.toISOString())}</Text>
+      <Text style={[styles.label, { color: semanticColors.labelSecondary[scheme] }]}>{label.toUpperCase()}</Text>
+      <Pressable
+        onPress={onPress}
+        style={[styles.androidTimeButton, { backgroundColor: semanticColors.systemGray6[scheme] }]}
+      >
+        <Text style={[styles.androidTimeText, { color: semanticColors.labelPrimary[scheme] }]}>
+          {formatTime(time.toISOString())}
+        </Text>
       </Pressable>
       {show && (
         <DateTimePicker
@@ -147,17 +178,14 @@ function TimeField({ label, time, onChange, show, onPress, onDismiss }: TimeFiel
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 20,
-    backgroundColor: courtColors.ink700,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: courtColors.line,
     padding: 18,
     gap: 14,
   },
   title: {
     fontWeight: "800",
     fontSize: 20,
-    color: courtColors.chalk,
   },
   timeRow: {
     flexDirection: "row",
@@ -171,18 +199,15 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 11,
     letterSpacing: 0.6,
-    color: courtColors.chalkDim,
   },
   androidTimeButton: {
-    backgroundColor: courtColors.ink900,
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 12,
   },
   androidTimeText: {
-    fontFamily: courtFontMono,
     fontSize: 15,
-    color: courtColors.chalk,
+    fontVariant: ["tabular-nums"],
   },
   suggestions: {
     flexDirection: "row",
@@ -190,34 +215,21 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   suggestion: {
-    backgroundColor: courtColors.ink900,
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: courtColors.line,
-  },
-  suggestionActive: {
-    backgroundColor: courtColors.chartreuse,
-    borderColor: courtColors.chartreuse,
   },
   suggestionText: {
     fontWeight: "500",
     fontSize: 13,
-    color: courtColors.chalk,
-  },
-  suggestionTextActive: {
-    color: courtColors.ink900,
   },
   input: {
-    backgroundColor: courtColors.ink900,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: courtColors.line,
     paddingVertical: 10,
     paddingHorizontal: 12,
     fontSize: 14,
-    color: courtColors.chalk,
   },
   actions: {
     gap: 10,

@@ -2,13 +2,15 @@ import { useState } from "react";
 import { View, Text, Pressable, ScrollView, ActivityIndicator, Alert, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { courtColors } from "@/features/court-booking/theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { ClubBookingForm } from "@/features/court-booking/components/admin/club-booking-form";
 import { useTabBarClearance } from "@/features/court-booking/lib/layout";
 import { useMyOrganizations } from "@/hooks/use-organization";
 import { useCourts, useBookForClub } from "@/hooks/use-court";
 
 export default function BookForClubScreen() {
+  const scheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const tabBarClearance = useTabBarClearance();
   const { data: orgs } = useMyOrganizations();
@@ -31,17 +33,19 @@ export default function BookForClubScreen() {
   };
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top + 12 }]}>
+    <View style={[styles.screen, { paddingTop: insets.top + 12, backgroundColor: semanticColors.primaryBackground[scheme] }]}>
       <Pressable onPress={() => router.back()} style={styles.backButton}>
-        <Text style={styles.backText}>← Retour</Text>
+        <Text style={[styles.backText, { color: semanticColors.labelSecondary[scheme] }]}>← Retour</Text>
       </Pressable>
 
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + tabBarClearance }]}>
-        <Text style={styles.title}>Réserver pour le club</Text>
-        <Text style={styles.subtitle}>Cours, tournois, événements — choisis d&apos;abord un terrain.</Text>
+        <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>Réserver pour le club</Text>
+        <Text style={[styles.subtitle, { color: semanticColors.labelSecondary[scheme] }]}>
+          Cours, tournois, événements — choisis d&apos;abord un terrain.
+        </Text>
 
         {isLoading ? (
-          <ActivityIndicator color={courtColors.chartreuse} style={styles.loader} />
+          <ActivityIndicator color={colors.accentGreen} style={styles.loader} />
         ) : (
           <View style={styles.courtRow}>
             {(courts ?? []).map((court) => {
@@ -50,9 +54,17 @@ export default function BookForClubScreen() {
                 <Pressable
                   key={court.id}
                   onPress={() => setSelectedCourtId(court.id)}
-                  style={[styles.courtChip, active && styles.courtChipActive]}
+                  style={[
+                    styles.courtChip,
+                    {
+                      backgroundColor: active ? colors.accentGreen : semanticColors.systemGray6[scheme],
+                      borderColor: active ? colors.accentGreen : semanticColors.borderColor[scheme],
+                    },
+                  ]}
                 >
-                  <Text style={[styles.courtChipText, active && styles.courtChipTextActive]}>{court.name}</Text>
+                  <Text style={[styles.courtChipText, { color: active ? colors.white : semanticColors.labelSecondary[scheme] }]}>
+                    {court.name}
+                  </Text>
                 </Pressable>
               );
             })}
@@ -75,14 +87,12 @@ export default function BookForClubScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: courtColors.ink900,
   },
   backButton: {
     paddingHorizontal: 18,
     paddingBottom: 18,
   },
   backText: {
-    color: courtColors.chalkDim,
     fontWeight: "600",
     fontSize: 12,
   },
@@ -94,11 +104,9 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: "800",
     fontSize: 22,
-    color: courtColors.chalk,
   },
   subtitle: {
     fontSize: 12.5,
-    color: courtColors.chalkDim,
   },
   loader: {
     paddingVertical: 24,
@@ -111,21 +119,11 @@ const styles = StyleSheet.create({
   courtChip: {
     borderRadius: 11,
     borderWidth: 1,
-    borderColor: courtColors.line,
-    backgroundColor: courtColors.ink700,
     paddingVertical: 9,
     paddingHorizontal: 14,
-  },
-  courtChipActive: {
-    backgroundColor: courtColors.chartreuse,
-    borderColor: courtColors.chartreuse,
   },
   courtChipText: {
     fontWeight: "700",
     fontSize: 12.5,
-    color: courtColors.chalkDim,
-  },
-  courtChipTextActive: {
-    color: courtColors.ink900,
   },
 });

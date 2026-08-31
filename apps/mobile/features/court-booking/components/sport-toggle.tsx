@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { courtColors } from "../theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { CourtSport } from "@/types/court";
 
 interface SportToggleProps {
@@ -13,17 +14,31 @@ const OPTIONS: { key: CourtSport; label: string }[] = [
 ];
 
 export function SportToggle({ sport, onChange }: SportToggleProps) {
+  const scheme = useColorScheme();
+
   return (
-    <View style={styles.track}>
+    <View
+      style={[
+        styles.track,
+        { backgroundColor: semanticColors.systemGray6[scheme], borderColor: semanticColors.borderColor[scheme] },
+      ]}
+    >
       {OPTIONS.map((option) => {
         const active = option.key === sport;
         return (
           <Pressable
             key={option.key}
             onPress={() => onChange(option.key)}
-            style={[styles.button, active && styles.buttonActive]}
+            style={[styles.button, active && { backgroundColor: colors.accentGreen }]}
           >
-            <Text style={[styles.label, active && styles.labelActive]}>{option.label}</Text>
+            <Text
+              style={[
+                styles.label,
+                { color: active ? colors.white : semanticColors.labelSecondary[scheme] },
+              ]}
+            >
+              {option.label}
+            </Text>
           </Pressable>
         );
       })}
@@ -34,9 +49,7 @@ export function SportToggle({ sport, onChange }: SportToggleProps) {
 const styles = StyleSheet.create({
   track: {
     flexDirection: "row",
-    backgroundColor: courtColors.ink700,
     borderWidth: 1,
-    borderColor: courtColors.line,
     borderRadius: 12,
     padding: 4,
   },
@@ -46,15 +59,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 9,
   },
-  buttonActive: {
-    backgroundColor: courtColors.chartreuse,
-  },
   label: {
     fontWeight: "700",
     fontSize: 13.5,
-    color: courtColors.chalkDim,
-  },
-  labelActive: {
-    color: courtColors.ink900,
   },
 });

@@ -8,6 +8,7 @@ import { listAvailabilityValidator } from "../validators";
 import { buildDaySlots } from "../lib/slots";
 import { canAccessCourt } from "../lib/access";
 import { getCourtSettings } from "../lib/settings";
+import { zonedDateTime } from "../lib/timezone";
 
 export const listAvailability = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -39,8 +40,8 @@ export const listAvailability = async (c: Context<HonoContext>) => {
 
   const settings = await getCourtSettings(targetCourt.organizationId);
 
-  const dayStart = new Date(`${query.date}T00:00:00`);
-  const dayEnd = new Date(`${query.date}T23:59:59`);
+  const dayStart = zonedDateTime(query.date, "00:00");
+  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
   const bookings = await db
     .select({

@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { courtColors, courtFontMono } from "@/features/court-booking/theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { PartnerSlotRow } from "@/features/court-booking/components/partner-slot-row";
 import { PartnerSearchExpand } from "@/features/court-booking/components/partner-search-expand";
 import { buildCancellationText } from "@/features/court-booking/lib/cancellation";
@@ -18,6 +19,7 @@ interface Slot {
 }
 
 export default function ConfirmBookingScreen() {
+  const scheme = useColorScheme();
   const params = useLocalSearchParams<{
     organizationId: string;
     courtId: string;
@@ -112,33 +114,44 @@ export default function ConfirmBookingScreen() {
   const deadlineHour = Math.max(hour - PADEL_TEAM_COMPLETION_WINDOW_HOURS, 0);
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <Text style={styles.eyebrow}>Réserver · {isPadel ? "Padel" : "Tennis"}</Text>
-      <Text style={styles.title}>{`${hour}h–${hour + 1}h`}</Text>
-      <Text style={styles.subtitle}>
+    <ScrollView
+      style={[styles.screen, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Text style={[styles.eyebrow, { color: colors.accentGreen }]}>Réserver · {isPadel ? "Padel" : "Tennis"}</Text>
+      <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>{`${hour}h–${hour + 1}h`}</Text>
+      <Text style={[styles.subtitle, { color: semanticColors.labelSecondary[scheme] }]}>
         {params.courtName} · {params.courtTag} · {params.dateLabel}
       </Text>
 
       {errorMessage && (
-        <View style={styles.errorBanner}>
-          <Text style={styles.errorText}>{errorMessage}</Text>
+        <View style={[styles.errorBanner, { backgroundColor: `${colors.red500}14`, borderColor: `${colors.red500}55` }]}>
+          <Text style={[styles.errorText, { color: colors.red500 }]}>{errorMessage}</Text>
         </View>
       )}
 
       {conflict && (
-        <View style={styles.conflictBanner}>
-          <Text style={styles.conflictText}>
+        <View style={[styles.conflictBanner, { backgroundColor: `${colors.red500}14`, borderColor: `${colors.red500}55` }]}>
+          <Text style={[styles.conflictText, { color: colors.red500 }]}>
             Ce créneau vient d&apos;être réservé par un autre joueur entre-temps.
           </Text>
-          <Pressable onPress={() => router.back()} style={styles.conflictButton}>
-            <Text style={styles.conflictButtonText}>Choisir un autre créneau</Text>
+          <Pressable
+            onPress={() => router.back()}
+            style={[styles.conflictButton, { backgroundColor: semanticColors.cardBackground[scheme], borderColor: semanticColors.borderColor[scheme] }]}
+          >
+            <Text style={[styles.conflictButtonText, { color: semanticColors.labelPrimary[scheme] }]}>
+              Choisir un autre créneau
+            </Text>
           </Pressable>
         </View>
       )}
 
       <View style={styles.playersHeader}>
-        <Text style={styles.playersLabel}>{isPadel ? "Avec qui (4 joueurs au total)" : "Avec qui"}</Text>
-        {isPadel && <Text style={styles.optionalTag}>optionnel</Text>}
+        <Text style={[styles.playersLabel, { color: semanticColors.labelSecondary[scheme] }]}>
+          {isPadel ? "Avec qui (4 joueurs au total)" : "Avec qui"}
+        </Text>
+        {isPadel && <Text style={[styles.optionalTag, { color: semanticColors.labelTertiary[scheme] }]}>optionnel</Text>}
       </View>
 
       {slots.map((slot, index) => (
@@ -160,33 +173,50 @@ export default function ConfirmBookingScreen() {
       ))}
 
       {isPadel && (
-        <View style={styles.deadlineNote}>
-          <View style={styles.deadlineDot} />
-          <Text style={styles.deadlineText}>
+        <View style={[styles.deadlineNote, { backgroundColor: `${colors.accentOrange}14`, borderColor: `${colors.accentOrange}55` }]}>
+          <View style={[styles.deadlineDot, { backgroundColor: colors.accentOrange }]} />
+          <Text style={[styles.deadlineText, { color: semanticColors.labelSecondary[scheme] }]}>
             Tu peux compléter l&apos;équipe plus tard. Si elle n&apos;est pas complète{" "}
-            <Text style={styles.deadlineBold}>avant {deadlineHour}h</Text>, le court est automatiquement
-            libéré.
+            <Text style={[styles.deadlineBold, { color: colors.accentOrange }]}>avant {deadlineHour}h</Text>, le court
+            est automatiquement libéré.
           </Text>
         </View>
       )}
 
-      <Text style={styles.cancellationNote}>{cancellationText}</Text>
+      <Text style={[styles.cancellationNote, { color: semanticColors.labelTertiary[scheme] }]}>{cancellationText}</Text>
 
       <View style={styles.actions}>
-        <Pressable onPress={() => router.back()} style={styles.cancelButton}>
-          <Text style={styles.cancelButtonText}>Annuler</Text>
+        <Pressable
+          onPress={() => router.back()}
+          style={[styles.cancelButton, { borderColor: semanticColors.borderColor[scheme] }]}
+        >
+          <Text style={[styles.cancelButtonText, { color: semanticColors.labelSecondary[scheme] }]}>Annuler</Text>
         </Pressable>
         <Pressable
           onPress={handleConfirm}
           disabled={!canConfirm || createBooking.isPending}
-          style={[styles.confirmButton, !canConfirm && styles.confirmButtonDisabled]}
+          style={[
+            styles.confirmButton,
+            canConfirm
+              ? { backgroundColor: colors.accentGreen }
+              : { backgroundColor: semanticColors.systemGray6[scheme], borderWidth: 1, borderColor: semanticColors.borderColor[scheme] },
+          ]}
         >
-          <Text style={[styles.confirmButtonText, !canConfirm && styles.confirmButtonTextDisabled]}>
+          <Text
+            style={[
+              styles.confirmButtonText,
+              { color: canConfirm ? colors.white : semanticColors.labelTertiary[scheme] },
+            ]}
+          >
             {createBooking.isPending ? "…" : "Confirmer"}
           </Text>
         </Pressable>
       </View>
-      {!canConfirm && <Text style={styles.confirmHint}>Désigne ton partenaire pour confirmer</Text>}
+      {!canConfirm && (
+        <Text style={[styles.confirmHint, { color: semanticColors.labelTertiary[scheme] }]}>
+          Désigne ton partenaire pour confirmer
+        </Text>
+      )}
     </ScrollView>
   );
 }
@@ -194,69 +224,56 @@ export default function ConfirmBookingScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: courtColors.ink800,
   },
   content: {
     padding: 22,
     paddingBottom: 40,
   },
   eyebrow: {
-    fontFamily: courtFontMono,
     fontSize: 10,
+    fontWeight: "600",
     letterSpacing: 1.5,
     textTransform: "uppercase",
-    color: courtColors.chartreuseDim,
     marginBottom: 6,
   },
   title: {
     fontWeight: "800",
     fontSize: 22,
-    color: courtColors.chalk,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 12,
-    color: courtColors.chalkDim,
     marginBottom: 18,
   },
   errorBanner: {
-    backgroundColor: "rgba(224,103,58,0.1)",
     borderWidth: 1,
-    borderColor: courtColors.rustDim,
     borderRadius: 10,
     padding: 13,
     marginBottom: 14,
   },
   errorText: {
-    color: courtColors.rust,
     fontWeight: "600",
     fontSize: 12,
   },
   conflictBanner: {
     gap: 12,
-    backgroundColor: "rgba(224,103,58,0.1)",
     borderWidth: 1,
-    borderColor: courtColors.rustDim,
     borderRadius: 12,
     padding: 14,
     marginBottom: 16,
   },
   conflictText: {
-    color: courtColors.rust,
     fontWeight: "600",
     fontSize: 12.5,
     lineHeight: 17,
   },
   conflictButton: {
-    backgroundColor: courtColors.ink700,
     borderWidth: 1,
-    borderColor: courtColors.line,
     borderRadius: 9,
     paddingVertical: 10,
     alignItems: "center",
   },
   conflictButtonText: {
-    color: courtColors.chalk,
     fontWeight: "700",
     fontSize: 12.5,
   },
@@ -267,15 +284,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   playersLabel: {
-    fontFamily: courtFontMono,
     fontSize: 10.5,
+    fontWeight: "600",
     textTransform: "uppercase",
     letterSpacing: 0.6,
-    color: courtColors.chalkDim,
   },
   optionalTag: {
     fontSize: 10.5,
-    color: courtColors.chalkFaint,
   },
   slot: {
     marginBottom: 10,
@@ -284,9 +299,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 9,
     alignItems: "flex-start",
-    backgroundColor: "rgba(227,178,60,0.08)",
     borderWidth: 1,
-    borderColor: courtColors.amberDim,
     borderRadius: 11,
     padding: 12,
     marginTop: 14,
@@ -295,22 +308,18 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: courtColors.amber,
     marginTop: 4,
   },
   deadlineText: {
     flex: 1,
     fontSize: 11.5,
-    color: courtColors.chalkDim,
     lineHeight: 16,
   },
   deadlineBold: {
-    color: courtColors.amber,
     fontWeight: "700",
   },
   cancellationNote: {
     fontSize: 11,
-    color: courtColors.chalkFaint,
     marginTop: 16,
     marginBottom: 16,
   },
@@ -323,11 +332,9 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     borderRadius: 11,
     borderWidth: 1,
-    borderColor: courtColors.line,
     alignItems: "center",
   },
   cancelButtonText: {
-    color: courtColors.chalkDim,
     fontWeight: "700",
     fontSize: 13.5,
   },
@@ -335,26 +342,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 13,
     borderRadius: 11,
-    backgroundColor: courtColors.chartreuse,
     alignItems: "center",
   },
-  confirmButtonDisabled: {
-    backgroundColor: courtColors.ink700,
-    borderWidth: 1,
-    borderColor: courtColors.line,
-  },
   confirmButtonText: {
-    color: courtColors.ink900,
     fontWeight: "700",
     fontSize: 13.5,
   },
-  confirmButtonTextDisabled: {
-    color: courtColors.chalkFaint,
-  },
   confirmHint: {
-    fontFamily: courtFontMono,
     fontSize: 10.5,
-    color: courtColors.chalkFaint,
     textAlign: "center",
     marginTop: 8,
   },

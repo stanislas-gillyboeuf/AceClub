@@ -1,3 +1,5 @@
+import { zonedDateTime } from "./timezone";
+
 export interface DaySlot {
   startTime: string; // "HH:mm"
   start: Date;
@@ -21,11 +23,10 @@ export function buildDaySlots(date: string, config: SlotConfig): DaySlot[] {
     startMinutes + config.slotDurationMinutes <= dayEndMinutes;
     startMinutes += config.slotDurationMinutes
   ) {
-    const start = new Date(`${date}T00:00:00`);
-    start.setMinutes(startMinutes);
-    const end = new Date(start.getTime() + config.slotDurationMinutes * 60 * 1000);
     const hh = String(Math.floor(startMinutes / 60)).padStart(2, "0");
     const mm = String(startMinutes % 60).padStart(2, "0");
+    const start = zonedDateTime(date, `${hh}:${mm}`);
+    const end = new Date(start.getTime() + config.slotDurationMinutes * 60 * 1000);
     slots.push({ startTime: `${hh}:${mm}`, start, end });
   }
 
@@ -37,7 +38,7 @@ export function slotFromStartTime(
   startTime: string,
   slotDurationMinutes: number,
 ): { start: Date; end: Date } {
-  const start = new Date(`${date}T${startTime}:00`);
+  const start = zonedDateTime(date, startTime);
   const end = new Date(start.getTime() + slotDurationMinutes * 60 * 1000);
   return { start, end };
 }

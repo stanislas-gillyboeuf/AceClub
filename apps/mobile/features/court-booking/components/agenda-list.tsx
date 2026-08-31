@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { courtColors, courtFontMono } from "../theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme, type ColorScheme } from "@/hooks/use-color-scheme";
 import { PADEL_TEAM_COMPLETION_WINDOW_HOURS } from "../lib/constants";
 import type { CourtBooking } from "@/types/court";
 
@@ -13,19 +14,23 @@ interface AgendaListProps {
 }
 
 export function AgendaList({ title, bookings, emptyLabel, onPress }: AgendaListProps) {
+  const scheme = useColorScheme();
+
   return (
     <View style={styles.section}>
-      <Text style={styles.heading}>{title}</Text>
+      <Text style={[styles.heading, { color: semanticColors.labelSecondary[scheme] }]}>{title}</Text>
       {bookings.length === 0 ? (
-        <Text style={styles.empty}>{emptyLabel}</Text>
+        <Text style={[styles.empty, { color: semanticColors.labelSecondary[scheme] }]}>{emptyLabel}</Text>
       ) : (
-        bookings.map((booking) => <AgendaItem key={booking.id} booking={booking} onPress={() => onPress(booking)} />)
+        bookings.map((booking) => (
+          <AgendaItem key={booking.id} booking={booking} scheme={scheme} onPress={() => onPress(booking)} />
+        ))
       )}
     </View>
   );
 }
 
-function AgendaItem({ booking, onPress }: { booking: CourtBooking; onPress: () => void }) {
+function AgendaItem({ booking, scheme, onPress }: { booking: CourtBooking; scheme: ColorScheme; onPress: () => void }) {
   const start = new Date(booking.startAt);
   const end = new Date(booking.endAt);
   const isPast = start.getTime() < Date.now();
@@ -34,27 +39,41 @@ function AgendaItem({ booking, onPress }: { booking: CourtBooking; onPress: () =
   const incomplete = !isPast && isPadel && filledCount < 4;
   const deadlineHour = Math.max(start.getHours() - PADEL_TEAM_COMPLETION_WINDOW_HOURS, 0);
 
+  const leftAccent = isPast ? semanticColors.labelTertiary[scheme] : incomplete ? colors.accentOrange : colors.accentGreen;
+
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.item, isPast && styles.itemPast, incomplete && styles.itemIncomplete]}
+      style={[
+        styles.item,
+        {
+          backgroundColor: semanticColors.cardBackground[scheme],
+          borderColor: semanticColors.borderColor[scheme],
+          borderLeftColor: leftAccent,
+        },
+        isPast && { opacity: 0.7 },
+      ]}
     >
       <View style={styles.dayBlock}>
-        <Text style={[styles.dayNumber, isPast && styles.dayNumberPast]}>{start.getDate()}</Text>
-        <Text style={styles.dayMonth}>{capitalize(monthAbbrevFormatter.format(start)).replace(".", "")}</Text>
+        <Text style={[styles.dayNumber, { color: isPast ? semanticColors.labelSecondary[scheme] : colors.accentGreen }]}>
+          {start.getDate()}
+        </Text>
+        <Text style={[styles.dayMonth, { color: semanticColors.labelTertiary[scheme] }]}>
+          {capitalize(monthAbbrevFormatter.format(start)).replace(".", "")}
+        </Text>
       </View>
       <View style={styles.main}>
-        <Text style={styles.court}>
+        <Text style={[styles.court, { color: semanticColors.labelPrimary[scheme] }]}>
           {booking.courtName} · {start.getHours()}h–{end.getHours()}h
         </Text>
-        <Text style={styles.sub}>
+        <Text style={[styles.sub, { color: semanticColors.labelSecondary[scheme] }]}>
           {isPadel ? "Padel" : "Tennis"} ·{" "}
           {booking.participantCount > 0
             ? `avec ${booking.participantCount} partenaire${booking.participantCount > 1 ? "s" : ""}`
             : "seul pour l'instant"}
         </Text>
         {incomplete && (
-          <Text style={styles.badge}>
+          <Text style={[styles.badge, { color: colors.accentOrange }]}>
             ⏱ {filledCount}/4 · à compléter avant {deadlineHour}h
           </Text>
         )}
@@ -74,11 +93,9 @@ const styles = StyleSheet.create({
   heading: {
     fontWeight: "800",
     fontSize: 15,
-    color: courtColors.chalkDim,
     marginBottom: 10,
   },
   empty: {
-    color: courtColors.chalkDim,
     fontSize: 13,
     paddingVertical: 20,
     textAlign: "center",
@@ -87,22 +104,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
-    backgroundColor: courtColors.ink800,
     borderWidth: 1,
-    borderColor: courtColors.line,
     borderLeftWidth: 3,
-    borderLeftColor: courtColors.chartreuse,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 16,
     marginBottom: 10,
-  },
-  itemPast: {
-    borderLeftColor: courtColors.chalkFaint,
-    opacity: 0.7,
-  },
-  itemIncomplete: {
-    borderLeftColor: courtColors.amber,
   },
   dayBlock: {
     minWidth: 48,
@@ -111,17 +118,13 @@ const styles = StyleSheet.create({
   dayNumber: {
     fontWeight: "800",
     fontSize: 19,
-    color: courtColors.chartreuse,
     lineHeight: 22,
-  },
-  dayNumberPast: {
-    color: courtColors.chalkDim,
+    fontVariant: ["tabular-nums"],
   },
   dayMonth: {
-    fontFamily: courtFontMono,
     fontSize: 8.5,
+    fontWeight: "600",
     textTransform: "uppercase",
-    color: courtColors.chalkFaint,
     marginTop: 2,
   },
   main: {
@@ -131,17 +134,13 @@ const styles = StyleSheet.create({
   court: {
     fontWeight: "800",
     fontSize: 14,
-    color: courtColors.chalk,
   },
   sub: {
-    fontFamily: courtFontMono,
     fontSize: 10.5,
-    color: courtColors.chalkDim,
   },
   badge: {
-    fontFamily: courtFontMono,
     fontSize: 9,
-    color: courtColors.amber,
+    fontWeight: "600",
     marginTop: 3,
   },
 });

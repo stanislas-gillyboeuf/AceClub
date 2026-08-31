@@ -59,6 +59,7 @@ export function EditableAvatar({
     <Pressable onPress={pickImage} disabled={isUploading} style={styles.container}>
       {displayUri ? (
         <Image
+          recyclingKey={displayUri}
           source={{ uri: displayUri }}
           style={[
             styles.image,
@@ -66,6 +67,7 @@ export function EditableAvatar({
           ]}
           contentFit="cover"
           transition={200}
+          cachePolicy="memory-disk"
         />
       ) : (
         <View

@@ -3,7 +3,8 @@ import { View, Text, ScrollView, Pressable, ActivityIndicator, StyleSheet, type 
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChevronsLeftRight, Calendar } from "lucide-react-native";
-import { courtColors, courtFontMono } from "@/features/court-booking/theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { SportToggle } from "@/features/court-booking/components/sport-toggle";
 import { CourtTypeChipRow } from "@/features/court-booking/components/court-type-chip-row";
 import { DayChipRow } from "@/features/court-booking/components/day-chip-row";
@@ -21,6 +22,7 @@ function isToday(date: Date): boolean {
 }
 
 export default function BookingBoardScreen() {
+  const scheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const { data: orgs } = useMyOrganizations();
   const { data: activeMember } = useActiveMember();
@@ -102,32 +104,37 @@ export default function BookingBoardScreen() {
   };
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top + 12 }]}>
+    <View style={[styles.screen, { paddingTop: insets.top + 12, backgroundColor: semanticColors.primaryBackground[scheme] }]}>
       <View style={styles.topRow}>
         <View style={styles.topRowLeft}>
           {router.canGoBack() && (
-            <Pressable onPress={() => router.back()} style={styles.backArrow}>
-              <Text style={styles.backArrowText}>←</Text>
+            <Pressable
+              onPress={() => router.back()}
+              style={[styles.backArrow, { borderColor: semanticColors.borderColor[scheme], backgroundColor: semanticColors.systemGray6[scheme] }]}
+            >
+              <Text style={[styles.backArrowText, { color: semanticColors.labelPrimary[scheme] }]}>←</Text>
             </Pressable>
           )}
-          <View>
+          <View style={styles.titleBlock}>
             <ClubSelector clubs={orgs ?? []} selectedId={selectedOrgId} onSelect={handleSelectClub} />
-            <Text style={styles.title}>Réserver</Text>
+            <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>Réserver</Text>
           </View>
         </View>
         <Pressable onPress={() => router.push("/(tabs)/booking/my-bookings")} style={styles.myBookingsButton}>
-          <Calendar size={14} color={courtColors.ink900} strokeWidth={2.5} />
+          <Calendar size={14} color={colors.white} strokeWidth={2.5} />
           <Text style={styles.myBookingsButtonText}>Mes réservations</Text>
         </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {bookingEnabledLoading ? (
-          <ActivityIndicator style={styles.loader} color={courtColors.chartreuse} />
+          <ActivityIndicator style={styles.loader} color={colors.accentGreen} />
         ) : !bookingEnabled ? (
           <View style={styles.emptyWrap}>
-            <Text style={styles.emptyTitle}>Fonctionnalité indisponible</Text>
-            <Text style={styles.emptyDescription}>
+            <Text style={[styles.emptyTitle, { color: semanticColors.labelPrimary[scheme] }]}>
+              Fonctionnalité indisponible
+            </Text>
+            <Text style={[styles.emptyDescription, { color: semanticColors.labelSecondary[scheme] }]}>
               La réservation de terrain n&apos;est pas encore activée pour ton club.
             </Text>
           </View>
@@ -137,30 +144,32 @@ export default function BookingBoardScreen() {
               <SportToggle sport={sport} onChange={handleSelectSport} />
             </View>
 
-            <Text style={styles.sectionLabel}>Court</Text>
+            <Text style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}>Court</Text>
             <CourtTypeChipRow filters={filters} selectedKey={activeFilter.key} onSelect={setCourtTypeKey} />
 
-            <Text style={styles.sectionLabel}>
+            <Text style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}>
               Jour <Text style={styles.sectionLabelDim}>— réservable jusqu&apos;à J+6</Text>
             </Text>
             <DayChipRow selectedDate={selectedDate} onSelect={setSelectedDate} />
 
             <View style={styles.legend}>
               <View style={styles.legendItem}>
-                <View style={[styles.dot, styles.dotFree]} />
-                <Text style={styles.legendText}>Libre</Text>
+                <View style={[styles.dot, { backgroundColor: colors.accentGreen }]} />
+                <Text style={[styles.legendText, { color: semanticColors.labelSecondary[scheme] }]}>Libre</Text>
               </View>
               <View style={styles.legendItem}>
-                <View style={[styles.dot, styles.dotBooked]} />
-                <Text style={styles.legendText}>Réservé</Text>
+                <View style={[styles.dot, { borderWidth: 1, borderColor: colors.red500 }]} />
+                <Text style={[styles.legendText, { color: semanticColors.labelSecondary[scheme] }]}>Réservé</Text>
               </View>
             </View>
 
             {boardLoading ? (
-              <ActivityIndicator style={styles.loader} color={courtColors.chartreuse} />
+              <ActivityIndicator style={styles.loader} color={colors.accentGreen} />
             ) : filteredCourts.length === 0 ? (
               <View style={styles.emptyWrap}>
-                <Text style={styles.emptyTitle}>Aucun terrain disponible</Text>
+                <Text style={[styles.emptyTitle, { color: semanticColors.labelPrimary[scheme] }]}>
+                  Aucun terrain disponible
+                </Text>
               </View>
             ) : (
               <>
@@ -171,8 +180,10 @@ export default function BookingBoardScreen() {
                   onSelectBooked={handleSelectBooked}
                 />
                 <View style={styles.scrollHint}>
-                  <ChevronsLeftRight size={13} color={courtColors.chalkFaint} strokeWidth={2} />
-                  <Text style={styles.scrollHintText}>glisser pour voir les heures suivantes</Text>
+                  <ChevronsLeftRight size={13} color={semanticColors.labelTertiary[scheme]} strokeWidth={2} />
+                  <Text style={[styles.scrollHintText, { color: semanticColors.labelTertiary[scheme] }]}>
+                    glisser pour voir les heures suivantes
+                  </Text>
                 </View>
               </>
             )}
@@ -180,10 +191,10 @@ export default function BookingBoardScreen() {
             {isClubAdmin && (
               <View style={styles.adminLinks}>
                 <Pressable onPress={() => router.push("/court-booking/booking-rules")}>
-                  <Text style={styles.adminLinkText}>Gérer les règles →</Text>
+                  <Text style={[styles.adminLinkText, { color: colors.accentGreen }]}>Gérer les règles →</Text>
                 </Pressable>
                 <Pressable onPress={() => router.push("/(tabs)/booking/book-for-club")}>
-                  <Text style={styles.adminLinkText}>Réserver pour le club →</Text>
+                  <Text style={[styles.adminLinkText, { color: colors.accentGreen }]}>Réserver pour le club →</Text>
                 </Pressable>
               </View>
             )}
@@ -203,45 +214,47 @@ function courtTag(court: BoardCourt): string {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: courtColors.ink900,
   },
   topRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "flex-start",
     paddingHorizontal: 20,
     marginBottom: 4,
+    gap: 12,
   },
   topRowLeft: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 12,
+    minWidth: 0,
+  },
+  titleBlock: {
+    flex: 1,
+    minWidth: 0,
   },
   backArrow: {
     width: 34,
     height: 34,
     borderRadius: 9,
     borderWidth: 1,
-    borderColor: courtColors.line,
-    backgroundColor: courtColors.ink700,
     alignItems: "center",
     justifyContent: "center",
   },
   backArrowText: {
-    color: courtColors.chalk,
     fontSize: 16,
   },
   title: {
     fontWeight: "800",
     fontSize: 26,
-    color: courtColors.chalk,
     marginTop: 2,
   },
   myBookingsButton: {
+    flexShrink: 0,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: courtColors.chartreuse,
+    backgroundColor: colors.accentGreen,
     borderRadius: 99,
     paddingVertical: 8,
     paddingHorizontal: 14,
@@ -249,7 +262,7 @@ const styles = StyleSheet.create({
   myBookingsButtonText: {
     fontWeight: "700",
     fontSize: 12,
-    color: courtColors.ink900,
+    color: colors.white,
   },
   content: {
     paddingTop: 18,
@@ -260,11 +273,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   sectionLabel: {
-    fontFamily: courtFontMono,
     fontSize: 11,
+    fontWeight: "700",
     letterSpacing: 1,
     textTransform: "uppercase",
-    color: courtColors.chalkDim,
     paddingHorizontal: 20,
   },
   sectionLabelDim: {
@@ -282,22 +294,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   legendText: {
-    fontFamily: courtFontMono,
     fontSize: 11,
-    color: courtColors.chalkDim,
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 2,
-  },
-  dotFree: {
-    backgroundColor: courtColors.chartreuse,
-  },
-  dotBooked: {
-    backgroundColor: courtColors.rustDim,
-    borderWidth: 1,
-    borderColor: courtColors.rust,
   },
   scrollHint: {
     flexDirection: "row",
@@ -306,9 +308,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   scrollHintText: {
-    fontFamily: courtFontMono,
     fontSize: 10.5,
-    color: courtColors.chalkFaint,
   },
   loader: {
     paddingVertical: 24,
@@ -320,11 +320,9 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontWeight: "700",
     fontSize: 15,
-    color: courtColors.chalk,
   },
   emptyDescription: {
     fontSize: 13.5,
-    color: courtColors.chalkDim,
   },
   adminLinks: {
     alignItems: "center",
@@ -334,6 +332,5 @@ const styles = StyleSheet.create({
   adminLinkText: {
     fontWeight: "600",
     fontSize: 13,
-    color: courtColors.rust,
   },
 });

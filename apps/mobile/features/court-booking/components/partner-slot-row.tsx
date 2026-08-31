@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { courtColors } from "../theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 function initials(name: string): string {
   return name
@@ -17,19 +18,39 @@ interface PartnerSlotRowProps {
 }
 
 export function PartnerSlotRow({ label, name, onPress, onRemove }: PartnerSlotRowProps) {
+  const scheme = useColorScheme();
+
   return (
-    <Pressable onPress={onPress} style={[styles.row, name ? styles.rowFilled : styles.rowEmpty]}>
-      <View style={[styles.avatar, name && styles.avatarFilled]}>
-        <Text style={[styles.avatarText, name && styles.avatarTextFilled]}>
+    <Pressable
+      onPress={onPress}
+      style={[
+        styles.row,
+        {
+          backgroundColor: semanticColors.systemGray6[scheme],
+          borderColor: name ? colors.accentGreen : semanticColors.borderColor[scheme],
+          borderStyle: name ? "solid" : "dashed",
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.avatar,
+          {
+            backgroundColor: name ? colors.accentGreen : semanticColors.cardBackground[scheme],
+            borderColor: name ? colors.accentGreen : semanticColors.borderColor[scheme],
+          },
+        ]}
+      >
+        <Text style={[styles.avatarText, { color: name ? colors.white : semanticColors.labelSecondary[scheme] }]}>
           {name ? initials(name) : "+"}
         </Text>
       </View>
-      <Text style={styles.text} numberOfLines={1}>
+      <Text style={[styles.text, { color: semanticColors.labelPrimary[scheme] }]} numberOfLines={1}>
         {name ?? `${label} — ajouter`}
       </Text>
       {name && (
         <Pressable onPress={onRemove} hitSlop={8}>
-          <Text style={styles.remove}>✕</Text>
+          <Text style={[styles.remove, { color: semanticColors.labelTertiary[scheme] }]}>✕</Text>
         </Pressable>
       )}
     </Pressable>
@@ -41,49 +62,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    backgroundColor: courtColors.ink700,
     borderWidth: 1,
-    borderColor: courtColors.line,
     borderRadius: 11,
     paddingVertical: 10,
     paddingHorizontal: 12,
-  },
-  rowFilled: {
-    borderColor: courtColors.chartreuseDim,
-  },
-  rowEmpty: {
-    borderStyle: "dashed",
   },
   avatar: {
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: courtColors.ink650,
     borderWidth: 1,
-    borderColor: courtColors.line,
     alignItems: "center",
     justifyContent: "center",
-  },
-  avatarFilled: {
-    backgroundColor: courtColors.chartreuse,
-    borderColor: courtColors.chartreuse,
   },
   avatarText: {
     fontSize: 11,
     fontWeight: "600",
-    color: courtColors.chalkDim,
-  },
-  avatarTextFilled: {
-    color: courtColors.ink900,
   },
   text: {
     flex: 1,
     fontWeight: "700",
     fontSize: 13,
-    color: courtColors.chalk,
   },
   remove: {
-    color: courtColors.chalkFaint,
     fontSize: 16,
     paddingHorizontal: 4,
     paddingVertical: 2,

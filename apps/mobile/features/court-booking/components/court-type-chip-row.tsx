@@ -1,5 +1,6 @@
 import { ScrollView, Text, Pressable, StyleSheet } from "react-native";
-import { courtColors } from "../theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { CourtTypeFilter } from "../lib/court-filters";
 
 interface CourtTypeChipRowProps {
@@ -9,6 +10,8 @@ interface CourtTypeChipRowProps {
 }
 
 export function CourtTypeChipRow({ filters, selectedKey, onSelect }: CourtTypeChipRowProps) {
+  const scheme = useColorScheme();
+
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
       {filters.map((filter) => {
@@ -17,9 +20,17 @@ export function CourtTypeChipRow({ filters, selectedKey, onSelect }: CourtTypeCh
           <Pressable
             key={filter.key}
             onPress={() => onSelect(filter.key)}
-            style={[styles.chip, active && styles.chipActive]}
+            style={[
+              styles.chip,
+              {
+                borderColor: active ? colors.accentGreen : semanticColors.borderColor[scheme],
+                backgroundColor: active ? colors.accentGreen : semanticColors.systemGray6[scheme],
+              },
+            ]}
           >
-            <Text style={[styles.label, active && styles.labelActive]}>{filter.label}</Text>
+            <Text style={[styles.label, { color: active ? colors.white : semanticColors.labelSecondary[scheme] }]}>
+              {filter.label}
+            </Text>
           </Pressable>
         );
       })}
@@ -37,21 +48,11 @@ const styles = StyleSheet.create({
   chip: {
     borderRadius: 11,
     borderWidth: 1,
-    borderColor: courtColors.line,
-    backgroundColor: courtColors.ink700,
     paddingVertical: 9,
     paddingHorizontal: 14,
-  },
-  chipActive: {
-    backgroundColor: courtColors.chartreuse,
-    borderColor: courtColors.chartreuse,
   },
   label: {
     fontWeight: "700",
     fontSize: 12.5,
-    color: courtColors.chalkDim,
-  },
-  labelActive: {
-    color: courtColors.ink900,
   },
 });

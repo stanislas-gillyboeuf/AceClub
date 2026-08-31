@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { View, Text, ScrollView, Pressable, Alert, ActivityIndicator, StyleSheet } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { courtColors } from "@/features/court-booking/theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { PerforatedTicket } from "@/features/court-booking/components/perforated-ticket";
 import { PartnerSearchExpand } from "@/features/court-booking/components/partner-search-expand";
 import { ConfettiBurst } from "@/features/court-booking/components/confetti-burst";
@@ -9,6 +10,7 @@ import { useTabBarClearance } from "@/features/court-booking/lib/layout";
 import { useCourtBookingDetail, useCancelBooking, useJoinBooking, useFrequentPartners } from "@/hooks/use-court";
 
 export default function TicketScreen() {
+  const scheme = useColorScheme();
   const tabBarClearance = useTabBarClearance();
   const { bookingId, justBooked } = useLocalSearchParams<{ bookingId: string; justBooked?: string }>();
   const { data: booking, isLoading } = useCourtBookingDetail(bookingId);
@@ -36,8 +38,8 @@ export default function TicketScreen() {
 
   if (isLoading || !booking) {
     return (
-      <View style={styles.loading}>
-        <ActivityIndicator color={courtColors.chartreuse} />
+      <View style={[styles.loading, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
+        <ActivityIndicator color={colors.accentGreen} />
       </View>
     );
   }
@@ -50,12 +52,12 @@ export default function TicketScreen() {
 
   return (
     <ScrollView
-      style={styles.screen}
+      style={[styles.screen, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
       contentContainerStyle={[styles.content, { paddingBottom: 20 + tabBarClearance }]}
       contentInsetAdjustmentBehavior="automatic"
     >
       <Pressable onPress={() => router.back()} style={styles.backButton}>
-        <Text style={styles.backText}>← Retour</Text>
+        <Text style={[styles.backText, { color: semanticColors.labelSecondary[scheme] }]}>← Retour</Text>
       </Pressable>
 
       <View style={styles.ticketWrap}>
@@ -65,8 +67,13 @@ export default function TicketScreen() {
 
       <View style={styles.actions}>
         {isPadel && !isPast && filledCount < 4 && (
-          <Pressable onPress={() => setAddingSlot((v) => !v)} style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>Compléter l&apos;équipe</Text>
+          <Pressable
+            onPress={() => setAddingSlot((v) => !v)}
+            style={[styles.secondaryButton, { backgroundColor: semanticColors.systemGray6[scheme], borderColor: semanticColors.borderColor[scheme] }]}
+          >
+            <Text style={[styles.secondaryButtonText, { color: semanticColors.labelPrimary[scheme] }]}>
+              Compléter l&apos;équipe
+            </Text>
           </Pressable>
         )}
         {addingSlot && (
@@ -81,12 +88,16 @@ export default function TicketScreen() {
             }}
           />
         )}
-        <Pressable onPress={() => router.back()} style={styles.primaryButton}>
+        <Pressable onPress={() => router.back()} style={[styles.primaryButton, { backgroundColor: colors.accentGreen }]}>
           <Text style={styles.primaryButtonText}>Terminé</Text>
         </Pressable>
         {!isPast && (
-          <Pressable onPress={handleCancel} disabled={cancelBooking.isPending} style={styles.ghostButton}>
-            <Text style={styles.ghostButtonText}>Annuler la réservation</Text>
+          <Pressable
+            onPress={handleCancel}
+            disabled={cancelBooking.isPending}
+            style={[styles.ghostButton, { borderColor: `${colors.red500}66` }]}
+          >
+            <Text style={[styles.ghostButtonText, { color: colors.red500 }]}>Annuler la réservation</Text>
           </Pressable>
         )}
       </View>
@@ -97,11 +108,9 @@ export default function TicketScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: courtColors.ink900,
   },
   loading: {
     flex: 1,
-    backgroundColor: courtColors.ink900,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -114,7 +123,6 @@ const styles = StyleSheet.create({
     paddingBottom: 18,
   },
   backText: {
-    color: courtColors.chalkDim,
     fontWeight: "600",
     fontSize: 12,
   },
@@ -126,39 +134,33 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   primaryButton: {
-    backgroundColor: courtColors.chartreuse,
     paddingVertical: 14,
     borderRadius: 11,
     alignItems: "center",
   },
   primaryButtonText: {
-    color: courtColors.ink900,
+    color: colors.white,
     fontWeight: "800",
     fontSize: 14,
   },
   secondaryButton: {
-    backgroundColor: courtColors.ink700,
     borderWidth: 1,
-    borderColor: courtColors.line,
     paddingVertical: 13,
     borderRadius: 11,
     alignItems: "center",
   },
   secondaryButtonText: {
-    color: courtColors.chalk,
     fontWeight: "700",
     fontSize: 13.5,
   },
   ghostButton: {
     backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: courtColors.rustDim,
     paddingVertical: 13,
     borderRadius: 11,
     alignItems: "center",
   },
   ghostButtonText: {
-    color: courtColors.rust,
     fontWeight: "700",
     fontSize: 13,
   },

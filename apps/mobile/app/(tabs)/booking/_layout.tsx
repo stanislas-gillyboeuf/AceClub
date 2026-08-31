@@ -1,15 +1,18 @@
 import { Stack } from "expo-router";
 import { Platform } from "react-native";
-import { courtColors } from "@/features/court-booking/theme";
+import { semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 const formSheet = Platform.select({ ios: "formSheet" as const, default: "modal" as const });
 
 export default function BookingLayout() {
+  const scheme = useColorScheme();
+
   return (
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: courtColors.ink900 },
+        contentStyle: { backgroundColor: semanticColors.primaryBackground[scheme] },
       }}
     >
       <Stack.Screen name="index" />
