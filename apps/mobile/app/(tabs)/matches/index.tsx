@@ -2,8 +2,9 @@ import { useMemo, useRef, useState } from "react";
 import { Stack, useRouter } from "expo-router";
 import { View, Platform, SectionList, RefreshControl, StyleSheet } from "react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { semanticColors, spacing } from "@/constants/theme";
+import { colors, semanticColors, spacing } from "@/constants/theme";
 import { useInfiniteMatches } from "@/hooks/use-match";
+import { useUnreadMessagesCount } from "@/hooks/use-conversation";
 import { MatchRow } from "@/features/matches/components/match-row";
 import { MatchDateHeader } from "@/features/matches/components/match-date-header";
 import { buildSections, type MatchSection } from "@/features/matches/components/match-sections";
@@ -12,7 +13,6 @@ import { MatchFab } from "@/features/matches/components/MatchFab";
 import { MatchEmptyDay } from "@/features/matches/components/MatchEmptyDay";
 import { EmptyState } from "@/components/ui/empty-state";
 import { MessagesHeaderButton } from "@/features/chat/components/MessagesHeaderButton";
-import { MessagesToolbarButton } from "@/components/ui/messages-toolbar-button";
 
 function ItemSeparator() {
   return <View style={separatorStyle} />;
@@ -22,6 +22,7 @@ const separatorStyle = { height: 12 };
 export default function Matches() {
   const router = useRouter();
   const scheme = useColorScheme();
+  const totalUnread = useUnreadMessagesCount();
   const sectionListRef = useRef<SectionList>(null);
   const [hasScrolledToToday, setHasScrolledToToday] = useState(false);
 
@@ -79,7 +80,12 @@ export default function Matches() {
       />
       {Platform.OS === "ios" && (
         <Stack.Toolbar placement="right">
-          <MessagesToolbarButton />
+          <Stack.Toolbar.Button onPress={() => router.push("/chat")} tintColor={colors.accentGreen}>
+            <Stack.Toolbar.Icon sf="message" />
+            {totalUnread > 0 && (
+              <Stack.Toolbar.Badge>{totalUnread > 99 ? "99+" : String(totalUnread)}</Stack.Toolbar.Badge>
+            )}
+          </Stack.Toolbar.Button>
         </Stack.Toolbar>
       )}
     </>

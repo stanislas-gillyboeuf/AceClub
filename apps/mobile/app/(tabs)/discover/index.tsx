@@ -13,7 +13,7 @@ import {
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { GlassView } from "@/components/ui/glass-view";
 import * as Location from "expo-location";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Check } from "lucide-react-native";
 import { PartnerRequestCard } from "@/features/discover/components/PartnerRequestCard";
 import { DiscoverFilters } from "@/features/discover/components/DiscoverFilters";
@@ -23,7 +23,7 @@ import { colors, semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { MatchIntentWithUser } from "@/types/match-intent";
 import { MessagesHeaderButton } from "@/features/chat/components/MessagesHeaderButton";
-import { MessagesToolbarButton } from "@/components/ui/messages-toolbar-button";
+import { useUnreadMessagesCount } from "@/hooks/use-conversation";
 
 const RADIUS_OPTIONS: { label: string; value: number | undefined }[] = [
   { label: "5 km", value: 5 },
@@ -35,6 +35,8 @@ const RADIUS_OPTIONS: { label: string; value: number | undefined }[] = [
 
 export default function DiscoverScreen() {
   const scheme = useColorScheme();
+  const router = useRouter();
+  const totalUnread = useUnreadMessagesCount();
   const {
     items,
     sport,
@@ -133,7 +135,12 @@ export default function DiscoverScreen() {
             </Stack.Toolbar>
           )}
           <Stack.Toolbar placement="right">
-            <MessagesToolbarButton />
+            <Stack.Toolbar.Button onPress={() => router.push("/chat")} tintColor={colors.accentGreen}>
+              <Stack.Toolbar.Icon sf="message" />
+              {totalUnread > 0 && (
+                <Stack.Toolbar.Badge>{totalUnread > 99 ? "99+" : String(totalUnread)}</Stack.Toolbar.Badge>
+              )}
+            </Stack.Toolbar.Button>
           </Stack.Toolbar>
         </>
       )}

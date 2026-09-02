@@ -16,9 +16,9 @@ import { useMyLevel } from "@/hooks/use-level";
 import { useInfiniteMatches } from "@/hooks/use-match";
 import { useActiveMember } from "@/hooks/use-organization";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useUnreadMessagesCount } from "@/hooks/use-conversation";
 
 import { MessagesHeaderButton } from "@/features/chat/components/MessagesHeaderButton";
-import { MessagesToolbarButton } from "@/components/ui/messages-toolbar-button";
 import { LevelProgressCard } from "@/features/feed/components/level-progress-card";
 import { FeedMatchRow } from "@/features/feed/components/feed-match-row";
 import { EventsFeedSection } from "@/features/events/components/events-feed-section";
@@ -33,6 +33,7 @@ export default function Feed() {
   const { data: me } = useMe();
   const { data: level, isLoading: levelLoading } = useMyLevel();
   const router = useRouter();
+  const totalUnread = useUnreadMessagesCount();
 
   const goToRanking = () => router.push("/(tabs)/feed/ranking");
   const goToProgression = () => router.push("/(tabs)/feed/progression");
@@ -94,7 +95,12 @@ export default function Feed() {
       {Platform.OS === "ios" && (
         <Stack.Toolbar placement="right">
           <Stack.Toolbar.Button icon="trophy" onPress={goToRanking} tintColor={colors.accentGreen} />
-          <MessagesToolbarButton />
+          <Stack.Toolbar.Button onPress={() => router.push("/chat")} tintColor={colors.accentGreen}>
+            <Stack.Toolbar.Icon sf="message" />
+            {totalUnread > 0 && (
+              <Stack.Toolbar.Badge>{totalUnread > 99 ? "99+" : String(totalUnread)}</Stack.Toolbar.Badge>
+            )}
+          </Stack.Toolbar.Button>
         </Stack.Toolbar>
       )}
 
