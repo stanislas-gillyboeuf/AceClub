@@ -6,6 +6,7 @@ import { db } from "../../../db";
 import { matchIntent, matchIntentTeammate } from "../../../db/schema/match_intents/schema";
 import { userPreference } from "../../../db/schema/user-preference/schema";
 import { eq } from "drizzle-orm";
+import { zonedDateTime } from "../../court/lib/timezone";
 
 export const createMatchIntent = async (c: Context<HonoContext>) => {
   try {
@@ -18,7 +19,7 @@ export const createMatchIntent = async (c: Context<HonoContext>) => {
 
     let dateObj: Date | null = null;
     if (!validated.isFlexibleDate) {
-      dateObj = new Date(`${validated.date}T${validated.time}:00`);
+      dateObj = zonedDateTime(validated.date!, validated.time!);
       if (isNaN(dateObj.getTime())) {
         return c.json({ error: "Invalid date or time format" }, 400);
       }

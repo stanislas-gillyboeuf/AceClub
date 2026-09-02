@@ -109,10 +109,38 @@ export const updateProfile = async (c: Context<HonoContext>) => {
           prefUpdateData.skillLevel = validated.skillLevel;
         }
 
-        await tx
+        const updatedPrefRows = await tx
           .update(userPreference)
           .set(prefUpdateData)
-          .where(eq(userPreference.userId, authUser!.id));
+          .where(eq(userPreference.userId, authUser!.id))
+          .returning({ id: userPreference.id });
+
+        // No existing row (e.g. account never went through onboarding's preference insert) —
+        // an UPDATE alone silently affects nothing, so fall back to creating it here.
+        if (updatedPrefRows.length === 0) {
+          let organizationId = validated.organizationId;
+          if (!organizationId) {
+            const [existingMembership] = await tx
+              .select({ organizationId: member.organizationId })
+              .from(member)
+              .where(eq(member.userId, authUser!.id))
+              .limit(1);
+            organizationId = existingMembership?.organizationId;
+          }
+
+          if (!organizationId || !validated.sport || !validated.skillLevel) {
+            throw new Error(
+              "MissingPreferenceFields: cannot create user_preference without organizationId, sport and skillLevel",
+            );
+          }
+
+          await tx.insert(userPreference).values({
+            userId: authUser!.id,
+            organizationId,
+            sport: validated.sport,
+            skillLevel: validated.skillLevel,
+          });
+        }
 
         // If organizationId changed, REPLACE user's organization membership (only one allowed)
         if (validated.organizationId) {
@@ -161,7 +189,7 @@ export const updateProfile = async (c: Context<HonoContext>) => {
       });
     }
   } catch (error) {
-    const err = error as { code?: string };
+    const err = error as { code?: string; message?: string };
     if (err?.code === "23505") {
       return c.json(
         {
@@ -169,6 +197,15 @@ export const updateProfile = async (c: Context<HonoContext>) => {
           message: "Phone number already in use",
         },
         409,
+      );
+    }
+    if (err?.message?.startsWith("MissingPreferenceFields")) {
+      return c.json(
+        {
+          error: "BadRequest",
+          message: "Un club, un sport et un niveau sont requis pour enregistrer tes préférences",
+        },
+        400,
       );
     }
     throw error;
