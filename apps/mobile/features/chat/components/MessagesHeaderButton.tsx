@@ -2,11 +2,10 @@ import { View, Pressable, Text, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { colors } from "@/constants/theme";
-import { useConversations } from "@/hooks/use-conversation";
+import { useUnreadMessagesCount } from "@/hooks/use-conversation";
 
 export function MessagesHeaderButton() {
-  const { data: conversations } = useConversations();
-  const totalUnread = conversations?.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) ?? 0;
+  const totalUnread = useUnreadMessagesCount();
 
   return (
     <Pressable onPress={() => router.push("/chat")} hitSlop={8} style={styles.wrap}>

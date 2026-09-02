@@ -21,6 +21,9 @@ export const userPreference = pgTable(
       .references(() => organization.id, { onDelete: "cascade" }),
     sport: SportType("sport").notNull(),
     skillLevel: text("skill_level").notNull(),
+    /** Optional second sport for players who play both tennis and padel. */
+    secondarySport: SportType("secondary_sport"),
+    secondarySkillLevel: text("secondary_skill_level"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()

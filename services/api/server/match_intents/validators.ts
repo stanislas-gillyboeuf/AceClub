@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const createMatchIntentValidator = z
   .object({
+    sport: z.enum(["tennis", "padel"]),
     date: z.string().optional(),
     time: z.string().optional(),
     isFlexibleDate: z.boolean().optional().default(false),

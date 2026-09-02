@@ -12,7 +12,6 @@ import { Stack, router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useCreateMatchIntent } from "@/hooks/use-match-intent";
-import { usePreferences } from "@/hooks/use-user";
 import {
   useCreateIntentFormStore,
   combineDateAndTime,
@@ -26,8 +25,8 @@ import { colors, semanticColors } from "@/constants/theme";
 export default function CreateIntent() {
   const scheme = useColorScheme();
   const createIntent = useCreateMatchIntent();
-  const { data: preferences } = usePreferences();
-  const isPadel = preferences?.sport === "padel";
+  const sport = useCreateIntentFormStore((s) => s.sport);
+  const isPadel = sport === "padel";
 
   const {
     canGoPrev,
@@ -96,6 +95,7 @@ export default function CreateIntent() {
 
     createIntent.mutate(
       {
+        sport,
         ...(isFlexibleDate ? {} : { date: dateStr, time: timeStr }),
         isFlexibleDate,
         duration: duration ?? 90,
@@ -115,7 +115,7 @@ export default function CreateIntent() {
         },
       }
     );
-  }, [date, time, isFlexibleDate, duration, intentType, description, teammates, isPadel, createIntent, handleDismiss]);
+  }, [date, time, isFlexibleDate, duration, intentType, description, teammates, sport, isPadel, createIntent, handleDismiss]);
 
   const handleNext = useCallback(() => {
     if (isLastStep) {

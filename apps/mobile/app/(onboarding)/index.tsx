@@ -48,13 +48,26 @@ export default function Onboarding() {
   const existingName = session?.user?.name;
   const skipNameStep = hasValidName(existingName);
 
-  // Build steps list dynamically — skip name step if already known
+  const [selectedSports, setSelectedSports] = useState<Sport[]>([]);
+  const [skillLevels, setSkillLevels] = useState<Partial<Record<Sport, string>>>({});
+
+  // Build steps list dynamically — skip name step if already known, and insert one
+  // "level" step per selected sport (a dual-sport player rates both).
   const steps = useMemo(() => {
-    const allSteps = ["name", "gender", "birthdate", "club", "sport", "level", "photo", "notifications", "location"] as const;
+    const base = ["name", "gender", "birthdate", "club", "sport"] as const;
+    const levelSteps = selectedSports.map((s) => `level-${s}` as const);
+    const rest = ["photo", "notifications", "location"] as const;
+    const allSteps = [...base, ...levelSteps, ...rest];
     return skipNameStep ? allSteps.filter((s) => s !== "name") : allSteps;
-  }, [skipNameStep]);
+  }, [skipNameStep, selectedSports]);
 
   const [currentStep, setCurrentStep] = useState(0);
+
+  // If the steps list shrinks (e.g. player deselects a sport after already picking its
+  // level) while sitting past the new end, clamp back onto the last valid step.
+  useEffect(() => {
+    setCurrentStep((s) => Math.min(s, steps.length - 1));
+  }, [steps.length]);
 
   // Name state — pre-filled from session when it loads (Apple/Google may have provided it)
   const [firstName, setFirstName] = useState("");
@@ -72,8 +85,6 @@ export default function Onboarding() {
   const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
   const [dateOfBirth, setDateOfBirth] = useState<Date>(defaultBirthdate);
   const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
-  const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
-  const [selectedSkillLevel, setSelectedSkillLevel] = useState<string | null>(null);
   const [profileImageUri, setProfileImageUri] = useState<string | null>(null);
   // PIN
   const [isPinVerified, setIsPinVerified] = useState(false);
@@ -121,9 +132,7 @@ export default function Onboarding() {
       case "club":
         return !!selectedOrganization && (!selectedOrganization.pinEnabled || isPinVerified);
       case "sport":
-        return !!selectedSport;
-      case "level":
-        return !!selectedSkillLevel;
+        return selectedSports.length > 0;
       case "photo":
         return true;
       case "notifications":
@@ -131,9 +140,13 @@ export default function Onboarding() {
       case "location":
         return true;
       default:
+        if (currentStepName?.startsWith("level-")) {
+          const sport = currentStepName.slice("level-".length) as Sport;
+          return !!skillLevels[sport];
+        }
         return false;
     }
-  }, [currentStepName, firstName, selectedGender, selectedOrganization, isPinVerified, selectedSport, selectedSkillLevel]);
+  }, [currentStepName, firstName, selectedGender, selectedOrganization, isPinVerified, selectedSports, skillLevels]);
 
   const goNext = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -152,7 +165,8 @@ export default function Onboarding() {
   }, [currentStep]);
 
   const handleSubmit = async () => {
-    if (!selectedOrganization || !selectedSport || !selectedSkillLevel || !selectedGender) return;
+    const [primarySport, secondarySport] = selectedSports;
+    if (!selectedOrganization || !primarySport || !skillLevels[primarySport] || !selectedGender) return;
 
     setIsSubmitting(true);
     try {
@@ -170,10 +184,13 @@ export default function Onboarding() {
       const payload = {
         name: fullName,
         organizationId: selectedOrganization.id,
-        sport: selectedSport,
-        skillLevel: selectedSkillLevel,
+        sport: primarySport,
+        skillLevel: skillLevels[primarySport]!,
         gender: selectedGender,
         dateOfBirth: formatDateForAPI(dateOfBirth),
+        ...(secondarySport && skillLevels[secondarySport]
+          ? { secondarySport, secondarySkillLevel: skillLevels[secondarySport] }
+          : {}),
         ...(imageUrl && { imageUrl }),
         ...(verifiedPin && { pin: verifiedPin }),
       };
@@ -191,9 +208,14 @@ export default function Onboarding() {
     }
   };
 
-  const handleSelectSport = useCallback((sport: Sport) => {
-    setSelectedSport(sport);
-    setSelectedSkillLevel(null);
+  const handleToggleSport = useCallback((sport: Sport) => {
+    setSelectedSports((prev) =>
+      prev.includes(sport) ? prev.filter((s) => s !== sport) : [...prev, sport]
+    );
+  }, []);
+
+  const handleSkillLevelChange = useCallback((sport: Sport, level: string) => {
+    setSkillLevels((prev) => ({ ...prev, [sport]: level }));
   }, []);
 
   const renderStep = () => {
@@ -237,20 +259,12 @@ export default function Onboarding() {
       case "sport":
         return (
           <SportStep
-            selectedSport={selectedSport}
-            onSelect={handleSelectSport}
+            selectedSports={selectedSports}
+            onToggle={handleToggleSport}
             firstName={firstName}
             clubName={selectedOrganization?.name ?? null}
           />
         );
-      case "level":
-        return selectedSport ? (
-          <LevelStep
-            sport={selectedSport}
-            selectedLevel={selectedSkillLevel}
-            onSelect={setSelectedSkillLevel}
-          />
-        ) : null;
       case "photo":
         return (
           <PhotoStep
@@ -264,6 +278,16 @@ export default function Onboarding() {
       case "location":
         return <LocationStep onComplete={goNext} />;
       default:
+        if (currentStepName?.startsWith("level-")) {
+          const sport = currentStepName.slice("level-".length) as Sport;
+          return (
+            <LevelStep
+              sport={sport}
+              selectedLevel={skillLevels[sport] ?? null}
+              onSelect={(level) => handleSkillLevelChange(sport, level)}
+            />
+          );
+        }
         return null;
     }
   };

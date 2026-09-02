@@ -71,14 +71,27 @@ export const discover = async (c: Context<HonoContext>) => {
       conditions.push(eq(intentOwnerMember.organizationId, currentUserOrgId));
     }
 
+    // The intent's own sport is the source of truth (a dual-sport player's intents can be
+    // for either sport); fall back to the owner's primary preference for pre-migration rows
+    // that predate the matchIntent.sport column.
+    const intentSportExpr = sql`COALESCE(${matchIntent.sport}, ${intentOwnerPreference.sport})`;
+    // Likewise, the level shown/filtered must match whichever sport this specific intent is
+    // for — a dual-sport player's secondary sport has its own, separate skill level.
+    const intentSkillLevelExpr = sql`
+      CASE
+        WHEN ${intentSportExpr} = ${intentOwnerPreference.secondarySport} THEN ${intentOwnerPreference.secondarySkillLevel}
+        ELSE ${intentOwnerPreference.skillLevel}
+      END
+    `;
+
     // Filter by sport: explicit query param wins, otherwise fall back to the viewer's own sport
     const effectiveSport = requestedSport ?? currentUserSport;
     if (effectiveSport) {
-      conditions.push(eq(intentOwnerPreference.sport, effectiveSport));
+      conditions.push(sql`${intentSportExpr} = ${effectiveSport}`);
     }
 
     if (requestedLevels && requestedLevels.length > 0) {
-      conditions.push(inArray(intentOwnerPreference.skillLevel, requestedLevels));
+      conditions.push(inArray(intentSkillLevelExpr, requestedLevels));
     }
 
     // Build scoring expression
@@ -209,6 +222,8 @@ export const discover = async (c: Context<HonoContext>) => {
         user_level: sql<number>`coalesce(${userLevel.currentLevel}, 1)`.as("user_level"),
         user_skill_level: intentOwnerPreference.skillLevel,
         user_sport: intentOwnerPreference.sport,
+        intent_sport: intentSportExpr.as("intent_sport"),
+        intent_skill_level: intentSkillLevelExpr.as("intent_skill_level"),
         org_id: organization.id,
         org_name: organization.name,
         org_logo: organization.logo,
@@ -257,7 +272,7 @@ export const discover = async (c: Context<HonoContext>) => {
       : [];
     const myRequestByIntent = new Map(myRequests.map((r) => [r.matchIntentId, r]));
 
-    const padelIntentIds = slice.filter((row) => row.user_sport === "padel").map((row) => row.id);
+    const padelIntentIds = slice.filter((row) => row.intent_sport === "padel").map((row) => row.id);
     const teammateRows = padelIntentIds.length
       ? await db
           .select({
@@ -282,6 +297,7 @@ export const discover = async (c: Context<HonoContext>) => {
       id: row.id,
       type: row.type,
       userId: row.userId,
+      sport: row.intent_sport ?? null,
       date: row.date,
       time: row.time,
       isFlexibleDate: row.isFlexibleDate,
@@ -293,7 +309,7 @@ export const discover = async (c: Context<HonoContext>) => {
       myRequestStatus: myRequestByIntent.get(row.id)?.status ?? null,
       myRequestSlotIndex: myRequestByIntent.get(row.id)?.slotIndex ?? null,
       teammates:
-        row.user_sport === "padel"
+        row.intent_sport === "padel"
           ? (teammatesByIntent.get(row.id) ?? []).map((t) => ({
               slotIndex: t.slotIndex,
               userId: t.userId,
@@ -309,8 +325,9 @@ export const discover = async (c: Context<HonoContext>) => {
               email: row.user_email,
               image: row.user_image,
               level: Number(row.user_level) || 1,
-              skillLevel: row.user_skill_level ?? null,
-              sport: row.user_sport ?? null,
+              // Level for THIS intent's sport, not necessarily the owner's primary sport.
+              skillLevel: row.intent_skill_level ?? row.user_skill_level ?? null,
+              sport: row.intent_sport ?? row.user_sport ?? null,
               organization:
                 row.org_id != null && row.org_name != null
                   ? {

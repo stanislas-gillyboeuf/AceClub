@@ -7,6 +7,7 @@ export type MatchRequestStatus = "pending" | "accepted" | "rejected";
 export interface MatchIntent {
   id: string;
   userId: string;
+  sport?: "tennis" | "padel" | null;
   date: string | null;
   time: string | null;
   isFlexibleDate: boolean;
@@ -59,6 +60,7 @@ export interface ListMatchIntentsResponse {
 export interface DiscoverItemRaw {
   id: string;
   userId: string;
+  sport?: "tennis" | "padel" | null;
   type: string;
   status: string;
   date?: string | null;
@@ -89,6 +91,7 @@ export interface DiscoverResponse {
 }
 
 export interface CreateMatchIntentRequest {
+  sport: "tennis" | "padel";
   date?: string;
   time?: string;
   isFlexibleDate?: boolean;

@@ -67,8 +67,8 @@ export default function Settings() {
   const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
   const [dateOfBirth, setDateOfBirth] = useState<Date>(defaultBirthdate);
   const [hasDateOfBirth, setHasDateOfBirth] = useState(false);
-  const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
-  const [selectedSkillLevel, setSelectedSkillLevel] = useState<string | null>(null);
+  const [selectedSports, setSelectedSports] = useState<Sport[]>([]);
+  const [skillLevels, setSkillLevels] = useState<Partial<Record<Sport, string>>>({});
   const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
   const [pendingPin, setPendingPin] = useState<string | null>(null);
@@ -92,8 +92,20 @@ export default function Settings() {
 
   useEffect(() => {
     if (preferences) {
-      setSelectedSport((preferences.sport as Sport) ?? null);
-      setSelectedSkillLevel(preferences.skillLevel ?? null);
+      const sports: Sport[] = [];
+      const levels: Partial<Record<Sport, string>> = {};
+      if (preferences.sport) {
+        sports.push(preferences.sport as Sport);
+        levels[preferences.sport as Sport] = preferences.skillLevel;
+      }
+      if (preferences.secondarySport) {
+        sports.push(preferences.secondarySport as Sport);
+        if (preferences.secondarySkillLevel) {
+          levels[preferences.secondarySport as Sport] = preferences.secondarySkillLevel;
+        }
+      }
+      setSelectedSports(sports);
+      setSkillLevels(levels);
       if (preferences.organizationId) {
         setSelectedOrganization({
           id: preferences.organizationId,
@@ -113,31 +125,66 @@ export default function Settings() {
       dateOfBirth: user?.dateOfBirth ?? null,
       sport: (preferences?.sport as Sport) ?? null,
       skillLevel: preferences?.skillLevel ?? null,
+      secondarySport: (preferences?.secondarySport as Sport) ?? null,
+      secondarySkillLevel: preferences?.secondarySkillLevel ?? null,
       organizationId: preferences?.organizationId ?? null,
       image: user?.image ?? null,
     }),
     [user, preferences]
   );
 
+  const originalSports = useMemo(
+    () => [originalValues.sport, originalValues.secondarySport].filter((s): s is Sport => !!s),
+    [originalValues.sport, originalValues.secondarySport]
+  );
+
+  const originalLevelFor = useCallback(
+    (sport: Sport) => {
+      if (sport === originalValues.sport) return originalValues.skillLevel;
+      if (sport === originalValues.secondarySport) return originalValues.secondarySkillLevel;
+      return null;
+    },
+    [originalValues]
+  );
+
   const currentDateOfBirthStr = hasDateOfBirth ? formatDateOfBirth(dateOfBirth) : null;
+
+  const sportsChanged =
+    [...selectedSports].sort().join(",") !== [...originalSports].sort().join(",") ||
+    selectedSports.some((s) => (skillLevels[s] ?? null) !== originalLevelFor(s));
 
   const hasChanges =
     name !== originalValues.name ||
     selectedGender !== originalValues.gender ||
     currentDateOfBirthStr !== originalValues.dateOfBirth ||
-    selectedSport !== originalValues.sport ||
-    selectedSkillLevel !== originalValues.skillLevel ||
+    sportsChanged ||
     selectedOrganization?.id !== originalValues.organizationId ||
     selectedImageUri !== null;
 
-  const canSave = hasChanges && name.trim().length > 0 && !isSaving;
+  const canSave =
+    hasChanges &&
+    name.trim().length > 0 &&
+    selectedSports.length > 0 &&
+    selectedSports.every((s) => !!skillLevels[s]) &&
+    !isSaving;
 
-  const handleSportChange = (sport: Sport) => {
-    setSelectedSport(sport);
-    const levels = getSkillLevels(sport);
-    if (levels.length > 0) {
-      setSelectedSkillLevel(levels[0].value);
-    }
+  const handleToggleSport = (sport: Sport) => {
+    setSelectedSports((prev) => {
+      if (prev.includes(sport)) {
+        // Always keep at least one sport selected.
+        return prev.length > 1 ? prev.filter((s) => s !== sport) : prev;
+      }
+      return [...prev, sport];
+    });
+    setSkillLevels((prev) => {
+      if (prev[sport]) return prev;
+      const levels = getSkillLevels(sport);
+      return levels.length > 0 ? { ...prev, [sport]: levels[0].value } : prev;
+    });
+  };
+
+  const handleSkillLevelChange = (sport: Sport, value: string) => {
+    setSkillLevels((prev) => ({ ...prev, [sport]: value }));
   };
 
   const handleDateOfBirthChange = (date: Date) => {
@@ -182,14 +229,22 @@ export default function Settings() {
         }
       }
 
-      const payload: Record<string, string> = {};
+      const payload: Record<string, string | null> = {};
       const trimmedName = name.trim();
 
       if (trimmedName && trimmedName !== originalValues.name) payload.name = trimmedName;
       if (selectedGender && selectedGender !== originalValues.gender) payload.gender = selectedGender;
       if (currentDateOfBirthStr && currentDateOfBirthStr !== originalValues.dateOfBirth) payload.dateOfBirth = currentDateOfBirthStr;
-      if (selectedSport && selectedSport !== originalValues.sport) payload.sport = selectedSport;
-      if (selectedSkillLevel && selectedSkillLevel !== originalValues.skillLevel) payload.skillLevel = selectedSkillLevel;
+      if (sportsChanged) {
+        const [primarySport, secondarySport] = selectedSports;
+        if (primarySport) {
+          payload.sport = primarySport;
+          payload.skillLevel = skillLevels[primarySport] ?? null;
+        }
+        // Explicit null clears the second sport when the player drops back to one.
+        payload.secondarySport = secondarySport ?? null;
+        if (secondarySport) payload.secondarySkillLevel = skillLevels[secondarySport] ?? null;
+      }
       if (selectedOrganization?.id && selectedOrganization.id !== originalValues.organizationId) {
         payload.organizationId = selectedOrganization.id;
         if (pendingPin) payload.pin = pendingPin;
@@ -324,10 +379,10 @@ export default function Settings() {
           </SectionCard>
 
           <SportLevelSection
-            sport={selectedSport}
-            onSportChange={handleSportChange}
-            skillLevel={selectedSkillLevel}
-            onSkillLevelChange={setSelectedSkillLevel}
+            sports={selectedSports}
+            onToggleSport={handleToggleSport}
+            skillLevels={skillLevels}
+            onSkillLevelChange={handleSkillLevelChange}
             scheme={scheme}
           />
 

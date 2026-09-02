@@ -59,27 +59,46 @@ const PADEL_LEVELS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"] as cons
 // don't get rejected while they update — old accounts may also still carry these values.
 const LEGACY_PADEL_LEVELS = ["Débutant", "Intermédiaire", "Avancé", "Expert"] as const;
 
+function isValidSkillLevel(sport: "tennis" | "padel", skillLevel: string): boolean {
+  if (sport === "tennis") return (TENNIS_LEVELS as readonly string[]).includes(skillLevel);
+  return (
+    (PADEL_LEVELS as readonly string[]).includes(skillLevel) ||
+    (LEGACY_PADEL_LEVELS as readonly string[]).includes(skillLevel)
+  );
+}
+
 export const completeOnboardingValidator = z
   .object({
     organizationId: z.string().min(1, "Organization ID is required"),
     sport: z.enum(["tennis", "padel"]),
     skillLevel: z.string().min(1, "Skill level is required"),
+    // A player who practices both sports can declare a second one, with its own level.
+    secondarySport: z.enum(["tennis", "padel"]).optional(),
+    secondarySkillLevel: z.string().min(1).optional(),
     name: z.string().min(2, "Name must be at least 2 characters"),
     gender: z.enum(["male", "female", "other"]),
     dateOfBirth: dateOfBirthSchema,
     imageUrl: z.string().url("Image must be a valid URL").optional(),
     pin: z.string().length(4).optional(),
   })
+  .refine((data) => isValidSkillLevel(data.sport, data.skillLevel), {
+    message: "Invalid skill level for the selected sport",
+    path: ["skillLevel"],
+  })
+  .refine((data) => !data.secondarySport || data.secondarySport !== data.sport, {
+    message: "secondarySport must be different from sport",
+    path: ["secondarySport"],
+  })
+  .refine((data) => !data.secondarySport || !!data.secondarySkillLevel, {
+    message: "secondarySkillLevel is required when secondarySport is set",
+    path: ["secondarySkillLevel"],
+  })
   .refine(
-    (data) => {
-      if (data.sport === "tennis")
-        return (TENNIS_LEVELS as readonly string[]).includes(data.skillLevel);
-      return (
-        (PADEL_LEVELS as readonly string[]).includes(data.skillLevel) ||
-        (LEGACY_PADEL_LEVELS as readonly string[]).includes(data.skillLevel)
-      );
-    },
-    { message: "Invalid skill level for the selected sport", path: ["skillLevel"] },
+    (data) =>
+      !data.secondarySport ||
+      !data.secondarySkillLevel ||
+      isValidSkillLevel(data.secondarySport, data.secondarySkillLevel),
+    { message: "Invalid skill level for the selected secondary sport", path: ["secondarySkillLevel"] },
   );
 
 export const updateProfileValidator = z
@@ -96,6 +115,10 @@ export const updateProfileValidator = z
     organizationId: z.string().min(1, "Organization ID must not be empty").optional(),
     sport: z.enum(["tennis", "padel"]).optional(),
     skillLevel: z.string().min(1, "Skill level must not be empty").optional(),
+    // A player who practices both sports can declare a second one, with its own level.
+    // secondarySport: null clears it (a player who no longer plays the second sport).
+    secondarySport: z.enum(["tennis", "padel"]).nullable().optional(),
+    secondarySkillLevel: z.string().min(1).optional(),
     gender: z.enum(["male", "female", "other"]).optional(),
     dateOfBirth: dateOfBirthSchema.optional(),
     pin: z.string().length(4).optional(),
@@ -110,6 +133,8 @@ export const updateProfileValidator = z
         data.organizationId !== undefined ||
         data.sport !== undefined ||
         data.skillLevel !== undefined ||
+        data.secondarySport !== undefined ||
+        data.secondarySkillLevel !== undefined ||
         data.gender !== undefined ||
         data.dateOfBirth !== undefined
       );
@@ -119,15 +144,21 @@ export const updateProfileValidator = z
   .refine(
     (data) => {
       // If skillLevel is provided, validate it against the sport (if sport is also provided)
-      if (data.skillLevel && data.sport) {
-        if (data.sport === "tennis")
-          return (TENNIS_LEVELS as readonly string[]).includes(data.skillLevel);
-        return (
-          (PADEL_LEVELS as readonly string[]).includes(data.skillLevel) ||
-          (LEGACY_PADEL_LEVELS as readonly string[]).includes(data.skillLevel)
-        );
-      }
+      if (data.skillLevel && data.sport) return isValidSkillLevel(data.sport, data.skillLevel);
       return true;
     },
     { message: "Invalid skill level for the selected sport", path: ["skillLevel"] },
+  )
+  .refine((data) => !data.secondarySport || !data.sport || data.secondarySport !== data.sport, {
+    message: "secondarySport must be different from sport",
+    path: ["secondarySport"],
+  })
+  .refine(
+    (data) => {
+      if (data.secondarySkillLevel && data.secondarySport) {
+        return isValidSkillLevel(data.secondarySport, data.secondarySkillLevel);
+      }
+      return true;
+    },
+    { message: "Invalid skill level for the selected secondary sport", path: ["secondarySkillLevel"] },
   );

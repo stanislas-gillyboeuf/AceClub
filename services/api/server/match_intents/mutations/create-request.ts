@@ -36,12 +36,17 @@ export const createRequest = async (c: Context<HonoContext>) => {
       return c.json({ error: "BadRequest", message: "Cannot request your own intent" }, 400);
     }
 
-    const [ownerPreference] = await db
-      .select({ sport: userPreference.sport })
-      .from(userPreference)
-      .where(eq(userPreference.userId, intent.userId))
-      .limit(1);
-    const sport = ownerPreference?.sport ?? "tennis";
+    let sport = intent.sport;
+    if (!sport) {
+      // Legacy row created before matchIntent.sport existed — fall back to the owner's
+      // primary preference at the time.
+      const [ownerPreference] = await db
+        .select({ sport: userPreference.sport })
+        .from(userPreference)
+        .where(eq(userPreference.userId, intent.userId))
+        .limit(1);
+      sport = ownerPreference?.sport ?? "tennis";
+    }
 
     if (sport === "tennis" && slotIndex != null) {
       return c.json({ error: "BadRequest", message: "Tennis requests don't target a slot" }, 400);

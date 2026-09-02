@@ -1,5 +1,6 @@
 import { boolean, integer, pgEnum, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { user } from "../auth/schema";
+import { SportType } from "../user-preference/schema";
 import { ulid } from "ulid";
 
 export const matchIntentStatus = pgEnum("match_intent_status", ["pending", "accepted", "rejected"]);
@@ -18,6 +19,11 @@ export const matchIntent = pgTable("match_intent", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id),
+  /**
+   * Which sport this search is for. Nullable for rows created before this column existed —
+   * those fall back to the creator's primary userPreference.sport at read time.
+   */
+  sport: SportType("sport"),
   date: timestamp("date"),
   time: timestamp("time"),
   isFlexibleDate: boolean("is_flexible_date").notNull().default(false),

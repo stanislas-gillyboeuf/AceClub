@@ -95,7 +95,14 @@ export const updateProfile = async (c: Context<HonoContext>) => {
       }
 
       // Update preferences if any preference field is provided
-      if (validated.organizationId || validated.sport || validated.skillLevel) {
+      const secondarySportProvided = validated.secondarySport !== undefined;
+      if (
+        validated.organizationId ||
+        validated.sport ||
+        validated.skillLevel ||
+        secondarySportProvided ||
+        validated.secondarySkillLevel
+      ) {
         const prefUpdateData: Record<string, unknown> = {
           updatedAt: new Date(),
         };
@@ -107,6 +114,13 @@ export const updateProfile = async (c: Context<HonoContext>) => {
         }
         if (validated.skillLevel) {
           prefUpdateData.skillLevel = validated.skillLevel;
+        }
+        if (secondarySportProvided) {
+          // Explicit null clears the second sport (and its level) — a player who dropped it.
+          prefUpdateData.secondarySport = validated.secondarySport;
+          prefUpdateData.secondarySkillLevel = validated.secondarySport ? validated.secondarySkillLevel : null;
+        } else if (validated.secondarySkillLevel) {
+          prefUpdateData.secondarySkillLevel = validated.secondarySkillLevel;
         }
 
         const updatedPrefRows = await tx
@@ -139,6 +153,8 @@ export const updateProfile = async (c: Context<HonoContext>) => {
             organizationId,
             sport: validated.sport,
             skillLevel: validated.skillLevel,
+            secondarySport: validated.secondarySport ?? null,
+            secondarySkillLevel: validated.secondarySport ? (validated.secondarySkillLevel ?? null) : null,
           });
         }
 

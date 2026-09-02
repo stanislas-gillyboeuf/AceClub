@@ -7,16 +7,16 @@ import Animated, { FadeIn, useAnimatedStyle, withTiming, withDelay } from "react
 import * as Haptics from "expo-haptics";
 
 interface SportStepProps {
-  selectedSport: Sport | null;
-  onSelect: (sport: Sport) => void;
+  selectedSports: Sport[];
+  onToggle: (sport: Sport) => void;
   firstName: string;
   clubName: string | null;
 }
 
-export function SportStep({ selectedSport, onSelect, firstName, clubName }: SportStepProps) {
-  const handleSelect = (sport: Sport) => {
+export function SportStep({ selectedSports, onToggle, firstName, clubName }: SportStepProps) {
+  const handleToggle = (sport: Sport) => {
     Haptics.selectionAsync();
-    onSelect(sport);
+    onToggle(sport);
   };
 
   return (
@@ -33,8 +33,8 @@ export function SportStep({ selectedSport, onSelect, firstName, clubName }: Spor
           style={styles.subtitle}
         >
           {clubName
-            ? `On a hâte de te voir sur les terrains de ${clubName}.`
-            : "Tu pourras toujours changer plus tard."}
+            ? `Tu peux choisir les deux — on a hâte de te voir sur les terrains de ${clubName}.`
+            : "Tu peux choisir les deux, et tu pourras toujours changer plus tard."}
         </Animated.Text>
       </View>
 
@@ -44,8 +44,8 @@ export function SportStep({ selectedSport, onSelect, firstName, clubName }: Spor
           label="Tennis"
           subtitle="Balle jaune"
           emoji="🎾"
-          isSelected={selectedSport === "tennis"}
-          onPress={() => handleSelect("tennis")}
+          isSelected={selectedSports.includes("tennis")}
+          onPress={() => handleToggle("tennis")}
           delay={300}
         />
         <SportCard
@@ -53,8 +53,8 @@ export function SportStep({ selectedSport, onSelect, firstName, clubName }: Spor
           label="Padel"
           subtitle="Entre 4 murs"
           emoji="🏓"
-          isSelected={selectedSport === "padel"}
-          onPress={() => handleSelect("padel")}
+          isSelected={selectedSports.includes("padel")}
+          onPress={() => handleToggle("padel")}
           delay={450}
         />
       </View>

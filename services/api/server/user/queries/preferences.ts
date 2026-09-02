@@ -16,6 +16,8 @@ export const getPreferences = async (c: Context<HonoContext>) => {
       organizationName: organization.name,
       sport: userPreference.sport,
       skillLevel: userPreference.skillLevel,
+      secondarySport: userPreference.secondarySport,
+      secondarySkillLevel: userPreference.secondarySkillLevel,
       createdAt: userPreference.createdAt,
       updatedAt: userPreference.updatedAt,
     })
@@ -35,6 +37,8 @@ export const getPreferences = async (c: Context<HonoContext>) => {
     organizationName: pref.organizationName,
     sport: pref.sport,
     skillLevel: pref.skillLevel,
+    secondarySport: pref.secondarySport,
+    secondarySkillLevel: pref.secondarySkillLevel,
     createdAt: pref.createdAt,
     updatedAt: pref.updatedAt,
   });

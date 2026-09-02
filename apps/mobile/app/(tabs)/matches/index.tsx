@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { Stack, useRouter } from "expo-router";
 import { View, Platform, SectionList, RefreshControl, StyleSheet } from "react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, spacing } from "@/constants/theme";
+import { semanticColors, spacing } from "@/constants/theme";
 import { useInfiniteMatches } from "@/hooks/use-match";
 import { MatchRow } from "@/features/matches/components/match-row";
 import { MatchDateHeader } from "@/features/matches/components/match-date-header";
@@ -12,6 +12,7 @@ import { MatchFab } from "@/features/matches/components/MatchFab";
 import { MatchEmptyDay } from "@/features/matches/components/MatchEmptyDay";
 import { EmptyState } from "@/components/ui/empty-state";
 import { MessagesHeaderButton } from "@/features/chat/components/MessagesHeaderButton";
+import { MessagesToolbarButton } from "@/components/ui/messages-toolbar-button";
 
 function ItemSeparator() {
   return <View style={separatorStyle} />;
@@ -73,12 +74,12 @@ export default function Matches() {
       <Stack.Screen
         options={{
           title: "Matchs",
-          headerLeft: Platform.OS === "android" ? () => <MessagesHeaderButton /> : undefined,
+          headerRight: Platform.OS === "android" ? () => <MessagesHeaderButton /> : undefined,
         }}
       />
       {Platform.OS === "ios" && (
-        <Stack.Toolbar placement="left">
-          <Stack.Toolbar.Button icon="message" onPress={() => router.push("/chat")} tintColor={colors.accentGreen} />
+        <Stack.Toolbar placement="right">
+          <MessagesToolbarButton />
         </Stack.Toolbar>
       )}
     </>

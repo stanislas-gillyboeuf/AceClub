@@ -31,15 +31,24 @@ export const createMatchIntent = async (c: Context<HonoContext>) => {
     }
 
     const [preference] = await db
-      .select({ sport: userPreference.sport })
+      .select({ sport: userPreference.sport, secondarySport: userPreference.secondarySport })
       .from(userPreference)
       .where(eq(userPreference.userId, userId))
       .limit(1);
+
+    const playerSports = [preference?.sport, preference?.secondarySport].filter(Boolean);
+    if (playerSports.length > 0 && !playerSports.includes(validated.sport)) {
+      return c.json(
+        { error: "BadRequest", message: "Tu ne pratiques pas ce sport d'après ton profil" },
+        400,
+      );
+    }
 
     const [createdMatchIntent] = await db
       .insert(matchIntent)
       .values({
         userId: userId,
+        sport: validated.sport,
         date: dateObj,
         time: dateObj,
         isFlexibleDate: validated.isFlexibleDate,
@@ -49,7 +58,7 @@ export const createMatchIntent = async (c: Context<HonoContext>) => {
       })
       .returning();
 
-    if (teammateUserIds.length > 0 && preference?.sport === "padel") {
+    if (teammateUserIds.length > 0 && validated.sport === "padel") {
       await db.insert(matchIntentTeammate).values(
         teammateUserIds.map((teammateUserId, index) => ({
           matchIntentId: createdMatchIntent.id,

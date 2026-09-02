@@ -13,7 +13,7 @@ import {
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { GlassView } from "@/components/ui/glass-view";
 import * as Location from "expo-location";
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 import { Check } from "lucide-react-native";
 import { PartnerRequestCard } from "@/features/discover/components/PartnerRequestCard";
 import { DiscoverFilters } from "@/features/discover/components/DiscoverFilters";
@@ -23,6 +23,7 @@ import { colors, semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { MatchIntentWithUser } from "@/types/match-intent";
 import { MessagesHeaderButton } from "@/features/chat/components/MessagesHeaderButton";
+import { MessagesToolbarButton } from "@/components/ui/messages-toolbar-button";
 
 const RADIUS_OPTIONS: { label: string; value: number | undefined }[] = [
   { label: "5 km", value: 5 },
@@ -34,7 +35,6 @@ const RADIUS_OPTIONS: { label: string; value: number | undefined }[] = [
 
 export default function DiscoverScreen() {
   const scheme = useColorScheme();
-  const router = useRouter();
   const {
     items,
     sport,
@@ -96,42 +96,46 @@ export default function DiscoverScreen() {
         options={{
           title: "Trouver un partenaire",
           headerLargeTitle: true,
-          headerLeft:
-            Platform.OS === "android" ? () => <MessagesHeaderButton /> : undefined,
           headerRight:
             Platform.OS === "android"
-              ? () =>
-                  !isDiscoveryRestricted ? (
-                    <Pressable onPress={() => setShowRadiusMenu(true)}>
-                      <MaterialIcons name="tune" size={24} color={colors.accentGreen} />
-                    </Pressable>
-                  ) : null
+              ? () => (
+                  <View style={styles.androidHeaderRight}>
+                    {!isDiscoveryRestricted && (
+                      <Pressable onPress={() => setShowRadiusMenu(true)}>
+                        <MaterialIcons name="tune" size={24} color={colors.accentGreen} />
+                      </Pressable>
+                    )}
+                    <MessagesHeaderButton />
+                  </View>
+                )
               : undefined,
         }}
       />
       {Platform.OS === "ios" && (
-        <Stack.Toolbar placement="left">
-          <Stack.Toolbar.Button onPress={() => router.push("/chat")} tintColor={colors.accentGreen}>
-            <Stack.Toolbar.Icon sf="message" />
-          </Stack.Toolbar.Button>
+        <>
           {!isDiscoveryRestricted && (
-            <Stack.Toolbar.Menu
-              icon="line.3.horizontal.decrease.circle"
-              title={selectedRadius ? `${selectedRadius} km` : "Tous"}
-              tintColor={colors.accentGreen}
-            >
-              {RADIUS_OPTIONS.map((option) => (
-                <Stack.Toolbar.MenuAction
-                  key={option.label}
-                  icon={selectedRadius === option.value ? "checkmark" : undefined}
-                  onPress={() => handleRadiusSelect(option.value)}
-                >
-                  {option.label}
-                </Stack.Toolbar.MenuAction>
-              ))}
-            </Stack.Toolbar.Menu>
+            <Stack.Toolbar placement="left">
+              <Stack.Toolbar.Menu
+                icon="line.3.horizontal.decrease.circle"
+                title={selectedRadius ? `${selectedRadius} km` : "Tous"}
+                tintColor={colors.accentGreen}
+              >
+                {RADIUS_OPTIONS.map((option) => (
+                  <Stack.Toolbar.MenuAction
+                    key={option.label}
+                    icon={selectedRadius === option.value ? "checkmark" : undefined}
+                    onPress={() => handleRadiusSelect(option.value)}
+                  >
+                    {option.label}
+                  </Stack.Toolbar.MenuAction>
+                ))}
+              </Stack.Toolbar.Menu>
+            </Stack.Toolbar>
           )}
-        </Stack.Toolbar>
+          <Stack.Toolbar placement="right">
+            <MessagesToolbarButton />
+          </Stack.Toolbar>
+        </>
       )}
       <FlatList
         style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
@@ -213,6 +217,11 @@ export default function DiscoverScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  androidHeaderRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
   },
   listContent: {
     paddingHorizontal: 20,

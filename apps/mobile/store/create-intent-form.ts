@@ -1,8 +1,10 @@
 import { create } from "zustand";
 import type { MatchIntentType } from "@/types/match-intent";
 import type { UserSearchItem } from "@/types/user";
+import type { Sport } from "@/types/common";
 
 interface CreateIntentFormData {
+  sport: Sport;
   intentType: MatchIntentType;
   date: Date;
   time: Date;
@@ -13,6 +15,7 @@ interface CreateIntentFormData {
 }
 
 interface CreateIntentFormState extends CreateIntentFormData {
+  setSport: (sport: Sport) => void;
   setIntentType: (type: MatchIntentType) => void;
   setDate: (date: Date) => void;
   setTime: (time: Date) => void;
@@ -30,6 +33,7 @@ function defaultTime(): Date {
 }
 
 const defaultState = (): CreateIntentFormData => ({
+  sport: "tennis",
   intentType: "match",
   date: new Date(),
   time: defaultTime(),
@@ -42,6 +46,7 @@ const defaultState = (): CreateIntentFormData => ({
 export const useCreateIntentFormStore = create<CreateIntentFormState>((set) => ({
   ...defaultState(),
 
+  setSport: (sport) => set({ sport }),
   setIntentType: (intentType) => set({ intentType }),
   setDate: (date) => set({ date }),
   setTime: (time) => set({ time }),

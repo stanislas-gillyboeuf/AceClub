@@ -43,6 +43,9 @@ export interface UserPreferences {
   organizationName?: string | null;
   sport: string;
   skillLevel: string;
+  /** Second sport for players who play both tennis and padel. */
+  secondarySport?: string | null;
+  secondarySkillLevel?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -52,6 +55,8 @@ export interface CompleteOnboardingRequest {
   organizationId: string;
   sport: string;
   skillLevel: string;
+  secondarySport?: string;
+  secondarySkillLevel?: string;
   gender: "male" | "female" | "other";
   dateOfBirth: string;
   imageUrl?: string | null;
@@ -64,6 +69,9 @@ export interface UpdateProfileRequest {
   organizationId?: string | null;
   sport?: string | null;
   skillLevel?: string | null;
+  /** null explicitly clears the second sport. */
+  secondarySport?: string | null;
+  secondarySkillLevel?: string | null;
   gender?: "male" | "female" | "other" | null;
   dateOfBirth?: string | null;
   pin?: string | null;

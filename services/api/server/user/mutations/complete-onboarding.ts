@@ -52,6 +52,8 @@ export const completeOnboarding = async (c: Context<HonoContext>) => {
         organizationId: validated.organizationId,
         sport: validated.sport,
         skillLevel: validated.skillLevel,
+        secondarySport: validated.secondarySport ?? null,
+        secondarySkillLevel: validated.secondarySkillLevel ?? null,
       })
       .onConflictDoUpdate({
         target: userPreference.userId,
@@ -59,6 +61,8 @@ export const completeOnboarding = async (c: Context<HonoContext>) => {
           organizationId: validated.organizationId,
           sport: validated.sport,
           skillLevel: validated.skillLevel,
+          secondarySport: validated.secondarySport ?? null,
+          secondarySkillLevel: validated.secondarySkillLevel ?? null,
           updatedAt: new Date(),
         },
       });

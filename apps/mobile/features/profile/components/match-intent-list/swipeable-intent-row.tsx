@@ -121,6 +121,11 @@ export function SwipeableIntentRow({
             <Text style={[styles.intentType, { color: semanticColors.labelPrimary[scheme] }]}>
               {isMatch ? "Match" : "Entraînement"}
             </Text>
+            {intent.sport && (
+              <Text style={[styles.sportLabel, { color: semanticColors.labelTertiary[scheme] }]}>
+                {intent.sport === "padel" ? "Padel" : "Tennis"}
+              </Text>
+            )}
             {relativeLabel && (
               <View style={[styles.relativeBadge, { backgroundColor: `${accentColor}1A` }]}>
                 <Text style={[styles.relativeBadgeText, { color: accentColor }]}>
@@ -177,6 +182,10 @@ const styles = StyleSheet.create({
   intentType: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  sportLabel: {
+    fontSize: 12,
+    fontWeight: "500",
   },
   relativeBadge: {
     paddingHorizontal: 8,

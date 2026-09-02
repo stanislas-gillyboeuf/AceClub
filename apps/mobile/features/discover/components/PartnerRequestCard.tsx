@@ -21,7 +21,7 @@ export function PartnerRequestCard({ item }: PartnerRequestCardProps) {
   const createRequest = useCreateMatchRequest();
   const [pendingSlot, setPendingSlot] = useState<number | "tennis" | null>(null);
 
-  const sport = item.user?.sport === "padel" ? "padel" : "tennis";
+  const sport = (item.intent.sport ?? item.user?.sport) === "padel" ? "padel" : "tennis";
   const isPadel = sport === "padel";
   const accent = isPadel ? colors.accentOrange : colors.accentGreen;
   const displayName = item.user?.name ?? "Joueur";

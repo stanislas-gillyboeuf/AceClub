@@ -18,6 +18,7 @@ import { useActiveMember } from "@/hooks/use-organization";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 import { MessagesHeaderButton } from "@/features/chat/components/MessagesHeaderButton";
+import { MessagesToolbarButton } from "@/components/ui/messages-toolbar-button";
 import { LevelProgressCard } from "@/features/feed/components/level-progress-card";
 import { FeedMatchRow } from "@/features/feed/components/feed-match-row";
 import { EventsFeedSection } from "@/features/events/components/events-feed-section";
@@ -76,28 +77,25 @@ export default function Feed() {
       <Stack.Screen
         options={{
           title: "Activite",
-          headerLeft:
-            Platform.OS === "android" ? () => <MessagesHeaderButton /> : undefined,
           headerRight:
             Platform.OS === "android"
               ? () => (
-                  <Pressable onPress={goToRanking}>
-                    <MaterialIcons name="emoji-events" size={24} color={colors.accentGreen} />
-                  </Pressable>
+                  <View style={styles.androidHeaderRight}>
+                    <Pressable onPress={goToRanking}>
+                      <MaterialIcons name="emoji-events" size={24} color={colors.accentGreen} />
+                    </Pressable>
+                    <MessagesHeaderButton />
+                  </View>
                 )
               : undefined,
         }}
       />
 
       {Platform.OS === "ios" && (
-        <>
-          <Stack.Toolbar placement="left">
-            <Stack.Toolbar.Button icon="message" onPress={() => router.push("/chat")} tintColor={colors.accentGreen} />
-          </Stack.Toolbar>
-          <Stack.Toolbar placement="right">
-            <Stack.Toolbar.Button icon="trophy" onPress={goToRanking} tintColor={colors.accentGreen} />
-          </Stack.Toolbar>
-        </>
+        <Stack.Toolbar placement="right">
+          <Stack.Toolbar.Button icon="trophy" onPress={goToRanking} tintColor={colors.accentGreen} />
+          <MessagesToolbarButton />
+        </Stack.Toolbar>
       )}
 
       <Animated.FlatList
@@ -167,6 +165,11 @@ export default function Feed() {
 }
 
 const styles = StyleSheet.create({
+  androidHeaderRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
   listContent: {
     paddingBottom: 32,
   },

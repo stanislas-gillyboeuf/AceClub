@@ -10,6 +10,11 @@ export function useConversations() {
   });
 }
 
+export function useUnreadMessagesCount() {
+  const { data: conversations } = useConversations();
+  return conversations?.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) ?? 0;
+}
+
 export function useConversation(id: string) {
   return useQuery({
     queryKey: queryKeys.conversation.detail(id),

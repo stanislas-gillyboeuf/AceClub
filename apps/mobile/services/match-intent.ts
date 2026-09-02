@@ -20,6 +20,7 @@ function mapDiscoverItem(raw: DiscoverItemRaw): MatchIntentWithUser {
     intent: {
       id: raw.id,
       userId: raw.userId,
+      sport: raw.sport ?? null,
       type: raw.type as MatchIntent["type"],
       status: raw.status as MatchIntent["status"],
       date: raw.date ?? null,
