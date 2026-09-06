@@ -8,13 +8,13 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="container mx-auto px-4 py-12 max-w-4xl">
-        <h1 className="text-4xl font-bold mb-8">Politique de Confidentialité</h1>
-        <p className="text-muted-foreground mb-8">
+    <div className="mkt-light-section mx-auto max-w-3xl px-6 py-20 sm:py-28">
+        <h1 className="font-display text-5xl uppercase leading-none tracking-tight sm:text-6xl">Politique de Confidentialité</h1>
+        <p className="mt-5 text-[15px] text-foreground/50">
           Dernière mise à jour : 4 février 2026
         </p>
 
-        <div className="prose prose-lg dark:prose-invert max-w-none space-y-8">
+        <div className="prose prose-lg mt-14 max-w-none space-y-10">
           <section>
             <h2 className="text-2xl font-semibold mb-4">1. Introduction</h2>
             <p className="text-foreground/80 leading-relaxed">

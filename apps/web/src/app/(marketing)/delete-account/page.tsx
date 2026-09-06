@@ -53,12 +53,12 @@ export default function DeleteAccountPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-2xl">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Demande de suppression de compte</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Vous souhaitez supprimer votre compte AceClub ? Remplissez le formulaire
-          ci-dessous et notre équipe traitera votre demande.
+    <div className="mkt-light-section mx-auto max-w-xl px-6 py-20 sm:py-28">
+      <div className="mb-12 text-center">
+        <h1 className="font-display text-5xl uppercase leading-none tracking-tight sm:text-6xl">Suppression de compte</h1>
+        <p className="mt-5 text-balance text-lg text-foreground/60">
+          Remplissez le formulaire ci-dessous et notre équipe traitera votre
+          demande.
         </p>
       </div>
 
