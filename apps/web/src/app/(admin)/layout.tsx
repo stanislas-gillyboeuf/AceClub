@@ -26,7 +26,7 @@ export default function AdminLayout({
 
   if (isPending) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="admin-theme flex h-screen items-center justify-center bg-background text-foreground">
         <span className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     )
@@ -37,15 +37,17 @@ export default function AdminLayout({
   }
 
   return (
-    <Providers>
-      <SidebarProvider defaultOpen={false}>
-        <AppSidebar />
-        <SidebarInset className="flex h-screen flex-col">
-          <main className="flex flex-1 flex-col gap-4 p-4 overflow-auto">
-            {children}
-          </main>
-        </SidebarInset>
-      </SidebarProvider>
-    </Providers>
+    <div className="admin-theme bg-background text-foreground">
+      <Providers>
+        <SidebarProvider defaultOpen={false}>
+          <AppSidebar />
+          <SidebarInset className="flex h-screen flex-col">
+            <main className="flex flex-1 flex-col gap-4 p-4 overflow-auto">
+              {children}
+            </main>
+          </SidebarInset>
+        </SidebarProvider>
+      </Providers>
+    </div>
   )
 }

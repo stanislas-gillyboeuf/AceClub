@@ -41,7 +41,7 @@ export default function MatchesPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">Matchs</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Matchs</h1>
         <p className="text-muted-foreground">
           Tous les matchs de la plateforme
         </p>

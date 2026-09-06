@@ -42,7 +42,7 @@ export default function DeletionRequestsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Demandes de suppression</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Demandes de suppression</h1>
         <p className="text-muted-foreground">
           Gérer les demandes de suppression de compte des utilisateurs
         </p>

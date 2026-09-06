@@ -266,7 +266,7 @@ export default function OrganizationDetailPage() {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-2xl font-bold">D&eacute;tail organisation</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">D&eacute;tail organisation</h1>
       </div>
 
       {org && (

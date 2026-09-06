@@ -122,7 +122,7 @@ export default function ChallengesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Defis</h1>
+          <h1 className="font-display text-3xl uppercase tracking-tight">Defis</h1>
           <p className="text-muted-foreground">
             Gerer les modeles de defis hebdomadaires. La distribution
             automatique aux joueurs a lieu chaque lundi matin. Pour un defi

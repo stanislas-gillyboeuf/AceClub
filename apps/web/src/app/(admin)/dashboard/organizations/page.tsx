@@ -47,7 +47,7 @@ export default function OrganizationsPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">Organisations</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Organisations</h1>
         <p className="text-muted-foreground">
           G&eacute;rer les organisations de la plateforme
         </p>

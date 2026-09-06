@@ -15,7 +15,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
           Bienvenue dans le panneau d&apos;administration AceClub
         </p>

@@ -96,7 +96,7 @@ export default function UserDetailPage() {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-2xl font-bold">Détail utilisateur</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Détail utilisateur</h1>
       </div>
 
       {/* User info card */}

@@ -181,7 +181,7 @@ export default function GameConfigPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Configuration du jeu</h1>
+          <h1 className="font-display text-3xl uppercase tracking-tight">Configuration du jeu</h1>
           <p className="text-muted-foreground">
             Parametres de points, niveaux et multiplicateurs
           </p>

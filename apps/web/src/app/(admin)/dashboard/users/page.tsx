@@ -65,7 +65,7 @@ export default function UsersPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">Utilisateurs</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Utilisateurs</h1>
         <p className="text-muted-foreground">
           Gérer les utilisateurs de la plateforme
         </p>

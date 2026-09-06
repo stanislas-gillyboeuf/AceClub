@@ -139,7 +139,7 @@ export default function MatchDetailPage() {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-2xl font-bold">Détail du match</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">Détail du match</h1>
       </div>
 
       {/* Match info card */}

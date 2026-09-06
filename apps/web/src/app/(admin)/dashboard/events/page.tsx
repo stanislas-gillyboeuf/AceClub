@@ -48,7 +48,7 @@ export default function EventsPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">&Eacute;v&eacute;nements</h1>
+        <h1 className="font-display text-3xl uppercase tracking-tight">&Eacute;v&eacute;nements</h1>
         <p className="text-muted-foreground">
           G&eacute;rer les &eacute;v&eacute;nements de la plateforme
         </p>

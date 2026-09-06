@@ -107,9 +107,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Shield className="size-4" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">AceClub</span>
-                  <span className="truncate text-xs">Admin</span>
+                <div className="grid flex-1 text-left leading-tight">
+                  <span className="truncate font-display text-lg uppercase tracking-tight">Ace Club</span>
+                  <span className="truncate text-xs text-sidebar-foreground/60">Admin</span>
                 </div>
               </a>
             </SidebarMenuButton>
