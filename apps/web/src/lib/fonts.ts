@@ -1,6 +1,8 @@
-import { Inter as FontSans } from "next/font/google";
+import { Bebas_Neue } from "next/font/google";
 
-export const fontSans = FontSans({
+/** Condensed, bold display face for headlines and big stat numbers — not body text. */
+export const fontDisplay = Bebas_Neue({
   subsets: ["latin"],
-  variable: "--font-sans",
+  weight: "400",
+  variable: "--font-display-raw",
 });

@@ -42,7 +42,23 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display-raw);
   --max-container-width: 1200px;
+
+  /* Marketing site tokens — dark by default, chartreuse the one and only accent. */
+  --color-mkt-bg: var(--mkt-bg);
+  --color-mkt-bg-raised: var(--mkt-bg-raised);
+  --color-mkt-fg: var(--mkt-fg);
+  --color-mkt-fg-dim: var(--mkt-fg-dim);
+  --color-mkt-accent: var(--mkt-accent);
+  --color-mkt-accent-foreground: var(--mkt-accent-foreground);
+  --color-mkt-border: var(--mkt-border);
+  /* Light-section tokens — pricing/FAQ flip to light for trust + readability. */
+  --color-mkt-light-bg: var(--mkt-light-bg);
+  --color-mkt-light-fg: var(--mkt-light-fg);
+  --color-mkt-light-fg-dim: var(--mkt-light-fg-dim);
+  --color-mkt-light-border: var(--mkt-light-border);
+  --color-mkt-light-raised: var(--mkt-light-raised);
 
   --animate-marquee: marquee var(--duration) linear infinite;
   --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
@@ -140,6 +156,35 @@
   --sidebar-accent-foreground: oklch(0.25 0.03 145);
   --sidebar-border: oklch(0.90 0.02 85);
   --sidebar-ring: oklch(0.52 0.14 152);
+}
+
+/*
+ * Marketing site — dark-first, one saturated accent (chartreuse), never following the
+ * admin dashboard's own theme. Pricing/FAQ opt into the light tokens below for
+ * readability + a "moment of decision" contrast — see .mkt-light-section.
+ */
+.marketing-theme {
+  --mkt-bg: oklch(0.16 0.02 130); /* #0A0C08-ish near-black, faint green cast */
+  --mkt-bg-raised: oklch(0.21 0.022 130); /* cards/raised surfaces on dark */
+  --mkt-fg: oklch(0.97 0.01 100); /* warm off-white */
+  --mkt-fg-dim: oklch(0.97 0.01 100 / 60%);
+  --mkt-accent: oklch(0.93 0.23 126); /* #D7FF3F chartreuse */
+  --mkt-accent-foreground: oklch(0.16 0.02 130);
+  --mkt-border: oklch(1 0 0 / 10%);
+
+  --mkt-light-bg: oklch(0.99 0.003 100);
+  --mkt-light-fg: oklch(0.16 0.02 130);
+  --mkt-light-fg-dim: oklch(0.16 0.02 130 / 60%);
+  --mkt-light-border: oklch(0.16 0.02 130 / 10%);
+  --mkt-light-raised: oklch(1 0 0);
+
+  background-color: var(--mkt-bg);
+  color: var(--mkt-fg);
+}
+
+.mkt-light-section {
+  background-color: var(--mkt-light-bg);
+  color: var(--mkt-light-fg);
 }
 
 .dark {

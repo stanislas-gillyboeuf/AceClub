@@ -8,53 +8,43 @@ const currentYear = new Date().getFullYear()
 
 function Footerdemo() {
   return (
-    <footer className="relative border-t bg-background text-foreground">
-      <div className="container mx-auto px-4 py-12 md:px-6 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {/* Logo & Description */}
-          <div className="lg:col-span-2">
-            <Link href="/" className="mb-4 flex items-center gap-2">
-              <Icons.logo className="h-8 w-8 rounded-full" />
-              <span className="text-xl font-bold">{siteConfig.name}</span>
-            </Link>
-            <p className="max-w-md text-muted-foreground">
-              {siteConfig.description}
-            </p>
-          </div>
+    <footer className="border-t border-mkt-border bg-mkt-bg text-mkt-fg">
+      <div className="mx-auto max-w-[var(--max-container-width)] px-6 py-12">
+        <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
+          <Link href="/" className="flex items-center gap-2.5">
+            <Icons.logo className="h-7 w-7 rounded-[7px]" />
+            <span className="text-[15px] font-semibold tracking-tight">{siteConfig.name}</span>
+          </Link>
 
-          {/* Navigation */}
-          <div>
-            <h3 className="mb-4 text-lg font-semibold">Navigation</h3>
-            <nav className="space-y-2 text-sm">
-              {siteConfig.navigation.menuItems.map((item) => (
+          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[14px]">
+            {siteConfig.navigation.menuItems
+              .filter((item) => item.href !== "/")
+              .map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="block text-muted-foreground transition-colors hover:text-primary"
+                  className="text-mkt-fg-dim transition-colors hover:text-mkt-fg"
                 >
                   {item.title}
                 </Link>
               ))}
-            </nav>
-          </div>
-        </div>
-
-        {/* Bottom bar */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t pt-8 text-center md:flex-row">
-          <p className="text-sm text-muted-foreground">
-            © {currentYear} {siteConfig.name}. Tous droits réservés.
-          </p>
-          <nav className="flex gap-4 text-sm">
             {siteConfig.navigation.legalItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-muted-foreground transition-colors hover:text-primary"
+                className="text-mkt-fg-dim transition-colors hover:text-mkt-fg"
               >
                 {item.title}
               </Link>
             ))}
           </nav>
+        </div>
+
+        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-mkt-border pt-6 text-[13px] text-mkt-fg-dim sm:flex-row">
+          <p>© {currentYear} {siteConfig.name}. Tous droits réservés.</p>
+          <a href={`mailto:${siteConfig.links.email}`} className="hover:text-mkt-fg">
+            {siteConfig.links.email}
+          </a>
         </div>
       </div>
     </footer>

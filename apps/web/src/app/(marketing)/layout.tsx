@@ -7,7 +7,7 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="marketing-theme min-h-screen flex flex-col bg-mkt-bg text-mkt-fg">
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
