@@ -10,6 +10,7 @@ import {
   listMyEvents,
   listParticipants,
   adminListEvents,
+  adminListParticipants,
 } from "./queries";
 import {
   createEvent,
@@ -22,6 +23,8 @@ import {
   removeParticipant,
   adminUpdateStatus,
   adminDeleteEvent,
+  adminRemoveParticipant,
+  adminUpdateParticipantStatus,
 } from "./mutations";
 import {
   getEventValidator,
@@ -37,6 +40,9 @@ import {
   cancelRegistrationValidator,
   removeParticipantValidator,
   adminListEventsValidator,
+  adminListParticipantsValidator,
+  adminRemoveParticipantValidator,
+  adminUpdateParticipantStatusValidator,
 } from "./validators";
 
 export const eventRouter = new Hono<HonoContext>();
@@ -98,4 +104,22 @@ eventRouter.post(
   isAdmin,
   zValidator("json", deleteEventValidator),
   adminDeleteEvent,
+);
+eventRouter.get(
+  "/admin-list-participants",
+  isAdmin,
+  zValidator("query", adminListParticipantsValidator),
+  adminListParticipants,
+);
+eventRouter.post(
+  "/admin-remove-participant",
+  isAdmin,
+  zValidator("json", adminRemoveParticipantValidator),
+  adminRemoveParticipant,
+);
+eventRouter.post(
+  "/admin-update-participant-status",
+  isAdmin,
+  zValidator("json", adminUpdateParticipantStatusValidator),
+  adminUpdateParticipantStatus,
 );

@@ -397,6 +397,36 @@ export function useUpdateMemberRole() {
   })
 }
 
+export function useAdminRemoveParticipant() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { participantId: string }) =>
+      apiClient("/event/admin-remove-participant", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-event-participants"] })
+    },
+  })
+}
+
+export function useAdminUpdateParticipantStatus() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: { participantId: string; status: string }) =>
+      apiClient("/event/admin-update-participant-status", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-event-participants"] })
+    },
+  })
+}
+
 export function useAdminDeleteEvent() {
   const queryClient = useQueryClient()
 

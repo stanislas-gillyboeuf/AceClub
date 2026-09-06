@@ -119,3 +119,19 @@ export const adminListEventsValidator = z.object({
   limit: z.coerce.number().min(1).max(100).optional().default(50),
   offset: z.coerce.number().min(0).optional().default(0),
 });
+
+export const adminListParticipantsValidator = z.object({
+  eventId: z.string().min(1, "Event ID is required"),
+  status: z.enum(["registered", "waitlisted", "cancelled"]).optional(),
+  limit: z.coerce.number().min(1).max(100).optional().default(50),
+  offset: z.coerce.number().min(0).optional().default(0),
+});
+
+export const adminRemoveParticipantValidator = z.object({
+  participantId: z.string().min(1, "Participant ID is required"),
+});
+
+export const adminUpdateParticipantStatusValidator = z.object({
+  participantId: z.string().min(1, "Participant ID is required"),
+  status: z.enum(["registered", "waitlisted", "cancelled"]),
+});

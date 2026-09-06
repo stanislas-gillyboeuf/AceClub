@@ -301,6 +301,31 @@ export interface ListEventsResponse {
   total: number
 }
 
+export type EventParticipantStatus = "registered" | "waitlisted" | "cancelled"
+
+export interface AdminEventParticipant {
+  id: string
+  userId: string
+  status: EventParticipantStatus
+  registeredAt: string
+  userName: string
+  userEmail: string
+  userImage: string | null
+}
+
+export interface ListEventParticipantsParams {
+  eventId: string
+  status?: EventParticipantStatus
+  limit?: number
+  offset?: number
+}
+
+export interface ListEventParticipantsResponse {
+  event: AdminEvent
+  participants: AdminEventParticipant[]
+  total: number
+}
+
 // Game Config
 export interface GameConfigEntry {
   id: string

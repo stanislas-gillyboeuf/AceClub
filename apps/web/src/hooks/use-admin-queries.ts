@@ -17,6 +17,8 @@ import type {
   ListAccountDeletionRequestsResponse,
   ListEventsParams,
   ListEventsResponse,
+  ListEventParticipantsParams,
+  ListEventParticipantsResponse,
   GameConfigResponse,
   ListChallengeTemplatesParams,
   ListChallengeTemplatesResponse,
@@ -174,6 +176,26 @@ export function useAdminEvents(params: ListEventsParams) {
       apiClient<ListEventsResponse>(
         `/event/admin-list-events${qs ? `?${qs}` : ""}`,
       ),
+  })
+}
+
+export function useAdminEventParticipants(params: ListEventParticipantsParams) {
+  const searchParams = new URLSearchParams()
+
+  searchParams.set("eventId", params.eventId)
+  if (params.status) searchParams.set("status", params.status)
+  if (params.limit) searchParams.set("limit", String(params.limit))
+  if (params.offset) searchParams.set("offset", String(params.offset))
+
+  const qs = searchParams.toString()
+
+  return useQuery({
+    queryKey: ["admin-event-participants", params],
+    queryFn: () =>
+      apiClient<ListEventParticipantsResponse>(
+        `/event/admin-list-participants?${qs}`,
+      ),
+    enabled: !!params.eventId,
   })
 }
 

@@ -8,3 +8,5 @@ export { cancelRegistration } from "./cancel-registration";
 export { removeParticipant } from "./remove-participant";
 export { adminUpdateStatus } from "./admin-update-status";
 export { adminDeleteEvent } from "./admin-delete";
+export { adminRemoveParticipant } from "./admin-remove-participant";
+export { adminUpdateParticipantStatus } from "./admin-update-participant-status";
