@@ -1,24 +1,16 @@
-import { Benefits } from "@/components/sections/benefits";
-import { BentoGrid } from "@/components/sections/bento";
 import { CTA } from "@/components/sections/cta";
-import { FAQ } from "@/components/sections/faq";
-import { FeatureHighlight } from "@/components/sections/feature-highlight";
-import { FeatureScroll } from "@/components/sections/feature-scroll";
-import { Features } from "@/components/sections/features";
+import { FounderStory } from "@/components/sections/founder-story";
 import { Hero } from "@/components/sections/hero";
-import { Pricing } from "@/components/sections/pricing";
+import { ProductTeaser } from "@/components/sections/product-teaser";
+import { Traction } from "@/components/sections/traction";
 
 export default function Home() {
   return (
     <>
       <Hero />
-      <FeatureScroll />
-      <FeatureHighlight />
-      <BentoGrid />
-      <Benefits />
-      <Features />
-      <Pricing />
-      <FAQ />
+      <ProductTeaser />
+      <Traction />
+      <FounderStory />
       <CTA />
     </>
   );
