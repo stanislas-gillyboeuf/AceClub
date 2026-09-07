@@ -48,7 +48,7 @@ const FEATURES: Feature[] = [
   {
     id: "carnet",
     eyebrow: "Carnet de bord",
-    title: "Chaque match compte, et se souvient",
+    title: "Chaque partie compte, il faut s'en souvenir",
     description:
       "Scores, adversaires, ressenti après le match : chaque partie s'enregistre en quelques secondes et vient nourrir un historique complet de la vie du joueur au club.",
     points: [
