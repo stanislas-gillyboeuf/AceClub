@@ -44,8 +44,8 @@ export async function POST(request: NextRequest) {
 
     // Send email via Resend
     const { data, error } = await resend.emails.send({
-      from: "AceClub <noreply@aceclub.app>",
-      to: ["contact@aceclub.app"],
+      from: "AceClub <noreply@ace-club.app>",
+      to: ["contact.stanislas@ace-club.app"],
       replyTo: body.email,
       subject: `[Contact AceClub] ${body.clubName}`,
       html: `
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
         <hr>
         <p style="color: #666; font-size: 12px;">
-          Ce message a été envoyé via le formulaire de contact du site aceclub.app
+          Ce message a été envoyé via le formulaire de contact du site ace-club.app
         </p>
       `,
       text: `
@@ -80,7 +80,7 @@ Message
 ${body.message}
 
 ---
-Ce message a été envoyé via le formulaire de contact du site aceclub.app
+Ce message a été envoyé via le formulaire de contact du site ace-club.app
       `,
     });
 
@@ -94,7 +94,7 @@ Ce message a été envoyé via le formulaire de contact du site aceclub.app
 
     // Send confirmation email to the user
     await resend.emails.send({
-      from: "AceClub <noreply@aceclub.app>",
+      from: "AceClub <noreply@ace-club.app>",
       to: [body.email],
       subject: "Merci pour votre intérêt - AceClub",
       html: `
@@ -104,7 +104,7 @@ Ce message a été envoyé via le formulaire de contact du site aceclub.app
 
         <p>Nous avons bien reçu votre demande et reviendrons vers vous dans les plus brefs délais.</p>
 
-        <p>En attendant, n'hésitez pas à visiter notre site <a href="https://aceclub.app">aceclub.app</a> pour en savoir plus sur nos fonctionnalités.</p>
+        <p>En attendant, n'hésitez pas à visiter notre site <a href="https://ace-club.app">ace-club.app</a> pour en savoir plus sur nos fonctionnalités.</p>
 
         <p>À bientôt,<br>L'équipe AceClub</p>
 
@@ -120,7 +120,7 @@ Merci d'avoir contacté AceClub pour votre club ${body.clubName}.
 
 Nous avons bien reçu votre demande et reviendrons vers vous dans les plus brefs délais.
 
-En attendant, n'hésitez pas à visiter notre site aceclub.app pour en savoir plus sur nos fonctionnalités.
+En attendant, n'hésitez pas à visiter notre site ace-club.app pour en savoir plus sur nos fonctionnalités.
 
 À bientôt,
 L'équipe AceClub
