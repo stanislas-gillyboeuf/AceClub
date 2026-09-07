@@ -4,6 +4,7 @@ import { easeOutCubic } from "@/lib/animation";
 import { MotionDiv } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
+import { BookingStepsPhone } from "./booking-steps-phone";
 
 interface Feature {
   id: string;
@@ -103,13 +104,17 @@ function FeatureRow({ feature }: { feature: Feature }) {
         transition={{ duration: 0.7, ease: easeOutCubic }}
         className="w-full max-w-sm lg:w-1/2"
       >
-        <div className="overflow-hidden rounded-[28px] border border-mkt-border bg-mkt-bg-raised shadow-[0_30px_80px_-30px_rgba(0,0,0,0.5)]">
-          <img
-            src={feature.image}
-            alt={feature.title}
-            className="aspect-[1170/2532] w-full object-contain"
-          />
-        </div>
+        {feature.id === "reservation" ? (
+          <BookingStepsPhone />
+        ) : (
+          <div className="overflow-hidden rounded-[28px] border border-mkt-border bg-mkt-bg-raised shadow-[0_30px_80px_-30px_rgba(0,0,0,0.5)]">
+            <img
+              src={feature.image}
+              alt={feature.title}
+              className="aspect-[1170/2532] w-full object-contain"
+            />
+          </div>
+        )}
       </MotionDiv>
     </div>
   );
