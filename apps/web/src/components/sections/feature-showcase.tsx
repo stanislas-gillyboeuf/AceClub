@@ -107,7 +107,7 @@ function FeatureRow({ feature }: { feature: Feature }) {
           <img
             src={feature.image}
             alt={feature.title}
-            className="aspect-[9/16] w-full object-cover object-top"
+            className="aspect-[1170/2532] w-full object-contain"
           />
         </div>
       </MotionDiv>

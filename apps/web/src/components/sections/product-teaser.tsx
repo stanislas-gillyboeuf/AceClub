@@ -35,7 +35,7 @@ export function ProductTeaser() {
               className="flex flex-col items-center"
             >
               <div className="w-full overflow-hidden rounded-2xl border border-mkt-border bg-mkt-bg-raised">
-                <img src={item.image} alt={item.label} className="aspect-[9/18] w-full object-cover object-top" />
+                <img src={item.image} alt={item.label} className="aspect-[1170/2532] w-full object-contain" />
               </div>
               <p className="mt-4 text-center text-[13px] font-medium text-mkt-fg-dim sm:text-[14px]">
                 {item.label}

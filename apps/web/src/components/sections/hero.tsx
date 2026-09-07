@@ -76,10 +76,10 @@ export function Hero() {
         className="relative mx-auto mt-16 flex max-w-3xl justify-center gap-5 px-6 sm:mt-20"
       >
         <div className="w-40 -rotate-3 overflow-hidden rounded-[24px] border border-mkt-border bg-mkt-bg-raised shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] sm:w-52">
-          <img src="/screenshot-club.png" alt="Mon club dans Ace Club" className="aspect-[9/18] w-full object-cover object-top" />
+          <img src="/screenshot-club.png" alt="Mon club dans Ace Club" className="aspect-[1170/2532] w-full object-contain" />
         </div>
         <div className="mt-8 w-40 rotate-2 overflow-hidden rounded-[24px] border border-mkt-border bg-mkt-bg-raised shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] sm:w-52">
-          <img src="/screenshot-booking.png" alt="Réservation de terrain dans Ace Club" className="aspect-[9/18] w-full object-cover object-top" />
+          <img src="/screenshot-booking.png" alt="Réservation de terrain dans Ace Club" className="aspect-[1170/2532] w-full object-contain" />
         </div>
       </MotionDiv>
     </section>
