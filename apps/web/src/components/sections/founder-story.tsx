@@ -5,14 +5,21 @@ export function FounderStory() {
         <span className="text-sm font-semibold uppercase tracking-[0.15em] text-mkt-accent">
           Pourquoi Ace Club
         </span>
-        {/* TODO(Stan): remplacer par le texte fondateur réel, à la première personne. */}
         <p className="mt-5 text-balance text-xl leading-relaxed text-mkt-fg-dim sm:text-2xl">
-          [TODO: texte fondateur — pourquoi j&apos;ai créé Ace Club, à la
-          première personne. Quelques phrases sur le déclic, le problème vécu
-          dans un club, et pourquoi ça devait exister.]
+          Seize ans à jouer en club, trois ans à enseigner le tennis :
+          j&apos;ai vu les mêmes douleurs revenir partout. La communication
+          entre le club et ses adhérents qui passe par cent messages perdus.
+          Trouver un partenaire de niveau qui devient une corvée au lieu
+          d&apos;un réflexe. Des outils numériques pensés pour gérer, jamais
+          pour donner envie de jouer.
+          <br />
+          <br />
+          Un club vivant, ce n&apos;est pas un club mieux administré.
+          C&apos;est un club où jouer redevient simple. J&apos;ai créé Ace
+          Club pour ça.
         </p>
         <p className="mt-6 text-[15px] font-medium text-mkt-fg">
-          [TODO: prénom Nom], fondateur d&apos;Ace Club
+          Stanislas, fondateur d&apos;Ace Club
         </p>
       </div>
     </section>

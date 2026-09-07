@@ -26,18 +26,12 @@ export const siteConfig = {
     "Application club",
   ],
   links: {
-    email: "contact@ace-club.app",
+    email: "contact.stanislas@ace-club.app",
   },
   appLinks: {
     ios: "https://apps.apple.com/fr/app/ace-club/id6758263483",
     // android: "[TODO: lien Play Store une fois publié publiquement]",
   },
-  /** Real numbers only — never invented. Fill these in before removing the placeholder flag. */
-  traction: [
-    { value: null, placeholder: "[TODO: nb clubs]", label: "clubs actifs" },
-    { value: null, placeholder: "[TODO: nb villes]", label: "villes desservies" },
-    { value: null, placeholder: "[TODO: nb matchs]", label: "matchs organisés" },
-  ],
   /** The 5-step process a club goes through when adopting Ace Club. */
   onboardingSteps: [
     {
@@ -77,7 +71,7 @@ export const siteConfig = {
         "Défis et classement",
         "Support dédié",
       ],
-      description: "Jusqu'à 200 adhérents",
+      description: "Moins de 200 adhérents",
       buttonText: "Réserver une démo",
       isPopular: false,
     },
@@ -125,7 +119,7 @@ export const siteConfig = {
     {
       question: "Combien de temps pour déployer Ace Club dans mon club ?",
       answer:
-        "Votre espace club est prêt en quelques jours. Vos adhérents rejoignent ensuite via un QR code ou un lien, opérationnels en moins d'une minute — aucune formation nécessaire.",
+        "Votre espace club est prêt en quelques heures. Vos adhérents rejoignent ensuite via un QR code ou un lien, opérationnels en moins d'une minute — aucune formation nécessaire.",
     },
     {
       question: "Est-ce que ça remplace notre système de réservation actuel ?",

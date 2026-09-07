@@ -38,9 +38,9 @@ export function Hero() {
           transition={{ duration: 0.7, delay: 0.15, ease: easeOutCubic }}
           className="mx-auto mt-8 max-w-xl text-balance text-lg text-mkt-fg-dim sm:text-xl"
         >
-          Ace Club remplace le groupe WhatsApp et le carnet du vestiaire par
-          une seule app : vos adhérents trouvent un partenaire, réservent un
-          terrain et reviennent jouer.
+          Ace Club est l&apos;appli qui répond à tous les besoins de vos
+          adhérents : réservation, recherche de partenaire, inscription aux
+          événements et suivi de leur activité.
         </MotionP>
 
         <MotionDiv

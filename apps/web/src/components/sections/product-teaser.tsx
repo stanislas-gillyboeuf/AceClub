@@ -17,7 +17,7 @@ export function ProductTeaser() {
       <div className="mx-auto max-w-[var(--max-container-width)] px-6">
         <div className="mx-auto max-w-xl text-center">
           <h2 className="font-display text-4xl uppercase leading-none tracking-tight sm:text-5xl">
-            L&apos;app, pas une promesse
+            Un aperçu de l&apos;app
           </h2>
           <p className="mt-4 text-balance text-lg text-mkt-fg-dim">
             Ce que vos adhérents ouvrent tous les jours.
