@@ -27,7 +27,7 @@ const FEATURES: Feature[] = [
       "Messagerie intégrée pour s'organiser",
       "Fini les groupes WhatsApp surchargés",
     ],
-    image: "/Device-4.png",
+    image: "/screenshot-partner.png",
     align: "left",
   },
   {
@@ -41,7 +41,7 @@ const FEATURES: Feature[] = [
       "Réservation à plusieurs en un tap",
       "Règles du club appliquées automatiquement",
     ],
-    image: "/Device-2.png",
+    image: "/screenshot-booking.png",
     align: "right",
   },
   {
@@ -55,7 +55,7 @@ const FEATURES: Feature[] = [
       "Historique complet des matchs joués",
       "Base du niveau et du classement",
     ],
-    image: "/Device-5.png",
+    image: "/screenshot-matchlog.png",
     align: "left",
   },
 ];
@@ -103,7 +103,6 @@ function FeatureRow({ feature }: { feature: Feature }) {
         transition={{ duration: 0.7, ease: easeOutCubic }}
         className="w-full max-w-sm lg:w-1/2"
       >
-        {/* Placeholder screenshot — swap for the real app capture for this feature */}
         <div className="overflow-hidden rounded-[28px] border border-mkt-border bg-mkt-bg-raised shadow-[0_30px_80px_-30px_rgba(0,0,0,0.5)]">
           <img
             src={feature.image}

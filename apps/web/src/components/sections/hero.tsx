@@ -75,12 +75,11 @@ export function Hero() {
         transition={{ duration: 0.9, delay: 0.35, ease: easeOutCubic }}
         className="relative mx-auto mt-16 flex max-w-3xl justify-center gap-5 px-6 sm:mt-20"
       >
-        {/* Placeholder screenshots — replace with real captures (Discover + Réservation) */}
         <div className="w-40 -rotate-3 overflow-hidden rounded-[24px] border border-mkt-border bg-mkt-bg-raised shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] sm:w-52">
-          <img src="/Device-3.png" alt="Aperçu Ace Club" className="aspect-[9/18] w-full object-cover object-top" />
+          <img src="/screenshot-club.png" alt="Mon club dans Ace Club" className="aspect-[9/18] w-full object-cover object-top" />
         </div>
         <div className="mt-8 w-40 rotate-2 overflow-hidden rounded-[24px] border border-mkt-border bg-mkt-bg-raised shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] sm:w-52">
-          <img src="/Device-2.png" alt="Aperçu Ace Club" className="aspect-[9/18] w-full object-cover object-top" />
+          <img src="/screenshot-booking.png" alt="Réservation de terrain dans Ace Club" className="aspect-[9/18] w-full object-cover object-top" />
         </div>
       </MotionDiv>
     </section>

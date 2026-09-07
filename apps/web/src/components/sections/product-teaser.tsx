@@ -6,9 +6,9 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 const ITEMS = [
-  { label: "Trouver un partenaire", image: "/Device-4.png" },
-  { label: "Réserver un terrain", image: "/Device-2.png" },
-  { label: "Classement du club", image: "/Device-5.png" },
+  { label: "Trouver un partenaire", image: "/screenshot-partner.png" },
+  { label: "Réserver un terrain", image: "/screenshot-booking.png" },
+  { label: "Classement du club", image: "/screenshot-leaderboard.png" },
 ];
 
 export function ProductTeaser() {
@@ -34,7 +34,6 @@ export function ProductTeaser() {
               transition={{ duration: 0.5, delay: index * 0.1, ease: easeOutCubic }}
               className="flex flex-col items-center"
             >
-              {/* Placeholder screenshot — swap for the real app capture */}
               <div className="w-full overflow-hidden rounded-2xl border border-mkt-border bg-mkt-bg-raised">
                 <img src={item.image} alt={item.label} className="aspect-[9/18] w-full object-cover object-top" />
               </div>
