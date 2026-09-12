@@ -101,6 +101,7 @@ export const courtSettings = pgTable(
     closingHour: integer("closing_hour").notNull().default(22),
     maxBookingsPerWeekWeekday: integer("max_bookings_per_week_weekday"),
     maxBookingsPerWeekWeekend: integer("max_bookings_per_week_weekend"),
+    bookingWindowDays: integer("booking_window_days"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()

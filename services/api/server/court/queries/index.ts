@@ -6,6 +6,7 @@ export { getBookingEnabled } from "./booking-enabled";
 export { getSettings } from "./get-settings";
 export { getWeeklyQuota } from "./get-weekly-quota";
 export { getBoard } from "./get-board";
+export { getAdminBoard } from "./get-admin-board";
 export { getBooking } from "./get-booking";
 export { getFrequentPartners } from "./get-frequent-partners";
 export { searchMembers } from "./search-members";

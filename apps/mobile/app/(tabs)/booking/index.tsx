@@ -15,7 +15,7 @@ import { WhoBookedPopover, type PopoverState } from "@/features/court-booking/co
 import { buildCourtTypeFilters } from "@/features/court-booking/lib/court-filters";
 import { toDateKey, formatFullDay } from "@/features/court-booking/lib/date";
 import { useMyOrganizations, useActiveMember } from "@/hooks/use-organization";
-import { useCourtBookingEnabled, useCourtBoard } from "@/hooks/use-court";
+import { useCourtBookingEnabled, useCourtBoard, useCourtSettings } from "@/hooks/use-court";
 import type { BoardCourt, BoardHourCell, CourtSport } from "@/types/court";
 
 function isToday(date: Date): boolean {
@@ -43,6 +43,11 @@ export default function BookingBoardScreen() {
   const { data: bookingEnabled, isLoading: bookingEnabledLoading } = useCourtBookingEnabled(
     selectedOrgId ?? undefined,
   );
+  const { data: courtSettings } = useCourtSettings(selectedOrgId ?? undefined);
+  // bookingWindowDays is "how many days ahead" (J+N); null (no club-set cap) keeps the
+  // legacy default of 7 selectable days (today + 6) rather than showing an unbounded list.
+  const daysAhead = courtSettings?.bookingWindowDays ?? 6;
+  const dayChipCount = daysAhead + 1;
 
   const [sport, setSport] = useState<CourtSport>("tennis");
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -149,9 +154,16 @@ export default function BookingBoardScreen() {
             <CourtTypeChipRow filters={filters} selectedKey={activeFilter.key} onSelect={setCourtTypeKey} />
 
             <Text style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}>
-              Jour <Text style={styles.sectionLabelDim}>— réservable jusqu&apos;à J+6</Text>
+              Jour{" "}
+              <Text style={styles.sectionLabelDim}>
+                — réservable jusqu&apos;à J+{daysAhead}
+              </Text>
             </Text>
-            <DayChipRow selectedDate={selectedDate} onSelect={setSelectedDate} />
+            <DayChipRow
+              selectedDate={selectedDate}
+              onSelect={setSelectedDate}
+              dayCount={dayChipCount}
+            />
 
             <View style={styles.legend}>
               <View style={styles.legendItem}>

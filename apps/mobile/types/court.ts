@@ -164,6 +164,7 @@ export interface CourtSettings {
   closingHour: number;
   maxBookingsPerWeekWeekday: number | null;
   maxBookingsPerWeekWeekend: number | null;
+  bookingWindowDays: number | null;
 }
 
 export interface UpsertSettingsRequest extends CourtSettings {

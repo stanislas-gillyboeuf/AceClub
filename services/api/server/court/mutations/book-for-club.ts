@@ -8,7 +8,7 @@ import { bookForClubValidator } from "../validators";
 import { BookingConflictError } from "../lib/errors";
 import { resolveFeatureFlag } from "../../../lib/feature-flags";
 import { createLockedBooking } from "../lib/booking-overlap";
-import { assertOrgAdmin } from "../../../middleware/org-member";
+import { assertOrgAdmin, isOrgMember } from "../../../middleware/org-member";
 
 export const bookForClub = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -37,6 +37,16 @@ export const bookForClub = async (c: Context<HonoContext>) => {
     );
   }
 
+  if (validated.userId) {
+    const memberExists = await isOrgMember(validated.userId, targetCourt.organizationId);
+    if (!memberExists) {
+      return c.json(
+        { error: "BadRequest", message: "This user is not a member of this club" },
+        400,
+      );
+    }
+  }
+
   const bookingEnabled = await resolveFeatureFlag("court_booking", targetCourt.organizationId);
   if (!bookingEnabled) {
     return c.json(
@@ -59,11 +69,13 @@ export const bookForClub = async (c: Context<HonoContext>) => {
   try {
     const booking = await createLockedBooking({
       courtId: validated.courtId,
-      userId: currentUser.id,
+      userId: validated.userId ?? currentUser.id,
       start,
       end,
       purpose: validated.purpose,
-      bookedAsClub: true,
+      // A slot booked for a specific member is that member's booking (shows their name on
+      // the board); with no member specified it's a generic club-owned slot ("Le club").
+      bookedAsClub: !validated.userId,
     });
 
     const [enriched] = await db

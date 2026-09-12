@@ -1,0 +1,1 @@
+ALTER TABLE "court_settings" ADD COLUMN "booking_window_days" integer;

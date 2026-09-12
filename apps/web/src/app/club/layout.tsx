@@ -56,6 +56,7 @@ function ClubAdminGate({ children }: { children: React.ReactNode }) {
 
   const navItems: ClubAdminNavItem[] = [
     { title: "Tableau de bord", href: "/club/dashboard" },
+    { title: "Réservations", href: "/club/bookings" },
     { title: "Membres", href: "/club/members" },
   ]
 

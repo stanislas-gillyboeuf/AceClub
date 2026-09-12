@@ -22,6 +22,8 @@ export default function BookingRulesScreen() {
   const [weekdayLimit, setWeekdayLimit] = useState("");
   const [weekendLimited, setWeekendLimited] = useState(false);
   const [weekendLimit, setWeekendLimit] = useState("");
+  const [windowLimited, setWindowLimited] = useState(false);
+  const [windowLimit, setWindowLimit] = useState("");
 
   useEffect(() => {
     if (!settings) return;
@@ -35,6 +37,8 @@ export default function BookingRulesScreen() {
     setWeekendLimit(
       settings.maxBookingsPerWeekWeekend != null ? String(settings.maxBookingsPerWeekWeekend) : "",
     );
+    setWindowLimited(settings.bookingWindowDays != null);
+    setWindowLimit(settings.bookingWindowDays != null ? String(settings.bookingWindowDays) : "");
   }, [settings]);
 
   const openingValue = Number(openingHour);
@@ -48,7 +52,8 @@ export default function BookingRulesScreen() {
     closingValue <= 24 &&
     closingValue > openingValue &&
     (!weekdayLimited || Number(weekdayLimit) > 0) &&
-    (!weekendLimited || Number(weekendLimit) > 0);
+    (!weekendLimited || Number(weekendLimit) > 0) &&
+    (!windowLimited || Number(windowLimit) > 0);
 
   const handleSubmit = () => {
     if (!organizationId) return;
@@ -59,6 +64,7 @@ export default function BookingRulesScreen() {
         closingHour: closingValue,
         maxBookingsPerWeekWeekday: weekdayLimited ? Number(weekdayLimit) : null,
         maxBookingsPerWeekWeekend: weekendLimited ? Number(weekendLimit) : null,
+        bookingWindowDays: windowLimited ? Number(windowLimit) : null,
       },
       {
         onSuccess: () => router.back(),
@@ -128,6 +134,15 @@ export default function BookingRulesScreen() {
           onToggleLimited={setWeekendLimited}
           value={weekendLimit}
           onChangeValue={setWeekendLimit}
+        />
+
+        <Text style={styles.sectionLabel}>FENÊTRE DE RÉSERVATION</Text>
+        <LimitField
+          label="Jours à l'avance (J+N)"
+          limited={windowLimited}
+          onToggleLimited={setWindowLimited}
+          value={windowLimit}
+          onChangeValue={setWindowLimit}
         />
 
         <View style={styles.actions}>

@@ -7,13 +7,14 @@ import { nextDays, formatChipWeekday, toDateKey } from "../lib/date";
 interface DayChipRowProps {
   selectedDate: Date;
   onSelect: (date: Date) => void;
+  /** How many days ahead are selectable — from the club's booking window setting (default 7). */
+  dayCount?: number;
 }
 
-const DAYS = nextDays(7);
-
-export function DayChipRow({ selectedDate, onSelect }: DayChipRowProps) {
+export function DayChipRow({ selectedDate, onSelect, dayCount = 7 }: DayChipRowProps) {
   const scheme = useColorScheme();
   const selectedKey = toDateKey(selectedDate);
+  const DAYS = nextDays(dayCount);
 
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>

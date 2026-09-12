@@ -1,14 +1,25 @@
 import { Context } from "hono";
 import { z } from "zod";
 import type { HonoContext } from "../../../types/hono";
-import { boardQueryValidator } from "../validators";
+import { adminBoardQueryValidator } from "../validators";
 import { loadBoardData, bookedByLabel } from "../lib/board";
 import { zonedDateTime } from "../lib/timezone";
+import { assertOrgAdmin } from "../../../middleware/org-member";
 
-export const getBoard = async (c: Context<HonoContext>) => {
+/**
+ * Superset of get-board for admin consumers: booked slots include bookingId/bookedByUserId
+ * (the public board omits both for privacy) so the web dashboard can act on a booking
+ * (cancel/modify/contact) directly from the grid.
+ */
+export const getAdminBoard = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
   // @ts-ignore
-  const query = c.req.valid("query") as z.infer<typeof boardQueryValidator>;
+  const query = c.req.valid("query") as z.infer<typeof adminBoardQueryValidator>;
+
+  const isOrgAdmin = await assertOrgAdmin(currentUser.id, query.organizationId);
+  if (!isOrgAdmin && currentUser.role !== "admin") {
+    return c.json({ error: "Forbidden", message: "Club admin access required" }, 403);
+  }
 
   const { accessibleCourts, bookings, hourList } = await loadBoardData({
     organizationId: query.organizationId,
@@ -33,17 +44,12 @@ export const getBoard = async (c: Context<HonoContext>) => {
       );
       if (!taken) return { hour, status: "free" as const };
 
-      if (taken.userId === currentUser.id) {
-        return {
-          hour,
-          status: "mine" as const,
-          purpose: taken.purpose,
-          bookedAsClub: taken.bookedAsClub,
-        };
-      }
       return {
         hour,
         status: "booked" as const,
+        bookingId: taken.id,
+        bookedByUserId: taken.userId,
+        bookedByName: taken.bookerName,
         bookedByLabel: taken.bookedAsClub ? "Le club" : bookedByLabel(taken.bookerName),
         bookedAsClub: taken.bookedAsClub,
         purpose: taken.purpose,

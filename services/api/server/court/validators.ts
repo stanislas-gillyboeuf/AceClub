@@ -111,11 +111,15 @@ export const bookForClubValidator = z.object({
   startAt: z.string().datetime("Invalid start date"),
   endAt: z.string().datetime("Invalid end date"),
   purpose: z.string().min(1).max(200).optional(),
+  userId: z.string().min(1).optional(),
 });
 
 export const cancelBookingValidator = z.object({
   bookingId: z.string().min(1, "Booking ID is required"),
+  override: z.boolean().optional(),
 });
+
+export const adminBoardQueryValidator = boardQueryValidator;
 
 export const listMyBookingsValidator = z.object({
   filter: z.enum(["upcoming", "past", "all"]).default("upcoming"),
@@ -131,6 +135,7 @@ export const upsertSettingsValidator = z.object({
   closingHour: z.number().int().min(1).max(24),
   maxBookingsPerWeekWeekday: z.number().int().min(1).nullable().optional(),
   maxBookingsPerWeekWeekend: z.number().int().min(1).nullable().optional(),
+  bookingWindowDays: z.number().int().min(1).nullable().optional(),
 });
 
 export const weeklyQuotaValidator = z.object({

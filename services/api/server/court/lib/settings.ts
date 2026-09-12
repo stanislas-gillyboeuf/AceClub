@@ -7,6 +7,7 @@ export interface ResolvedCourtSettings {
   closingHour: number;
   maxBookingsPerWeekWeekday: number | null;
   maxBookingsPerWeekWeekend: number | null;
+  bookingWindowDays: number | null;
 }
 
 export const DEFAULT_COURT_SETTINGS: ResolvedCourtSettings = {
@@ -14,6 +15,7 @@ export const DEFAULT_COURT_SETTINGS: ResolvedCourtSettings = {
   closingHour: 22,
   maxBookingsPerWeekWeekday: null,
   maxBookingsPerWeekWeekend: null,
+  bookingWindowDays: null,
 };
 
 export async function getCourtSettings(organizationId: string): Promise<ResolvedCourtSettings> {
@@ -23,6 +25,7 @@ export async function getCourtSettings(organizationId: string): Promise<Resolved
       closingHour: courtSettings.closingHour,
       maxBookingsPerWeekWeekday: courtSettings.maxBookingsPerWeekWeekday,
       maxBookingsPerWeekWeekend: courtSettings.maxBookingsPerWeekWeekend,
+      bookingWindowDays: courtSettings.bookingWindowDays,
     })
     .from(courtSettings)
     .where(eq(courtSettings.organizationId, organizationId))

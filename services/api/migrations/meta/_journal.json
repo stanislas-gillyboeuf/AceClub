@@ -197,6 +197,13 @@
       "when": 1789202755796,
       "tag": "0028_heavy_havok",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1789205004431,
+      "tag": "0029_jittery_galactus",
+      "breakpoints": true
     }
   ]
 }

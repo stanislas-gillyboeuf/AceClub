@@ -14,6 +14,7 @@ import {
   getBooking,
   getFrequentPartners,
   searchMembers,
+  getAdminBoard,
 } from "./queries";
 import {
   createBooking,
@@ -39,6 +40,7 @@ import {
   weeklyQuotaValidator,
   bookForClubValidator,
   boardQueryValidator,
+  adminBoardQueryValidator,
   searchMembersValidator,
   joinBookingValidator,
 } from "./validators";
@@ -64,6 +66,7 @@ courtRouter.get(
 courtRouter.get("/settings", zValidator("query", courtSettingsQueryValidator), getSettings);
 courtRouter.get("/my-weekly-quota", zValidator("query", weeklyQuotaValidator), getWeeklyQuota);
 courtRouter.get("/board", zValidator("query", boardQueryValidator), getBoard);
+courtRouter.get("/admin-board", zValidator("query", adminBoardQueryValidator), getAdminBoard);
 courtRouter.get("/booking/:bookingId", getBooking);
 courtRouter.get("/frequent-partners", getFrequentPartners);
 courtRouter.get("/search-members", zValidator("query", searchMembersValidator), searchMembers);

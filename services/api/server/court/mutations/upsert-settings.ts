@@ -28,6 +28,7 @@ export const upsertSettings = async (c: Context<HonoContext>) => {
       closingHour: body.closingHour,
       maxBookingsPerWeekWeekday: body.maxBookingsPerWeekWeekday ?? null,
       maxBookingsPerWeekWeekend: body.maxBookingsPerWeekWeekend ?? null,
+      bookingWindowDays: body.bookingWindowDays ?? null,
     })
     .onConflictDoUpdate({
       target: courtSettings.organizationId,
@@ -36,6 +37,7 @@ export const upsertSettings = async (c: Context<HonoContext>) => {
         closingHour: body.closingHour,
         maxBookingsPerWeekWeekday: body.maxBookingsPerWeekWeekday ?? null,
         maxBookingsPerWeekWeekend: body.maxBookingsPerWeekWeekend ?? null,
+        bookingWindowDays: body.bookingWindowDays ?? null,
       },
     })
     .returning();

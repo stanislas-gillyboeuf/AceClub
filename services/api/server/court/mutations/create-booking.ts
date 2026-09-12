@@ -77,6 +77,20 @@ export const createBooking = async (c: Context<HonoContext>) => {
   }
 
   const settings = await getCourtSettings(targetCourt.organizationId);
+
+  if (settings.bookingWindowDays !== null) {
+    const maxDate = new Date(Date.now() + settings.bookingWindowDays * 24 * 60 * 60 * 1000);
+    if (start.getTime() > maxDate.getTime()) {
+      return c.json(
+        {
+          error: "Forbidden",
+          message: `Les réservations ne sont possibles que jusqu'à ${settings.bookingWindowDays} jour${settings.bookingWindowDays > 1 ? "s" : ""} à l'avance`,
+        },
+        403,
+      );
+    }
+  }
+
   const usage = await countWeeklyBookings(currentUser.id, targetCourt.organizationId, start);
   const requestIsWeekend = isWeekend(start);
   const limit = requestIsWeekend
