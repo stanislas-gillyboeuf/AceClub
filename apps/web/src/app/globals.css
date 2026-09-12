@@ -200,6 +200,50 @@
 }
 
 /*
+ * Club admin dashboard — pale grey/white "SugarCRM-like" identity, deliberately distinct
+ * from the platform (admin) dashboard's dark chartreuse theme. Same mechanism: overrides
+ * the shared shadcn tokens directly so every Card/Table/Badge/Tabs component re-themes
+ * with zero code changes. Scoped to the (club-admin) route group only. Color stays out
+ * of surfaces entirely here — it only shows up in status badges/avatars, composed locally
+ * where needed, never as a shared token.
+ */
+.club-admin-theme {
+  --radius: 1.25rem;
+  --background: oklch(0.965 0.002 264); /* ~#F5F5F7 pale grey */
+  --foreground: oklch(0.18 0.01 264); /* near-black */
+  --card: oklch(1 0 0); /* pure white cards */
+  --card-foreground: oklch(0.18 0.01 264);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.01 264);
+  --primary: oklch(0.18 0.01 264); /* near-black — active top-nav pill */
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.95 0.003 264);
+  --secondary-foreground: oklch(0.18 0.01 264);
+  --muted: oklch(0.96 0.003 264);
+  --muted-foreground: oklch(0.45 0.005 264);
+  --accent: oklch(0.95 0.003 264);
+  --accent-foreground: oklch(0.18 0.01 264);
+  --destructive: oklch(0.55 0.2 27);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.9 0.003 264); /* barely-there — cards lean on shadow, not border */
+  --input: oklch(0.9 0.003 264);
+  --ring: oklch(0.18 0.01 264);
+  --chart-1: oklch(0.6 0.15 250);
+  --chart-2: oklch(0.7 0.15 145);
+  --chart-3: oklch(0.75 0.15 70);
+  --chart-4: oklch(0.6 0.02 264);
+  --chart-5: oklch(0.55 0.2 27);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.18 0.01 264);
+  --sidebar-primary: oklch(0.18 0.01 264);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.95 0.003 264);
+  --sidebar-accent-foreground: oklch(0.18 0.01 264);
+  --sidebar-border: oklch(0.9 0.003 264);
+  --sidebar-ring: oklch(0.18 0.01 264);
+}
+
+/*
  * Marketing site — dark-first, one saturated accent (chartreuse), never following the
  * admin dashboard's own theme. Pricing/FAQ opt into the light tokens below for
  * readability + a "moment of decision" contrast — see .mkt-light-section.
