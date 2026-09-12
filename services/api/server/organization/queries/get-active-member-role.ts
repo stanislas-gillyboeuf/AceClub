@@ -1,25 +1,30 @@
 import { Context } from "hono";
+import { and, eq } from "drizzle-orm";
 import { HonoContext } from "../../../types/hono";
-import { auth } from "../../../auth";
+import { db } from "../../../db";
+import { member } from "../../../db/schema/auth/schema";
 
 export const getActiveMemberRole = async (c: Context<HonoContext>) => {
-  try {
-    const result = await auth.api.getActiveMemberRole({
-      headers: c.req.raw.headers,
-    });
+  const user = c.get("user");
+  const session = c.get("session");
+  const organizationId = session?.activeOrganizationId;
 
-    return c.json(result);
-  } catch (error) {
-    const errorMessage = (error as Error).message;
-
-    if (
-      errorMessage.includes("No active organization") ||
-      errorMessage.includes("not found") ||
-      errorMessage.includes("not a member")
-    ) {
-      return c.json(null);
-    }
-
-    return c.json({ error: errorMessage }, 500);
+  if (!user || !organizationId) {
+    return c.json(null);
   }
+
+  const [memberRecord] = await db
+    .select({
+      role: member.role,
+      restrictedDashboardAccess: member.restrictedDashboardAccess,
+    })
+    .from(member)
+    .where(and(eq(member.organizationId, organizationId), eq(member.userId, user.id)))
+    .limit(1);
+
+  if (!memberRecord) {
+    return c.json(null);
+  }
+
+  return c.json(memberRecord);
 };

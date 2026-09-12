@@ -7,13 +7,10 @@ export type ClubAdminAccess = "full" | "restricted" | "none"
 
 interface ActiveMemberRoleResponse {
   role: ClubAdminRole
+  restrictedDashboardAccess: boolean
 }
 
-/**
- * Resolves the current user's access level for the (club-admin) dashboard on their
- * active organization. "restricted" is not yet possible — member.restrictedDashboardAccess
- * lands in Phase 1 — so today this only ever resolves to "full" or "none".
- */
+/** Resolves the current user's access level for /club on their active organization. */
 export function useClubAdminAccess() {
   return useQuery({
     queryKey: ["club-admin-access"],
@@ -26,7 +23,10 @@ export function useClubAdminAccess() {
         return { role: result?.role ?? null, access: "none" as ClubAdminAccess }
       }
 
-      return { role: result.role, access: "full" as ClubAdminAccess }
+      return {
+        role: result.role,
+        access: (result.restrictedDashboardAccess ? "restricted" : "full") as ClubAdminAccess,
+      }
     },
   })
 }

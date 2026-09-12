@@ -16,6 +16,7 @@ import { conversationRouter } from "./conversation/router";
 import { eventRouter } from "./event/router";
 import { accountDeletionRequestRouter } from "./account-deletion-request/router";
 import { courtRouter } from "./court/router";
+import { clubMemberRouter } from "./club-member/router";
 
 export const serverRouter = new Hono();
 
@@ -36,3 +37,4 @@ serverRouter.route("/conversation", conversationRouter);
 serverRouter.route("/event", eventRouter);
 serverRouter.route("/account-deletion-request", accountDeletionRequestRouter);
 serverRouter.route("/court", courtRouter);
+serverRouter.route("/club-member", clubMemberRouter);

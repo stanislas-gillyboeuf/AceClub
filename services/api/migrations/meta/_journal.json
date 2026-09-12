@@ -190,6 +190,13 @@
       "when": 1788341111955,
       "tag": "0027_sudden_edwin_jarvis",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1789202755796,
+      "tag": "0028_heavy_havok",
+      "breakpoints": true
     }
   ]
 }
