@@ -58,6 +58,7 @@ function ClubAdminGate({ children }: { children: React.ReactNode }) {
     { title: "Tableau de bord", href: "/club/dashboard" },
     { title: "Réservations", href: "/club/bookings" },
     { title: "Membres", href: "/club/members" },
+    ...(access.access === "full" ? [{ title: "Cotisations", href: "/club/dues" }] : []),
   ]
 
   return (

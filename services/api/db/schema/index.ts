@@ -16,3 +16,4 @@ export * from "./account-deletion-request";
 export * from "./game-config";
 export * from "./court";
 export * from "./club-member";
+export * from "./dues";
