@@ -27,24 +27,6 @@ export function useUpdateClubMemberProfile() {
   })
 }
 
-export function useUpdateRestrictedAccess() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (data: {
-      organizationId: string
-      userId: string
-      restrictedDashboardAccess: boolean
-    }) =>
-      apiClient("/club-member/update-access", {
-        method: "POST",
-        body: JSON.stringify(data),
-      }),
-    onSettled: (_data, _err, variables) => {
-      settleClubMember(queryClient, variables.organizationId, variables.userId)
-    },
-  })
-}
-
 export function useBulkImportClubMembers() {
   const queryClient = useQueryClient()
   return useMutation({

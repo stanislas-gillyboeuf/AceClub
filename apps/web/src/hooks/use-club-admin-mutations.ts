@@ -20,3 +20,17 @@ export function useSetActiveClubOrganization() {
     },
   })
 }
+
+export function useCompleteOnboarding() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (organizationId: string) =>
+      apiClient("/organization/complete-onboarding", {
+        method: "POST",
+        body: JSON.stringify({ organizationId }),
+      }),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["club-admin-access"] })
+    },
+  })
+}

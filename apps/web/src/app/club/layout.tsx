@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useSession } from "@/lib/auth-client"
 import { useClubAdminAccess } from "@/hooks/use-club-admin-queries"
 import { ClubAdminProvider } from "@/lib/club-admin-context"
@@ -26,6 +26,7 @@ export default function ClubAdminLayout({
 
 function ClubAdminGate({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const pathname = usePathname()
   const { data: session, isPending: isSessionPending } = useSession()
   const { data: access, isPending: isAccessPending } = useClubAdminAccess()
 
@@ -34,13 +35,23 @@ function ClubAdminGate({ children }: { children: React.ReactNode }) {
     ?.activeOrganizationId
 
   const isAuthorized = !!session && access?.access !== "none" && !!activeOrganizationId
+  const isOnboardingRoute = pathname === "/club/onboarding"
+  const needsOnboarding = isAuthorized && access?.onboardingCompleted === false
 
   useEffect(() => {
     if (isPending) return
     if (!isAuthorized) {
       router.replace("/login")
+      return
     }
-  }, [isAuthorized, isPending, router])
+    if (needsOnboarding && !isOnboardingRoute) {
+      router.replace("/club/onboarding")
+      return
+    }
+    if (!needsOnboarding && isOnboardingRoute) {
+      router.replace("/club/dashboard")
+    }
+  }, [isAuthorized, isPending, needsOnboarding, isOnboardingRoute, router])
 
   if (isPending) {
     return (
@@ -54,11 +65,31 @@ function ClubAdminGate({ children }: { children: React.ReactNode }) {
     return null
   }
 
+  if (needsOnboarding !== isOnboardingRoute) {
+    // A redirect is in flight (see the effect above) — avoid flashing the wrong shell.
+    return null
+  }
+
+  if (needsOnboarding) {
+    return (
+      <ClubAdminProvider
+        value={{ organizationId: activeOrganizationId, access: access.access, role: access.role! }}
+      >
+        <div className="flex min-h-screen items-center justify-center p-6">{children}</div>
+      </ClubAdminProvider>
+    )
+  }
+
   const navItems: ClubAdminNavItem[] = [
     { title: "Tableau de bord", href: "/club/dashboard" },
     { title: "Réservations", href: "/club/bookings" },
     { title: "Membres", href: "/club/members" },
-    ...(access.access === "full" ? [{ title: "Cotisations", href: "/club/dues" }] : []),
+    ...(access.access === "full"
+      ? [
+          { title: "Cotisations", href: "/club/dues" },
+          { title: "Messagerie", href: "/club/messaging" },
+        ]
+      : []),
   ]
 
   return (

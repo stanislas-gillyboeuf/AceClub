@@ -3,11 +3,11 @@ import { apiClient } from "@/lib/api-client"
 import type { ClubOrganization } from "@/types/club-admin"
 
 export type ClubAdminRole = "owner" | "admin" | "member"
-export type ClubAdminAccess = "full" | "restricted" | "none"
+export type ClubAdminAccess = "full" | "none"
 
 interface ActiveMemberRoleResponse {
   role: ClubAdminRole
-  restrictedDashboardAccess: boolean
+  onboardingCompleted: boolean
 }
 
 /** Resolves the current user's access level for /club on their active organization. */
@@ -20,12 +20,17 @@ export function useClubAdminAccess() {
       )
 
       if (!result || !["owner", "admin"].includes(result.role)) {
-        return { role: result?.role ?? null, access: "none" as ClubAdminAccess }
+        return {
+          role: result?.role ?? null,
+          access: "none" as ClubAdminAccess,
+          onboardingCompleted: true,
+        }
       }
 
       return {
         role: result.role,
-        access: (result.restrictedDashboardAccess ? "restricted" : "full") as ClubAdminAccess,
+        access: "full" as ClubAdminAccess,
+        onboardingCompleted: result.onboardingCompleted,
       }
     },
   })

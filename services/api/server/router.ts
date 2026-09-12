@@ -18,6 +18,8 @@ import { accountDeletionRequestRouter } from "./account-deletion-request/router"
 import { courtRouter } from "./court/router";
 import { clubMemberRouter } from "./club-member/router";
 import { duesRouter } from "./dues/router";
+import { messagingRouter } from "./messaging/router";
+import { clubDashboardRouter } from "./club-dashboard/router";
 
 export const serverRouter = new Hono();
 
@@ -40,3 +42,5 @@ serverRouter.route("/account-deletion-request", accountDeletionRequestRouter);
 serverRouter.route("/court", courtRouter);
 serverRouter.route("/club-member", clubMemberRouter);
 serverRouter.route("/dues", duesRouter);
+serverRouter.route("/messaging", messagingRouter);
+serverRouter.route("/club-dashboard", clubDashboardRouter);

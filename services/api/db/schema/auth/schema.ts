@@ -107,6 +107,7 @@ export const organization = pgTable(
     longitude: doublePrecision("longitude"),
     pin: text("pin"),
     pinEnabled: boolean("pin_enabled").default(false),
+    onboardingCompleted: boolean("onboarding_completed").default(false).notNull(),
   },
   (table) => [uniqueIndex("organization_slug_uidx").on(table.slug)],
 );

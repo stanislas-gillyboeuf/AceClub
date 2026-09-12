@@ -21,12 +21,6 @@ export const updateClubMemberProfileValidator = z.object({
   notes: z.string().max(2000).nullable().optional(),
 });
 
-export const updateRestrictedAccessValidator = z.object({
-  organizationId: z.string().min(1, "Organization ID is required"),
-  userId: z.string().min(1, "User ID is required"),
-  restrictedDashboardAccess: z.boolean(),
-});
-
 const bulkImportRowValidator = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Valid email is required"),

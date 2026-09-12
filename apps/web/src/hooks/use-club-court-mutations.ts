@@ -3,6 +3,7 @@ import { apiClient } from "@/lib/api-client"
 import type {
   BookForClubInput,
   CancelBookingInput,
+  Court,
   CreateCourtInput,
   UpdateCourtInput,
   UpsertCourtSettingsInput,
@@ -12,7 +13,7 @@ export function useCreateCourt() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (data: CreateCourtInput) =>
-      apiClient("/court/create", { method: "POST", body: JSON.stringify(data) }),
+      apiClient<Court>("/court/create", { method: "POST", body: JSON.stringify(data) }),
     onSettled: (_data, _err, variables) => {
       queryClient.invalidateQueries({ queryKey: ["club-courts", variables.organizationId] })
     },

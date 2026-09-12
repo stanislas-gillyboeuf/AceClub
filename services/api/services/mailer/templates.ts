@@ -45,3 +45,32 @@ Ceci est un email automatique envoyé par ${params.clubName} via AceClub.
     `,
   };
 }
+
+export function clubAnnouncementEmail(params: {
+  clubName: string;
+  subject: string;
+  body: string;
+}) {
+  const htmlBody = params.body
+    .split("\n")
+    .map((line) => `<p>${line}</p>`)
+    .join("");
+
+  return {
+    subject: `${params.clubName} — ${params.subject}`,
+    html: `
+      <h2>${params.subject}</h2>
+      ${htmlBody}
+      <hr>
+      <p style="color: #666; font-size: 12px;">Ce message a été envoyé par ${params.clubName} via AceClub.</p>
+    `,
+    text: `
+${params.subject}
+
+${params.body}
+
+---
+Ce message a été envoyé par ${params.clubName} via AceClub.
+    `,
+  };
+}

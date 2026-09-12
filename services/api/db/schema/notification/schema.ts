@@ -12,6 +12,7 @@ export const NotificationType = pgEnum("notification_type", [
   "streak_warning",
   "new_message",
   "match_liked",
+  "club_announcement",
 ]);
 
 export const DevicePlatform = pgEnum("device_platform", ["ios", "android"]);

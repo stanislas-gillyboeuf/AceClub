@@ -10,13 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useClubMemberDetail } from "@/hooks/use-club-member-queries"
-import {
-  useUpdateClubMemberProfile,
-  useUpdateRestrictedAccess,
-} from "@/hooks/use-club-member-mutations"
+import { useUpdateClubMemberProfile } from "@/hooks/use-club-member-mutations"
 import { useClubAdminContext } from "@/lib/club-admin-context"
 
 function formatDate(dateStr: string) {
@@ -38,7 +34,6 @@ export default function ClubMemberDetailPage() {
   const { organizationId, access } = useClubAdminContext()
   const { data, isLoading } = useClubMemberDetail(organizationId, params.userId)
   const updateProfile = useUpdateClubMemberProfile()
-  const updateAccess = useUpdateRestrictedAccess()
 
   const [licenseNumber, setLicenseNumber] = useState("")
   const [licenseValidUntil, setLicenseValidUntil] = useState("")
@@ -183,36 +178,6 @@ export default function ClubMemberDetailPage() {
             )}
           </CardContent>
         </Card>
-
-        {isFullAdmin && isMemberAdmin ? (
-          <Card className="sm:col-span-2">
-            <CardHeader>
-              <CardTitle>Accès au dashboard club</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">Accès restreint</p>
-                  <p className="text-sm text-muted-foreground">
-                    Limite l'accès aux réservations — masque membres, cotisations, messagerie et
-                    rôles.
-                  </p>
-                </div>
-                <Switch
-                  checked={member.restrictedDashboardAccess}
-                  disabled={updateAccess.isPending}
-                  onCheckedChange={(checked) =>
-                    updateAccess.mutate({
-                      organizationId,
-                      userId: member.userId,
-                      restrictedDashboardAccess: checked,
-                    })
-                  }
-                />
-              </div>
-            </CardContent>
-          </Card>
-        ) : null}
       </div>
     </div>
   )

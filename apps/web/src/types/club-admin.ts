@@ -8,7 +8,6 @@ export interface ClubOrganization {
 export interface ClubMemberListItem {
   memberId: string
   role: string
-  restrictedDashboardAccess: boolean
   memberSince: string
   userId: string
   userName: string

@@ -17,6 +17,7 @@ import {
   togglePin,
   regeneratePin,
   verifyPin,
+  completeOnboarding,
 } from "./mutations";
 import {
   createOrganizationValidator,
@@ -61,6 +62,7 @@ import {
   getPinValidator,
   verifyPinValidator,
   listUserOrganizationsValidator,
+  completeOnboardingValidator,
 } from "./validators";
 
 export const organizationRouter = new Hono<HonoContext>();
@@ -173,6 +175,13 @@ organizationRouter.post(
   regeneratePin,
 );
 organizationRouter.post("/verify-pin", zValidator("json", verifyPinValidator), verifyPin);
+
+// Onboarding (club admins)
+organizationRouter.post(
+  "/complete-onboarding",
+  zValidator("json", completeOnboardingValidator),
+  completeOnboarding,
+);
 
 // Admin-only routes
 organizationRouter.use("/*", isAdmin);

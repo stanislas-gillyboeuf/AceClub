@@ -47,20 +47,11 @@ export const clubMembersColumns: ColumnDef<ClubMemberListItem>[] = [
     accessorKey: "role",
     header: "Rôle",
     cell: ({ row }) => {
-      const { role, restrictedDashboardAccess } = row.original
+      const { role } = row.original
       if (!["owner", "admin"].includes(role)) {
         return <Badge variant="secondary">Membre</Badge>
       }
-      return (
-        <div className="flex items-center gap-1.5">
-          <Badge>{role === "owner" ? "Propriétaire" : "Admin"}</Badge>
-          {restrictedDashboardAccess ? (
-            <Badge variant="outline" className="text-xs">
-              Accès restreint
-            </Badge>
-          ) : null}
-        </div>
-      )
+      return <Badge>{role === "owner" ? "Propriétaire" : "Admin"}</Badge>
     },
   },
   {

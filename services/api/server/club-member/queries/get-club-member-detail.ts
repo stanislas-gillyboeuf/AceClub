@@ -23,7 +23,6 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
     .select({
       memberId: member.id,
       role: member.role,
-      restrictedDashboardAccess: member.restrictedDashboardAccess,
       memberSince: member.createdAt,
       userId: user.id,
       userName: user.name,

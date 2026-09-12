@@ -129,3 +129,7 @@ export const searchMembersValidator = z.object({
   limit: z.coerce.number().min(1).max(50).optional().default(20),
   offset: z.coerce.number().min(0).optional().default(0),
 });
+
+export const completeOnboardingValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+});

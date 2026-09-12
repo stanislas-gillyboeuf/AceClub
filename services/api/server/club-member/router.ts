@@ -3,12 +3,11 @@ import { zValidator } from "@hono/zod-validator";
 import type { HonoContext } from "../../types/hono";
 import { requireAuth } from "../../middleware/auth";
 import { listClubMembers, getClubMemberDetail } from "./queries";
-import { updateClubMemberProfile, updateRestrictedAccess, bulkImport } from "./mutations";
+import { updateClubMemberProfile, bulkImport } from "./mutations";
 import {
   listClubMembersValidator,
   getClubMemberDetailValidator,
   updateClubMemberProfileValidator,
-  updateRestrictedAccessValidator,
   bulkImportValidator,
 } from "./validators";
 
@@ -29,10 +28,5 @@ clubMemberRouter.post(
   "/update-profile",
   zValidator("json", updateClubMemberProfileValidator),
   updateClubMemberProfile,
-);
-clubMemberRouter.post(
-  "/update-access",
-  zValidator("json", updateRestrictedAccessValidator),
-  updateRestrictedAccess,
 );
 clubMemberRouter.post("/bulk-import", zValidator("json", bulkImportValidator), bulkImport);

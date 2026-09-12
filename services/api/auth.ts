@@ -172,6 +172,12 @@ export const auth = betterAuth({
               required: false,
               defaultValue: false,
             },
+            onboardingCompleted: {
+              type: "boolean",
+              input: false,
+              required: false,
+              defaultValue: false,
+            },
           },
         },
       },
