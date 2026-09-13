@@ -56,11 +56,26 @@ export interface DueSoon {
   status: string
 }
 
+export interface TopPlayer {
+  userId: string
+  name: string
+  image: string | null
+  bookingCount: number
+}
+
+export interface HomeBoardStats {
+  activeMembers: number
+  activeCourts: number
+  occupancyPercent: number
+}
+
 export interface HomeBoard {
+  stats: HomeBoardStats
   coachBadges: CoachBadge[]
   coursesToday: CourseToday[]
   slotsToFill: SlotToFill[]
   memberAlerts: MemberAlert[]
   newMembers: NewMember[]
   duesDueSoon: DueSoon[]
+  topPlayers: TopPlayer[]
 }

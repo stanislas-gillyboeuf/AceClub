@@ -1,6 +1,6 @@
 import { Context } from "hono";
 import { z } from "zod";
-import { and, count, eq, gte, lt } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, lt } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import {
@@ -15,6 +15,7 @@ import {
   user,
 } from "../../../db/schema";
 import { assertClubAdmin } from "../../../middleware/club-admin";
+import { getWeekBounds } from "../../court/lib/quota";
 import { getCourtSettings } from "../../court/lib/settings";
 import { zonedDateTime } from "../../court/lib/timezone";
 import { computeMemberAlerts } from "../lib/member-alerts";
@@ -24,6 +25,8 @@ const NEW_MEMBER_WINDOW_DAYS = 30;
 const DUES_DUE_SOON_WINDOW_DAYS = 30;
 const SLOTS_TO_FILL_LIMIT = 8;
 const SLOTS_TO_FILL_HORIZON_DAYS = 2;
+const TOP_PLAYERS_WINDOW_DAYS = 90;
+const TOP_PLAYERS_LIMIT = 5;
 
 function dateKey(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -203,12 +206,82 @@ export const getHomeBoard = async (c: Context<HonoContext>) => {
       ),
     );
 
+  // --- Lightweight stats strip (members, active courts, occupancy this week) ---
+  const [activeMembersResult] = await db
+    .select({ count: count() })
+    .from(member)
+    .where(eq(member.organizationId, validated.organizationId));
+
+  const { weekStart, weekEnd } = getWeekBounds(now);
+  const openHoursPerCourtPerWeek = Math.max(0, settings.closingHour - settings.openingHour) * 7;
+  const openHoursPerWeek = activeCourts.length * openHoursPerCourtPerWeek;
+  let occupancyPercent = 0;
+  if (activeCourts.length > 0) {
+    const weekBookings = await db
+      .select({ startAt: courtBooking.startAt, endAt: courtBooking.endAt })
+      .from(courtBooking)
+      .where(
+        and(
+          inArray(courtBooking.courtId, activeCourts.map((cc) => cc.id)),
+          eq(courtBooking.status, "confirmed"),
+          gte(courtBooking.startAt, weekStart),
+          lt(courtBooking.startAt, weekEnd),
+        ),
+      );
+    const bookedHours = weekBookings.reduce(
+      (sum, b) => sum + (b.endAt.getTime() - b.startAt.getTime()) / (60 * 60 * 1000),
+      0,
+    );
+    occupancyPercent = openHoursPerWeek > 0 ? Math.round(Math.min(100, (bookedHours / openHoursPerWeek) * 100)) : 0;
+  }
+
+  // --- Top players (most confirmed member bookings in the last 90 days) ---
+  const topPlayersWindowStart = new Date(now.getTime() - TOP_PLAYERS_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  const topPlayersRows =
+    activeCourts.length === 0
+      ? []
+      : await db
+          .select({ userId: courtBooking.userId, bookingCount: count() })
+          .from(courtBooking)
+          .where(
+            and(
+              inArray(courtBooking.courtId, activeCourts.map((cc) => cc.id)),
+              eq(courtBooking.kind, "member"),
+              eq(courtBooking.status, "confirmed"),
+              gte(courtBooking.startAt, topPlayersWindowStart),
+            ),
+          )
+          .groupBy(courtBooking.userId)
+          .orderBy(desc(count()))
+          .limit(TOP_PLAYERS_LIMIT);
+
+  const topPlayerUserIds = topPlayersRows.map((r) => r.userId);
+  const topPlayerUsers = topPlayerUserIds.length
+    ? await db
+        .select({ id: user.id, name: user.name, image: user.image })
+        .from(user)
+        .where(inArray(user.id, topPlayerUserIds))
+    : [];
+  const topPlayerUserById = new Map(topPlayerUsers.map((u) => [u.id, u]));
+  const topPlayers = topPlayersRows
+    .map((r) => {
+      const u = topPlayerUserById.get(r.userId);
+      return u ? { userId: u.id, name: u.name, image: u.image, bookingCount: r.bookingCount } : null;
+    })
+    .filter((r): r is { userId: string; name: string; image: string | null; bookingCount: number } => !!r);
+
   return c.json({
+    stats: {
+      activeMembers: activeMembersResult?.count ?? 0,
+      activeCourts: activeCourts.length,
+      occupancyPercent,
+    },
     coachBadges: Array.from(coachBadgeCounts.values()),
     coursesToday,
     slotsToFill,
     memberAlerts,
     newMembers,
     duesDueSoon,
+    topPlayers,
   });
 };

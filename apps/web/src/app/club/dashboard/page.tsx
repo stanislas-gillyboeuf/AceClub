@@ -24,6 +24,15 @@ import { useMarkDuesPaid, useSendDuesReminder } from "@/hooks/use-dues-mutations
 import { useClubAdminContext } from "@/lib/club-admin-context"
 import type { MemberAlert, SlotToFill } from "@/types/club-dashboard"
 
+function StatChip({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline gap-1.5 rounded-full border bg-card px-3 py-1.5">
+      <span className="text-sm font-bold tabular-nums">{value}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
+    </div>
+  )
+}
+
 function initials(name: string) {
   return name.split(" ").filter(Boolean).slice(0, 2).map((n) => n[0]).join("").toUpperCase()
 }
@@ -112,6 +121,12 @@ export default function ClubAdminDashboardPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Tableau de bord</h1>
         <CoachBadgeRow coaches={data.coachBadges} />
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <StatChip label="membres" value={String(data.stats.activeMembers)} />
+        <StatChip label="courts actifs" value={String(data.stats.activeCourts)} />
+        <StatChip label="occupation cette semaine" value={`${data.stats.occupancyPercent}%`} />
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -237,6 +252,34 @@ export default function ClubAdminDashboardPage() {
             ))
           )}
         </ColumnCard>
+
+        <Link href="/club/members" className="block h-full">
+          <Card className="flex h-full flex-col transition-colors hover:bg-accent/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold">Membres les plus actifs</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 space-y-2.5">
+              {data.topPlayers.length === 0 ? (
+                <EmptyColumn label="Pas encore de réservations." />
+              ) : (
+                data.topPlayers.map((p, i) => (
+                  <div key={p.userId} className="flex items-center gap-2.5">
+                    <span className="w-4 text-xs font-semibold text-muted-foreground">{i + 1}</span>
+                    <Avatar className="h-7 w-7">
+                      <AvatarImage src={p.image ?? undefined} alt={p.name} />
+                      <AvatarFallback className="text-xs">{initials(p.name)}</AvatarFallback>
+                    </Avatar>
+                    <span className="min-w-0 flex-1 truncate text-sm">{p.name}</span>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {p.bookingCount} résa{p.bookingCount > 1 ? "s" : ""}
+                    </span>
+                  </div>
+                ))
+              )}
+              <p className="pt-1 text-xs text-muted-foreground">90 derniers jours · Voir tous les membres →</p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       <Card className="mt-6">
