@@ -27,6 +27,17 @@ export function useUpdateClubMemberProfile() {
   })
 }
 
+export function useUpdateMemberRole() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { organizationId: string; userId: string; role: "admin" | "member" | "coach" }) =>
+      apiClient("/club-member/update-role", { method: "POST", body: JSON.stringify(data) }),
+    onSettled: (_data, _err, variables) => {
+      settleClubMember(queryClient, variables.organizationId, variables.userId)
+    },
+  })
+}
+
 export function useBulkImportClubMembers() {
   const queryClient = useQueryClient()
   return useMutation({

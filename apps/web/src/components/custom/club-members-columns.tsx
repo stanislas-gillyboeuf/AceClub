@@ -48,6 +48,7 @@ export const clubMembersColumns: ColumnDef<ClubMemberListItem>[] = [
     header: "Rôle",
     cell: ({ row }) => {
       const { role } = row.original
+      if (role === "coach") return <Badge variant="outline">Coach</Badge>
       if (!["owner", "admin"].includes(role)) {
         return <Badge variant="secondary">Membre</Badge>
       }

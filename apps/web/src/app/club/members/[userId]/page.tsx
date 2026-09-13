@@ -11,9 +11,23 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useClubMemberDetail } from "@/hooks/use-club-member-queries"
-import { useUpdateClubMemberProfile } from "@/hooks/use-club-member-mutations"
+import { useUpdateClubMemberProfile, useUpdateMemberRole } from "@/hooks/use-club-member-mutations"
 import { useClubAdminContext } from "@/lib/club-admin-context"
+
+const ROLE_LABELS: Record<string, string> = {
+  owner: "Propriétaire",
+  admin: "Admin",
+  coach: "Coach",
+  member: "Membre",
+}
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" })
@@ -34,6 +48,7 @@ export default function ClubMemberDetailPage() {
   const { organizationId, access } = useClubAdminContext()
   const { data, isLoading } = useClubMemberDetail(organizationId, params.userId)
   const updateProfile = useUpdateClubMemberProfile()
+  const updateRole = useUpdateMemberRole()
 
   const [licenseNumber, setLicenseNumber] = useState("")
   const [licenseValidUntil, setLicenseValidUntil] = useState("")
@@ -65,7 +80,7 @@ export default function ClubMemberDetailPage() {
 
   const { member, bookings } = data
   const isFullAdmin = access === "full"
-  const isMemberAdmin = ["owner", "admin"].includes(member.role)
+  const isOwner = member.role === "owner"
 
   function handleSaveProfile() {
     updateProfile.mutate({
@@ -97,8 +112,8 @@ export default function ClubMemberDetailPage() {
           <h1 className="text-2xl font-bold tracking-tight">{member.userName}</h1>
           <p className="text-sm text-muted-foreground">{member.userEmail}</p>
         </div>
-        {isMemberAdmin ? (
-          <Badge className="ml-auto">{member.role === "owner" ? "Propriétaire" : "Admin"}</Badge>
+        {member.role !== "member" ? (
+          <Badge className="ml-auto">{ROLE_LABELS[member.role] ?? member.role}</Badge>
         ) : null}
       </div>
 
@@ -193,6 +208,36 @@ export default function ClubMemberDetailPage() {
             )}
           </CardContent>
         </Card>
+
+        {isFullAdmin && !isOwner ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Rôle dans le club</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              <Label>Rôle</Label>
+              <Select
+                value={member.role}
+                disabled={updateRole.isPending}
+                onValueChange={(role: "admin" | "member" | "coach") =>
+                  updateRole.mutate({ organizationId, userId: member.userId, role })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="member">Membre</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="coach">Coach</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Un coach n&apos;a accès qu&apos;à ses propres cours, pas au reste du dashboard.
+              </p>
+            </CardContent>
+          </Card>
+        ) : null}
       </div>
     </div>
   )
