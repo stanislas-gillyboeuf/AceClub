@@ -37,6 +37,7 @@ export default function ClubMemberDetailPage() {
 
   const [licenseNumber, setLicenseNumber] = useState("")
   const [licenseValidUntil, setLicenseValidUntil] = useState("")
+  const [medicalCertificateValidUntil, setMedicalCertificateValidUntil] = useState("")
   const [phoneOverride, setPhoneOverride] = useState("")
   const [notes, setNotes] = useState("")
 
@@ -44,6 +45,7 @@ export default function ClubMemberDetailPage() {
     if (!data) return
     setLicenseNumber(data.member.licenseNumber ?? "")
     setLicenseValidUntil(toDateInputValue(data.member.licenseValidUntil))
+    setMedicalCertificateValidUntil(toDateInputValue(data.member.medicalCertificateValidUntil))
     setPhoneOverride(data.member.phoneOverride ?? "")
     setNotes(data.member.notes ?? "")
   }, [data])
@@ -71,6 +73,9 @@ export default function ClubMemberDetailPage() {
       userId: member.userId,
       licenseNumber: licenseNumber || null,
       licenseValidUntil: licenseValidUntil ? new Date(licenseValidUntil).toISOString() : null,
+      medicalCertificateValidUntil: medicalCertificateValidUntil
+        ? new Date(medicalCertificateValidUntil).toISOString()
+        : null,
       phoneOverride: phoneOverride || null,
       notes: notes || null,
     })
@@ -119,6 +124,16 @@ export default function ClubMemberDetailPage() {
                 type="date"
                 value={licenseValidUntil}
                 onChange={(e) => setLicenseValidUntil(e.target.value)}
+                disabled={!isFullAdmin}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="medicalCertificateValidUntil">Certificat médical valide jusqu'au</Label>
+              <Input
+                id="medicalCertificateValidUntil"
+                type="date"
+                value={medicalCertificateValidUntil}
+                onChange={(e) => setMedicalCertificateValidUntil(e.target.value)}
                 disabled={!isFullAdmin}
               />
             </div>

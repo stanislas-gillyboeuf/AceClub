@@ -25,7 +25,9 @@ interface DuesColumnActions {
   onMarkPaid: (assignment: DuesAssignment) => void
   onWaive: (assignment: DuesAssignment) => void
   onRemind: (assignment: DuesAssignment) => void
+  onGenerateReceipt: (assignment: DuesAssignment) => void
   pendingId?: string
+  receiptPendingId?: string
 }
 
 export function getDuesAssignmentColumns(actions: DuesColumnActions): ColumnDef<DuesAssignment>[] {
@@ -74,6 +76,23 @@ export function getDuesAssignmentColumns(actions: DuesColumnActions): ColumnDef<
       cell: ({ row }) => {
         const a = row.original
         const isPending = actions.pendingId === a.id
+        if (a.status === "paid") {
+          return (
+            <div className="flex justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={actions.receiptPendingId === a.id}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  actions.onGenerateReceipt(a)
+                }}
+              >
+                Générer un reçu
+              </Button>
+            </div>
+          )
+        }
         if (a.status !== "pending") return null
         return (
           <div className="flex justify-end gap-2">

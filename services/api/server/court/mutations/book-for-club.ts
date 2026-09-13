@@ -10,6 +10,13 @@ import { resolveFeatureFlag } from "../../../lib/feature-flags";
 import { createLockedBooking } from "../lib/booking-overlap";
 import { assertOrgAdmin, isOrgMember } from "../../../middleware/org-member";
 
+const BLOCK_REASON_LABELS: Record<string, string> = {
+  maintenance: "Maintenance",
+  club_event: "Événement club",
+  private_rental: "Location privée",
+  other: "Autre",
+};
+
 export const bookForClub = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
   // @ts-ignore
@@ -66,16 +73,25 @@ export const bookForClub = async (c: Context<HonoContext>) => {
     return c.json({ error: "BadRequest", message: "Cannot book a slot in the past" }, 400);
   }
 
+  const isAdminBlock = !!validated.blockReason;
+  const purpose = isAdminBlock
+    ? validated.blockReason === "other"
+      ? `${BLOCK_REASON_LABELS.other}: ${validated.blockReasonDetail}`
+      : BLOCK_REASON_LABELS[validated.blockReason!]
+    : validated.purpose;
+
   try {
     const booking = await createLockedBooking({
       courtId: validated.courtId,
-      userId: validated.userId ?? currentUser.id,
+      // An admin block is "owned" by the admin who created it; otherwise a slot booked for a
+      // specific member is that member's booking, and with no member specified it's a
+      // generic club-owned slot ("Le club").
+      userId: isAdminBlock ? currentUser.id : (validated.userId ?? currentUser.id),
       start,
       end,
-      purpose: validated.purpose,
-      // A slot booked for a specific member is that member's booking (shows their name on
-      // the board); with no member specified it's a generic club-owned slot ("Le club").
-      bookedAsClub: !validated.userId,
+      purpose,
+      bookedAsClub: isAdminBlock || !validated.userId,
+      kind: isAdminBlock ? "admin_block" : "member",
     });
 
     const [enriched] = await db

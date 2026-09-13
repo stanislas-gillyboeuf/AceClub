@@ -1,1 +1,1 @@
-export { getDashboardSummary } from "./get-dashboard-summary";
+export { getHomeBoard } from "./get-home-board";

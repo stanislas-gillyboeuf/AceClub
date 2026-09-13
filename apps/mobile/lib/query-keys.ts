@@ -183,6 +183,14 @@ export const queryKeys = {
     };
   })(),
 
+  course: (() => {
+    const all = root("course");
+    return {
+      all,
+      myEnrollments: () => [...all, "my-enrollments"] as const,
+    };
+  })(),
+
   notification: (() => {
     const all = root("notification");
     return {

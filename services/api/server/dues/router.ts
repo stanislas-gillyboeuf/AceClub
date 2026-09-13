@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import type { HonoContext } from "../../types/hono";
 import { requireAuth } from "../../middleware/auth";
-import { listDuesTypes, listAssignments, getMemberDuesHistory } from "./queries";
+import { listDuesTypes, listAssignments, getMemberDuesHistory, getReceipt } from "./queries";
 import { createDuesType, updateDuesType, assignDues, markPaid, waive, sendReminder } from "./mutations";
 import {
   listDuesTypesValidator,
@@ -14,6 +14,7 @@ import {
   markPaidValidator,
   waiveValidator,
   sendReminderValidator,
+  getReceiptValidator,
 } from "./validators";
 
 export const duesRouter = new Hono<HonoContext>();
@@ -28,6 +29,7 @@ duesRouter.get(
   zValidator("query", getMemberDuesHistoryValidator),
   getMemberDuesHistory,
 );
+duesRouter.get("/receipt", zValidator("query", getReceiptValidator), getReceipt);
 
 // --- Mutations ---
 duesRouter.post("/types/create", zValidator("json", createDuesTypeValidator), createDuesType);

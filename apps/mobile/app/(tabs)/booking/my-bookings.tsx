@@ -7,8 +7,10 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { bookingGreen } from "@/features/court-booking/theme";
 import { BookingCalendar } from "@/features/court-booking/components/booking-calendar";
 import { AgendaList } from "@/features/court-booking/components/agenda-list";
+import { MyCoursesSection } from "@/features/court-booking/components/my-courses-section";
 import { useTabBarClearance } from "@/features/court-booking/lib/layout";
 import { useMyBookings } from "@/hooks/use-court";
+import { useMyEnrollments } from "@/hooks/use-course";
 import type { CourtBooking } from "@/types/court";
 
 function sameDay(a: Date, b: Date): boolean {
@@ -22,6 +24,7 @@ export default function MyBookingsScreen() {
   const insets = useSafeAreaInsets();
   const tabBarClearance = useTabBarClearance();
   const { data: bookings, isLoading } = useMyBookings("all");
+  const { data: enrollments } = useMyEnrollments();
   const [month, setMonth] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -86,6 +89,7 @@ export default function MyBookingsScreen() {
               />
             ) : (
               <>
+                <MyCoursesSection courses={enrollments?.courses ?? []} />
                 <AgendaList title="À venir" bookings={upcoming} emptyLabel="Rien de prévu." onPress={openTicket} />
                 <AgendaList
                   title="Passées"

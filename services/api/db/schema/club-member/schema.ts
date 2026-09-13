@@ -21,6 +21,7 @@ export const clubMemberProfile = pgTable(
       .references(() => organization.id, { onDelete: "cascade" }),
     licenseNumber: text("license_number"),
     licenseValidUntil: timestamp("license_valid_until"),
+    medicalCertificateValidUntil: timestamp("medical_certificate_valid_until"),
     phoneOverride: text("phone_override"),
     notes: text("notes"),
     createdAt: timestamp("created_at").defaultNow().notNull(),

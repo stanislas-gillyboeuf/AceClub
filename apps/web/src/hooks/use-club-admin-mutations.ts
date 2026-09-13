@@ -21,6 +21,13 @@ export function useSetActiveClubOrganization() {
   })
 }
 
+export function useRemindMember() {
+  return useMutation({
+    mutationFn: (data: { organizationId: string; userId: string; message: string }) =>
+      apiClient("/club-dashboard/remind-member", { method: "POST", body: JSON.stringify(data) }),
+  })
+}
+
 export function useCompleteOnboarding() {
   const queryClient = useQueryClient()
   return useMutation({

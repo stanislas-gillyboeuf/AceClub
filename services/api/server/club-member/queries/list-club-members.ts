@@ -49,6 +49,7 @@ export const listClubMembers = async (c: Context<HonoContext>) => {
         isGhost: user.is_ghost,
         licenseNumber: clubMemberProfile.licenseNumber,
         licenseValidUntil: clubMemberProfile.licenseValidUntil,
+        medicalCertificateValidUntil: clubMemberProfile.medicalCertificateValidUntil,
       })
       .from(member)
       .innerJoin(user, eq(member.userId, user.id))

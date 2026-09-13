@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { assignWeeklyChallenges } from "../challenge/services/challenge-selector";
 import { cleanupExpiredMatchIntents } from "../match_intents/services/cleanup";
+import { sendBookingReminders } from "./services/send-booking-reminders";
+import { sendMemberAlertDigest } from "./services/send-member-alert-digest";
 import { db } from "../../db";
 import { userChallenge } from "../../db/schema/challenge/schema";
 import { eq, lt, and } from "drizzle-orm";
@@ -86,5 +88,29 @@ cronRouter.post("/cleanup-expired-intents", async (c) => {
   } catch (error) {
     console.error("[CRON] cleanup-expired-intents failed:", error);
     return c.json({ error: "Failed to cleanup expired intents" }, 500);
+  }
+});
+
+// POST /cron/send-booking-reminders
+// Schedule: every 15-30 min (idempotent via reminderSentAt — safe at any frequency)
+cronRouter.post("/send-booking-reminders", async (c) => {
+  try {
+    const result = await sendBookingReminders();
+    return c.json({ success: true, ...result });
+  } catch (error) {
+    console.error("[CRON] send-booking-reminders failed:", error);
+    return c.json({ error: "Failed to send booking reminders" }, 500);
+  }
+});
+
+// POST /cron/send-member-alert-digest
+// Schedule: "0 8 * * *" (Quotidien 08:00 UTC)
+cronRouter.post("/send-member-alert-digest", async (c) => {
+  try {
+    const result = await sendMemberAlertDigest();
+    return c.json({ success: true, ...result });
+  } catch (error) {
+    console.error("[CRON] send-member-alert-digest failed:", error);
+    return c.json({ error: "Failed to send member alert digest" }, 500);
   }
 });

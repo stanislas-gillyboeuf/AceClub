@@ -5,3 +5,4 @@ export { updateCourt } from "./update-court";
 export { upsertSettings } from "./upsert-settings";
 export { bookForClub } from "./book-for-club";
 export { joinBooking } from "./join-booking";
+export { suggestSlot } from "./suggest-slot";

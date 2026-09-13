@@ -16,7 +16,7 @@ import { DataTable } from "@/components/custom/data-table"
 import { getDuesAssignmentColumns } from "@/components/custom/dues-columns"
 import { MarkPaidDialog, WaiveDialog } from "@/components/custom/dues-actions"
 import { useDuesAssignments, useDuesTypes } from "@/hooks/use-dues-queries"
-import { useSendDuesReminder } from "@/hooks/use-dues-mutations"
+import { useDownloadDuesReceipt, useSendDuesReminder } from "@/hooks/use-dues-mutations"
 import { useClubAdminContext } from "@/lib/club-admin-context"
 import type { DuesAssignment, DuesAssignmentStatus } from "@/types/dues"
 
@@ -45,12 +45,15 @@ export default function ClubDuesTypeDetailPage() {
   })
 
   const sendReminder = useSendDuesReminder()
+  const downloadReceipt = useDownloadDuesReceipt()
 
   const columns = getDuesAssignmentColumns({
     onMarkPaid: setMarkPaidTarget,
     onWaive: setWaiveTarget,
     onRemind: (a) => sendReminder.mutate({ assignmentId: a.id }),
+    onGenerateReceipt: (a) => downloadReceipt.mutate(a.id),
     pendingId: sendReminder.isPending ? sendReminder.variables?.assignmentId : undefined,
+    receiptPendingId: downloadReceipt.isPending ? downloadReceipt.variables : undefined,
   })
 
   return (

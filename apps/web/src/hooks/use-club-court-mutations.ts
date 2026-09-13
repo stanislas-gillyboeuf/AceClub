@@ -57,6 +57,18 @@ export function useBookForClub() {
   })
 }
 
+export function useSuggestSlot() {
+  return useMutation({
+    mutationFn: (data: {
+      organizationId: string
+      courtId: string
+      date: string
+      hour: number
+      userIds: string[]
+    }) => apiClient("/court/suggest-slot", { method: "POST", body: JSON.stringify(data) }),
+  })
+}
+
 export function useCancelClubBooking() {
   const queryClient = useQueryClient()
   return useMutation({

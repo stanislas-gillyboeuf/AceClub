@@ -12,7 +12,10 @@ export type NotificationType =
   | "challenge_assigned"
   | "new_message"
   | "match_liked"
-  | "club_announcement";
+  | "club_announcement"
+  | "booking_reminder"
+  | "class_reminder"
+  | "slot_suggestion";
 
 interface SendNotificationParams {
   userId: string;

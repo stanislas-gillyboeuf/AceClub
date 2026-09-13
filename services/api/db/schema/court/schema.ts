@@ -11,6 +11,7 @@ export const courtCancellationPolicy = pgEnum("court_cancellation_policy", [
   "disabled",
 ]);
 export const courtSport = pgEnum("court_sport", ["tennis", "padel"]);
+export const courtBookingKind = pgEnum("court_booking_kind", ["member", "admin_block", "course"]);
 
 export const court = pgTable(
   "court",
@@ -53,6 +54,13 @@ export const courtBooking = pgTable(
     status: courtBookingStatus("status").notNull().default("confirmed"),
     purpose: text("purpose"),
     bookedAsClub: boolean("booked_as_club").notNull().default(false),
+    kind: courtBookingKind("kind").notNull().default("member"),
+    // No DB-level FK to `course` here — the course/schema.ts module imports from this file
+    // (course.courtId -> court.id), so a reverse reference would create a circular import.
+    // Always populated from the same transaction that creates the course, so app-level only.
+    courseId: text("course_id"),
+    cancellationReason: text("cancellation_reason"),
+    reminderSentAt: timestamp("reminder_sent_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -63,6 +71,7 @@ export const courtBooking = pgTable(
     index("court_booking_userId_idx").on(table.userId),
     index("court_booking_startAt_idx").on(table.startAt),
     index("court_booking_courtId_startAt_idx").on(table.courtId, table.startAt),
+    index("court_booking_courseId_idx").on(table.courseId),
   ],
 );
 

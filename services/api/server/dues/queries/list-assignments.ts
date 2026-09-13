@@ -3,7 +3,7 @@ import { z } from "zod";
 import { and, count, eq, ilike, inArray, max, or } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { duesAssignment, duesReminderLog, user } from "../../../db/schema";
+import { duesAssignment, duesReminderLog, duesType, user } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { listAssignmentsValidator } from "../validators";
 
@@ -43,9 +43,13 @@ export const listAssignments = async (c: Context<HonoContext>) => {
         userName: user.name,
         userEmail: user.email,
         userImage: user.image,
+        duesTypeName: duesType.name,
+        amountCents: duesType.amountCents,
+        dueDate: duesType.dueDate,
       })
       .from(duesAssignment)
       .innerJoin(user, eq(duesAssignment.userId, user.id))
+      .innerJoin(duesType, eq(duesAssignment.duesTypeId, duesType.id))
       .where(whereClause)
       .orderBy(user.name)
       .limit(validated.limit)

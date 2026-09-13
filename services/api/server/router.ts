@@ -20,6 +20,7 @@ import { clubMemberRouter } from "./club-member/router";
 import { duesRouter } from "./dues/router";
 import { messagingRouter } from "./messaging/router";
 import { clubDashboardRouter } from "./club-dashboard/router";
+import { courseRouter } from "./course/router";
 
 export const serverRouter = new Hono();
 
@@ -44,3 +45,4 @@ serverRouter.route("/club-member", clubMemberRouter);
 serverRouter.route("/dues", duesRouter);
 serverRouter.route("/messaging", messagingRouter);
 serverRouter.route("/club-dashboard", clubDashboardRouter);
+serverRouter.route("/course", courseRouter);

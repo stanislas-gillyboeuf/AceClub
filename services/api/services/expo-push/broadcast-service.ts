@@ -2,11 +2,12 @@ import { Expo, type ExpoPushMessage } from "expo-server-sdk";
 import { db } from "../../db";
 import { deviceToken, notification } from "../../db/schema";
 import { and, eq, inArray } from "drizzle-orm";
+import type { NotificationType } from "./notification-service";
 
 const expo = new Expo();
 
 export interface BroadcastParams {
-  type: "club_announcement";
+  type: NotificationType;
   title: string;
   body: string;
   data?: Record<string, string>;

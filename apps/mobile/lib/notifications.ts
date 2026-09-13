@@ -96,6 +96,11 @@ function handleNotificationResponse(
       }
       break;
 
+    case "booking_reminder":
+    case "class_reminder":
+      router.navigate("/(tabs)/booking/my-bookings" as any);
+      break;
+
     default:
       router.navigate("/(tabs)/feed");
       break;

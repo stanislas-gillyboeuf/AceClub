@@ -15,6 +15,8 @@ interface CreateLockedBookingParams {
   end: Date;
   purpose?: string | null;
   bookedAsClub?: boolean;
+  kind?: "member" | "admin_block" | "course";
+  courseId?: string;
   participants?: BookingParticipantInput[];
 }
 
@@ -55,6 +57,8 @@ export async function createLockedBooking(params: CreateLockedBookingParams) {
         status: "confirmed",
         purpose: params.purpose ?? null,
         bookedAsClub: params.bookedAsClub ?? false,
+        kind: params.kind ?? "member",
+        courseId: params.courseId ?? null,
       })
       .returning();
 

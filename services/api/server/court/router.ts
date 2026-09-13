@@ -24,6 +24,7 @@ import {
   upsertSettings,
   bookForClub,
   joinBooking,
+  suggestSlot,
 } from "./mutations";
 import {
   listCourtsValidator,
@@ -43,6 +44,7 @@ import {
   adminBoardQueryValidator,
   searchMembersValidator,
   joinBookingValidator,
+  suggestSlotValidator,
 } from "./validators";
 
 export const courtRouter = new Hono<HonoContext>();
@@ -76,6 +78,7 @@ courtRouter.post("/book", zValidator("json", createBookingValidator), createBook
 courtRouter.post("/book-for-club", zValidator("json", bookForClubValidator), bookForClub);
 courtRouter.post("/cancel-booking", zValidator("json", cancelBookingValidator), cancelBooking);
 courtRouter.post("/join-booking", zValidator("json", joinBookingValidator), joinBooking);
+courtRouter.post("/suggest-slot", zValidator("json", suggestSlotValidator), suggestSlot);
 
 // --- Court management (club admins) ---
 courtRouter.post("/create", zValidator("json", createCourtValidator), createCourt);

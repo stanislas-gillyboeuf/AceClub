@@ -39,7 +39,17 @@ export const getBoard = async (c: Context<HonoContext>) => {
           status: "mine" as const,
           purpose: taken.purpose,
           bookedAsClub: taken.bookedAsClub,
+          kind: taken.kind,
         };
+      }
+
+      // Privacy: an admin block's reason and a course's coach name are never exposed to the
+      // general member board — only "Indisponible"/"Cours" plus the kind discriminator.
+      if (taken.kind === "admin_block") {
+        return { hour, status: "booked" as const, bookedByLabel: "Indisponible", bookedAsClub: true, kind: "admin_block" as const };
+      }
+      if (taken.kind === "course") {
+        return { hour, status: "booked" as const, bookedByLabel: "Cours", bookedAsClub: true, kind: "course" as const };
       }
       return {
         hour,
@@ -47,6 +57,7 @@ export const getBoard = async (c: Context<HonoContext>) => {
         bookedByLabel: taken.bookedAsClub ? "Le club" : bookedByLabel(taken.bookerName),
         bookedAsClub: taken.bookedAsClub,
         purpose: taken.purpose,
+        kind: "member" as const,
       };
     });
 

@@ -36,7 +36,9 @@ function ClubAdminGate({ children }: { children: React.ReactNode }) {
 
   const isAuthorized = !!session && access?.access !== "none" && !!activeOrganizationId
   const isOnboardingRoute = pathname === "/club/onboarding"
-  const needsOnboarding = isAuthorized && access?.onboardingCompleted === false
+  const needsOnboarding = isAuthorized && access?.access === "full" && access?.onboardingCompleted === false
+  const isCoach = isAuthorized && access?.access === "coach"
+  const isCoachRoute = pathname?.startsWith("/club/courses/mine") ?? false
 
   useEffect(() => {
     if (isPending) return
@@ -44,14 +46,18 @@ function ClubAdminGate({ children }: { children: React.ReactNode }) {
       router.replace("/login")
       return
     }
-    if (needsOnboarding && !isOnboardingRoute) {
+    if (isCoach && !isCoachRoute) {
+      router.replace("/club/courses/mine")
+      return
+    }
+    if (!isCoach && needsOnboarding && !isOnboardingRoute) {
       router.replace("/club/onboarding")
       return
     }
-    if (!needsOnboarding && isOnboardingRoute) {
+    if (!isCoach && !needsOnboarding && isOnboardingRoute) {
       router.replace("/club/dashboard")
     }
-  }, [isAuthorized, isPending, needsOnboarding, isOnboardingRoute, router])
+  }, [isAuthorized, isPending, isCoach, isCoachRoute, needsOnboarding, isOnboardingRoute, router])
 
   if (isPending) {
     return (
@@ -65,12 +71,12 @@ function ClubAdminGate({ children }: { children: React.ReactNode }) {
     return null
   }
 
-  if (needsOnboarding !== isOnboardingRoute) {
+  if (isCoach !== isCoachRoute || (!isCoach && needsOnboarding !== isOnboardingRoute)) {
     // A redirect is in flight (see the effect above) — avoid flashing the wrong shell.
     return null
   }
 
-  if (needsOnboarding) {
+  if (!isCoach && needsOnboarding) {
     return (
       <ClubAdminProvider
         value={{ organizationId: activeOrganizationId, access: access.access, role: access.role! }}
@@ -80,17 +86,20 @@ function ClubAdminGate({ children }: { children: React.ReactNode }) {
     )
   }
 
-  const navItems: ClubAdminNavItem[] = [
-    { title: "Tableau de bord", href: "/club/dashboard" },
-    { title: "Réservations", href: "/club/bookings" },
-    { title: "Membres", href: "/club/members" },
-    ...(access.access === "full"
-      ? [
-          { title: "Cotisations", href: "/club/dues" },
-          { title: "Messagerie", href: "/club/messaging" },
-        ]
-      : []),
-  ]
+  const navItems: ClubAdminNavItem[] = isCoach
+    ? [{ title: "Mes cours", href: "/club/courses/mine" }]
+    : [
+        { title: "Tableau de bord", href: "/club/dashboard" },
+        { title: "Réservations", href: "/club/bookings" },
+        { title: "Membres", href: "/club/members" },
+        ...(access.access === "full"
+          ? [
+              { title: "Cours", href: "/club/courses" },
+              { title: "Cotisations", href: "/club/dues" },
+              { title: "Messagerie", href: "/club/messaging" },
+            ]
+          : []),
+      ]
 
   return (
     <ClubAdminProvider

@@ -46,6 +46,34 @@ Ceci est un email automatique envoyé par ${params.clubName} via AceClub.
   };
 }
 
+export function memberAlertDigestEmail(params: {
+  clubName: string;
+  alerts: { userName: string; detail: string }[];
+}) {
+  const rows = params.alerts
+    .map((a) => `<li><strong>${a.userName}</strong> — ${a.detail}</li>`)
+    .join("");
+  const textRows = params.alerts.map((a) => `- ${a.userName} — ${a.detail}`).join("\n");
+
+  return {
+    subject: `${params.clubName} — ${params.alerts.length} alerte(s) membres`,
+    html: `
+      <h2>Alertes membres — ${params.clubName}</h2>
+      <ul>${rows}</ul>
+      <hr>
+      <p style="color: #666; font-size: 12px;">Résumé quotidien envoyé automatiquement par AceClub.</p>
+    `,
+    text: `
+Alertes membres — ${params.clubName}
+
+${textRows}
+
+---
+Résumé quotidien envoyé automatiquement par AceClub.
+    `,
+  };
+}
+
 export function clubAnnouncementEmail(params: {
   clubName: string;
   subject: string;

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useSearchClubMembers } from "@/hooks/use-club-court-queries"
 import { useBookForClub, useCancelClubBooking } from "@/hooks/use-club-court-mutations"
+import { useCancelCourseOccurrence } from "@/hooks/use-course-mutations"
 import type { AdminBoardCourt, AdminBoardHourCell } from "@/types/court"
 
 interface BookingCellDialogProps {
@@ -46,6 +47,7 @@ export function BookingCellDialog({
   const { data: members } = useSearchClubMembers(organizationId, search)
   const bookForClub = useBookForClub()
   const cancelBooking = useCancelClubBooking()
+  const cancelOccurrence = useCancelCourseOccurrence()
 
   const open = !!court && !!cell
   const isFree = cell?.status === "free"
@@ -66,11 +68,20 @@ export function BookingCellDialog({
 
   function handleCancel() {
     if (!cell?.bookingId) return
+    if (cell.kind === "course") {
+      cancelOccurrence.mutate(
+        { bookingId: cell.bookingId, reopen: true },
+        { onSuccess: () => handleClose(false) },
+      )
+      return
+    }
     cancelBooking.mutate(
       { bookingId: cell.bookingId, override: true },
       { onSuccess: () => handleClose(false) },
     )
   }
+
+  const isCancelling = cancelBooking.isPending || cancelOccurrence.isPending
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -116,24 +127,34 @@ export function BookingCellDialog({
                 {court?.name} — {cell?.hour}h
               </DialogTitle>
               <DialogDescription>
-                {cell?.bookedAsClub ? "Créneau réservé par le club" : `Réservé par ${cell?.bookedByName}`}
+                {cell?.kind === "course"
+                  ? `Cours — coach ${cell?.coachName ?? cell?.bookedByName}`
+                  : cell?.kind === "admin_block"
+                    ? `Bloqué par le club`
+                    : cell?.bookedAsClub
+                      ? "Créneau réservé par le club"
+                      : `Réservé par ${cell?.bookedByName}`}
                 {cell?.purpose ? ` · ${cell.purpose}` : ""}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="sm:justify-between">
-              {cell?.bookedByUserId ? (
+              {cell?.kind === "course" && cell?.courseId ? (
+                <Button variant="outline" asChild>
+                  <Link href={`/club/courses/${cell.courseId}`}>Voir le cours</Link>
+                </Button>
+              ) : cell?.bookedByUserId ? (
                 <Button variant="outline" asChild>
                   <Link href={`/club/members/${cell.bookedByUserId}`}>Voir le membre</Link>
                 </Button>
               ) : (
                 <span />
               )}
-              <Button
-                variant="destructive"
-                onClick={handleCancel}
-                disabled={cancelBooking.isPending}
-              >
-                {cancelBooking.isPending ? "Annulation..." : "Annuler la réservation"}
+              <Button variant="destructive" onClick={handleCancel} disabled={isCancelling}>
+                {isCancelling
+                  ? "Annulation..."
+                  : cell?.kind === "course"
+                    ? "Annuler cette séance"
+                    : "Annuler la réservation"}
               </Button>
             </DialogFooter>
           </>

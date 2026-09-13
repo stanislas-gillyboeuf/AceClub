@@ -70,3 +70,29 @@ export function useSendDuesReminder() {
     },
   })
 }
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001"
+
+/** Downloads the receipt PDF via an authenticated fetch (blob + object URL) rather than a
+ * plain link — the API lives on a different subdomain, so a bare <a href> can't rely on the
+ * session cookie being sent along with it. */
+export function useDownloadDuesReceipt() {
+  return useMutation({
+    mutationFn: async (assignmentId: string) => {
+      const res = await fetch(`${API_URL}/api/dues/receipt?assignmentId=${assignmentId}`, {
+        credentials: "include",
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => null)
+        throw new Error(body?.message || `API error: ${res.status}`)
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = "recu-cotisation.pdf"
+      link.click()
+      URL.revokeObjectURL(url)
+    },
+  })
+}

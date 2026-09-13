@@ -63,6 +63,9 @@ export interface UpsertCourtSettingsInput {
   bookingWindowDays?: number | null
 }
 
+export type CourtBookingKind = "member" | "admin_block" | "course"
+export type BlockReason = "maintenance" | "club_event" | "private_rental" | "other"
+
 export interface AdminBoardHourCell {
   hour: number
   status: "past" | "free" | "booked"
@@ -72,6 +75,9 @@ export interface AdminBoardHourCell {
   bookedByLabel?: string
   bookedAsClub?: boolean
   purpose?: string | null
+  kind?: CourtBookingKind
+  courseId?: string | null
+  coachName?: string
 }
 
 export interface AdminBoardCourt {
@@ -105,6 +111,8 @@ export interface BookForClubInput {
   endAt: string
   purpose?: string
   userId?: string
+  blockReason?: BlockReason
+  blockReasonDetail?: string
 }
 
 export interface CancelBookingInput {

@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api-client"
 import type { ClubOrganization } from "@/types/club-admin"
 
-export type ClubAdminRole = "owner" | "admin" | "member"
-export type ClubAdminAccess = "full" | "none"
+export type ClubAdminRole = "owner" | "admin" | "coach" | "member"
+export type ClubAdminAccess = "full" | "coach" | "none"
 
 interface ActiveMemberRoleResponse {
   role: ClubAdminRole
@@ -19,19 +19,25 @@ export function useClubAdminAccess() {
         "/organization/get-active-member-role",
       )
 
-      if (!result || !["owner", "admin"].includes(result.role)) {
+      if (!result) {
+        return { role: null, access: "none" as ClubAdminAccess, onboardingCompleted: true }
+      }
+
+      if (["owner", "admin"].includes(result.role)) {
         return {
-          role: result?.role ?? null,
-          access: "none" as ClubAdminAccess,
-          onboardingCompleted: true,
+          role: result.role,
+          access: "full" as ClubAdminAccess,
+          onboardingCompleted: result.onboardingCompleted,
         }
       }
 
-      return {
-        role: result.role,
-        access: "full" as ClubAdminAccess,
-        onboardingCompleted: result.onboardingCompleted,
+      // A coach is a distinct role with its own scoped view — not a bridged-down variant of
+      // the admin menu, so it never goes through onboarding.
+      if (result.role === "coach") {
+        return { role: result.role, access: "coach" as ClubAdminAccess, onboardingCompleted: true }
       }
+
+      return { role: result.role, access: "none" as ClubAdminAccess, onboardingCompleted: true }
     },
   })
 }

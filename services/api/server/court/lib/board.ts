@@ -14,6 +14,8 @@ export interface BoardBooking {
   endAt: Date;
   purpose: string | null;
   bookedAsClub: boolean;
+  kind: "member" | "admin_block" | "course";
+  courseId: string | null;
   bookerName: string;
 }
 
@@ -62,6 +64,8 @@ export async function loadBoardData({ organizationId, sport, date, userId }: Loa
             endAt: courtBooking.endAt,
             purpose: courtBooking.purpose,
             bookedAsClub: courtBooking.bookedAsClub,
+            kind: courtBooking.kind,
+            courseId: courtBooking.courseId,
             bookerName: user.name,
           })
           .from(courtBooking)

@@ -23,6 +23,9 @@ export interface DuesAssignment {
   userEmail: string
   userImage: string | null
   lastReminderAt: string | null
+  duesTypeName: string
+  amountCents: number
+  dueDate: string | null
 }
 
 export interface ListAssignmentsParams {

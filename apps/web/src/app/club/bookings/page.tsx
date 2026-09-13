@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { Settings } from "lucide-react"
+import { Ban, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -16,6 +16,7 @@ import { BookingGrid } from "@/components/custom/booking-grid/booking-grid"
 import { SportToggle } from "@/components/custom/booking-grid/sport-toggle"
 import { DaySelector } from "@/components/custom/booking-grid/day-selector"
 import { BookingCellDialog } from "@/components/custom/booking-grid/booking-cell-dialog"
+import { AdminBlockDialog } from "@/components/custom/admin-block-dialog"
 import { useAdminBoard } from "@/hooks/use-club-court-queries"
 import { useClubAdminContext } from "@/lib/club-admin-context"
 import type { AdminBoardCourt, AdminBoardHourCell, CourtSport } from "@/types/court"
@@ -41,6 +42,7 @@ export default function ClubBookingsPage() {
     court: AdminBoardCourt
     cell: AdminBoardHourCell
   } | null>(null)
+  const [blockDialogOpen, setBlockDialogOpen] = useState(false)
 
   const { data: board, isLoading } = useAdminBoard(organizationId, sport, date)
 
@@ -61,12 +63,18 @@ export default function ClubBookingsPage() {
     <div className="mx-auto max-w-5xl">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Réservations</h1>
-        <Button variant="outline" asChild>
-          <Link href="/club/courts">
-            <Settings className="mr-2 h-4 w-4" />
-            Gérer les courts
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setBlockDialogOpen(true)}>
+            <Ban className="mr-2 h-4 w-4" />
+            Bloquer un créneau
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/club/courts">
+              <Settings className="mr-2 h-4 w-4" />
+              Gérer les courts
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
@@ -96,6 +104,19 @@ export default function ClubBookingsPage() {
         <span className="flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full border border-black/10 bg-white" /> Réservé
         </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full border border-[#5B8DEF]/40 bg-[#E9F0FF]" /> Cours
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span
+            className="h-2.5 w-2.5 rounded-full border border-black/10"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(45deg, #E4E4E4, #E4E4E4 2px, #EFEFEF 2px, #EFEFEF 4px)",
+            }}
+          />{" "}
+          Bloqué
+        </span>
       </div>
 
       <div className="mt-4 rounded-2xl border bg-card p-4 shadow-sm">
@@ -117,6 +138,13 @@ export default function ClubBookingsPage() {
         onOpenChange={(open) => {
           if (!open) setSelection(null)
         }}
+      />
+
+      <AdminBlockDialog
+        organizationId={organizationId}
+        defaultDate={date}
+        open={blockDialogOpen}
+        onOpenChange={setBlockDialogOpen}
       />
     </div>
   )

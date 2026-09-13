@@ -16,6 +16,7 @@ export interface ClubMemberListItem {
   isGhost: boolean | null
   licenseNumber: string | null
   licenseValidUntil: string | null
+  medicalCertificateValidUntil: string | null
   recentBookingCount: number
 }
 
@@ -54,6 +55,7 @@ export interface UpdateClubMemberProfileInput {
   userId: string
   licenseNumber?: string | null
   licenseValidUntil?: string | null
+  medicalCertificateValidUntil?: string | null
   phoneOverride?: string | null
   notes?: string | null
 }

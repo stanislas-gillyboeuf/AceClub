@@ -53,6 +53,11 @@ export const getAdminBoard = async (c: Context<HonoContext>) => {
         bookedByLabel: taken.bookedAsClub ? "Le club" : bookedByLabel(taken.bookerName),
         bookedAsClub: taken.bookedAsClub,
         purpose: taken.purpose,
+        kind: taken.kind,
+        courseId: taken.courseId,
+        // For kind='course' this is the assigned coach (userId is the coach's account);
+        // for kind='admin_block' this is the admin who created the block.
+        coachName: taken.kind === "course" ? taken.bookerName : undefined,
       };
     });
 

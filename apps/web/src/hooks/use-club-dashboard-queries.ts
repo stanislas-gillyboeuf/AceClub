@@ -1,12 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api-client"
-import type { DashboardSummary } from "@/types/club-dashboard"
+import type { HomeBoard } from "@/types/club-dashboard"
 
-export function useClubDashboardSummary(organizationId: string) {
+export function useHomeBoard(organizationId: string) {
   return useQuery({
-    queryKey: ["club-dashboard-summary", organizationId],
-    queryFn: () =>
-      apiClient<DashboardSummary>(`/club-dashboard/summary?organizationId=${organizationId}`),
+    queryKey: ["club-home-board", organizationId],
+    queryFn: () => apiClient<HomeBoard>(`/club-dashboard/home?organizationId=${organizationId}`),
     enabled: !!organizationId,
   })
 }

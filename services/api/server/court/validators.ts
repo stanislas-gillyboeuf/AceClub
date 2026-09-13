@@ -106,13 +106,26 @@ export const createBookingValidator = z.object({
   participants: z.array(participantValidator).max(PADEL_TEAM_SIZE).optional().default([]),
 });
 
-export const bookForClubValidator = z.object({
-  courtId: z.string().min(1, "Court ID is required"),
-  startAt: z.string().datetime("Invalid start date"),
-  endAt: z.string().datetime("Invalid end date"),
-  purpose: z.string().min(1).max(200).optional(),
-  userId: z.string().min(1).optional(),
-});
+export const blockReasonEnum = z.enum(["maintenance", "club_event", "private_rental", "other"]);
+
+export const bookForClubValidator = z
+  .object({
+    courtId: z.string().min(1, "Court ID is required"),
+    startAt: z.string().datetime("Invalid start date"),
+    endAt: z.string().datetime("Invalid end date"),
+    purpose: z.string().min(1).max(200).optional(),
+    userId: z.string().min(1).optional(),
+    blockReason: blockReasonEnum.optional(),
+    blockReasonDetail: z.string().min(1).max(200).optional(),
+  })
+  .refine((data) => !(data.blockReason && data.userId), {
+    message: "blockReason and userId are mutually exclusive",
+    path: ["blockReason"],
+  })
+  .refine((data) => data.blockReason !== "other" || !!data.blockReasonDetail, {
+    message: "blockReasonDetail is required when blockReason is 'other'",
+    path: ["blockReasonDetail"],
+  });
 
 export const cancelBookingValidator = z.object({
   bookingId: z.string().min(1, "Booking ID is required"),
@@ -140,4 +153,12 @@ export const upsertSettingsValidator = z.object({
 
 export const weeklyQuotaValidator = z.object({
   organizationId: z.string().min(1, "Organization ID is required"),
+});
+
+export const suggestSlotValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  courtId: z.string().min(1, "Court ID is required"),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+  hour: z.number().int().min(0).max(23),
+  userIds: z.array(z.string().min(1)).min(1).max(200),
 });

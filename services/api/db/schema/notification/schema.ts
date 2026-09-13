@@ -13,6 +13,9 @@ export const NotificationType = pgEnum("notification_type", [
   "new_message",
   "match_liked",
   "club_announcement",
+  "booking_reminder",
+  "class_reminder",
+  "slot_suggestion",
 ]);
 
 export const DevicePlatform = pgEnum("device_platform", ["ios", "android"]);

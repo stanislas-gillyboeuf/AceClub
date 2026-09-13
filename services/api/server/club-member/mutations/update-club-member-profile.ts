@@ -20,6 +20,9 @@ export const updateClubMemberProfile = async (c: Context<HonoContext>) => {
   const values = {
     licenseNumber: validated.licenseNumber ?? null,
     licenseValidUntil: validated.licenseValidUntil ? new Date(validated.licenseValidUntil) : null,
+    medicalCertificateValidUntil: validated.medicalCertificateValidUntil
+      ? new Date(validated.medicalCertificateValidUntil)
+      : null,
     phoneOverride: validated.phoneOverride ?? null,
     notes: validated.notes ?? null,
   };

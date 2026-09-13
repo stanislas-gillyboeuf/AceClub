@@ -17,6 +17,7 @@ export const updateClubMemberProfileValidator = z.object({
   userId: z.string().min(1, "User ID is required"),
   licenseNumber: z.string().max(50).nullable().optional(),
   licenseValidUntil: z.string().datetime().nullable().optional(),
+  medicalCertificateValidUntil: z.string().datetime().nullable().optional(),
   phoneOverride: z.string().max(30).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
 });

@@ -225,6 +225,20 @@
       "when": 1789214438602,
       "tag": "0032_gorgeous_ulik",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1789287198258,
+      "tag": "0033_far_forge",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1789288560549,
+      "tag": "0034_hot_maestro",
+      "breakpoints": true
     }
   ]
 }
