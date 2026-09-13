@@ -1,10 +1,3 @@
-export type MemberAlertType =
-  | "license_expired"
-  | "license_expiring"
-  | "medical_expired"
-  | "medical_expiring"
-  | "dues_overdue"
-
 export interface CoachBadge {
   userId: string
   name: string
@@ -20,31 +13,6 @@ export interface CourseToday {
   courtName: string
   startAt: string
   endAt: string
-}
-
-export interface SlotToFill {
-  courtId: string
-  courtName: string
-  date: string
-  hour: number
-}
-
-export interface MemberAlert {
-  userId: string
-  userName: string
-  userImage: string | null
-  type: MemberAlertType
-  detail: string
-  assignmentId?: string
-}
-
-export interface NewMember {
-  userId: string
-  name: string
-  image: string | null
-  memberSince: string
-  hasLicense: boolean
-  hasBooked: boolean
 }
 
 export interface DueSoon {
@@ -63,6 +31,12 @@ export interface TopPlayer {
   bookingCount: number
 }
 
+export interface OccupancyDay {
+  date: string
+  label: string
+  percent: number
+}
+
 export interface HomeBoardStats {
   activeMembers: number
   activeCourts: number
@@ -73,9 +47,7 @@ export interface HomeBoard {
   stats: HomeBoardStats
   coachBadges: CoachBadge[]
   coursesToday: CourseToday[]
-  slotsToFill: SlotToFill[]
-  memberAlerts: MemberAlert[]
-  newMembers: NewMember[]
   duesDueSoon: DueSoon[]
   topPlayers: TopPlayer[]
+  occupancyByDay: OccupancyDay[]
 }

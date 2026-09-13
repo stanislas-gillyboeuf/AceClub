@@ -154,11 +154,3 @@ export const upsertSettingsValidator = z.object({
 export const weeklyQuotaValidator = z.object({
   organizationId: z.string().min(1, "Organization ID is required"),
 });
-
-export const suggestSlotValidator = z.object({
-  organizationId: z.string().min(1, "Organization ID is required"),
-  courtId: z.string().min(1, "Court ID is required"),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
-  hour: z.number().int().min(0).max(23),
-  userIds: z.array(z.string().min(1)).min(1).max(200),
-});
