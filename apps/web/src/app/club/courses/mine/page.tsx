@@ -1,13 +1,18 @@
 "use client"
 
+import { useState } from "react"
+import { Bell } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { AttendanceDialog } from "@/components/custom/attendance-dialog"
+import { NotifyStudentsDialog } from "@/components/custom/notify-students-dialog"
 import { useMyCourses } from "@/hooks/use-course-queries"
 import { useCancelCourseOccurrence } from "@/hooks/use-course-mutations"
 import { useClubAdminContext } from "@/lib/club-admin-context"
+import type { CourseRosterMember } from "@/types/course"
 
 const WEEKDAY_LABELS = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"]
 
@@ -29,6 +34,15 @@ export default function CoachMyCoursesPage() {
   const { organizationId } = useClubAdminContext()
   const { data, isLoading } = useMyCourses(organizationId)
   const cancelOccurrence = useCancelCourseOccurrence()
+
+  const [attendanceTarget, setAttendanceTarget] = useState<{ bookingId: string; courseName: string } | null>(
+    null,
+  )
+  const [notifyTarget, setNotifyTarget] = useState<{
+    courseId: string
+    courseName: string
+    roster: CourseRosterMember[]
+  } | null>(null)
 
   if (isLoading || !data) {
     return (
@@ -68,9 +82,21 @@ export default function CoachMyCoursesPage() {
                       {course.durationMinutes} min)
                     </p>
                   </div>
-                  <Badge variant={course.status === "active" ? "default" : "secondary"}>
-                    {course.status === "active" ? "Actif" : "Annulé"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setNotifyTarget({ courseId: course.id, courseName: course.name, roster: course.roster })
+                      }
+                    >
+                      <Bell className="mr-2 h-4 w-4" />
+                      Notifier
+                    </Button>
+                    <Badge variant={course.status === "active" ? "default" : "secondary"}>
+                      {course.status === "active" ? "Actif" : "Annulé"}
+                    </Badge>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -99,16 +125,25 @@ export default function CoachMyCoursesPage() {
                         {upcoming.map((o) => (
                           <li key={o.id} className="flex items-center justify-between text-sm">
                             <span>{formatDateTime(o.startAt)}</span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={cancelOccurrence.isPending}
-                              onClick={() =>
-                                cancelOccurrence.mutate({ bookingId: o.id, reopen: false })
-                              }
-                            >
-                              Annuler cette séance
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setAttendanceTarget({ bookingId: o.id, courseName: course.name })}
+                              >
+                                Présences
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={cancelOccurrence.isPending}
+                                onClick={() =>
+                                  cancelOccurrence.mutate({ bookingId: o.id, reopen: false })
+                                }
+                              >
+                                Annuler cette séance
+                              </Button>
+                            </div>
                           </li>
                         ))}
                       </ul>
@@ -124,7 +159,15 @@ export default function CoachMyCoursesPage() {
                             <span>{formatDateTime(o.startAt)}</span>
                             {o.status === "cancelled" ? (
                               <Badge variant="secondary">Annulée</Badge>
-                            ) : null}
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setAttendanceTarget({ bookingId: o.id, courseName: course.name })}
+                              >
+                                Présences
+                              </Button>
+                            )}
                           </li>
                         ))}
                       </ul>
@@ -136,6 +179,23 @@ export default function CoachMyCoursesPage() {
           })}
         </div>
       )}
+
+      <AttendanceDialog
+        bookingId={attendanceTarget?.bookingId ?? null}
+        courseName={attendanceTarget?.courseName ?? ""}
+        onOpenChange={(open) => {
+          if (!open) setAttendanceTarget(null)
+        }}
+      />
+
+      <NotifyStudentsDialog
+        courseId={notifyTarget?.courseId ?? null}
+        courseName={notifyTarget?.courseName ?? ""}
+        roster={notifyTarget?.roster ?? []}
+        onOpenChange={(open) => {
+          if (!open) setNotifyTarget(null)
+        }}
+      />
     </div>
   )
 }

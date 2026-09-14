@@ -12,6 +12,7 @@ import {
   computeOccurrenceSlots,
   insertOccurrences,
 } from "../lib/occurrence-generator";
+import { getVacationDateRanges } from "../../vacation-period/lib/get-periods";
 
 export const createCourse = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -42,12 +43,15 @@ export const createCourse = async (c: Context<HonoContext>) => {
     return c.json({ error: "BadRequest", message: "endDate must be on or after startDate" }, 400);
   }
 
+  const vacationPeriods = await getVacationDateRanges(validated.organizationId);
+
   const slots = computeOccurrenceSlots({
     weekday: validated.weekday,
     startTime: validated.startTime,
     durationMinutes: validated.durationMinutes,
     startDate: validated.startDate,
     endDate: validated.endDate,
+    vacationPeriods,
   });
 
   if (slots.length === 0) {

@@ -9,7 +9,9 @@ export interface CourseListItem {
   startDate: string
   endDate: string
   status: CourseStatus
+  coachUserId: string
   coachName: string
+  coachImage: string | null
   courtName: string
 }
 
@@ -90,4 +92,32 @@ export interface CancelOccurrenceInput {
   bookingId: string
   reason?: string
   reopen: boolean
+}
+
+export type AttendanceStatus = "present" | "absent"
+
+export interface AttendanceRosterMember {
+  userId: string
+  name: string
+  image: string | null
+  status: AttendanceStatus | null
+}
+
+export interface OccurrenceAttendance {
+  bookingId: string
+  startAt: string
+  roster: AttendanceRosterMember[]
+}
+
+export interface MarkAttendanceInput {
+  bookingId: string
+  userId: string
+  status: AttendanceStatus
+}
+
+export interface NotifyStudentsInput {
+  courseId: string
+  userIds: string[]
+  title?: string
+  body: string
 }

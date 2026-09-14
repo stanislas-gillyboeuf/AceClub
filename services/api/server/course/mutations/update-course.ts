@@ -13,6 +13,7 @@ import {
   computeOccurrenceSlots,
   insertOccurrences,
 } from "../lib/occurrence-generator";
+import { getVacationDateRanges } from "../../vacation-period/lib/get-periods";
 
 function toDateString(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -80,12 +81,15 @@ export const updateCourse = async (c: Context<HonoContext>) => {
     return c.json({ error: "BadRequest", message: "endDate must be on or after today" }, 400);
   }
 
+  const vacationPeriods = await getVacationDateRanges(existing.organizationId);
+
   const slots = computeOccurrenceSlots({
     weekday,
     startTime,
     durationMinutes,
     startDate: effectiveStartDate,
     endDate,
+    vacationPeriods,
   });
 
   try {

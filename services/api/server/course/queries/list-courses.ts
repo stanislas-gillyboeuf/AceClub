@@ -27,7 +27,9 @@ export const listCourses = async (c: Context<HonoContext>) => {
       startDate: course.startDate,
       endDate: course.endDate,
       status: course.status,
+      coachUserId: course.coachUserId,
       coachName: user.name,
+      coachImage: user.image,
       courtName: court.name,
     })
     .from(course)

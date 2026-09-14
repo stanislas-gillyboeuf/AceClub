@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch"
 import { useClubCourtSettings } from "@/hooks/use-club-court-queries"
 import { useUpsertClubCourtSettings } from "@/hooks/use-club-court-mutations"
 import { useClubAdminContext } from "@/lib/club-admin-context"
+import { VacationPeriodsCard } from "@/components/custom/vacation-periods-card"
 
 function LimitRow({
   label,
@@ -184,6 +185,8 @@ export default function ClubCourtRulesPage() {
         <Button onClick={handleSave} disabled={!isValid || upsertSettings.isPending}>
           {upsertSettings.isPending ? "Enregistrement..." : "Enregistrer"}
         </Button>
+
+        <VacationPeriodsCard organizationId={organizationId} />
       </div>
     </div>
   )

@@ -24,6 +24,17 @@ export function useUpdateDuesType() {
   })
 }
 
+export function useDeleteDuesType() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (duesTypeId: string) =>
+      apiClient("/dues/types/delete", { method: "POST", body: JSON.stringify({ duesTypeId }) }),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["dues-types"] })
+    },
+  })
+}
+
 export function useAssignDues() {
   const queryClient = useQueryClient()
   return useMutation({

@@ -239,6 +239,13 @@
       "when": 1789288560549,
       "tag": "0034_hot_maestro",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1789418268518,
+      "tag": "0035_fair_puck",
+      "breakpoints": true
     }
   ]
 }

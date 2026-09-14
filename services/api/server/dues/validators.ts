@@ -63,3 +63,7 @@ export const sendReminderValidator = z.object({
 export const getReceiptValidator = z.object({
   assignmentId: z.string().min(1, "Assignment ID is required"),
 });
+
+export const deleteDuesTypeValidator = z.object({
+  duesTypeId: z.string().min(1, "Dues type ID is required"),
+});

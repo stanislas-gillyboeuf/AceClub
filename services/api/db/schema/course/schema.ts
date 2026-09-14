@@ -1,9 +1,10 @@
 import { index, integer, pgEnum, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { ulid } from "ulid";
 import { organization, user } from "../auth/schema";
-import { court } from "../court/schema";
+import { court, courtBooking } from "../court/schema";
 
 export const courseStatus = pgEnum("course_status", ["active", "cancelled"]);
+export const courseAttendanceStatus = pgEnum("course_attendance_status", ["present", "absent"]);
 
 /**
  * A recurring class definition (e.g. "Cours enfants avec Marc, mardi 18h"). Occurrences are
@@ -63,5 +64,31 @@ export const courseEnrollment = pgTable(
   (table) => [
     uniqueIndex("course_enrollment_courseId_userId_uidx").on(table.courseId, table.userId),
     index("course_enrollment_userId_idx").on(table.userId),
+  ],
+);
+
+/** One row per (occurrence, enrolled student) — marked by the assigned coach (or an admin)
+ * after/at a session. Absence of a row means "not yet marked", not "absent". */
+export const courseAttendance = pgTable(
+  "course_attendance",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    bookingId: text("booking_id")
+      .notNull()
+      .references(() => courtBooking.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    status: courseAttendanceStatus("status").notNull(),
+    markedByUserId: text("marked_by_user_id")
+      .notNull()
+      .references(() => user.id),
+    markedAt: timestamp("marked_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("course_attendance_bookingId_userId_uidx").on(table.bookingId, table.userId),
+    index("course_attendance_userId_idx").on(table.userId),
   ],
 );

@@ -1,6 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api-client"
-import type { CancelOccurrenceInput, CreateCourseInput, UpdateCourseInput } from "@/types/course"
+import type {
+  CancelOccurrenceInput,
+  CreateCourseInput,
+  MarkAttendanceInput,
+  NotifyStudentsInput,
+  UpdateCourseInput,
+} from "@/types/course"
 
 function settleCourses(queryClient: ReturnType<typeof useQueryClient>, courseId?: string) {
   queryClient.invalidateQueries({ queryKey: ["courses"] })
@@ -60,5 +66,23 @@ export function useUnenrollCourseMember() {
     mutationFn: (data: { courseId: string; userId: string }) =>
       apiClient("/course/unenroll", { method: "POST", body: JSON.stringify(data) }),
     onSettled: (_data, _err, variables) => settleCourses(queryClient, variables.courseId),
+  })
+}
+
+export function useMarkAttendance() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: MarkAttendanceInput) =>
+      apiClient("/course/mark-attendance", { method: "POST", body: JSON.stringify(data) }),
+    onSettled: (_data, _err, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["occurrence-attendance", variables.bookingId] })
+    },
+  })
+}
+
+export function useNotifyStudents() {
+  return useMutation({
+    mutationFn: (data: NotifyStudentsInput) =>
+      apiClient("/course/notify-students", { method: "POST", body: JSON.stringify(data) }),
   })
 }

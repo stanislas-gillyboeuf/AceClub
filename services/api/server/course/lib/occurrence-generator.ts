@@ -2,6 +2,7 @@ import { and, eq, gt, gte, isNull, lt, ne, or, sql } from "drizzle-orm";
 import { db } from "../../../db";
 import { courtBooking } from "../../../db/schema";
 import { zonedDateTime } from "../../court/lib/timezone";
+import type { VacationDateRange } from "../../vacation-period/lib/get-periods";
 
 export class CourseConflictError extends Error {
   constructor(public conflictingDates: string[]) {
@@ -28,14 +29,21 @@ function dateStringWeekday(dateStr: string): number {
   return new Date(`${dateStr}T00:00:00Z`).getUTCDay();
 }
 
+function isInVacation(date: string, vacationPeriods: VacationDateRange[]): boolean {
+  return vacationPeriods.some((v) => date >= v.startDate && date <= v.endDate);
+}
+
 /** Every date matching `weekday` between `startDate` and `endDate` (both "YYYY-MM-DD", inclusive),
- * turned into a concrete start/end instant using the club's timezone. */
+ * turned into a concrete start/end instant using the club's timezone — skipping any date that
+ * falls inside a club vacation period, so the course runs through to its end date without
+ * generating sessions during school holidays etc. */
 export function computeOccurrenceSlots(params: {
   weekday: number;
   startTime: string;
   durationMinutes: number;
   startDate: string;
   endDate: string;
+  vacationPeriods?: VacationDateRange[];
 }): OccurrenceSlot[] {
   const slots: OccurrenceSlot[] = [];
   let cursor = params.startDate;
@@ -43,9 +51,11 @@ export function computeOccurrenceSlots(params: {
   cursor = addDaysToDateString(cursor, daysUntilWeekday);
 
   while (cursor <= params.endDate) {
-    const start = zonedDateTime(cursor, params.startTime);
-    const end = new Date(start.getTime() + params.durationMinutes * 60 * 1000);
-    slots.push({ date: cursor, start, end });
+    if (!isInVacation(cursor, params.vacationPeriods ?? [])) {
+      const start = zonedDateTime(cursor, params.startTime);
+      const end = new Date(start.getTime() + params.durationMinutes * 60 * 1000);
+      slots.push({ date: cursor, start, end });
+    }
     cursor = addDaysToDateString(cursor, 7);
   }
   return slots;

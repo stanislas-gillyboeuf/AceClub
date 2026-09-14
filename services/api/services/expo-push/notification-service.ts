@@ -15,7 +15,8 @@ export type NotificationType =
   | "club_announcement"
   | "booking_reminder"
   | "class_reminder"
-  | "slot_suggestion";
+  | "slot_suggestion"
+  | "coach_message";
 
 interface SendNotificationParams {
   userId: string;

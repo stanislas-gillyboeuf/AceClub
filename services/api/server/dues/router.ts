@@ -3,13 +3,22 @@ import { zValidator } from "@hono/zod-validator";
 import type { HonoContext } from "../../types/hono";
 import { requireAuth } from "../../middleware/auth";
 import { listDuesTypes, listAssignments, getMemberDuesHistory, getReceipt } from "./queries";
-import { createDuesType, updateDuesType, assignDues, markPaid, waive, sendReminder } from "./mutations";
+import {
+  createDuesType,
+  updateDuesType,
+  deleteDuesType,
+  assignDues,
+  markPaid,
+  waive,
+  sendReminder,
+} from "./mutations";
 import {
   listDuesTypesValidator,
   listAssignmentsValidator,
   getMemberDuesHistoryValidator,
   createDuesTypeValidator,
   updateDuesTypeValidator,
+  deleteDuesTypeValidator,
   assignDuesValidator,
   markPaidValidator,
   waiveValidator,
@@ -34,6 +43,7 @@ duesRouter.get("/receipt", zValidator("query", getReceiptValidator), getReceipt)
 // --- Mutations ---
 duesRouter.post("/types/create", zValidator("json", createDuesTypeValidator), createDuesType);
 duesRouter.post("/types/update", zValidator("json", updateDuesTypeValidator), updateDuesType);
+duesRouter.post("/types/delete", zValidator("json", deleteDuesTypeValidator), deleteDuesType);
 duesRouter.post("/assign", zValidator("json", assignDuesValidator), assignDues);
 duesRouter.post("/mark-paid", zValidator("json", markPaidValidator), markPaid);
 duesRouter.post("/waive", zValidator("json", waiveValidator), waive);

@@ -57,3 +57,20 @@ export const unenrollMemberValidator = z.object({
   courseId: z.string().min(1, "Course ID is required"),
   userId: z.string().min(1, "User ID is required"),
 });
+
+export const getOccurrenceAttendanceValidator = z.object({
+  bookingId: z.string().min(1, "Booking ID is required"),
+});
+
+export const markAttendanceValidator = z.object({
+  bookingId: z.string().min(1, "Booking ID is required"),
+  userId: z.string().min(1, "User ID is required"),
+  status: z.enum(["present", "absent"]),
+});
+
+export const notifyStudentsValidator = z.object({
+  courseId: z.string().min(1, "Course ID is required"),
+  userIds: z.array(z.string().min(1)).min(1, "Select at least one student").max(200),
+  title: z.string().max(100).optional(),
+  body: z.string().min(1, "Message is required").max(300),
+});

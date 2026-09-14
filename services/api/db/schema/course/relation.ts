@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
-import { course, courseEnrollment } from "./schema";
+import { course, courseAttendance, courseEnrollment } from "./schema";
 import { organization, user } from "../auth/schema";
-import { court } from "../court/schema";
+import { court, courtBooking } from "../court/schema";
 
 export const courseRelations = relations(course, ({ one, many }) => ({
   organization: one(organization, {
@@ -26,6 +26,21 @@ export const courseEnrollmentRelations = relations(courseEnrollment, ({ one }) =
   }),
   user: one(user, {
     fields: [courseEnrollment.userId],
+    references: [user.id],
+  }),
+}));
+
+export const courseAttendanceRelations = relations(courseAttendance, ({ one }) => ({
+  booking: one(courtBooking, {
+    fields: [courseAttendance.bookingId],
+    references: [courtBooking.id],
+  }),
+  user: one(user, {
+    fields: [courseAttendance.userId],
+    references: [user.id],
+  }),
+  markedBy: one(user, {
+    fields: [courseAttendance.markedByUserId],
     references: [user.id],
   }),
 }));

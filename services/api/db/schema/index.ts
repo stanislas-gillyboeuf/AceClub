@@ -19,3 +19,4 @@ export * from "./course";
 export * from "./club-member";
 export * from "./dues";
 export * from "./messaging";
+export * from "./vacation-period";

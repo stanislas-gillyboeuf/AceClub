@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api-client"
-import type { CourseDetail, CourseListItem, MyCourseItem } from "@/types/course"
+import type { CourseDetail, CourseListItem, MyCourseItem, OccurrenceAttendance } from "@/types/course"
 
 export function useCourses(organizationId: string) {
   return useQuery({
@@ -25,5 +25,14 @@ export function useMyCourses(organizationId: string) {
     queryFn: () =>
       apiClient<{ courses: MyCourseItem[] }>(`/course/mine?organizationId=${organizationId}`),
     enabled: !!organizationId,
+  })
+}
+
+export function useOccurrenceAttendance(bookingId: string | null) {
+  return useQuery({
+    queryKey: ["occurrence-attendance", bookingId],
+    queryFn: () =>
+      apiClient<OccurrenceAttendance>(`/course/occurrence-attendance?bookingId=${bookingId}`),
+    enabled: !!bookingId,
   })
 }

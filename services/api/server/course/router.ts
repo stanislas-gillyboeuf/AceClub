@@ -2,7 +2,13 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import type { HonoContext } from "../../types/hono";
 import { requireAuth } from "../../middleware/auth";
-import { listCourses, getCourseDetail, listMyCourses, listMyEnrollments } from "./queries";
+import {
+  listCourses,
+  getCourseDetail,
+  listMyCourses,
+  listMyEnrollments,
+  getOccurrenceAttendance,
+} from "./queries";
 import {
   createCourse,
   updateCourse,
@@ -10,6 +16,8 @@ import {
   cancelOccurrence,
   enrollMember,
   unenrollMember,
+  markAttendance,
+  notifyStudents,
 } from "./mutations";
 import {
   createCourseValidator,
@@ -21,6 +29,9 @@ import {
   listMyCoursesValidator,
   enrollMemberValidator,
   unenrollMemberValidator,
+  getOccurrenceAttendanceValidator,
+  markAttendanceValidator,
+  notifyStudentsValidator,
 } from "./validators";
 
 export const courseRouter = new Hono<HonoContext>();
@@ -32,6 +43,11 @@ courseRouter.get("/list", zValidator("query", listCoursesValidator), listCourses
 courseRouter.get("/detail", zValidator("query", getCourseDetailValidator), getCourseDetail);
 courseRouter.get("/mine", zValidator("query", listMyCoursesValidator), listMyCourses);
 courseRouter.get("/my-enrollments", listMyEnrollments);
+courseRouter.get(
+  "/occurrence-attendance",
+  zValidator("query", getOccurrenceAttendanceValidator),
+  getOccurrenceAttendance,
+);
 
 // --- Mutations ---
 courseRouter.post("/create", zValidator("json", createCourseValidator), createCourse);
@@ -44,3 +60,5 @@ courseRouter.post(
 );
 courseRouter.post("/enroll", zValidator("json", enrollMemberValidator), enrollMember);
 courseRouter.post("/unenroll", zValidator("json", unenrollMemberValidator), unenrollMember);
+courseRouter.post("/mark-attendance", zValidator("json", markAttendanceValidator), markAttendance);
+courseRouter.post("/notify-students", zValidator("json", notifyStudentsValidator), notifyStudents);

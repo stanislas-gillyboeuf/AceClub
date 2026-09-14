@@ -2,14 +2,25 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus } from "lucide-react"
+import { Plus, Trash2 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CreateDuesTypeDialog } from "@/components/custom/dues-actions"
 import { useDuesTypes } from "@/hooks/use-dues-queries"
-import { useAssignDues } from "@/hooks/use-dues-mutations"
+import { useAssignDues, useDeleteDuesType } from "@/hooks/use-dues-mutations"
 import { useClubAdminContext } from "@/lib/club-admin-context"
 
 function formatAmount(amountCents: number) {
@@ -25,6 +36,7 @@ export default function ClubDuesPage() {
   const { organizationId } = useClubAdminContext()
   const { data: duesTypes, isLoading } = useDuesTypes(organizationId)
   const assignDues = useAssignDues()
+  const deleteDuesType = useDeleteDuesType()
   const [createOpen, setCreateOpen] = useState(false)
 
   return (
@@ -61,17 +73,48 @@ export default function ClubDuesPage() {
                     {type.dueDate ? ` · Échéance le ${formatDate(type.dueDate)}` : ""}
                   </p>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={assignDues.isPending}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    assignDues.mutate({ organizationId, duesTypeId: type.id, allActiveMembers: true })
-                  }}
-                >
-                  Assigner à tous les membres
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={assignDues.isPending}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      assignDues.mutate({ organizationId, duesTypeId: type.id, allActiveMembers: true })
+                    }}
+                  >
+                    Assigner à tous les membres
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Supprimer cette cotisation ?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Supprime « {type.name} » et toutes les assignations associées (payées, en
+                          attente ou exonérées). Cette action est irréversible.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteDuesType.mutate(type.id)}
+                          disabled={deleteDuesType.isPending}
+                        >
+                          {deleteDuesType.isPending ? "Suppression..." : "Supprimer"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="flex gap-2">
