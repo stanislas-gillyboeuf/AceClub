@@ -22,6 +22,7 @@ import { messagingRouter } from "./messaging/router";
 import { clubDashboardRouter } from "./club-dashboard/router";
 import { courseRouter } from "./course/router";
 import { vacationPeriodRouter } from "./vacation-period/router";
+import { tournamentRouter } from "./tournament/router";
 
 export const serverRouter = new Hono();
 
@@ -48,3 +49,4 @@ serverRouter.route("/messaging", messagingRouter);
 serverRouter.route("/club-dashboard", clubDashboardRouter);
 serverRouter.route("/course", courseRouter);
 serverRouter.route("/vacation-period", vacationPeriodRouter);
+serverRouter.route("/tournament", tournamentRouter);

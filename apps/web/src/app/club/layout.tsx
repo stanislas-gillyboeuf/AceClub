@@ -95,6 +95,7 @@ function ClubAdminGate({ children }: { children: React.ReactNode }) {
         ...(access.access === "full"
           ? [
               { title: "Cours", href: "/club/courses" },
+              { title: "Événements", href: "/club/events" },
               { title: "Cotisations", href: "/club/dues" },
               { title: "Messagerie", href: "/club/messaging" },
             ]
