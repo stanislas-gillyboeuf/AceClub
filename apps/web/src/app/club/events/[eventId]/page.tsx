@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select"
 import { DataTable } from "@/components/custom/data-table"
 import { getClubEventParticipantsColumns } from "@/components/custom/club-event-participants-columns"
+import { AddEventParticipant } from "@/components/custom/add-event-participant"
 import { useOrganizationEvents, useEventParticipants } from "@/hooks/use-event-queries"
 import {
   useUpdateEventStatus,
@@ -80,6 +81,11 @@ export default function ClubEventDetailPage() {
   const columns = getClubEventParticipantsColumns(
     (p: EventParticipant) => removeParticipant.mutate({ eventId: params.eventId, userId: p.userId }),
     removeParticipant.isPending ? removeParticipant.variables?.userId : undefined,
+  )
+
+  const activeParticipantUserIds = useMemo(
+    () => new Set((participants ?? []).filter((p) => p.status !== "cancelled").map((p) => p.userId)),
+    [participants],
   )
 
   if (isLoading) {
@@ -166,7 +172,12 @@ export default function ClubEventDetailPage() {
         <CardHeader>
           <CardTitle>Participants</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <AddEventParticipant
+            eventId={event.id}
+            organizationId={organizationId}
+            existingUserIds={activeParticipantUserIds}
+          />
           <DataTable<EventParticipant, unknown>
             columns={columns}
             data={participants ?? []}

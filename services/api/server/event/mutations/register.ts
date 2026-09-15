@@ -36,7 +36,7 @@ export const registerEvent = async (c: Context<HonoContext>) => {
       )
       .limit(1);
 
-    if (!memberRecord) {
+    if (!memberRecord && currentUser.role !== "admin") {
       return c.json(
         { error: "Forbidden", message: "This event is restricted to organization members" },
         403,

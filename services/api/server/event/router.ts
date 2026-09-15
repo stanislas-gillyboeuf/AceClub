@@ -21,6 +21,7 @@ import {
   registerEvent,
   cancelRegistration,
   removeParticipant,
+  addParticipant,
   adminUpdateStatus,
   adminDeleteEvent,
   adminRemoveParticipant,
@@ -39,6 +40,7 @@ import {
   registerEventValidator,
   cancelRegistrationValidator,
   removeParticipantValidator,
+  addParticipantValidator,
   adminListEventsValidator,
   adminListParticipantsValidator,
   adminRemoveParticipantValidator,
@@ -79,6 +81,11 @@ eventRouter.post(
   "/remove-participant",
   zValidator("json", removeParticipantValidator),
   removeParticipant,
+);
+eventRouter.post(
+  "/add-participant",
+  zValidator("json", addParticipantValidator),
+  addParticipant,
 );
 eventRouter.get(
   "/list-organization-events",

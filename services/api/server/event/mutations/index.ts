@@ -6,6 +6,7 @@ export { cancelEvent } from "./cancel-event";
 export { registerEvent } from "./register";
 export { cancelRegistration } from "./cancel-registration";
 export { removeParticipant } from "./remove-participant";
+export { addParticipant } from "./add-participant";
 export { adminUpdateStatus } from "./admin-update-status";
 export { adminDeleteEvent } from "./admin-delete";
 export { adminRemoveParticipant } from "./admin-remove-participant";

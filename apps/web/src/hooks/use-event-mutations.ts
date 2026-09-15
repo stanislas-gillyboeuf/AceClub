@@ -60,3 +60,12 @@ export function useRemoveEventParticipant() {
     onSettled: (_data, _err, variables) => settleEvents(queryClient, variables.eventId),
   })
 }
+
+export function useAddEventParticipant() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { eventId: string; userId: string }) =>
+      apiClient("/event/add-participant", { method: "POST", body: JSON.stringify(data) }),
+    onSettled: (_data, _err, variables) => settleEvents(queryClient, variables.eventId),
+  })
+}

@@ -17,8 +17,13 @@ export const listEvents = async (c: Context<HonoContext>) => {
   // Only show visible events (not draft, not cancelled)
   const conditions: SQL[] = [ne(event.status, "draft"), ne(event.status, "cancelled")];
 
-  // Visibility: public events are always visible, organization events only for members
-  if (query.visibility === "organization") {
+  // Visibility: public events are always visible, organization events only for members.
+  // Platform admins bypass this entirely (same rule already applied in get-event.ts) — they
+  // don't hold a `member` row for clubs they administer platform-side (see
+  // organization/mutations/create.ts, which deliberately strips it on creation).
+  if (currentUser.role === "admin") {
+    // No visibility condition — organizationId (if any) is applied by the generic filter below.
+  } else if (query.visibility === "organization") {
     // If filtering by organization visibility, user must be a member
     if (!query.organizationId) {
       return c.json(

@@ -111,6 +111,11 @@ export const removeParticipantValidator = z.object({
   userId: z.string().min(1, "User ID is required"),
 });
 
+export const addParticipantValidator = z.object({
+  eventId: z.string().min(1, "Event ID is required"),
+  userId: z.string().min(1, "User ID is required"),
+});
+
 // --- Admin ---
 
 export const adminListEventsValidator = z.object({
