@@ -24,7 +24,6 @@ import { courseRouter } from "./course/router";
 import { vacationPeriodRouter } from "./vacation-period/router";
 import { tournamentRouter } from "./tournament/router";
 import { clubLevelRouter } from "./club-level/router";
-import { clubSubscriptionRouter } from "./club-subscription/router";
 
 export const serverRouter = new Hono();
 
@@ -53,4 +52,3 @@ serverRouter.route("/course", courseRouter);
 serverRouter.route("/vacation-period", vacationPeriodRouter);
 serverRouter.route("/tournament", tournamentRouter);
 serverRouter.route("/club-level", clubLevelRouter);
-serverRouter.route("/club-subscription", clubSubscriptionRouter);

@@ -260,6 +260,13 @@
       "when": 1789573903542,
       "tag": "0037_rare_the_fury",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1789577803511,
+      "tag": "0038_strange_edwin_jarvis",
+      "breakpoints": true
     }
   ]
 }

@@ -3,13 +3,13 @@ import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { member, clubMemberProfile, clubMemberNote, memberSubscription } from "../../../db/schema";
+import { member, clubMemberProfile, clubMemberNote } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { removeMemberValidator } from "../validators";
 
 // Removes club membership only — booking history stays intact (legitimate historical data
-// independent of current membership). Club-scoped extras (profile, notes, subscriptions) are
-// cleaned up since they're meaningless without membership.
+// independent of current membership). Club-scoped extras (profile, notes) are cleaned up
+// since they're meaningless without membership.
 export const removeMember = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
   // @ts-ignore
@@ -50,14 +50,6 @@ export const removeMember = async (c: Context<HonoContext>) => {
         and(
           eq(clubMemberNote.organizationId, validated.organizationId),
           eq(clubMemberNote.userId, validated.userId),
-        ),
-      );
-    await tx
-      .delete(memberSubscription)
-      .where(
-        and(
-          eq(memberSubscription.organizationId, validated.organizationId),
-          eq(memberSubscription.userId, validated.userId),
         ),
       );
   });

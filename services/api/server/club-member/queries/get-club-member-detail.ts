@@ -1,18 +1,9 @@
 import { Context } from "hono";
 import { z } from "zod";
-import { and, desc, eq, lt } from "drizzle-orm";
+import { and, count, desc, eq, lt } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import {
-  member,
-  user,
-  clubMemberProfile,
-  courtBooking,
-  court,
-  userPreference,
-  memberSubscription,
-  subscriptionType,
-} from "../../../db/schema";
+import { member, user, clubMemberProfile, courtBooking, court, userPreference } from "../../../db/schema";
 import { assertClubAdmin } from "../../../middleware/club-admin";
 import { getClubMemberDetailValidator } from "../validators";
 
@@ -50,6 +41,8 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
       sport: userPreference.sport,
       skillLevel: userPreference.skillLevel,
       skillLevelVerified: userPreference.skillLevelVerified,
+      secondarySport: userPreference.secondarySport,
+      secondarySkillLevel: userPreference.secondarySkillLevel,
     })
     .from(member)
     .innerJoin(user, eq(member.userId, user.id))
@@ -70,7 +63,12 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Member not found" }, 404);
   }
 
-  const [bookings, [lastBooking], [subscription]] = await Promise.all([
+  const bookingScope = and(
+    eq(courtBooking.userId, validated.userId),
+    eq(court.organizationId, validated.organizationId),
+  );
+
+  const [bookings, [lastBooking], [cancelledResult]] = await Promise.all([
     db
       .select({
         id: courtBooking.id,
@@ -82,47 +80,26 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
       })
       .from(courtBooking)
       .innerJoin(court, eq(courtBooking.courtId, court.id))
-      .where(
-        and(eq(courtBooking.userId, validated.userId), eq(court.organizationId, validated.organizationId)),
-      )
+      .where(bookingScope)
       .orderBy(desc(courtBooking.startAt))
       .limit(BOOKING_HISTORY_LIMIT),
     db
       .select({ startAt: courtBooking.startAt })
       .from(courtBooking)
       .innerJoin(court, eq(courtBooking.courtId, court.id))
-      .where(
-        and(
-          eq(courtBooking.userId, validated.userId),
-          eq(court.organizationId, validated.organizationId),
-          eq(courtBooking.status, "confirmed"),
-          lt(courtBooking.startAt, new Date()),
-        ),
-      )
+      .where(and(bookingScope, eq(courtBooking.status, "confirmed"), lt(courtBooking.startAt, new Date())))
       .orderBy(desc(courtBooking.startAt))
       .limit(1),
     db
-      .select({
-        endDate: memberSubscription.endDate,
-        amountDueCents: memberSubscription.amountDueCents,
-        status: memberSubscription.status,
-        typeName: subscriptionType.name,
-      })
-      .from(memberSubscription)
-      .innerJoin(subscriptionType, eq(memberSubscription.subscriptionTypeId, subscriptionType.id))
-      .where(
-        and(
-          eq(memberSubscription.organizationId, validated.organizationId),
-          eq(memberSubscription.userId, validated.userId),
-        ),
-      )
-      .orderBy(desc(memberSubscription.startDate))
-      .limit(1),
+      .select({ count: count() })
+      .from(courtBooking)
+      .innerJoin(court, eq(courtBooking.courtId, court.id))
+      .where(and(bookingScope, eq(courtBooking.status, "cancelled"))),
   ]);
 
   return c.json({
     member: { ...memberRow, lastBookingAt: lastBooking?.startAt ?? null },
     bookings,
-    subscription: subscription ?? null,
+    cancelledBookingCount: cancelledResult?.count ?? 0,
   });
 };

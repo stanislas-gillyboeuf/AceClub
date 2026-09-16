@@ -97,7 +97,6 @@ function ClubAdminGate({ children }: { children: React.ReactNode }) {
               { title: "Cours", href: "/club/courses" },
               { title: "Événements", href: "/club/events" },
               { title: "Cotisations", href: "/club/dues" },
-              { title: "Abonnements", href: "/club/subscriptions" },
               { title: "Messagerie", href: "/club/messaging" },
             ]
           : []),

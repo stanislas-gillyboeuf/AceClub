@@ -45,13 +45,6 @@ export interface ClubMemberBooking {
   status: string
 }
 
-export interface ClubMemberSubscriptionSummary {
-  endDate: string | null
-  amountDueCents: number
-  status: "active" | "cancelled"
-  typeName: string
-}
-
 export interface ClubMemberDetail {
   member: ClubMemberListItem & {
     userPhone: string | null
@@ -60,9 +53,11 @@ export interface ClubMemberDetail {
     city: string | null
     dateOfBirth: string | null
     lastBookingAt: string | null
+    secondarySport: string | null
+    secondarySkillLevel: string | null
   }
   bookings: ClubMemberBooking[]
-  subscription: ClubMemberSubscriptionSummary | null
+  cancelledBookingCount: number
 }
 
 export interface UpdateClubMemberProfileInput {
