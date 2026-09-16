@@ -83,6 +83,14 @@ export const discover = async (c: Context<HonoContext>) => {
         ELSE ${intentOwnerPreference.skillLevel}
       END
     `;
+    // The secondary sport's level isn't verifiable in v1 (see user_preference schema) — only
+    // ever true when the level shown is actually the verified primary-sport one.
+    const intentSkillLevelVerifiedExpr = sql`
+      CASE
+        WHEN ${intentSportExpr} = ${intentOwnerPreference.secondarySport} THEN false
+        ELSE ${intentOwnerPreference.skillLevelVerified}
+      END
+    `;
 
     // Filter by sport: explicit query param wins, otherwise fall back to the viewer's own sport
     const effectiveSport = requestedSport ?? currentUserSport;
@@ -224,6 +232,7 @@ export const discover = async (c: Context<HonoContext>) => {
         user_sport: intentOwnerPreference.sport,
         intent_sport: intentSportExpr.as("intent_sport"),
         intent_skill_level: intentSkillLevelExpr.as("intent_skill_level"),
+        intent_skill_level_verified: intentSkillLevelVerifiedExpr.as("intent_skill_level_verified"),
         org_id: organization.id,
         org_name: organization.name,
         org_logo: organization.logo,
@@ -327,6 +336,7 @@ export const discover = async (c: Context<HonoContext>) => {
               level: Number(row.user_level) || 1,
               // Level for THIS intent's sport, not necessarily the owner's primary sport.
               skillLevel: row.intent_skill_level ?? row.user_skill_level ?? null,
+              skillLevelVerified: row.intent_skill_level_verified ?? false,
               sport: row.intent_sport ?? row.user_sport ?? null,
               organization:
                 row.org_id != null && row.org_name != null

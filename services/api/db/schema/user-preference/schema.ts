@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, pgEnum, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, pgEnum, index, boolean } from "drizzle-orm/pg-core";
 import { ulid } from "ulid";
 import { user } from "../auth/schema";
 import { organization } from "../auth/schema";
@@ -21,6 +21,12 @@ export const userPreference = pgTable(
       .references(() => organization.id, { onDelete: "cascade" }),
     sport: SportType("sport").notNull(),
     skillLevel: text("skill_level").notNull(),
+    // Set by a club admin confirming a self-reported level (or one they set directly) is
+    // accurate — see server/club-level/mutations/set-member-level.ts. Primary sport only in
+    // v1; the secondary sport isn't verifiable, to keep the surface small.
+    skillLevelVerified: boolean("skill_level_verified").notNull().default(false),
+    skillLevelVerifiedByUserId: text("skill_level_verified_by_user_id").references(() => user.id),
+    skillLevelVerifiedAt: timestamp("skill_level_verified_at"),
     /** Optional second sport for players who play both tennis and padel. */
     secondarySport: SportType("secondary_sport"),
     secondarySkillLevel: text("secondary_skill_level"),

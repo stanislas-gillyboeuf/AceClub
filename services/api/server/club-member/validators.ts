@@ -20,6 +20,36 @@ export const updateClubMemberProfileValidator = z.object({
   medicalCertificateValidUntil: z.string().datetime().nullable().optional(),
   phoneOverride: z.string().max(30).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
+  city: z.string().max(100).nullable().optional(),
+  isVip: z.boolean().optional(),
+});
+
+export const addMemberValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Valid email is required"),
+  phone: z.string().max(30).optional(),
+});
+
+export const removeMemberValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  userId: z.string().min(1, "User ID is required"),
+});
+
+export const addMemberNoteValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  userId: z.string().min(1, "User ID is required"),
+  body: z.string().min(1, "Note body is required").max(2000),
+});
+
+export const listMemberNotesValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  userId: z.string().min(1, "User ID is required"),
+});
+
+export const listUpcomingBookingsValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  userId: z.string().min(1, "User ID is required"),
 });
 
 export const updateMemberRoleValidator = z.object({

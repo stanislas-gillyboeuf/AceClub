@@ -18,6 +18,10 @@ export interface ClubMemberListItem {
   licenseValidUntil: string | null
   medicalCertificateValidUntil: string | null
   recentBookingCount: number
+  isVip: boolean | null
+  sport: string | null
+  skillLevel: string | null
+  skillLevelVerified: boolean | null
 }
 
 export interface ListClubMembersParams {
@@ -41,13 +45,24 @@ export interface ClubMemberBooking {
   status: string
 }
 
+export interface ClubMemberSubscriptionSummary {
+  endDate: string | null
+  amountDueCents: number
+  status: "active" | "cancelled"
+  typeName: string
+}
+
 export interface ClubMemberDetail {
   member: ClubMemberListItem & {
     userPhone: string | null
     phoneOverride: string | null
     notes: string | null
+    city: string | null
+    dateOfBirth: string | null
+    lastBookingAt: string | null
   }
   bookings: ClubMemberBooking[]
+  subscription: ClubMemberSubscriptionSummary | null
 }
 
 export interface UpdateClubMemberProfileInput {
@@ -58,6 +73,29 @@ export interface UpdateClubMemberProfileInput {
   medicalCertificateValidUntil?: string | null
   phoneOverride?: string | null
   notes?: string | null
+  city?: string | null
+  isVip?: boolean
+}
+
+export interface ClubMemberNote {
+  id: string
+  body: string
+  createdAt: string
+  authorUserId: string
+  authorName: string
+}
+
+export interface UpcomingBooking {
+  id: string
+  courtName: string
+  sport: string
+  startAt: string
+  endAt: string
+}
+
+export interface UpcomingBookingsResponse {
+  upcoming: UpcomingBooking[]
+  totalCount: number
 }
 
 export interface BulkImportRow {

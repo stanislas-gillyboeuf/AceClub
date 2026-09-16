@@ -4,6 +4,8 @@ import type {
   ListClubMembersParams,
   ListClubMembersResponse,
   ClubMemberDetail,
+  ClubMemberNote,
+  UpcomingBookingsResponse,
 } from "@/types/club-admin"
 
 export function useClubMembers(params: ListClubMembersParams) {
@@ -26,6 +28,28 @@ export function useClubMemberDetail(organizationId: string, userId: string | und
     queryFn: () =>
       apiClient<ClubMemberDetail>(
         `/club-member/detail?organizationId=${organizationId}&userId=${userId}`,
+      ),
+    enabled: !!userId,
+  })
+}
+
+export function useMemberNotes(organizationId: string, userId: string | undefined) {
+  return useQuery({
+    queryKey: ["club-member-notes", organizationId, userId],
+    queryFn: () =>
+      apiClient<ClubMemberNote[]>(
+        `/club-member/list-notes?organizationId=${organizationId}&userId=${userId}`,
+      ),
+    enabled: !!userId,
+  })
+}
+
+export function useMemberUpcomingBookings(organizationId: string, userId: string | undefined) {
+  return useQuery({
+    queryKey: ["club-member-upcoming-bookings", organizationId, userId],
+    queryFn: () =>
+      apiClient<UpcomingBookingsResponse>(
+        `/club-member/upcoming-bookings?organizationId=${organizationId}&userId=${userId}`,
       ),
     enabled: !!userId,
   })

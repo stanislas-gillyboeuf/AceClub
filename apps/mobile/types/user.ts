@@ -43,6 +43,9 @@ export interface UserPreferences {
   organizationName?: string | null;
   sport: string;
   skillLevel: string;
+  /** Set by a club admin confirming this level is accurate. Primary sport only. */
+  skillLevelVerified: boolean;
+  skillLevelVerifiedAt?: string | null;
   /** Second sport for players who play both tennis and padel. */
   secondarySport?: string | null;
   secondarySkillLevel?: string | null;

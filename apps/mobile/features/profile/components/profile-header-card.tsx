@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { Trophy, TrendingUp, Clock } from "lucide-react-native";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
+import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
 import type { User, UserPreferences } from "@/types/user";
@@ -40,13 +41,6 @@ export function ProfileHeaderCard({
     ? getSkillLevelDisplayName(preferences.skillLevel, preferences.sport as Sport)
     : null;
 
-  const subtitle = [
-    skillLabel,
-    preferences?.organizationName,
-  ]
-    .filter(Boolean)
-    .join(" - ");
-
   const progressPercent = level ? Math.min(level.progressPercent, 100) : 0;
 
   return (
@@ -61,13 +55,34 @@ export function ProfileHeaderCard({
           >
             {user.name}
           </Text>
-          {subtitle ? (
-            <Text
-              style={[styles.userSubtitle, { color: semanticColors.labelSecondary[scheme] }]}
-              numberOfLines={1}
-            >
-              {subtitle}
-            </Text>
+          {skillLabel || preferences?.organizationName ? (
+            <View style={styles.subtitleRow}>
+              {skillLabel ? (
+                <View style={styles.subtitleLevel}>
+                  <Text
+                    style={[styles.userSubtitle, { color: semanticColors.labelSecondary[scheme] }]}
+                    numberOfLines={1}
+                  >
+                    {skillLabel}
+                  </Text>
+                  {preferences?.skillLevelVerified ? <VerifiedBadge size={13} /> : null}
+                </View>
+              ) : null}
+              {skillLabel && preferences?.organizationName ? (
+                <Text style={[styles.userSubtitle, { color: semanticColors.labelSecondary[scheme] }]}>
+                  {" "}
+                  -{" "}
+                </Text>
+              ) : null}
+              {preferences?.organizationName ? (
+                <Text
+                  style={[styles.userSubtitle, { color: semanticColors.labelSecondary[scheme] }]}
+                  numberOfLines={1}
+                >
+                  {preferences.organizationName}
+                </Text>
+              ) : null}
+            </View>
           ) : null}
         </View>
       </View>
@@ -156,6 +171,16 @@ const styles = StyleSheet.create({
   },
   userSubtitle: {
     fontSize: 15,
+  },
+  subtitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+  },
+  subtitleLevel: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
   },
   levelSection: {
     gap: 6,

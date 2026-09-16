@@ -51,3 +51,41 @@ export function useBulkImportClubMembers() {
     },
   })
 }
+
+export function useAddClubMember() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { organizationId: string; name: string; email: string; phone?: string }) =>
+      apiClient<{ success: boolean; userId: string }>("/club-member/add", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSettled: (_data, _err, variables) => {
+      settleClubMember(queryClient, variables.organizationId)
+    },
+  })
+}
+
+export function useRemoveClubMember() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { organizationId: string; userId: string }) =>
+      apiClient("/club-member/remove", { method: "POST", body: JSON.stringify(data) }),
+    onSettled: (_data, _err, variables) => {
+      settleClubMember(queryClient, variables.organizationId, variables.userId)
+    },
+  })
+}
+
+export function useAddMemberNote() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { organizationId: string; userId: string; body: string }) =>
+      apiClient("/club-member/add-note", { method: "POST", body: JSON.stringify(data) }),
+    onSettled: (_data, _err, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["club-member-notes", variables.organizationId, variables.userId],
+      })
+    },
+  })
+}

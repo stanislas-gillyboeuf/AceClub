@@ -1,9 +1,18 @@
 import { Context } from "hono";
 import { z } from "zod";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, lt } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { member, user, clubMemberProfile, courtBooking, court } from "../../../db/schema";
+import {
+  member,
+  user,
+  clubMemberProfile,
+  courtBooking,
+  court,
+  userPreference,
+  memberSubscription,
+  subscriptionType,
+} from "../../../db/schema";
 import { assertClubAdmin } from "../../../middleware/club-admin";
 import { getClubMemberDetailValidator } from "../validators";
 
@@ -29,12 +38,18 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
       userEmail: user.email,
       userImage: user.image,
       userPhone: user.phoneNumber,
+      dateOfBirth: user.date_of_birth,
       isGhost: user.is_ghost,
       licenseNumber: clubMemberProfile.licenseNumber,
       licenseValidUntil: clubMemberProfile.licenseValidUntil,
       medicalCertificateValidUntil: clubMemberProfile.medicalCertificateValidUntil,
       phoneOverride: clubMemberProfile.phoneOverride,
       notes: clubMemberProfile.notes,
+      city: clubMemberProfile.city,
+      isVip: clubMemberProfile.isVip,
+      sport: userPreference.sport,
+      skillLevel: userPreference.skillLevel,
+      skillLevelVerified: userPreference.skillLevelVerified,
     })
     .from(member)
     .innerJoin(user, eq(member.userId, user.id))
@@ -45,6 +60,7 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
         eq(clubMemberProfile.organizationId, member.organizationId),
       ),
     )
+    .leftJoin(userPreference, eq(userPreference.userId, member.userId))
     .where(
       and(eq(member.organizationId, validated.organizationId), eq(member.userId, validated.userId)),
     )
@@ -54,22 +70,59 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Member not found" }, 404);
   }
 
-  const bookings = await db
-    .select({
-      id: courtBooking.id,
-      courtName: court.name,
-      sport: court.sport,
-      startAt: courtBooking.startAt,
-      endAt: courtBooking.endAt,
-      status: courtBooking.status,
-    })
-    .from(courtBooking)
-    .innerJoin(court, eq(courtBooking.courtId, court.id))
-    .where(
-      and(eq(courtBooking.userId, validated.userId), eq(court.organizationId, validated.organizationId)),
-    )
-    .orderBy(desc(courtBooking.startAt))
-    .limit(BOOKING_HISTORY_LIMIT);
+  const [bookings, [lastBooking], [subscription]] = await Promise.all([
+    db
+      .select({
+        id: courtBooking.id,
+        courtName: court.name,
+        sport: court.sport,
+        startAt: courtBooking.startAt,
+        endAt: courtBooking.endAt,
+        status: courtBooking.status,
+      })
+      .from(courtBooking)
+      .innerJoin(court, eq(courtBooking.courtId, court.id))
+      .where(
+        and(eq(courtBooking.userId, validated.userId), eq(court.organizationId, validated.organizationId)),
+      )
+      .orderBy(desc(courtBooking.startAt))
+      .limit(BOOKING_HISTORY_LIMIT),
+    db
+      .select({ startAt: courtBooking.startAt })
+      .from(courtBooking)
+      .innerJoin(court, eq(courtBooking.courtId, court.id))
+      .where(
+        and(
+          eq(courtBooking.userId, validated.userId),
+          eq(court.organizationId, validated.organizationId),
+          eq(courtBooking.status, "confirmed"),
+          lt(courtBooking.startAt, new Date()),
+        ),
+      )
+      .orderBy(desc(courtBooking.startAt))
+      .limit(1),
+    db
+      .select({
+        endDate: memberSubscription.endDate,
+        amountDueCents: memberSubscription.amountDueCents,
+        status: memberSubscription.status,
+        typeName: subscriptionType.name,
+      })
+      .from(memberSubscription)
+      .innerJoin(subscriptionType, eq(memberSubscription.subscriptionTypeId, subscriptionType.id))
+      .where(
+        and(
+          eq(memberSubscription.organizationId, validated.organizationId),
+          eq(memberSubscription.userId, validated.userId),
+        ),
+      )
+      .orderBy(desc(memberSubscription.startDate))
+      .limit(1),
+  ]);
 
-  return c.json({ member: memberRow, bookings });
+  return c.json({
+    member: { ...memberRow, lastBookingAt: lastBooking?.startAt ?? null },
+    bookings,
+    subscription: subscription ?? null,
+  });
 };

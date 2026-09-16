@@ -31,6 +31,7 @@ export interface UserBrief {
   image?: string | null;
   level: number;
   skillLevel?: string | null;
+  skillLevelVerified?: boolean;
   sport?: string | null;
   organization?: OrganizationBrief | null;
 }

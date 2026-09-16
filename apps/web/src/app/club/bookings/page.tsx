@@ -1,7 +1,8 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { Suspense, useMemo, useState } from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { Ban, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -34,7 +35,20 @@ function todayKey() {
 }
 
 export default function ClubBookingsPage() {
+  return (
+    <Suspense fallback={null}>
+      <ClubBookingsPageContent />
+    </Suspense>
+  )
+}
+
+function ClubBookingsPageContent() {
   const { organizationId } = useClubAdminContext()
+  const searchParams = useSearchParams()
+  const preselectedUserId = searchParams.get("userId")
+  const preselectedName = searchParams.get("name")
+  const preselectedMember =
+    preselectedUserId && preselectedName ? { userId: preselectedUserId, name: preselectedName } : null
   const [sport, setSport] = useState<CourtSport>("tennis")
   const [date, setDate] = useState(todayKey)
   const [surfaceFilter, setSurfaceFilter] = useState("all")
@@ -76,6 +90,13 @@ export default function ClubBookingsPage() {
           </Button>
         </div>
       </div>
+
+      {preselectedMember ? (
+        <p className="mt-4 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-sm">
+          Réservation pour <span className="font-medium">{preselectedMember.name}</span> — cliquez
+          un créneau libre pour confirmer.
+        </p>
+      ) : null}
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
         <SportToggle sport={sport} onChange={setSport} />
@@ -138,6 +159,7 @@ export default function ClubBookingsPage() {
         onOpenChange={(open) => {
           if (!open) setSelection(null)
         }}
+        preselectedMember={preselectedMember}
       />
 
       <AdminBlockDialog

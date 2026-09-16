@@ -253,6 +253,13 @@
       "when": 1789420062763,
       "tag": "0036_dark_leopardon",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1789573903542,
+      "tag": "0037_rare_the_fury",
+      "breakpoints": true
     }
   ]
 }

@@ -25,6 +25,8 @@ export const updateClubMemberProfile = async (c: Context<HonoContext>) => {
       : null,
     phoneOverride: validated.phoneOverride ?? null,
     notes: validated.notes ?? null,
+    city: validated.city ?? null,
+    isVip: validated.isVip ?? false,
   };
 
   const [profile] = await db

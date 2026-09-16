@@ -3,7 +3,7 @@ import { z } from "zod";
 import { and, count, eq, gte, ilike, inArray, or } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { member, user, clubMemberProfile, courtBooking } from "../../../db/schema";
+import { member, user, clubMemberProfile, courtBooking, userPreference } from "../../../db/schema";
 import { assertClubAdmin } from "../../../middleware/club-admin";
 import { listClubMembersValidator } from "../validators";
 
@@ -50,10 +50,15 @@ export const listClubMembers = async (c: Context<HonoContext>) => {
         licenseNumber: clubMemberProfile.licenseNumber,
         licenseValidUntil: clubMemberProfile.licenseValidUntil,
         medicalCertificateValidUntil: clubMemberProfile.medicalCertificateValidUntil,
+        isVip: clubMemberProfile.isVip,
+        sport: userPreference.sport,
+        skillLevel: userPreference.skillLevel,
+        skillLevelVerified: userPreference.skillLevelVerified,
       })
       .from(member)
       .innerJoin(user, eq(member.userId, user.id))
       .leftJoin(clubMemberProfile, profileJoin)
+      .leftJoin(userPreference, eq(userPreference.userId, member.userId))
       .where(whereClause)
       .orderBy(user.name)
       .limit(validated.limit)

@@ -10,8 +10,9 @@ import {
 } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Gauge } from "lucide-react-native";
 
-import { useMe } from "@/hooks/use-user";
+import { useMe, usePreferences } from "@/hooks/use-user";
 import { useMyLevel } from "@/hooks/use-level";
 import { useInfiniteMatches } from "@/hooks/use-match";
 import { useActiveMember } from "@/hooks/use-organization";
@@ -25,6 +26,9 @@ import { EventsFeedSection } from "@/features/events/components/events-feed-sect
 import { SectionHeader } from "@/components/ui/section-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SkeletonRow } from "@/components/ui/skeleton";
+import { TagChip } from "@/components/ui/tag-chip";
+import { VerifiedBadge } from "@/components/ui/verified-badge";
+import { formatSkillLevel } from "@/lib/skill-levels";
 
 import { colors, semanticColors, spacing } from "@/constants/theme";
 
@@ -32,6 +36,7 @@ export default function Feed() {
   const scheme = useColorScheme();
   const { data: me } = useMe();
   const { data: level, isLoading: levelLoading } = useMyLevel();
+  const { data: preferences } = usePreferences();
   const router = useRouter();
   const totalUnread = useUnreadMessagesCount();
 
@@ -72,6 +77,11 @@ export default function Feed() {
   const onRefresh = useCallback(() => {
     refetch();
   }, [refetch]);
+
+  const skillLevelLabel = preferences
+    ? formatSkillLevel(preferences.skillLevel, preferences.sport)
+    : null;
+  const sportLabel = preferences?.sport === "padel" ? "Padel" : "Tennis";
 
   return (
     <>
@@ -118,6 +128,20 @@ export default function Feed() {
         onEndReachedThreshold={0.3}
         ListHeaderComponent={
           <View>
+            {/* Skill level (FFT/padel), not the Aces/XP level below */}
+            {skillLevelLabel ? (
+              <View style={[styles.section, styles.skillLevelRow]}>
+                <TagChip
+                  icon={Gauge}
+                  label={`${sportLabel} · ${skillLevelLabel}`}
+                  backgroundColor={`${colors.accentGreen}1A`}
+                  textColor={colors.accentGreen}
+                  iconColor={colors.accentGreen}
+                />
+                {preferences?.skillLevelVerified ? <VerifiedBadge size={14} /> : null}
+              </View>
+            ) : null}
+
             {/* Level progress card */}
             <View style={styles.section}>
               {levelLoading ? (
@@ -182,6 +206,12 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: spacing.horizontal,
     paddingVertical: 8,
+  },
+  skillLevelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingBottom: 0,
   },
   matchRow: {
     paddingHorizontal: spacing.horizontal,

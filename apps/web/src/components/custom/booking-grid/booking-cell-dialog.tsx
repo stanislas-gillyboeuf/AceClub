@@ -24,6 +24,7 @@ interface BookingCellDialogProps {
   court: AdminBoardCourt | null
   cell: AdminBoardHourCell | null
   onOpenChange: (open: boolean) => void
+  preselectedMember?: { userId: string; name: string } | null
 }
 
 function initials(name: string) {
@@ -42,6 +43,7 @@ export function BookingCellDialog({
   court,
   cell,
   onOpenChange,
+  preselectedMember,
 }: BookingCellDialogProps) {
   const [search, setSearch] = useState("")
   const { data: members } = useSearchClubMembers(organizationId, search)
@@ -92,33 +94,50 @@ export function BookingCellDialog({
               <DialogTitle>
                 Réserver {court?.name} — {cell?.hour}h
               </DialogTitle>
-              <DialogDescription>Recherchez un membre pour réserver ce créneau.</DialogDescription>
+              <DialogDescription>
+                {preselectedMember
+                  ? `Réservation pour ${preselectedMember.name}.`
+                  : "Recherchez un membre pour réserver ce créneau."}
+              </DialogDescription>
             </DialogHeader>
-            <Input
-              autoFocus
-              placeholder="Nom du membre..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <div className="max-h-64 space-y-1 overflow-auto">
-              {members?.map((member) => (
-                <button
-                  key={member.userId}
-                  type="button"
-                  disabled={bookForClub.isPending}
-                  onClick={() => handlePickMember(member.userId)}
-                  className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm hover:bg-accent disabled:opacity-50"
-                >
-                  <Avatar className="h-7 w-7">
-                    <AvatarFallback className="text-xs">{initials(member.name)}</AvatarFallback>
-                  </Avatar>
-                  {member.name}
-                </button>
-              ))}
-              {search && !members?.length ? (
-                <p className="px-2 py-2 text-sm text-muted-foreground">Aucun membre trouvé.</p>
-              ) : null}
-            </div>
+            {preselectedMember ? (
+              <Button
+                onClick={() => handlePickMember(preselectedMember.userId)}
+                disabled={bookForClub.isPending}
+              >
+                {bookForClub.isPending
+                  ? "Réservation..."
+                  : `Confirmer pour ${preselectedMember.name}`}
+              </Button>
+            ) : (
+              <>
+                <Input
+                  autoFocus
+                  placeholder="Nom du membre..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <div className="max-h-64 space-y-1 overflow-auto">
+                  {members?.map((member) => (
+                    <button
+                      key={member.userId}
+                      type="button"
+                      disabled={bookForClub.isPending}
+                      onClick={() => handlePickMember(member.userId)}
+                      className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm hover:bg-accent disabled:opacity-50"
+                    >
+                      <Avatar className="h-7 w-7">
+                        <AvatarFallback className="text-xs">{initials(member.name)}</AvatarFallback>
+                      </Avatar>
+                      {member.name}
+                    </button>
+                  ))}
+                  {search && !members?.length ? (
+                    <p className="px-2 py-2 text-sm text-muted-foreground">Aucun membre trouvé.</p>
+                  ) : null}
+                </div>
+              </>
+            )}
           </>
         ) : (
           <>

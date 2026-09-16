@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View, Text, Pressable, Alert, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { Avatar } from "@/components/ui/avatar";
+import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { colors, semanticColors, radii, spacing } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useCreateMatchRequest } from "@/hooks/use-match-intent";
@@ -77,7 +78,10 @@ export function PartnerRequestCard({ item }: PartnerRequestCardProps) {
           {displayName}
         </Text>
         {level && (
-          <Text style={[styles.level, { color: semanticColors.labelSecondary[scheme] }]}>{level}</Text>
+          <View style={styles.levelRow}>
+            <Text style={[styles.level, { color: semanticColors.labelSecondary[scheme] }]}>{level}</Text>
+            {item.user?.skillLevelVerified ? <VerifiedBadge size={13} /> : null}
+          </View>
         )}
       </View>
 
@@ -195,6 +199,11 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "700",
     flexShrink: 1,
+  },
+  levelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
   },
   level: {
     fontSize: 14,

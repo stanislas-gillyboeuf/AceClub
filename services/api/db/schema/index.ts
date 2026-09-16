@@ -21,3 +21,5 @@ export * from "./dues";
 export * from "./messaging";
 export * from "./vacation-period";
 export * from "./tournament";
+export * from "./club-level";
+export * from "./club-subscription";
