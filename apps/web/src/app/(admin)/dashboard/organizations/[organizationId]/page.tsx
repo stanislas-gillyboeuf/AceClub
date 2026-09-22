@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Pencil, Trash2, Plus, X, Eye, EyeOff, MapPin, Lock, LockOpen, RefreshCw, Copy, Check } from "lucide-react"
+import { ArrowLeft, Pencil, Trash2, Plus, UserPlus, X, Eye, EyeOff, MapPin, Lock, LockOpen, RefreshCw, Copy, Check } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -23,6 +23,7 @@ import {
   DeleteOrganizationDialog,
   CreateInvitationDialog,
 } from "@/components/custom/organization-actions"
+import { AddMemberDialog } from "@/components/custom/add-member-dialog"
 import {
   useAdminOrganization,
   useOrganizationMembers,
@@ -162,6 +163,7 @@ export default function OrganizationDetailPage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
+  const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
   const [pinVisible, setPinVisible] = useState(false)
   const [pinCopied, setPinCopied] = useState(false)
 
@@ -434,7 +436,13 @@ export default function OrganizationDetailPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="members" className="mt-4">
+        <TabsContent value="members" className="mt-4 space-y-4">
+          <div className="flex items-center justify-end">
+            <Button size="sm" onClick={() => setAddMemberDialogOpen(true)}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Ajouter un membre
+            </Button>
+          </div>
           <DataTable
             columns={membersColumns}
             data={membersData?.members ?? []}
@@ -547,6 +555,11 @@ export default function OrganizationDetailPage() {
             organizationId={organizationId}
             open={inviteDialogOpen}
             onOpenChange={setInviteDialogOpen}
+          />
+          <AddMemberDialog
+            organizationId={organizationId}
+            open={addMemberDialogOpen}
+            onOpenChange={setAddMemberDialogOpen}
           />
         </>
       )}

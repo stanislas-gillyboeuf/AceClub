@@ -69,6 +69,10 @@ export function useAddClubMember() {
       ),
     onSettled: (_data, _err, variables) => {
       settleClubMember(queryClient, variables.organizationId)
+      // No-op if unused — harmless to invalidate a query key that isn't mounted. Lets the
+      // platform admin's organization detail page (a different member list/hook) pick up the
+      // new member too, since this dialog is reused there.
+      queryClient.invalidateQueries({ queryKey: ["admin-organization-members"] })
     },
   })
 }
