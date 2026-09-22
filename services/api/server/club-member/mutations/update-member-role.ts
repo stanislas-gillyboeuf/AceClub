@@ -19,7 +19,7 @@ export const updateMemberRole = async (c: Context<HonoContext>) => {
   const validated = c.req.valid("json") as z.infer<typeof updateMemberRoleValidator>;
 
   const isFullAdmin = await assertClubFullAdmin(currentUser.id, validated.organizationId);
-  if (!isFullAdmin) {
+  if (!isFullAdmin && currentUser.role !== "admin") {
     return c.json({ error: "Forbidden", message: "Full admin access required" }, 403);
   }
 

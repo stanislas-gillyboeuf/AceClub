@@ -55,11 +55,18 @@ export function useBulkImportClubMembers() {
 export function useAddClubMember() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (data: { organizationId: string; name: string; email: string; phone?: string }) =>
-      apiClient<{ success: boolean; userId: string }>("/club-member/add", {
-        method: "POST",
-        body: JSON.stringify(data),
-      }),
+    mutationFn: (data: {
+      organizationId: string
+      name: string
+      email: string
+      phone?: string
+      role?: "member" | "admin" | "coach"
+      generatePassword?: boolean
+    }) =>
+      apiClient<{ success: boolean; userId: string; generatedPassword: string | null }>(
+        "/club-member/add",
+        { method: "POST", body: JSON.stringify(data) },
+      ),
     onSettled: (_data, _err, variables) => {
       settleClubMember(queryClient, variables.organizationId)
     },

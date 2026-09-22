@@ -29,6 +29,11 @@ export const addMemberValidator = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Valid email is required"),
   phone: z.string().max(30).optional(),
+  role: z.enum(["member", "admin", "coach"]).optional().default("member"),
+  // Generates a login password for this person and returns it once in the response — for
+  // creating an admin/coach who needs to sign in directly, rather than a ghost profile that
+  // only becomes usable once its owner signs up themselves.
+  generatePassword: z.boolean().optional().default(false),
 });
 
 export const removeMemberValidator = z.object({
