@@ -95,6 +95,12 @@ export const auth = betterAuth({
         input: true,
         required: false,
       },
+      mustChangePassword: {
+        type: "boolean",
+        fieldName: "must_change_password",
+        defaultValue: false,
+        input: true,
+      },
     },
     deleteUser: {
       enabled: true,

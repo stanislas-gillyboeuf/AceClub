@@ -90,7 +90,8 @@ export function AddMemberDialog({ organizationId, open, onOpenChange }: AddMembe
             <DialogTitle>Accès créé</DialogTitle>
             <DialogDescription>
               Ce mot de passe ne s&apos;affichera plus jamais — transmets-le maintenant à{" "}
-              {created.email}.
+              {created.email}. Un nouveau mot de passe personnel lui sera demandé à la première
+              connexion.
             </DialogDescription>
           </DialogHeader>
 

@@ -1,6 +1,6 @@
 import { Context } from "hono";
 import { z } from "zod";
-import { randomBytes } from "node:crypto";
+import { randomInt } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { ulid } from "ulid";
 import { hashPassword } from "better-auth/crypto";
@@ -10,9 +10,16 @@ import { user, member, clubMemberProfile, account } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { addMemberValidator } from "../validators";
 
+// Excludes visually-ambiguous characters (0/O, 1/l/I) — this is a one-time temp password the
+// admin has to read out or type once, and the person must change it on first login anyway.
+const PASSWORD_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+
 function generatePassword(): string {
-  // base64url, no padding — 18 random bytes -> 24 chars, well above better-auth's minimum.
-  return randomBytes(18).toString("base64url");
+  let result = "";
+  for (let i = 0; i < 10; i++) {
+    result += PASSWORD_ALPHABET[randomInt(PASSWORD_ALPHABET.length)];
+  }
+  return result;
 }
 
 // Single-member counterpart to bulk-import.ts — same ghost-user-if-not-found logic, for the
@@ -115,7 +122,10 @@ export const addMember = async (c: Context<HonoContext>) => {
       });
     }
 
-    await db.update(user).set({ is_ghost: false }).where(eq(user.id, result.userId));
+    await db
+      .update(user)
+      .set({ is_ghost: false, must_change_password: true })
+      .where(eq(user.id, result.userId));
   }
 
   return c.json({ success: true, userId: result.userId, generatedPassword }, 201);

@@ -30,6 +30,7 @@ export const user = pgTable("user", {
   is_ghost: boolean("is_ghost").default(false),
   gender: text("gender"),
   date_of_birth: text("date_of_birth"),
+  must_change_password: boolean("must_change_password").default(false),
 });
 
 export const session = pgTable(
