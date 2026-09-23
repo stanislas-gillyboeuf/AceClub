@@ -18,7 +18,9 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CreateDuesTypeDialog } from "@/components/custom/dues-actions"
+import { TarifGridTabContent } from "@/components/custom/tarif-grid/tarif-grid-tab-content"
 import { useDuesTypes } from "@/hooks/use-dues-queries"
 import { useAssignDues, useDeleteDuesType } from "@/hooks/use-dues-mutations"
 import { useClubAdminContext } from "@/lib/club-admin-context"
@@ -40,9 +42,24 @@ export default function ClubDuesPage() {
   const [createOpen, setCreateOpen] = useState(false)
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Cotisations</h1>
+    <Tabs defaultValue="dues">
+      <div className="mx-auto max-w-6xl">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight">Cotisations</h1>
+          <TabsList>
+            <TabsTrigger value="dues">Cotisations</TabsTrigger>
+            <TabsTrigger value="tarif-grid">Grille tarifaire</TabsTrigger>
+          </TabsList>
+        </div>
+      </div>
+
+      <TabsContent value="tarif-grid" className="mt-6">
+        <TarifGridTabContent />
+      </TabsContent>
+
+      <TabsContent value="dues" className="mt-6">
+      <div className="mx-auto max-w-4xl">
+      <div className="flex items-center justify-end">
         <Button onClick={() => setCreateOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Nouvelle cotisation
@@ -137,6 +154,8 @@ export default function ClubDuesPage() {
         open={createOpen}
         onOpenChange={setCreateOpen}
       />
-    </div>
+      </div>
+      </TabsContent>
+    </Tabs>
   )
 }

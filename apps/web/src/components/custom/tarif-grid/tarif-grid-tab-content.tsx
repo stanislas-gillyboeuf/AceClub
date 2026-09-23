@@ -17,15 +17,15 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { TarifGridAdditionalLinesSection } from "@/components/custom/tarif-grid/tarif-grid-additional-lines-section"
-import { TarifGridAgeCategoriesSection } from "@/components/custom/tarif-grid/tarif-grid-age-categories-section"
-import { TarifGridAuditLog } from "@/components/custom/tarif-grid/tarif-grid-audit-log"
-import { TarifGridBaseRatesSection } from "@/components/custom/tarif-grid/tarif-grid-base-rates-section"
-import { TarifGridCreateDialog } from "@/components/custom/tarif-grid/tarif-grid-create-dialog"
-import { TarifGridLessonRatesSection } from "@/components/custom/tarif-grid/tarif-grid-lesson-rates-section"
-import { TarifGridRulesSection } from "@/components/custom/tarif-grid/tarif-grid-rules-section"
-import { TarifGridSettingsSection } from "@/components/custom/tarif-grid/tarif-grid-settings-section"
-import { TarifGridSimulatorPanel } from "@/components/custom/tarif-grid/tarif-grid-simulator-panel"
+import { TarifGridAdditionalLinesSection } from "./tarif-grid-additional-lines-section"
+import { TarifGridAgeCategoriesSection } from "./tarif-grid-age-categories-section"
+import { TarifGridAuditLog } from "./tarif-grid-audit-log"
+import { TarifGridBaseRatesSection } from "./tarif-grid-base-rates-section"
+import { TarifGridCreateDialog } from "./tarif-grid-create-dialog"
+import { TarifGridLessonRatesSection } from "./tarif-grid-lesson-rates-section"
+import { TarifGridRulesSection } from "./tarif-grid-rules-section"
+import { TarifGridSettingsSection } from "./tarif-grid-settings-section"
+import { TarifGridSimulatorPanel } from "./tarif-grid-simulator-panel"
 import { useClubTags } from "@/hooks/use-club-tag-queries"
 import { useActivateTarifGrid } from "@/hooks/use-tarif-grid-mutations"
 import { useActiveTarifGrid, useTarifGrid, useTarifGrids } from "@/hooks/use-tarif-grid-queries"
@@ -44,7 +44,7 @@ const STATUS_STYLES: Record<TarifGridStatus, string> = {
   archived: "bg-muted text-muted-foreground",
 }
 
-export default function TarifGridPage() {
+export function TarifGridTabContent() {
   const { organizationId } = useClubAdminContext()
   const { data: gridsData, isLoading: gridsLoading } = useTarifGrids(organizationId)
   const { data: tagsData } = useClubTags(organizationId)
