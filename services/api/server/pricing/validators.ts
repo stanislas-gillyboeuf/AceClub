@@ -222,3 +222,36 @@ export const simulateValidator = z.object({
   gridId: z.string().min(1, "Grid ID is required"),
   profile: memberPricingProfileValidator,
 });
+
+// --- Real-member cotisation tracking ---
+
+export const listMemberCotisationsValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  seasonLabel: z.string().min(1, "Season label is required"),
+});
+
+export const markCotisationPaidValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  userId: z.string().min(1, "User ID is required"),
+  seasonLabel: z.string().min(1, "Season label is required"),
+  paidMethod: z.string().max(60).optional(),
+});
+
+export const waiveCotisationValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  userId: z.string().min(1, "User ID is required"),
+  seasonLabel: z.string().min(1, "Season label is required"),
+  notes: z.string().max(2000).optional(),
+});
+
+export const sendCotisationReminderValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  userId: z.string().min(1, "User ID is required"),
+  seasonLabel: z.string().min(1, "Season label is required"),
+});
+
+export const getCotisationReceiptValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  userId: z.string().min(1, "User ID is required"),
+  seasonLabel: z.string().min(1, "Season label is required"),
+});

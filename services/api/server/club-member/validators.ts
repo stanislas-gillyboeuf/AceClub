@@ -22,6 +22,12 @@ export const updateClubMemberProfileValidator = z.object({
   notes: z.string().max(2000).nullable().optional(),
   city: z.string().max(100).nullable().optional(),
   isVip: z.boolean().optional(),
+  // Pricing-engine inputs — nullable().optional() so the handler can tell "not sent" (leave
+  // as-is) apart from "explicitly cleared" (set to null), see mutations/update-club-member-profile.ts.
+  licensedElsewhere: z.boolean().nullable().optional(),
+  householdRank: z.number().int().min(1).max(10).nullable().optional(),
+  communeInsee: z.string().min(1).nullable().optional(),
+  communeName: z.string().min(1).nullable().optional(),
 });
 
 export const addMemberValidator = z.object({

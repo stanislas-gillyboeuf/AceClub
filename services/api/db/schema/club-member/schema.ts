@@ -1,4 +1,4 @@
-import { index, pgTable, text, timestamp, uniqueIndex, boolean } from "drizzle-orm/pg-core";
+import { index, integer, pgTable, text, timestamp, uniqueIndex, boolean } from "drizzle-orm/pg-core";
 import { ulid } from "ulid";
 import { organization, user } from "../auth/schema";
 
@@ -25,6 +25,13 @@ export const clubMemberProfile = pgTable(
     phoneOverride: text("phone_override"),
     city: text("city"),
     isVip: boolean("is_vip").notNull().default(false),
+    // Pricing-engine inputs (server/pricing/lib/member-profile-adapter.ts). Nullable with no
+    // default — null means "not yet entered by an admin", not "false"/"none", so the engine can
+    // tell the two apart and surface a clear "missing data" state instead of guessing.
+    licensedElsewhere: boolean("licensed_elsewhere"),
+    householdRank: integer("household_rank"), // 1st, 2nd, 3rd... of the household — manual entry, no real household model in DB yet
+    communeInsee: text("commune_insee"),
+    communeName: text("commune_name"), // kept alongside the code so the UI never has to re-resolve it
     // Superseded by clubMemberNote (timestamped, authored, append-only) but kept — dropping
     // a column is a destructive migration and any pre-existing content stays intact.
     notes: text("notes"),

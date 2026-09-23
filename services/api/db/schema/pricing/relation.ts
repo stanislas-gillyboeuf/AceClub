@@ -7,6 +7,8 @@ import {
   tarifAdditionalLine,
   tarifRule,
   tarifGridAuditLog,
+  memberCotisation,
+  memberCotisationReminderLog,
 } from "./schema";
 import { organization, user } from "../auth/schema";
 
@@ -91,3 +93,33 @@ export const tarifGridAuditLogRelations = relations(tarifGridAuditLog, ({ one })
     references: [user.id],
   }),
 }));
+
+export const memberCotisationRelations = relations(memberCotisation, ({ one, many }) => ({
+  organization: one(organization, {
+    fields: [memberCotisation.organizationId],
+    references: [organization.id],
+  }),
+  user: one(user, {
+    fields: [memberCotisation.userId],
+    references: [user.id],
+  }),
+  tarifGrid: one(tarifGrid, {
+    fields: [memberCotisation.tarifGridId],
+    references: [tarifGrid.id],
+  }),
+  reminders: many(memberCotisationReminderLog),
+}));
+
+export const memberCotisationReminderLogRelations = relations(
+  memberCotisationReminderLog,
+  ({ one }) => ({
+    memberCotisation: one(memberCotisation, {
+      fields: [memberCotisationReminderLog.memberCotisationId],
+      references: [memberCotisation.id],
+    }),
+    sentBy: one(user, {
+      fields: [memberCotisationReminderLog.sentByUserId],
+      references: [user.id],
+    }),
+  }),
+);

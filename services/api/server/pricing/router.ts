@@ -2,7 +2,14 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import type { HonoContext } from "../../types/hono";
 import { requireAuth } from "../../middleware/auth";
-import { listGrids, getGrid, getActiveGrid, listAuditLog } from "./queries";
+import {
+  listGrids,
+  getGrid,
+  getActiveGrid,
+  listAuditLog,
+  listMemberCotisations,
+  getCotisationReceipt,
+} from "./queries";
 import {
   createGrid,
   updateGridSettings,
@@ -20,6 +27,9 @@ import {
   duplicateRule,
   toggleRule,
   simulate,
+  markCotisationPaid,
+  waiveCotisation,
+  sendCotisationReminder,
 } from "./mutations";
 import {
   listGridsValidator,
@@ -42,6 +52,11 @@ import {
   duplicateRuleValidator,
   toggleRuleValidator,
   simulateValidator,
+  listMemberCotisationsValidator,
+  markCotisationPaidValidator,
+  waiveCotisationValidator,
+  sendCotisationReminderValidator,
+  getCotisationReceiptValidator,
 } from "./validators";
 
 export const pricingRouter = new Hono<HonoContext>();
@@ -99,3 +114,30 @@ pricingRouter.post("/rules/reorder", zValidator("json", reorderRulesValidator), 
 pricingRouter.post("/rules/duplicate", zValidator("json", duplicateRuleValidator), duplicateRule);
 pricingRouter.post("/rules/toggle", zValidator("json", toggleRuleValidator), toggleRule);
 pricingRouter.post("/grids/simulate", zValidator("json", simulateValidator), simulate);
+
+// --- Real-member cotisation tracking (replaces the old manually-created dues types for this flow) ---
+pricingRouter.get(
+  "/member-cotisations",
+  zValidator("query", listMemberCotisationsValidator),
+  listMemberCotisations,
+);
+pricingRouter.get(
+  "/member-cotisations/receipt",
+  zValidator("query", getCotisationReceiptValidator),
+  getCotisationReceipt,
+);
+pricingRouter.post(
+  "/member-cotisations/mark-paid",
+  zValidator("json", markCotisationPaidValidator),
+  markCotisationPaid,
+);
+pricingRouter.post(
+  "/member-cotisations/waive",
+  zValidator("json", waiveCotisationValidator),
+  waiveCotisation,
+);
+pricingRouter.post(
+  "/member-cotisations/send-reminder",
+  zValidator("json", sendCotisationReminderValidator),
+  sendCotisationReminder,
+);

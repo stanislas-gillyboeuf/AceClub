@@ -6,6 +6,8 @@ import {
   tarifAdditionalLine,
   tarifRule,
   tarifGridAuditLog,
+  memberCotisation,
+  memberCotisationReminderLog,
 } from "./schema";
 
 export type TarifGrid = typeof tarifGrid.$inferSelect;
@@ -40,3 +42,9 @@ export type TarifRuleTargetTypeType =
   | "additional_line"
   | "total_excluding_license";
 export type TarifAuditActionType = "created" | "updated" | "activated" | "archived" | "duplicated";
+
+export type MemberCotisation = typeof memberCotisation.$inferSelect;
+export type NewMemberCotisation = typeof memberCotisation.$inferInsert;
+export type MemberCotisationReminderLog = typeof memberCotisationReminderLog.$inferSelect;
+export type NewMemberCotisationReminderLog = typeof memberCotisationReminderLog.$inferInsert;
+export type MemberCotisationStatusType = "pending" | "paid" | "waived";

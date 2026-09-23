@@ -14,3 +14,6 @@ export { reorderRules } from "./reorder-rules";
 export { duplicateRule } from "./duplicate-rule";
 export { toggleRule } from "./toggle-rule";
 export { simulate } from "./simulate";
+export { markCotisationPaid } from "./mark-cotisation-paid";
+export { waiveCotisation } from "./waive-cotisation";
+export { sendCotisationReminder } from "./send-cotisation-reminder";

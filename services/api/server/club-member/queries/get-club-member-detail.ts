@@ -3,7 +3,15 @@ import { z } from "zod";
 import { and, count, desc, eq, lt } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { member, user, clubMemberProfile, courtBooking, court, userPreference } from "../../../db/schema";
+import {
+  member,
+  user,
+  clubMemberProfile,
+  courtBooking,
+  court,
+  userPreference,
+  clubMemberTag,
+} from "../../../db/schema";
 import { assertClubAdmin } from "../../../middleware/club-admin";
 import { getClubMemberDetailValidator } from "../validators";
 
@@ -38,6 +46,10 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
       notes: clubMemberProfile.notes,
       city: clubMemberProfile.city,
       isVip: clubMemberProfile.isVip,
+      licensedElsewhere: clubMemberProfile.licensedElsewhere,
+      householdRank: clubMemberProfile.householdRank,
+      communeInsee: clubMemberProfile.communeInsee,
+      communeName: clubMemberProfile.communeName,
       sport: userPreference.sport,
       skillLevel: userPreference.skillLevel,
       skillLevelVerified: userPreference.skillLevelVerified,
@@ -68,7 +80,7 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
     eq(court.organizationId, validated.organizationId),
   );
 
-  const [bookings, [lastBooking], [cancelledResult]] = await Promise.all([
+  const [bookings, [lastBooking], [cancelledResult], tagRows] = await Promise.all([
     db
       .select({
         id: courtBooking.id,
@@ -95,11 +107,18 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
       .from(courtBooking)
       .innerJoin(court, eq(courtBooking.courtId, court.id))
       .where(and(bookingScope, eq(courtBooking.status, "cancelled"))),
+    db
+      .select({ tagId: clubMemberTag.tagId })
+      .from(clubMemberTag)
+      .where(
+        and(eq(clubMemberTag.organizationId, validated.organizationId), eq(clubMemberTag.userId, validated.userId)),
+      ),
   ]);
 
   return c.json({
     member: { ...memberRow, lastBookingAt: lastBooking?.startAt ?? null },
     bookings,
     cancelledBookingCount: cancelledResult?.count ?? 0,
+    tagIds: tagRows.map((t) => t.tagId),
   });
 };

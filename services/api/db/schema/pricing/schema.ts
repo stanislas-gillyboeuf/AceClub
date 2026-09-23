@@ -53,6 +53,12 @@ export const tarifAuditAction = pgEnum("tarif_audit_action", [
   "duplicated",
 ]);
 
+export const memberCotisationStatus = pgEnum("member_cotisation_status", [
+  "pending",
+  "paid",
+  "waived",
+]);
+
 /**
  * A versioned pricing grid for a club's season. Editing an "active" grid never mutates it in
  * place — it clones a new row (same familyId, version+1, previousVersionId set) and archives the
@@ -244,4 +250,72 @@ export const tarifGridAuditLog = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [index("tarif_grid_audit_log_tarifGridId_idx").on(table.tarifGridId)],
+);
+
+/**
+ * A real member's cotisation for one club season, computed once by the pricing engine (via
+ * server/pricing/lib/member-cotisation.ts::ensureMemberCotisationRecord) and then FROZEN —
+ * amountCents/breakdownSnapshot never change afterwards even if the grid is edited later, so a
+ * receipt or a "paid" record always reflects what was actually charged. Payment tracking
+ * (status/paidAt/paidMethod/notes/reminders) replaces the old flat `duesAssignment` flow for
+ * cotisations — that table is left untouched in the DB but no longer created from the UI.
+ */
+export const memberCotisation = pgTable(
+  "member_cotisation",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    tarifGridId: text("tarif_grid_id")
+      .notNull()
+      .references(() => tarifGrid.id, { onDelete: "cascade" }),
+    seasonLabel: text("season_label").notNull(),
+    amountCents: integer("amount_cents").notNull(),
+    // Full engine Breakdown, frozen at generation time — the source for the detail view + receipt.
+    breakdownSnapshot: jsonb("breakdown_snapshot").notNull(),
+    status: memberCotisationStatus("status").notNull().default("pending"),
+    paidAt: timestamp("paid_at"),
+    paidMethod: text("paid_method"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("member_cotisation_org_user_season_uidx").on(
+      table.organizationId,
+      table.userId,
+      table.seasonLabel,
+    ),
+    index("member_cotisation_organizationId_idx").on(table.organizationId),
+    index("member_cotisation_organizationId_seasonLabel_idx").on(
+      table.organizationId,
+      table.seasonLabel,
+    ),
+  ],
+);
+
+export const memberCotisationReminderLog = pgTable(
+  "member_cotisation_reminder_log",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    memberCotisationId: text("member_cotisation_id")
+      .notNull()
+      .references(() => memberCotisation.id, { onDelete: "cascade" }),
+    sentAt: timestamp("sent_at").defaultNow().notNull(),
+    sentByUserId: text("sent_by_user_id")
+      .notNull()
+      .references(() => user.id),
+  },
+  (table) => [index("member_cotisation_reminder_log_memberCotisationId_idx").on(table.memberCotisationId)],
 );
