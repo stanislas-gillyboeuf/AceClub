@@ -25,10 +25,14 @@ const MODE_LABELS: Record<Mode, string> = {
 }
 
 function defaultSeasonDates() {
-  const year = new Date().getFullYear()
+  // If we're already past September 1st, default to the season starting THIS year;
+  // otherwise the season that started last year is still the current/upcoming one.
+  const now = new Date()
+  const year = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1
   return {
     start: `${year}-09-01`,
     end: `${year + 1}-08-31`,
+    label: `${year}-${year + 1}`,
   }
 }
 
@@ -51,7 +55,7 @@ export function TarifGridCreateDialog({
   const defaults = defaultSeasonDates()
 
   const [mode, setMode] = useState<Mode>(existingGrids.length > 0 ? "duplicate" : "template")
-  const [seasonLabel, setSeasonLabel] = useState(defaultSeasonLabel ?? "")
+  const [seasonLabel, setSeasonLabel] = useState(defaultSeasonLabel ?? defaults.label)
   const [seasonStartDate, setSeasonStartDate] = useState(defaults.start)
   const [seasonEndDate, setSeasonEndDate] = useState(defaults.end)
   const [duplicateFromGridId, setDuplicateFromGridId] = useState(existingGrids[0]?.id ?? "")
@@ -152,6 +156,15 @@ export function TarifGridCreateDialog({
             </div>
           </div>
         </div>
+
+        {!isValid ? (
+          <p className="text-sm text-muted-foreground">
+            Indiquez un nom de saison{mode === "duplicate" ? " et une grille source" : ""} pour continuer.
+          </p>
+        ) : null}
+        {createGrid.isError ? (
+          <p className="text-sm text-destructive">{(createGrid.error as Error).message}</p>
+        ) : null}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
