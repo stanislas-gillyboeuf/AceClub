@@ -23,6 +23,7 @@
     "trigger:dev": "npx trigger.dev@latest dev",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "trigger:deploy": "npx trigger.dev@latest deploy"
   },
   "dependencies": {
@@ -56,6 +57,7 @@
     "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^8.53.0",
     "@typescript-eslint/parser": "^8.53.0",
+    "@vitest/coverage-v8": "4.1.11",
     "drizzle-kit": "^0.31.8",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
