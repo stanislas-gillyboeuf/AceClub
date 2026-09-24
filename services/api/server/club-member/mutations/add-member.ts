@@ -50,6 +50,7 @@ export const addMember = async (c: Context<HonoContext>) => {
     const [existingUser] = await tx.select({ id: user.id }).from(user).where(eq(user.email, email)).limit(1);
 
     let userId: string;
+    let createdAsGhost = false;
     if (existingUser) {
       userId = existingUser.id;
     } else {
@@ -58,6 +59,7 @@ export const addMember = async (c: Context<HonoContext>) => {
         .values({ id: ulid(), name: validated.name, email, emailVerified: false, is_ghost: true })
         .returning({ id: user.id });
       userId = createdUser.id;
+      createdAsGhost = true;
     }
 
     const [existingMember] = await tx
@@ -92,35 +94,28 @@ export const addMember = async (c: Context<HonoContext>) => {
         });
     }
 
-    return { conflict: false as const, userId };
+    return { conflict: false as const, userId, createdAsGhost };
   });
 
   if (result.conflict) {
     return c.json({ error: "Conflict", message: "This person is already a member of this club" }, 409);
   }
 
+  // A login is only generated for a ghost profile this call just created: an email that already
+  // belongs to a real (possibly other-club) user must never get its password overwritten by a
+  // club admin. In that case generatedPassword stays null and the membership is still added.
   let generatedPassword: string | null = null;
-  if (validated.generatePassword) {
+  if (validated.generatePassword && result.createdAsGhost) {
     generatedPassword = generatePassword();
     const hashed = await hashPassword(generatedPassword);
 
-    const [existingAccount] = await db
-      .select({ id: account.id })
-      .from(account)
-      .where(and(eq(account.userId, result.userId), eq(account.providerId, "credential")))
-      .limit(1);
-
-    if (existingAccount) {
-      await db.update(account).set({ password: hashed }).where(eq(account.id, existingAccount.id));
-    } else {
-      await db.insert(account).values({
-        id: ulid(),
-        accountId: result.userId,
-        providerId: "credential",
-        userId: result.userId,
-        password: hashed,
-      });
-    }
+    await db.insert(account).values({
+      id: ulid(),
+      accountId: result.userId,
+      providerId: "credential",
+      userId: result.userId,
+      password: hashed,
+    });
 
     await db
       .update(user)

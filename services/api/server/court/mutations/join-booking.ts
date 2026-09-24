@@ -6,6 +6,7 @@ import { db } from "../../../db";
 import { court, courtBooking, courtBookingParticipant } from "../../../db/schema";
 import { joinBookingValidator } from "../validators";
 import { canAccessCourt } from "../lib/access";
+import { participantsAreClubMembers } from "../lib/participants";
 import { resolveFeatureFlag } from "../../../lib/feature-flags";
 import { PADEL_TEAM_SIZE } from "../lib/padel";
 
@@ -37,6 +38,10 @@ export const joinBooking = async (c: Context<HonoContext>) => {
   const allowed = await canAccessCourt(currentUser.id, bookedCourt.organizationId, bookedCourt.accessPolicy);
   if (!allowed) {
     return c.json({ error: "Forbidden", message: "This court is reserved to club members" }, 403);
+  }
+
+  if (!(await participantsAreClubMembers(bookedCourt.organizationId, currentUser.id, [validated.userId]))) {
+    return c.json({ error: "BadRequest", message: "Participants must be members of this club" }, 400);
   }
 
   const bookingEnabled = await resolveFeatureFlag("court_booking", bookedCourt.organizationId);

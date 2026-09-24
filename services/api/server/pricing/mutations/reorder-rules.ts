@@ -1,6 +1,6 @@
 import { Context } from "hono";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { tarifGrid, tarifRule } from "../../../db/schema";
@@ -32,7 +32,7 @@ export const reorderRules = async (c: Context<HonoContext>) => {
       await tx
         .update(tarifRule)
         .set({ sortOrder: i })
-        .where(eq(tarifRule.id, orderedRuleIds[i]));
+        .where(and(eq(tarifRule.id, orderedRuleIds[i]), eq(tarifRule.tarifGridId, gridId)));
     }
   });
 

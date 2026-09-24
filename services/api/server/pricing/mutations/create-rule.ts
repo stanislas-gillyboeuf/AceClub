@@ -7,6 +7,7 @@ import { tarifGrid, tarifRule } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { getOrCreateEditableVersion } from "../lib/versioning";
 import { logGridAudit } from "../lib/audit";
+import { additionalLineBelongsToGrid } from "../lib/grid-refs";
 import { createRuleValidator } from "../validators";
 
 export const createRule = async (c: Context<HonoContext>) => {
@@ -22,6 +23,13 @@ export const createRule = async (c: Context<HonoContext>) => {
   const isFullAdmin = await assertClubFullAdmin(currentUser.id, existing.organizationId);
   if (!isFullAdmin) {
     return c.json({ error: "Forbidden", message: "Full admin access required" }, 403);
+  }
+
+  if (
+    validated.targetAdditionalLineId &&
+    !(await additionalLineBelongsToGrid(validated.gridId, validated.targetAdditionalLineId))
+  ) {
+    return c.json({ error: "BadRequest", message: "Unknown additional line for this grid" }, 400);
   }
 
   const { gridId, idMaps } = await getOrCreateEditableVersion(validated.gridId, currentUser.id);

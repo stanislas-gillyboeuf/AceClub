@@ -8,6 +8,7 @@ import { createBookingValidator } from "../validators";
 import { slotFromStartTime } from "../lib/slots";
 import { BookingConflictError } from "../lib/errors";
 import { canAccessCourt } from "../lib/access";
+import { participantsAreClubMembers } from "../lib/participants";
 import { resolveFeatureFlag } from "../../../lib/feature-flags";
 import { createLockedBooking } from "../lib/booking-overlap";
 import { getCourtSettings } from "../lib/settings";
@@ -56,6 +57,15 @@ export const createBooking = async (c: Context<HonoContext>) => {
   );
   if (!allowed) {
     return c.json({ error: "Forbidden", message: "This court is reserved to club members" }, 403);
+  }
+
+  const participantsOk = await participantsAreClubMembers(
+    targetCourt.organizationId,
+    currentUser.id,
+    validated.participants.map((p) => p.userId),
+  );
+  if (!participantsOk) {
+    return c.json({ error: "BadRequest", message: "Participants must be members of this club" }, 400);
   }
 
   const bookingEnabled = await resolveFeatureFlag("court_booking", targetCourt.organizationId);

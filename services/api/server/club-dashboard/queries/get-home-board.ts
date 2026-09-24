@@ -65,22 +65,22 @@ export const getHomeBoard = async (c: Context<HonoContext>) => {
             and(
               eq(courtBooking.kind, "course"),
               eq(courtBooking.status, "confirmed"),
+              eq(course.organizationId, validated.organizationId),
+              inArray(courtBooking.courtId, activeCourtIds),
               gte(courtBooking.startAt, todayStart),
               lt(courtBooking.startAt, todayEnd),
             ),
           );
 
-  const coursesToday = coursesTodayRows
-    .filter((r) => courtNameById.has(r.courtId))
-    .map((r) => ({
-      occurrenceId: r.id,
-      courseId: r.courseId,
-      courseName: r.courseName,
-      coachName: r.coachName,
-      courtName: courtNameById.get(r.courtId)!,
-      startAt: r.startAt,
-      endAt: r.endAt,
-    }));
+  const coursesToday = coursesTodayRows.map((r) => ({
+    occurrenceId: r.id,
+    courseId: r.courseId,
+    courseName: r.courseName,
+    coachName: r.coachName,
+    courtName: courtNameById.get(r.courtId)!,
+    startAt: r.startAt,
+    endAt: r.endAt,
+  }));
 
   const coachBadgeCounts = new Map<string, { userId: string; name: string; image: string | null; coursesToday: number }>();
   for (const row of coursesTodayRows) {

@@ -8,6 +8,7 @@ import { tarifGrid, tarifBaseRate } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { getOrCreateEditableVersion } from "../lib/versioning";
 import { logGridAudit } from "../lib/audit";
+import { categoriesBelongToGrid } from "../lib/grid-refs";
 import { upsertBaseRatesValidator } from "../validators";
 
 // Delete-then-insert is safe here (unlike age categories): nothing references tarifBaseRate.id.
@@ -24,6 +25,10 @@ export const upsertBaseRates = async (c: Context<HonoContext>) => {
   const isFullAdmin = await assertClubFullAdmin(currentUser.id, existing.organizationId);
   if (!isFullAdmin) {
     return c.json({ error: "Forbidden", message: "Full admin access required" }, 403);
+  }
+
+  if (!(await categoriesBelongToGrid(validated.gridId, validated.items.map((i) => i.categoryId)))) {
+    return c.json({ error: "BadRequest", message: "Unknown age category for this grid" }, 400);
   }
 
   const { gridId, idMaps } = await getOrCreateEditableVersion(validated.gridId, currentUser.id);

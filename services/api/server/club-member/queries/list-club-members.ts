@@ -3,7 +3,7 @@ import { z } from "zod";
 import { and, count, eq, gte, ilike, inArray, or } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { member, user, clubMemberProfile, courtBooking, userPreference } from "../../../db/schema";
+import { member, user, clubMemberProfile, court, courtBooking, userPreference } from "../../../db/schema";
 import { assertClubAdmin } from "../../../middleware/club-admin";
 import { listClubMembersValidator } from "../validators";
 
@@ -78,8 +78,10 @@ export const listClubMembers = async (c: Context<HonoContext>) => {
     ? await db
         .select({ userId: courtBooking.userId, count: count() })
         .from(courtBooking)
+        .innerJoin(court, eq(courtBooking.courtId, court.id))
         .where(
           and(
+            eq(court.organizationId, validated.organizationId),
             inArray(courtBooking.userId, userIds),
             gte(courtBooking.startAt, since),
             eq(courtBooking.status, "confirmed"),

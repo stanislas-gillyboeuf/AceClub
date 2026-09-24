@@ -4,6 +4,7 @@ import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { clubMemberNote } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
+import { isOrgMember } from "../../../middleware/org-member";
 import { addMemberNoteValidator } from "../validators";
 
 export const addMemberNote = async (c: Context<HonoContext>) => {
@@ -14,6 +15,10 @@ export const addMemberNote = async (c: Context<HonoContext>) => {
   const isFullAdmin = await assertClubFullAdmin(currentUser.id, validated.organizationId);
   if (!isFullAdmin) {
     return c.json({ error: "Forbidden", message: "Full admin access required" }, 403);
+  }
+
+  if (!(await isOrgMember(validated.userId, validated.organizationId))) {
+    return c.json({ error: "NotFound", message: "Member not found in this club" }, 404);
   }
 
   const [created] = await db
