@@ -17,10 +17,12 @@ import {
 } from "@/components/ui/select"
 import { useCreateCourt, useUpdateCourt, useUpsertClubCourtSettings } from "@/hooks/use-club-court-mutations"
 import { useCompleteOnboarding } from "@/hooks/use-club-admin-mutations"
+import { useCreateTarifGrid } from "@/hooks/use-tarif-grid-mutations"
 import { useClubAdminContext } from "@/lib/club-admin-context"
+import { defaultSeasonDates } from "@/lib/season-dates"
 import type { CourtCancellationPolicy, CourtSport } from "@/types/court"
 
-const STEPS = ["Courts", "Réglages", "Annulation", "Cotisations"] as const
+const STEPS = ["Courts", "Réglages", "Annulation", "Grille tarifaire", "Membres"] as const
 
 function StepIndicator({ currentIndex }: { currentIndex: number }) {
   return (
@@ -65,6 +67,9 @@ export default function ClubOnboardingPage() {
   const updateCourt = useUpdateCourt()
   const upsertSettings = useUpsertClubCourtSettings()
   const completeOnboarding = useCompleteOnboarding()
+  const createTarifGrid = useCreateTarifGrid()
+  const [gridError, setGridError] = useState<string | null>(null)
+  const [gridCreated, setGridCreated] = useState(false)
 
   const [courts, setCourts] = useState<CreatedCourt[]>([])
   const [courtName, setCourtName] = useState("")
@@ -125,9 +130,33 @@ export default function ClubOnboardingPage() {
     setStep(3)
   }
 
-  function finishOnboarding() {
+  function handleCreateGridDraft() {
+    setGridError(null)
+    const season = defaultSeasonDates()
+    createTarifGrid.mutate(
+      {
+        organizationId,
+        seasonLabel: season.label,
+        seasonStartDate: new Date(season.start).toISOString(),
+        seasonEndDate: new Date(season.end).toISOString(),
+        mode: "template",
+      },
+      {
+        onSuccess: () => {
+          setGridCreated(true)
+          setStep(4)
+        },
+        // A failed draft must never block the onboarding: the grid can be created later.
+        onError: (error) => setGridError((error as Error).message),
+      },
+    )
+  }
+
+  // The layout keeps redirecting to /club/onboarding until onboardingCompleted is true, so the
+  // navigation must wait for the mutation to finish.
+  function finishOnboarding(destination: string) {
     completeOnboarding.mutate(organizationId, {
-      onSuccess: () => router.replace("/club/dashboard"),
+      onSuccess: () => router.replace(destination),
     })
   }
 
@@ -357,18 +386,68 @@ export default function ClubOnboardingPage() {
       {step === 3 ? (
         <Card>
           <CardHeader>
-            <CardTitle>Cotisations</CardTitle>
+            <CardTitle>Grille tarifaire</CardTitle>
             <CardDescription>
-              Vous configurerez la grille tarifaire depuis l&apos;onglet Cotisations du tableau de bord.
+              Créez un brouillon prérempli (catégories d&apos;âge, tarifs, réductions famille) à ajuster
+              ensuite dans l&apos;onglet Cotisations, ou configurez-la plus tard.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {gridError ? (
+              <p className="text-sm text-destructive">
+                La grille n&apos;a pas pu être créée : {gridError}. Vous pourrez la créer plus tard depuis
+                l&apos;onglet Cotisations.
+              </p>
+            ) : null}
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep(2)}>
                 Retour
               </Button>
-              <Button className="flex-1" disabled={completeOnboarding.isPending} onClick={finishOnboarding}>
-                {completeOnboarding.isPending ? "Finalisation..." : "Terminer"}
+              <Button variant="outline" onClick={() => setStep(4)}>
+                Plus tard
+              </Button>
+              <Button
+                className="flex-1"
+                disabled={createTarifGrid.isPending}
+                onClick={handleCreateGridDraft}
+              >
+                {createTarifGrid.isPending ? "Création..." : "Créer une grille modèle (brouillon)"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {step === 4 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Importer vos membres</CardTitle>
+            <CardDescription>
+              {gridCreated
+                ? "Votre grille brouillon est créée. "
+                : ""}
+              Importez vos adhérents depuis un fichier CSV, ou ajoutez-les plus tard depuis l&apos;onglet
+              Membres.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setStep(3)} disabled={completeOnboarding.isPending}>
+                Retour
+              </Button>
+              <Button
+                variant="outline"
+                disabled={completeOnboarding.isPending}
+                onClick={() => finishOnboarding("/club/dashboard")}
+              >
+                Passer
+              </Button>
+              <Button
+                className="flex-1"
+                disabled={completeOnboarding.isPending}
+                onClick={() => finishOnboarding("/club/members/import")}
+              >
+                {completeOnboarding.isPending ? "Finalisation..." : "Importer un CSV"}
               </Button>
             </div>
           </CardContent>

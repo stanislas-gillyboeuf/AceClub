@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useCreateTarifGrid } from "@/hooks/use-tarif-grid-mutations"
+import { defaultSeasonDates } from "@/lib/season-dates"
 import type { TarifGrid } from "@/types/tarif-grid"
 
 type Mode = "blank" | "duplicate" | "template"
@@ -22,18 +23,6 @@ const MODE_LABELS: Record<Mode, string> = {
   blank: "Grille vide",
   duplicate: "Dupliquer une saison précédente",
   template: "Modèle « Club associatif type »",
-}
-
-function defaultSeasonDates() {
-  // If we're already past September 1st, default to the season starting THIS year;
-  // otherwise the season that started last year is still the current/upcoming one.
-  const now = new Date()
-  const year = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1
-  return {
-    start: `${year}-09-01`,
-    end: `${year + 1}-08-31`,
-    label: `${year}-${year + 1}`,
-  }
 }
 
 interface TarifGridCreateDialogProps {
