@@ -280,6 +280,9 @@ export const memberCotisation = pgTable(
     // Full engine Breakdown, frozen at generation time — the source for the detail view + receipt.
     breakdownSnapshot: jsonb("breakdown_snapshot").notNull(),
     status: memberCotisationStatus("status").notNull().default("pending"),
+    // Set when the cotisation is formally issued to the member ("Émettre"). Null for records
+    // created implicitly by "mark paid"/"waive" — readers use `issuedAt ?? createdAt`.
+    issuedAt: timestamp("issued_at"),
     paidAt: timestamp("paid_at"),
     paidMethod: text("paid_method"),
     notes: text("notes"),

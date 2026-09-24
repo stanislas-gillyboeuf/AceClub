@@ -17,3 +17,5 @@ export { simulate } from "./simulate";
 export { markCotisationPaid } from "./mark-cotisation-paid";
 export { waiveCotisation } from "./waive-cotisation";
 export { sendCotisationReminder } from "./send-cotisation-reminder";
+export { issueCotisation } from "./issue-cotisation";
+export { issueAllCotisations } from "./issue-all-cotisations";

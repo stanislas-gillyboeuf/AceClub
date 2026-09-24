@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { AlertTriangle, Download, FileText, Mail } from "lucide-react"
+import { AlertTriangle, Download, FileText, Mail, Send } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +34,8 @@ import { formatCents } from "@/components/custom/tarif-grid/describe-rule"
 import { useMemberCotisations } from "@/hooks/use-member-cotisation-queries"
 import {
   useDownloadCotisationReceipt,
+  useIssueAllCotisations,
+  useIssueCotisation,
   useMarkCotisationPaid,
   useSendCotisationReminder,
   useWaiveCotisation,
@@ -78,7 +80,10 @@ export function MemberCotisationTabContent() {
   const waive = useWaiveCotisation()
   const sendReminder = useSendCotisationReminder()
   const downloadReceipt = useDownloadCotisationReceipt()
+  const issue = useIssueCotisation()
+  const issueAll = useIssueAllCotisations()
 
+  const [issueAllOpen, setIssueAllOpen] = useState(false)
   const [detailMember, setDetailMember] = useState<MemberCotisation | null>(null)
   const [paidTarget, setPaidTarget] = useState<MemberCotisation | null>(null)
   const [paidMethod, setPaidMethod] = useState("")
@@ -89,7 +94,12 @@ export function MemberCotisationTabContent() {
     errorMessage(markPaid.error) ??
     errorMessage(waive.error) ??
     errorMessage(sendReminder.error) ??
+    errorMessage(issue.error) ??
     errorMessage(downloadReceipt.error)
+  const issueEmailWarning =
+    issue.data && issue.data.created && !issue.data.emailSent
+      ? `Cotisation émise, mais l'email n'a pas pu être envoyé : ${issue.data.emailError ?? "raison inconnue"}.`
+      : null
 
   if (!effectiveSeason) {
     return (
@@ -104,6 +114,17 @@ export function MemberCotisationTabContent() {
 
   const members = data?.members ?? []
   const everyoneIncomplete = members.length > 0 && members.every((m) => m.breakdown.status === "incomplete")
+  const issuableCount = members.filter((m) => m.status === "not_generated" && m.amountCents !== null).length
+  const notIssuableCount = members.filter((m) => m.status === "not_generated" && m.amountCents === null).length
+
+  function openIssueAll() {
+    issueAll.reset()
+    setIssueAllOpen(true)
+  }
+
+  function confirmIssueAll() {
+    issueAll.mutate({ organizationId, seasonLabel: effectiveSeason! })
+  }
 
   function confirmPaid() {
     if (!paidTarget) return
@@ -135,19 +156,36 @@ export function MemberCotisationTabContent() {
         <p className="text-sm text-muted-foreground">
           Prix calculé automatiquement pour chaque adhérent d&apos;après la grille tarifaire active.
         </p>
-        <Select value={effectiveSeason} onValueChange={setSelectedSeason}>
-          <SelectTrigger className="w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {seasons.map((season) => (
-              <SelectItem key={season} value={season}>
-                {season}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            disabled={!data?.gridId || issuableCount === 0 || issueAll.isPending}
+            onClick={openIssueAll}
+          >
+            <Send className="mr-1.5 h-3.5 w-3.5" />
+            Émettre et envoyer à tous
+          </Button>
+          <Select value={effectiveSeason} onValueChange={setSelectedSeason}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {seasons.map((season) => (
+                <SelectItem key={season} value={season}>
+                  {season}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
+
+      {issueEmailWarning ? (
+        <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <div>{issueEmailWarning}</div>
+        </div>
+      ) : null}
 
       {actionError ? (
         <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
@@ -236,6 +274,19 @@ export function MemberCotisationTabContent() {
                                 <FileText className="mr-1.5 h-3.5 w-3.5" />
                                 Détail
                               </Button>
+                              {m.status === "not_generated" ? (
+                                <Button
+                                  size="sm"
+                                  disabled={m.amountCents === null || issue.isPending}
+                                  title={m.amountCents === null ? "Complétez d'abord la fiche de l'adhérent" : undefined}
+                                  onClick={() =>
+                                    issue.mutate({ organizationId, userId: m.userId, seasonLabel: effectiveSeason })
+                                  }
+                                >
+                                  <Send className="mr-1.5 h-3.5 w-3.5" />
+                                  Émettre
+                                </Button>
+                              ) : null}
                               {m.status === "not_generated" || m.status === "pending" ? (
                                 <>
                                   <Button size="sm" disabled={markPaid.isPending} onClick={() => setPaidTarget(m)}>
@@ -297,6 +348,80 @@ export function MemberCotisationTabContent() {
           </Card>
         </>
       )}
+
+      <Dialog open={issueAllOpen} onOpenChange={(open) => !open && setIssueAllOpen(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Émettre et envoyer à tous</DialogTitle>
+            <DialogDescription>
+              {issueAll.data
+                ? `Saison ${effectiveSeason}`
+                : "Fige le montant de chaque adhérent et lui envoie la demande de cotisation par email."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {issueAll.data ? (
+            <div className="space-y-3 text-sm">
+              <p>
+                <span className="font-medium">{issueAll.data.issued}</span> cotisation(s) émise(s).
+              </p>
+              {issueAll.data.skippedIncomplete.length > 0 ? (
+                <div>
+                  <p className="font-medium text-amber-800">
+                    {issueAll.data.skippedIncomplete.length} ignorée(s) : profil incomplet
+                  </p>
+                  <ul className="mt-1 space-y-0.5 text-muted-foreground">
+                    {issueAll.data.skippedIncomplete.map((s) => (
+                      <li key={s.userId}>
+                        {s.name} : {s.missingFields.map(describeMissingField).join(", ")}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {issueAll.data.emailFailed.length > 0 ? (
+                <div>
+                  <p className="font-medium text-destructive">
+                    {issueAll.data.emailFailed.length} email(s) non envoyé(s) (la cotisation est bien émise)
+                  </p>
+                  <ul className="mt-1 space-y-0.5 text-muted-foreground">
+                    {issueAll.data.emailFailed.map((f) => (
+                      <li key={f.userId}>
+                        {f.name} ({f.email}) : {f.reason}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <div className="space-y-2 text-sm">
+              <p>
+                <span className="font-medium">{issuableCount}</span> adhérent(s) recevront leur demande de cotisation.
+              </p>
+              {notIssuableCount > 0 ? (
+                <p className="text-amber-800">{notIssuableCount} adhérent(s) seront ignorés : profil incomplet.</p>
+              ) : null}
+              {issueAll.isError ? <p className="text-destructive">{errorMessage(issueAll.error)}</p> : null}
+            </div>
+          )}
+
+          <DialogFooter>
+            {issueAll.data ? (
+              <Button onClick={() => setIssueAllOpen(false)}>Fermer</Button>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => setIssueAllOpen(false)}>
+                  Annuler
+                </Button>
+                <Button onClick={confirmIssueAll} disabled={issueAll.isPending}>
+                  {issueAll.isPending ? "Envoi..." : "Émettre et envoyer"}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Sheet open={!!detailMember} onOpenChange={(open) => !open && setDetailMember(null)}>
         <SheetContent className="overflow-y-auto">

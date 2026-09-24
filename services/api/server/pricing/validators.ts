@@ -255,3 +255,14 @@ export const getCotisationReceiptValidator = z.object({
   userId: z.string().min(1, "User ID is required"),
   seasonLabel: z.string().min(1, "Season label is required"),
 });
+
+export const issueCotisationValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  userId: z.string().min(1, "User ID is required"),
+  seasonLabel: z.string().min(1, "Season label is required"),
+});
+
+export const issueAllCotisationsValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  seasonLabel: z.string().min(1, "Season label is required"),
+});

@@ -46,6 +46,60 @@ Ceci est un email automatique envoyé par ${params.clubName} via AceClub.
   };
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/** First payment request for a freshly issued cotisation (as opposed to `duesReminderEmail`,
+ * which chases an already-issued one). Interpolated values are HTML-escaped. */
+export function cotisationRequestEmail(params: {
+  clubName: string;
+  memberName: string;
+  seasonLabel: string;
+  amountCents: number;
+  dueDate: Date | null;
+}) {
+  const amount = formatAmount(params.amountCents);
+  const club = escapeHtml(params.clubName);
+  const member = escapeHtml(params.memberName);
+  const season = escapeHtml(params.seasonLabel);
+  const dueDateLine = params.dueDate
+    ? `<p>Échéance : <strong>${formatDueDate(params.dueDate)}</strong></p>`
+    : "";
+  const dueDateText = params.dueDate ? `Échéance : ${formatDueDate(params.dueDate)}
+` : "";
+
+  return {
+    subject: `Votre cotisation ${params.seasonLabel} (${params.clubName})`,
+    html: `
+      <h2>Bonjour ${member},</h2>
+      <p>Votre cotisation <strong>${season}</strong> auprès de ${club} est disponible.</p>
+      <p>Montant : <strong>${amount}</strong></p>
+      ${dueDateLine}
+      <p>Merci de la régler auprès du club.</p>
+      <hr>
+      <p style="color: #666; font-size: 12px;">Ceci est un email automatique envoyé par ${club} via AceClub.</p>
+    `,
+    text: `
+Bonjour ${params.memberName},
+
+Votre cotisation ${params.seasonLabel} auprès de ${params.clubName} est disponible.
+
+Montant : ${amount}
+${dueDateText}
+Merci de la régler auprès du club.
+
+---
+Ceci est un email automatique envoyé par ${params.clubName} via AceClub.
+    `,
+  };
+}
+
 export function memberAlertDigestEmail(params: {
   clubName: string;
   alerts: { userName: string; detail: string }[];

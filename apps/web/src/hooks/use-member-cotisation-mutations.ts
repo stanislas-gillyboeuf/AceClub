@@ -1,6 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api-client"
 import type {
+  IssueAllCotisationsInput,
+  IssueAllCotisationsResponse,
+  IssueCotisationInput,
+  IssueCotisationResponse,
   MarkCotisationPaidInput,
   SendCotisationReminderInput,
   WaiveCotisationInput,
@@ -12,6 +16,34 @@ function settleMemberCotisations(
   seasonLabel: string,
 ) {
   queryClient.invalidateQueries({ queryKey: ["member-cotisations", organizationId, seasonLabel] })
+}
+
+export function useIssueCotisation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: IssueCotisationInput) =>
+      apiClient<IssueCotisationResponse>("/pricing/member-cotisations/issue", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSettled: (_data, _err, variables) => {
+      settleMemberCotisations(queryClient, variables.organizationId, variables.seasonLabel)
+    },
+  })
+}
+
+export function useIssueAllCotisations() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: IssueAllCotisationsInput) =>
+      apiClient<IssueAllCotisationsResponse>("/pricing/member-cotisations/issue-all", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSettled: (_data, _err, variables) => {
+      settleMemberCotisations(queryClient, variables.organizationId, variables.seasonLabel)
+    },
+  })
 }
 
 export function useMarkCotisationPaid() {

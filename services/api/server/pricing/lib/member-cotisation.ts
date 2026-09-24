@@ -43,7 +43,7 @@ export async function computeMemberBreakdown(
 }
 
 export type EnsureMemberCotisationResult =
-  | { record: MemberCotisation }
+  | { record: MemberCotisation; created: boolean }
   | { error: "no_active_grid" | "member_not_found" | "incomplete"; missingFields?: string[] };
 
 /**
@@ -56,6 +56,7 @@ export async function ensureMemberCotisationRecord(
   organizationId: string,
   userId: string,
   seasonLabel: string,
+  options: { issue?: boolean } = {},
 ): Promise<EnsureMemberCotisationResult> {
   const [existing] = await db
     .select()
@@ -69,7 +70,7 @@ export async function ensureMemberCotisationRecord(
     )
     .limit(1);
 
-  if (existing) return { record: existing };
+  if (existing) return { record: existing, created: false };
 
   const result = await computeMemberBreakdown(organizationId, userId, seasonLabel);
   if ("error" in result) return result;
@@ -79,6 +80,8 @@ export async function ensureMemberCotisationRecord(
     return { error: "incomplete", missingFields: breakdown.missingFields };
   }
 
+  // onConflictDoNothing: a double click (or a concurrent request) must not create a second
+  // record nor throw — the loser simply reads back the winner's row.
   const [created] = await db
     .insert(memberCotisation)
     .values({
@@ -89,8 +92,23 @@ export async function ensureMemberCotisationRecord(
       amountCents: breakdown.totalCents,
       breakdownSnapshot: breakdown,
       status: "pending",
+      issuedAt: options.issue ? new Date() : null,
     })
+    .onConflictDoNothing()
     .returning();
 
-  return { record: created };
+  if (created) return { record: created, created: true };
+
+  const [winner] = await db
+    .select()
+    .from(memberCotisation)
+    .where(
+      and(
+        eq(memberCotisation.organizationId, organizationId),
+        eq(memberCotisation.userId, userId),
+        eq(memberCotisation.seasonLabel, seasonLabel),
+      ),
+    )
+    .limit(1);
+  return { record: winner, created: false };
 }

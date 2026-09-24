@@ -1,6 +1,6 @@
 import { Context } from "hono";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { ulid } from "ulid";
 import { db } from "../../../db";
 import { memberCotisation, memberCotisationReminderLog, user, organization } from "../../../db/schema";
@@ -8,7 +8,6 @@ import type { HonoContext } from "../../../types/hono";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { sendEmail } from "../../../services/mailer";
 import { duesReminderEmail } from "../../../services/mailer/templates";
-import { ensureMemberCotisationRecord } from "../lib/member-cotisation";
 import { sendCotisationReminderValidator } from "../validators";
 
 export const sendCotisationReminder = async (c: Context<HonoContext>) => {
@@ -21,26 +20,22 @@ export const sendCotisationReminder = async (c: Context<HonoContext>) => {
     return c.json({ error: "Forbidden", message: "Full admin access required" }, 403);
   }
 
-  const result = await ensureMemberCotisationRecord(
-    validated.organizationId,
-    validated.userId,
-    validated.seasonLabel,
-  );
+  // A reminder only makes sense for a cotisation that was issued — never create one implicitly.
+  const [record] = await db
+    .select()
+    .from(memberCotisation)
+    .where(
+      and(
+        eq(memberCotisation.organizationId, validated.organizationId),
+        eq(memberCotisation.userId, validated.userId),
+        eq(memberCotisation.seasonLabel, validated.seasonLabel),
+      ),
+    )
+    .limit(1);
 
-  if ("error" in result) {
-    if (result.error === "incomplete") {
-      return c.json(
-        { error: "BadRequest", message: "This member's profile is missing data the grid needs", missingFields: result.missingFields },
-        400,
-      );
-    }
-    return c.json(
-      { error: "NotFound", message: result.error === "no_active_grid" ? "No active pricing grid for this season" : "Member not found" },
-      404,
-    );
+  if (!record) {
+    return c.json({ error: "NotFound", message: "This cotisation has not been issued yet" }, 404);
   }
-
-  const { record } = result;
   if (record.status !== "pending") {
     return c.json({ error: "BadRequest", message: "Cannot send a reminder for a paid or waived cotisation" }, 400);
   }

@@ -30,6 +30,8 @@ import {
   markCotisationPaid,
   waiveCotisation,
   sendCotisationReminder,
+  issueCotisation,
+  issueAllCotisations,
 } from "./mutations";
 import {
   listGridsValidator,
@@ -56,6 +58,8 @@ import {
   markCotisationPaidValidator,
   waiveCotisationValidator,
   sendCotisationReminderValidator,
+  issueCotisationValidator,
+  issueAllCotisationsValidator,
   getCotisationReceiptValidator,
 } from "./validators";
 
@@ -140,4 +144,14 @@ pricingRouter.post(
   "/member-cotisations/send-reminder",
   zValidator("json", sendCotisationReminderValidator),
   sendCotisationReminder,
+);
+pricingRouter.post(
+  "/member-cotisations/issue",
+  zValidator("json", issueCotisationValidator),
+  issueCotisation,
+);
+pricingRouter.post(
+  "/member-cotisations/issue-all",
+  zValidator("json", issueAllCotisationsValidator),
+  issueAllCotisations,
 );
