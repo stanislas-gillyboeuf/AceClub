@@ -119,17 +119,32 @@ export interface UpcomingBookingsResponse {
   totalCount: number
 }
 
+/**
+ * One person to import. Contract shared with the API's bulkImportRowValidator:
+ * - `email` is optional, but a row without email must carry a `dateOfBirth` (to identify the person).
+ * - `householdKey` = lowercased email of the household's responsible person, or the value of a
+ *   "foyer" column. A row whose own email equals another row's `householdKey` belongs to that
+ *   household too (the API resolves this).
+ */
 export interface BulkImportRow {
   name: string
-  email: string
+  email?: string
   phone?: string
   licenseNumber?: string
   licenseValidUntil?: string
+  medicalCertificateValidUntil?: string
   dateOfBirth?: string
+  postalCode?: string
+  city?: string
+  licensedElsewhere?: boolean
+  householdKey?: string
+  tags?: string[]
 }
 
 export interface BulkImportResult {
   created: number
   updated: number
   skipped: { row: number; reason: string }[]
+  warnings?: { row: number; message: string }[]
+  households?: number
 }

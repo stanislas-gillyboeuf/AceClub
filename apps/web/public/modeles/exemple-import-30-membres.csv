@@ -1,0 +1,31 @@
+﻿Nom;Prénom;Email;Téléphone;Date de naissance;Code postal;Commune;N° de licence;Licence valide jusqu'au;Licencié ailleurs;Email du responsable;Statuts
+Dubois;Élodie;elodie.dubois@example.com;06 11 22 33 44;14/05/1982;35000;Rennes;2011234;30/09/2026;non;;Bureau
+Dubois;Gaëtan;gaetan.dubois@example.com;;03/11/1980;35000;Rennes;2011235;30/09/2026;non;elodie.dubois@example.com;
+Dubois;Hélène;;;22/02/2012;35000;Rennes;;;non;elodie.dubois@example.com;Jeune
+Dubois;Noël;;;09/07/2015;35000;Rennes;;;non;elodie.dubois@example.com;Jeune
+Lefèvre;François;francois.lefevre@example.com;07 55 44 33 22;1978-08-19;35510;Cesson-Sévigné;3022101;31/08/2026;oui;;
+Lefèvre;Camille;;;15/04/2010;35510;Cesson-Sévigné;;;oui;francois.lefevre@example.com;Jeune
+Lefèvre;Mathis;;;01/12/2013;35510;Cesson-Sévigné;;;x;francois.lefevre@example.com;Jeune
+Moreau;Sandrine;sandrine.moreau@example.com;06 98 76 54 32;28/09/1985;35700;Rennes;;;non;;
+Moreau;Lucas;sandrine.moreau@example.com;;17/06/2011;35700;Rennes;;;0;;Jeune
+Moreau;Inès;sandrine.moreau@example.com;;30/03/2014;35700;Rennes;;;0;;Jeune
+Bernard;Thierry;t.bernard@example.com;;12/12/1971;35000;Rennes;;;non;;
+Bernard;Océane;;;08/08/2009;35000;Rennes;;;non;t.bernard@example.com;Étudiant, Bureau
+Girard;Aurélie;aurelie.girard@example.com;;05/05/1990;35235;Thorigné-Fouillard;;;non;;
+Girard;Théo;;;11/10/2016;35235;Thorigné-Fouillard;;;non;aurelie.girard@example.com;
+Girard;Léa;;;02/02/2018;35235;Thorigné-Fouillard;;;non;aurelie.girard@example.com;
+Rousseau;Jérôme;jerome.rousseau@example.com;06 00 11 22 33;25/01/1975;35000;Rennes;4055512;30/09/2026;non;;
+Rousseau;Élise;elise.rousseau@example.com;;19/03/1977;35000;Rennes;;;non;jerome.rousseau@example.com;
+Rousseau;Baptiste;;;07/07/2008;35000;Rennes;;;non;jerome.rousseau@example.com;Étudiant
+Martinez;Noémie;noemie.martinez@example.com;06 12 00 12 00;16/09/1995;35000;Rennes;5100001;30/09/2026;non;;Étudiant, Bureau
+Fournier;Sébastien;s.fournier@example.com;;04/04/1968;35400;Saint-Malo;;;oui;;
+Lambert;Amélie;amelie.lambert@example.com;;23/08/1999;35000;Rennes;;;x;;Étudiant
+Roussel;Frédéric;f.roussel@example.com;07 70 80 90 00;13/01/1960;35000;Rennes;6300220;31/08/2026;non;;Senior
+Garnier;Zoé;;;2007-06-30;35000;Rennes;;;non;;
+Colin;Yannick;yannick.colin@example.com;;31/02/1990;35000;Rennes;;;non;;
+Dupuis;Chloé;chloe.dupuis@example.com;;10/10/1993;35000;Rennes;;;peut-être;;
+Blanc;Mélissa;melissa.blanc@example.com;;27/11/1988;35000;Rennes;;;non;;
+Vidal;Nicolas;n.vidal@example.com;;09/09/1983;35000;Rennes;7000123;30/09/2026;non;;
+Perrin;Josée;josee.perrin@example.com;;14/07/1955;35000;Rennes;;;non;;Senior
+Morel;Quentin;quentin.morel@example.com;;20/12/2000;35130;La Guerche-de-Bretagne;;;non;;
+Henry;Ève;eve.henry@example.com;;06/06/1992;35000;Rennes;;;non;;
