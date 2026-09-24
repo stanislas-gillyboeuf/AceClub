@@ -1,0 +1,1 @@
+ALTER TABLE "tarif_grid" ADD COLUMN "payment_due_date" timestamp;

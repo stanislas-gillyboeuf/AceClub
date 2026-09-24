@@ -34,6 +34,9 @@ export const updateGridSettings = async (c: Context<HonoContext>) => {
   if (validated.cumulMode !== undefined) updates.cumulMode = validated.cumulMode;
   if (validated.reductionCapPercent !== undefined) updates.reductionCapPercent = validated.reductionCapPercent;
   if (validated.roundingIncrement !== undefined) updates.roundingIncrement = validated.roundingIncrement;
+  if (validated.paymentDueDate !== undefined) {
+    updates.paymentDueDate = validated.paymentDueDate ? new Date(validated.paymentDueDate) : null;
+  }
 
   const [updated] = await db
     .update(tarifGrid)

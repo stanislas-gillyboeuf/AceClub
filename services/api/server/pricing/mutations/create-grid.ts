@@ -57,6 +57,7 @@ export const createGrid = async (c: Context<HonoContext>) => {
         seasonLabel: validated.seasonLabel,
         seasonStartDate: new Date(validated.seasonStartDate),
         seasonEndDate: new Date(validated.seasonEndDate),
+        paymentDueDate: validated.paymentDueDate ? new Date(validated.paymentDueDate) : null,
         status: "draft",
         createdByUserId: currentUser.id,
       })

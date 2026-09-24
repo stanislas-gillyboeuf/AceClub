@@ -5,8 +5,8 @@ import { sendEmail } from "../../../services/mailer";
 import { memberAlertDigestEmail } from "../../../services/mailer/templates";
 import { computeMemberAlerts } from "../../club-dashboard/lib/member-alerts";
 
-/** Daily digest to every full admin, per club, of members needing attention (license/medical
- * certificate/dues) — the same computation the homepage's "Alertes membres" card uses. */
+/** Daily digest to every full admin, per club, of members needing attention (license, medical
+ * certificate, overdue cotisation) — the same computation as the homepage "Alertes" card. */
 export async function sendMemberAlertDigest(): Promise<{ clubsNotified: number; emailsSent: number }> {
   const organizations = await db.select({ id: organization.id, name: organization.name }).from(organization);
 

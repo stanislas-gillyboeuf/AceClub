@@ -140,6 +140,23 @@ export function TarifGridSettingsSection({ grid }: TarifGridSettingsSectionProps
             </SelectContent>
           </Select>
         </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="payment-due-date">Date limite de paiement (optionnel)</Label>
+          <Input
+            id="payment-due-date"
+            type="date"
+            defaultValue={grid.paymentDueDate?.slice(0, 10) ?? ""}
+            onBlur={(e) => {
+              const next = e.target.value === "" ? null : new Date(e.target.value).toISOString()
+              const current = grid.paymentDueDate ? grid.paymentDueDate.slice(0, 10) : null
+              const nextDay = next ? next.slice(0, 10) : null
+              if (nextDay !== current) updateSettings.mutate({ gridId: grid.id, paymentDueDate: next })
+            }}
+          />
+          <p className="text-xs text-muted-foreground">
+            Sans date, une cotisation émise est en retard 30 jours après son émission.
+          </p>
+        </div>
       </CardContent>
     </Card>
   )

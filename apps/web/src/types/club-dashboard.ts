@@ -15,13 +15,35 @@ export interface CourseToday {
   endAt: string
 }
 
-export interface DueSoon {
-  assignmentId: string
-  userName: string
-  duesTypeName: string
+export interface PendingCotisation {
+  userId: string
+  name: string
+  seasonLabel: string
   amountCents: number
-  dueDate: string | null
-  status: string
+  dueDate: string
+  isOverdue: boolean
+}
+
+export interface HomeCotisations {
+  items: PendingCotisation[]
+  totalRemainingCents: number
+  overdueCount: number
+}
+
+export type MemberAlertType =
+  | "license_expired"
+  | "license_expiring"
+  | "medical_expired"
+  | "medical_expiring"
+  | "dues_overdue"
+
+export interface MemberAlert {
+  userId: string
+  userName: string
+  userImage: string | null
+  type: MemberAlertType
+  detail: string
+  seasonLabel?: string
 }
 
 export interface TopPlayer {
@@ -47,7 +69,8 @@ export interface HomeBoard {
   stats: HomeBoardStats
   coachBadges: CoachBadge[]
   coursesToday: CourseToday[]
-  duesDueSoon: DueSoon[]
+  cotisations: HomeCotisations
+  alerts: MemberAlert[]
   topPlayers: TopPlayer[]
   occupancyByDay: OccupancyDay[]
 }

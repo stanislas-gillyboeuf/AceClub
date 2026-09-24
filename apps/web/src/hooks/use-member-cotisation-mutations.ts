@@ -16,6 +16,7 @@ function settleMemberCotisations(
   seasonLabel: string,
 ) {
   queryClient.invalidateQueries({ queryKey: ["member-cotisations", organizationId, seasonLabel] })
+  queryClient.invalidateQueries({ queryKey: ["club-home-board", organizationId] })
 }
 
 export function useIssueCotisation() {
@@ -81,8 +82,8 @@ export function useSendCotisationReminder() {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001"
 
-/** Downloads the receipt PDF via an authenticated fetch (blob + object URL) — same pattern as
- * useDownloadDuesReceipt, since the API lives on a different subdomain than the dashboard. */
+/** Downloads the receipt PDF via an authenticated fetch (blob + object URL), since the API lives
+ * on a different subdomain than the dashboard. */
 export function useDownloadCotisationReceipt() {
   return useMutation({
     mutationFn: async (params: { organizationId: string; userId: string; seasonLabel: string }) => {

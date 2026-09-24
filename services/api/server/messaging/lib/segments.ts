@@ -1,6 +1,6 @@
 import { and, eq, gte, inArray } from "drizzle-orm";
 import { db } from "../../../db";
-import { member, user, duesAssignment, courtBooking, court } from "../../../db/schema";
+import { member, user, memberCotisation, courtBooking, court } from "../../../db/schema";
 import type { BroadcastSegmentType } from "../../../db/schema";
 
 const INACTIVE_WINDOW_DAYS = 30;
@@ -32,11 +32,12 @@ export async function resolveSegment(
     return allMembers;
   }
 
+  // Members with an issued cotisation still pending (a member with no record yet is not "unpaid").
   if (segment === "unpaid_dues") {
     const rows = await db
-      .select({ userId: duesAssignment.userId })
-      .from(duesAssignment)
-      .where(and(eq(duesAssignment.organizationId, organizationId), eq(duesAssignment.status, "pending")));
+      .select({ userId: memberCotisation.userId })
+      .from(memberCotisation)
+      .where(and(eq(memberCotisation.organizationId, organizationId), eq(memberCotisation.status, "pending")));
     const unpaidUserIds = new Set(rows.map((r) => r.userId));
     return allMembers.filter((m) => unpaidUserIds.has(m.userId));
   }

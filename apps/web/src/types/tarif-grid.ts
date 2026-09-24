@@ -65,6 +65,7 @@ export interface TarifGrid {
   cumulMode: TarifCumulMode
   reductionCapPercent: number | null
   roundingIncrement: TarifRoundingIncrement
+  paymentDueDate: string | null
   status: TarifGridStatus
   createdByUserId: string
   activatedAt: string | null
@@ -201,6 +202,7 @@ export interface CreateGridInput {
   seasonEndDate: string
   mode: "blank" | "duplicate" | "template"
   duplicateFromGridId?: string
+  paymentDueDate?: string | null
 }
 
 export interface UpdateGridSettingsInput {
@@ -212,6 +214,7 @@ export interface UpdateGridSettingsInput {
   cumulMode?: TarifCumulMode
   reductionCapPercent?: number | null
   roundingIncrement?: TarifRoundingIncrement
+  paymentDueDate?: string | null
 }
 
 export interface AgeCategoryItemInput {

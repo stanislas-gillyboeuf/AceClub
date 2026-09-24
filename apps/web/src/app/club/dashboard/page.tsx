@@ -11,6 +11,7 @@ import {
   YAxis,
 } from "recharts"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -24,8 +25,9 @@ import {
 } from "@/components/ui/table"
 import { CoachBadgeRow } from "@/components/custom/coach-badge-row"
 import { useHomeBoard } from "@/hooks/use-club-dashboard-queries"
-import { useMarkDuesPaid, useSendDuesReminder } from "@/hooks/use-dues-mutations"
+import { useMarkCotisationPaid, useSendCotisationReminder } from "@/hooks/use-member-cotisation-mutations"
 import { useClubAdminContext } from "@/lib/club-admin-context"
+import type { MemberAlert, MemberAlertType } from "@/types/club-dashboard"
 
 function initials(name: string) {
   return name.split(" ").filter(Boolean).slice(0, 2).map((n) => n[0]).join("").toUpperCase()
@@ -36,8 +38,17 @@ function formatDateTime(iso: string) {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })
+  return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" })
 }
+
+const ALERT_GROUPS: { type: MemberAlertType; label: string }[] = [
+  { type: "dues_overdue", label: "Cotisations en retard" },
+  { type: "license_expired", label: "Licences expirées" },
+  { type: "license_expiring", label: "Licences bientôt expirées" },
+  { type: "medical_expired", label: "Certificats médicaux expirés" },
+  { type: "medical_expiring", label: "Certificats médicaux bientôt expirés" },
+]
+
 
 function formatAmount(amountCents: number) {
   return (amountCents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })
@@ -70,8 +81,8 @@ function EmptyColumn({ label }: { label: string }) {
 export default function ClubAdminDashboardPage() {
   const { organizationId } = useClubAdminContext()
   const { data, isLoading } = useHomeBoard(organizationId)
-  const sendDuesReminder = useSendDuesReminder()
-  const markDuesPaid = useMarkDuesPaid()
+  const sendReminder = useSendCotisationReminder()
+  const markPaid = useMarkCotisationPaid()
 
   if (isLoading || !data) {
     return (
@@ -170,43 +181,121 @@ export default function ClubAdminDashboardPage() {
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Cotisations à échéance (30 jours)</CardTitle>
+          <CardTitle>Alertes</CardTitle>
+          <CardDescription>Licences, certificats médicaux et cotisations à surveiller</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {data.alerts.length === 0 ? (
+            <EmptyColumn label="Aucune alerte pour le moment." />
+          ) : (
+            ALERT_GROUPS.map(({ type, label }) => {
+              const group: MemberAlert[] = data.alerts.filter((a) => a.type === type)
+              if (group.length === 0) return null
+              return (
+                <div key={type} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-semibold">{label}</h3>
+                    <Badge variant="secondary">{group.length}</Badge>
+                  </div>
+                  {group.map((a) => (
+                    <div
+                      key={`${type}-${a.userId}-${a.seasonLabel ?? ""}`}
+                      className="flex items-center gap-2.5 rounded-lg border p-2.5"
+                    >
+                      <Avatar className="h-7 w-7">
+                        <AvatarImage src={a.userImage ?? undefined} alt={a.userName} />
+                        <AvatarFallback className="text-xs">{initials(a.userName)}</AvatarFallback>
+                      </Avatar>
+                      <Link href={`/club/members/${a.userId}`} className="min-w-0 flex-1 hover:underline">
+                        <p className="truncate text-sm font-medium">{a.userName}</p>
+                        <p className="truncate text-xs text-muted-foreground">{a.detail}</p>
+                      </Link>
+                      {type === "dues_overdue" && a.seasonLabel ? (
+                        <div className="flex shrink-0 gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={sendReminder.isPending}
+                            onClick={() =>
+                              sendReminder.mutate({ organizationId, userId: a.userId, seasonLabel: a.seasonLabel! })
+                            }
+                          >
+                            Relancer
+                          </Button>
+                          <Button
+                            size="sm"
+                            disabled={markPaid.isPending}
+                            onClick={() =>
+                              markPaid.mutate({ organizationId, userId: a.userId, seasonLabel: a.seasonLabel! })
+                            }
+                          >
+                            Marquer payé
+                          </Button>
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              )
+            })
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Cotisations à régler</CardTitle>
+          <CardDescription>
+            {data.cotisations.items.length === 0
+              ? "Saison en cours"
+              : `${formatAmount(data.cotisations.totalRemainingCents)} restant à encaisser` +
+                (data.cotisations.overdueCount > 0 ? ` · ${data.cotisations.overdueCount} en retard` : "")}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {data.duesDueSoon.length === 0 ? (
-            <EmptyColumn label="Aucune cotisation à échéance proche." />
+          {data.cotisations.items.length === 0 ? (
+            <EmptyColumn label="Aucune cotisation en attente." />
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Membre</TableHead>
-                  <TableHead>Cotisation</TableHead>
+                  <TableHead>Saison</TableHead>
                   <TableHead>Échéance</TableHead>
                   <TableHead>Montant</TableHead>
                   <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.duesDueSoon.map((d) => (
-                  <TableRow key={d.assignmentId}>
-                    <TableCell>{d.userName}</TableCell>
-                    <TableCell>{d.duesTypeName}</TableCell>
-                    <TableCell>{d.dueDate ? formatDate(d.dueDate) : "—"}</TableCell>
+                {data.cotisations.items.map((d) => (
+                  <TableRow key={`${d.userId}-${d.seasonLabel}`}>
+                    <TableCell>{d.name}</TableCell>
+                    <TableCell>{d.seasonLabel}</TableCell>
+                    <TableCell>
+                      {formatDate(d.dueDate)}
+                      {d.isOverdue ? (
+                        <Badge className="ml-2 bg-red-100 text-red-800 hover:bg-red-100">En retard</Badge>
+                      ) : null}
+                    </TableCell>
                     <TableCell>{formatAmount(d.amountCents)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button
                           variant="ghost"
                           size="sm"
-                          disabled={sendDuesReminder.isPending}
-                          onClick={() => sendDuesReminder.mutate({ assignmentId: d.assignmentId })}
+                          disabled={sendReminder.isPending}
+                          onClick={() =>
+                            sendReminder.mutate({ organizationId, userId: d.userId, seasonLabel: d.seasonLabel })
+                          }
                         >
                           Relancer
                         </Button>
                         <Button
                           size="sm"
-                          disabled={markDuesPaid.isPending}
-                          onClick={() => markDuesPaid.mutate({ assignmentId: d.assignmentId })}
+                          disabled={markPaid.isPending}
+                          onClick={() =>
+                            markPaid.mutate({ organizationId, userId: d.userId, seasonLabel: d.seasonLabel })
+                          }
                         >
                           Marquer payé
                         </Button>

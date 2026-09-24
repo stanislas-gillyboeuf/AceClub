@@ -16,7 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useCreateCourt, useUpdateCourt, useUpsertClubCourtSettings } from "@/hooks/use-club-court-mutations"
-import { useCreateDuesType } from "@/hooks/use-dues-mutations"
 import { useCompleteOnboarding } from "@/hooks/use-club-admin-mutations"
 import { useClubAdminContext } from "@/lib/club-admin-context"
 import type { CourtCancellationPolicy, CourtSport } from "@/types/court"
@@ -65,7 +64,6 @@ export default function ClubOnboardingPage() {
   const createCourt = useCreateCourt()
   const updateCourt = useUpdateCourt()
   const upsertSettings = useUpsertClubCourtSettings()
-  const createDuesType = useCreateDuesType()
   const completeOnboarding = useCompleteOnboarding()
 
   const [courts, setCourts] = useState<CreatedCourt[]>([])
@@ -85,8 +83,6 @@ export default function ClubOnboardingPage() {
     useState<CourtCancellationPolicy>("anytime")
   const [cancellationWindowHours, setCancellationWindowHours] = useState("24")
 
-  const [duesName, setDuesName] = useState("Cotisation annuelle")
-  const [duesAmount, setDuesAmount] = useState("")
 
   function handleAddCourt() {
     if (!courtName.trim()) return
@@ -133,21 +129,6 @@ export default function ClubOnboardingPage() {
     completeOnboarding.mutate(organizationId, {
       onSuccess: () => router.replace("/club/dashboard"),
     })
-  }
-
-  function handleCreateDuesAndFinish() {
-    if (!duesName.trim() || !duesAmount) {
-      finishOnboarding()
-      return
-    }
-    createDuesType.mutate(
-      {
-        organizationId,
-        name: duesName.trim(),
-        amountCents: Math.round(Number(duesAmount) * 100),
-      },
-      { onSuccess: finishOnboarding, onError: finishOnboarding },
-    )
   }
 
   const settingsValid =
@@ -376,44 +357,18 @@ export default function ClubOnboardingPage() {
       {step === 3 ? (
         <Card>
           <CardHeader>
-            <CardTitle>Première cotisation</CardTitle>
-            <CardDescription>Optionnel — vous pourrez en créer d&apos;autres ensuite.</CardDescription>
+            <CardTitle>Cotisations</CardTitle>
+            <CardDescription>
+              Vous configurerez la grille tarifaire depuis l&apos;onglet Cotisations du tableau de bord.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="dues-name">Nom</Label>
-              <Input id="dues-name" value={duesName} onChange={(e) => setDuesName(e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="dues-amount">Montant (€)</Label>
-              <Input
-                id="dues-amount"
-                type="number"
-                min={0}
-                value={duesAmount}
-                onChange={(e) => setDuesAmount(e.target.value)}
-              />
-            </div>
-
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep(2)}>
                 Retour
               </Button>
-              <Button
-                variant="ghost"
-                onClick={finishOnboarding}
-                disabled={completeOnboarding.isPending}
-              >
-                Passer cette étape
-              </Button>
-              <Button
-                className="flex-1"
-                disabled={createDuesType.isPending || completeOnboarding.isPending}
-                onClick={handleCreateDuesAndFinish}
-              >
-                {createDuesType.isPending || completeOnboarding.isPending
-                  ? "Finalisation..."
-                  : "Terminer"}
+              <Button className="flex-1" disabled={completeOnboarding.isPending} onClick={finishOnboarding}>
+                {completeOnboarding.isPending ? "Finalisation..." : "Terminer"}
               </Button>
             </div>
           </CardContent>

@@ -51,6 +51,7 @@ export const createGridValidator = z
     seasonEndDate: z.string().datetime(),
     mode: createModeEnum,
     duplicateFromGridId: z.string().min(1).optional(),
+    paymentDueDate: z.string().datetime().nullable().optional(),
   })
   .refine((data) => data.mode !== "duplicate" || !!data.duplicateFromGridId, {
     message: "duplicateFromGridId is required when mode is 'duplicate'",
@@ -70,6 +71,7 @@ export const updateGridSettingsValidator = z.object({
   cumulMode: cumulModeEnum.optional(),
   reductionCapPercent: z.number().int().min(0).max(100).nullable().optional(),
   roundingIncrement: roundingIncrementEnum.optional(),
+  paymentDueDate: z.string().datetime().nullable().optional(),
 });
 
 export const activateGridValidator = z.object({

@@ -34,7 +34,7 @@ import type { BroadcastChannel, BroadcastSegment } from "@/types/messaging"
 
 const SEGMENT_LABELS: Record<BroadcastSegment, string> = {
   all: "Tous les membres",
-  unpaid_dues: "Cotisation impayée",
+  unpaid_dues: "Cotisation non réglée",
   inactive_30d: "Inactifs depuis 30 jours",
 }
 

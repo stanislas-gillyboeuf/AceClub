@@ -3,14 +3,16 @@ import { z } from "zod";
 import { and, count, desc, eq, gte, inArray, lt } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { clubMemberProfile, course, court, courtBooking, duesAssignment, duesType, member, user } from "../../../db/schema";
+import { clubMemberProfile, course, court, courtBooking, member, memberCotisation, user } from "../../../db/schema";
 import { assertClubAdmin } from "../../../middleware/club-admin";
 import { getWeekBounds } from "../../court/lib/quota";
 import { getCourtSettings } from "../../court/lib/settings";
 import { effectiveAdherentSql } from "../../club-member/lib/adherent";
+import { loadActiveSeasonGrid } from "../../pricing/lib/active-season";
+import { effectiveDueDate } from "../../pricing/lib/due-date";
+import { computeMemberAlerts } from "../lib/member-alerts";
 import { getDashboardSummaryValidator } from "../validators";
 
-const DUES_DUE_SOON_WINDOW_DAYS = 30;
 const TOP_PLAYERS_WINDOW_DAYS = 90;
 const TOP_PLAYERS_LIMIT = 5;
 const OCCUPANCY_HISTORY_DAYS = 7;
@@ -96,27 +98,52 @@ export const getHomeBoard = async (c: Context<HonoContext>) => {
       });
   }
 
-  // --- Dues due within 30 days (including already-overdue pending ones) ---
-  const duesDueSoonWindow = new Date(now.getTime() + DUES_DUE_SOON_WINDOW_DAYS * 24 * 60 * 60 * 1000);
-  const duesDueSoon = await db
-    .select({
-      assignmentId: duesAssignment.id,
-      userName: user.name,
-      duesTypeName: duesType.name,
-      amountCents: duesType.amountCents,
-      dueDate: duesType.dueDate,
-      status: duesAssignment.status,
+  // --- Pending cotisations of the active season (+ what is still owed) ---
+  const activeSeason = await loadActiveSeasonGrid(validated.organizationId, now);
+  const pendingRows = activeSeason
+    ? await db
+        .select({
+          userId: user.id,
+          name: user.name,
+          seasonLabel: memberCotisation.seasonLabel,
+          amountCents: memberCotisation.amountCents,
+          issuedAt: memberCotisation.issuedAt,
+          createdAt: memberCotisation.createdAt,
+        })
+        .from(memberCotisation)
+        .innerJoin(user, eq(memberCotisation.userId, user.id))
+        .where(
+          and(
+            eq(memberCotisation.organizationId, validated.organizationId),
+            eq(memberCotisation.seasonLabel, activeSeason.seasonLabel),
+            eq(memberCotisation.status, "pending"),
+          ),
+        )
+    : [];
+  const cotisationItems = pendingRows
+    .map((r) => {
+      const dueDate = effectiveDueDate({
+        paymentDueDate: activeSeason?.paymentDueDate ?? null,
+        issuedAt: r.issuedAt,
+        createdAt: r.createdAt,
+      });
+      return {
+        userId: r.userId,
+        name: r.name,
+        seasonLabel: r.seasonLabel,
+        amountCents: r.amountCents,
+        dueDate,
+        isOverdue: dueDate < now,
+      };
     })
-    .from(duesAssignment)
-    .innerJoin(user, eq(duesAssignment.userId, user.id))
-    .innerJoin(duesType, eq(duesAssignment.duesTypeId, duesType.id))
-    .where(
-      and(
-        eq(duesAssignment.organizationId, validated.organizationId),
-        eq(duesAssignment.status, "pending"),
-        lt(duesType.dueDate, duesDueSoonWindow),
-      ),
-    );
+    .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
+  const cotisations = {
+    items: cotisationItems,
+    totalRemainingCents: cotisationItems.reduce((sum, r) => sum + r.amountCents, 0),
+    overdueCount: cotisationItems.filter((r) => r.isOverdue).length,
+  };
+
+  const alerts = await computeMemberAlerts(validated.organizationId);
 
   // --- Lightweight stats strip (adherents, active courts, occupancy this week) ---
   // Adherents = members who pay a cotisation (owner/admin/coach excluded unless flagged).
@@ -228,7 +255,8 @@ export const getHomeBoard = async (c: Context<HonoContext>) => {
     },
     coachBadges: Array.from(coachBadgeCounts.values()),
     coursesToday,
-    duesDueSoon,
+    cotisations,
+    alerts,
     topPlayers,
     occupancyByDay,
   });

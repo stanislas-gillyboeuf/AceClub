@@ -86,6 +86,8 @@ export const tarifGrid = pgTable(
     reductionCapPercent: integer("reduction_cap_percent"),
     roundingIncrement: tarifRoundingIncrement("rounding_increment").notNull().default("none"),
     status: tarifGridStatus("status").notNull().default("draft"),
+    // Optional deadline for paying the season's cotisation; null → 30 days after issue.
+    paymentDueDate: timestamp("payment_due_date"),
     createdByUserId: text("created_by_user_id")
       .notNull()
       .references(() => user.id),

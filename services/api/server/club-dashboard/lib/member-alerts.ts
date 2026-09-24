@@ -1,6 +1,8 @@
-import { and, eq, lt } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "../../../db";
-import { clubMemberProfile, duesAssignment, duesType, member, user } from "../../../db/schema";
+import { clubMemberProfile, member, memberCotisation, user } from "../../../db/schema";
+import { effectiveDueDate } from "../../pricing/lib/due-date";
+import { loadSeasonPaymentDueDates } from "../../pricing/lib/active-season";
 
 const EXPIRY_WINDOW_DAYS = 30;
 
@@ -17,15 +19,16 @@ export interface MemberAlert {
   userImage: string | null;
   type: MemberAlertType;
   detail: string;
-  assignmentId?: string;
+  /** Set for `dues_overdue` alerts — identifies the cotisation to remind or mark paid. */
+  seasonLabel?: string;
 }
 
 function formatDate(d: Date): string {
   return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-/** Shared by the homepage "Alertes membres" card and the daily admin email digest — license
- * and medical certificate expiring/expired, plus overdue dues. */
+/** Shared by the homepage "Alertes" card and the daily admin email digest — license and medical
+ * certificate expiring/expired, plus overdue cotisations (pending past their effective due date). */
 export async function computeMemberAlerts(organizationId: string): Promise<MemberAlert[]> {
   const now = new Date();
   const windowEnd = new Date(now.getTime() + EXPIRY_WINDOW_DAYS * 24 * 60 * 60 * 1000);
@@ -93,35 +96,37 @@ export async function computeMemberAlerts(organizationId: string): Promise<Membe
     }
   }
 
-  const overdueDues = await db
-    .select({
-      assignmentId: duesAssignment.id,
-      userId: user.id,
-      userName: user.name,
-      userImage: user.image,
-      duesTypeName: duesType.name,
-      amountCents: duesType.amountCents,
-      dueDate: duesType.dueDate,
-    })
-    .from(duesAssignment)
-    .innerJoin(user, eq(duesAssignment.userId, user.id))
-    .innerJoin(duesType, eq(duesAssignment.duesTypeId, duesType.id))
-    .where(
-      and(
-        eq(duesAssignment.organizationId, organizationId),
-        eq(duesAssignment.status, "pending"),
-        lt(duesType.dueDate, now),
-      ),
-    );
+  const [pendingCotisations, seasonDueDates] = await Promise.all([
+    db
+      .select({
+        userId: user.id,
+        userName: user.name,
+        userImage: user.image,
+        seasonLabel: memberCotisation.seasonLabel,
+        amountCents: memberCotisation.amountCents,
+        issuedAt: memberCotisation.issuedAt,
+        createdAt: memberCotisation.createdAt,
+      })
+      .from(memberCotisation)
+      .innerJoin(user, eq(memberCotisation.userId, user.id))
+      .where(and(eq(memberCotisation.organizationId, organizationId), eq(memberCotisation.status, "pending"))),
+    loadSeasonPaymentDueDates(organizationId),
+  ]);
 
-  for (const d of overdueDues) {
+  for (const d of pendingCotisations) {
+    const dueDate = effectiveDueDate({
+      paymentDueDate: seasonDueDates.get(d.seasonLabel) ?? null,
+      issuedAt: d.issuedAt,
+      createdAt: d.createdAt,
+    });
+    if (dueDate >= now) continue;
     alerts.push({
       userId: d.userId,
       userName: d.userName,
       userImage: d.userImage,
       type: "dues_overdue",
-      detail: `${d.duesTypeName} — ${(d.amountCents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })} en retard`,
-      assignmentId: d.assignmentId,
+      detail: `Cotisation ${d.seasonLabel} — ${(d.amountCents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })} en retard (échéance ${formatDate(dueDate)})`,
+      seasonLabel: d.seasonLabel,
     });
   }
 

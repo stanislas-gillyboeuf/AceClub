@@ -178,6 +178,7 @@ export async function getOrCreateEditableVersion(
       cumulMode: grid.cumulMode,
       reductionCapPercent: grid.reductionCapPercent,
       roundingIncrement: grid.roundingIncrement,
+      paymentDueDate: grid.paymentDueDate,
       status: "active",
       createdByUserId: actorUserId,
       activatedAt: grid.activatedAt,
