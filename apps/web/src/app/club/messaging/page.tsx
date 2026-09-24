@@ -139,6 +139,13 @@ export default function ClubMessagingPage() {
               <p className="text-sm text-muted-foreground">
                 Ce message touchera <strong className="text-foreground">{preview.count}</strong>{" "}
                 membre{preview.count > 1 ? "s" : ""}.
+                {channel !== "push" && preview.emailNoContactCount > 0 ? (
+                  <>
+                    {" "}
+                    <strong className="text-foreground">{preview.emailNoContactCount}</strong> sans email de
+                    contact ne recevront pas l&apos;email.
+                  </>
+                ) : null}
               </p>
             </div>
           ) : null}

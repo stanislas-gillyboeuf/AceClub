@@ -14,6 +14,7 @@ import {
 } from "../../../db/schema";
 import { assertClubAdmin } from "../../../middleware/club-admin";
 import { getClubMemberDetailValidator } from "../validators";
+import { publicEmail } from "../../../lib/technical-email";
 import { isEffectiveAdherent } from "../lib/adherent";
 
 const BOOKING_HISTORY_LIMIT = 20;
@@ -125,6 +126,7 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
   return c.json({
     member: {
       ...memberFields,
+      userEmail: publicEmail(memberRow.userEmail),
       // Effective value (club override wins over the account's own); raw, so the UI can flag a
       // legacy non-ISO value. `clubDateOfBirth` is the editable club-level override itself.
       dateOfBirth: memberRow.clubDateOfBirth ?? userDateOfBirth,

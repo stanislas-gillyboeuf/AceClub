@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { HonoContext } from "../../../types/hono";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { previewSegmentValidator } from "../validators";
-import { resolveSegment } from "../lib/segments";
+import { dedupeRecipientEmails, resolveSegment } from "../lib/segments";
 
 const SAMPLE_SIZE = 5;
 
@@ -19,8 +19,13 @@ export const previewSegment = async (c: Context<HonoContext>) => {
 
   const members = await resolveSegment(validated.organizationId, validated.segment);
 
+  const { emails, noContact } = dedupeRecipientEmails(members);
+
   return c.json({
     count: members.length,
-    sample: members.slice(0, SAMPLE_SIZE),
+    emailAddressCount: emails.length,
+    emailNoContactCount: noContact.length,
+    // `contactEmail` stays server-side: only the member's own public email is ever exposed.
+    sample: members.slice(0, SAMPLE_SIZE).map(({ contactEmail: _contactEmail, ...rest }) => rest),
   });
 };

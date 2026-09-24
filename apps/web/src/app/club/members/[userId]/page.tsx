@@ -234,12 +234,14 @@ export default function ClubMemberDetailPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <a href={`mailto:${member.userEmail}`}>
-              <Mail className="mr-2 h-4 w-4" />
-              Email
-            </a>
-          </Button>
+          {member.userEmail ? (
+            <Button variant="outline" size="sm" asChild>
+              <a href={`mailto:${member.userEmail}`}>
+                <Mail className="mr-2 h-4 w-4" />
+                Email
+              </a>
+            </Button>
+          ) : null}
           {phone ? (
             <Button variant="outline" size="sm" asChild>
               <a href={`sms:${phone}`}>
@@ -341,7 +343,7 @@ export default function ClubMemberDetailPage() {
             <CardContent className="space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                {member.userEmail}
+                {member.userEmail ?? <span className="text-muted-foreground">Pas d&apos;email</span>}
               </div>
               {phone ? (
                 <div className="flex items-center gap-2">

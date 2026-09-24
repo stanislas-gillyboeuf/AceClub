@@ -1,11 +1,12 @@
 import { Context } from "hono";
 import { z } from "zod";
-import { and, count, eq, gte, ilike, inArray, or } from "drizzle-orm";
+import { and, count, eq, gte, ilike, inArray, not, or } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { member, user, clubMemberProfile, court, courtBooking, userPreference } from "../../../db/schema";
 import { assertClubAdmin } from "../../../middleware/club-admin";
 import { listClubMembersValidator } from "../validators";
+import { publicEmail, TECHNICAL_EMAIL_LIKE } from "../../../lib/technical-email";
 
 const RECENT_BOOKING_WINDOW_DAYS = 90;
 
@@ -30,7 +31,8 @@ export const listClubMembers = async (c: Context<HonoContext>) => {
         baseWhere,
         or(
           ilike(user.name, `%${validated.search}%`),
-          ilike(user.email, `%${validated.search}%`),
+          // Technical addresses are never searchable (they are never shown either).
+          and(ilike(user.email, `%${validated.search}%`), not(ilike(user.email, TECHNICAL_EMAIL_LIKE))),
           ilike(clubMemberProfile.licenseNumber, `%${validated.search}%`),
         ),
       )
@@ -95,6 +97,7 @@ export const listClubMembers = async (c: Context<HonoContext>) => {
   return c.json({
     members: rows.map((row) => ({
       ...row,
+      userEmail: publicEmail(row.userEmail),
       recentBookingCount: bookingCountByUserId.get(row.userId) ?? 0,
     })),
     total: totalResult[0]?.count ?? 0,

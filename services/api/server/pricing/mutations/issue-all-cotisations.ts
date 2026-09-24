@@ -9,6 +9,7 @@ import { computeCotisation } from "../lib/engine";
 import { buildGridSnapshot } from "../lib/snapshot";
 import { loadOrgMemberProfiles } from "../lib/member-profile-adapter";
 import { sendCotisationRequest } from "../lib/issue-email";
+import { resolveContactEmails } from "../lib/resolve-contact-email";
 import { issueAllCotisationsValidator } from "../validators";
 
 const EMAIL_BATCH_SIZE = 5;
@@ -61,13 +62,12 @@ export const issueAllCotisations = async (c: Context<HonoContext>) => {
   const toIssue: {
     userId: string;
     name: string;
-    email: string;
     amountCents: number;
     breakdown: object;
     householdRank: number | null;
   }[] = [];
 
-  for (const { userId, name, email, isAdherent, profile } of profiles) {
+  for (const { userId, name, isAdherent, profile } of profiles) {
     if (alreadyIssued.has(userId)) continue;
     // Owner/admin/coach don't pay unless explicitly flagged as adherents.
     if (!isAdherent) continue;
@@ -79,7 +79,6 @@ export const issueAllCotisations = async (c: Context<HonoContext>) => {
     toIssue.push({
       userId,
       name,
-      email,
       amountCents: breakdown.totalCents,
       breakdown,
       householdRank: profile.householdRank ?? null,
@@ -110,7 +109,14 @@ export const issueAllCotisations = async (c: Context<HonoContext>) => {
   const insertedIds = new Set(inserted.map((r) => r.userId));
   const created = toIssue.filter((m) => insertedIds.has(m.userId));
 
-  const emailFailed: { userId: string; name: string; email: string; reason: string }[] = [];
+  // Where to write for each member: their own real email, else the household's contact. A member
+  // nobody can be written to is reported (emailFailed), never silently skipped.
+  const contactEmails = await resolveContactEmails(
+    validated.organizationId,
+    created.map((m) => m.userId),
+  );
+
+  const emailFailed: { userId: string; name: string; email: string | null; reason: string }[] = [];
   for (let i = 0; i < created.length; i += EMAIL_BATCH_SIZE) {
     const batch = created.slice(i, i + EMAIL_BATCH_SIZE);
     const results = await Promise.all(
@@ -118,7 +124,7 @@ export const issueAllCotisations = async (c: Context<HonoContext>) => {
         sendCotisationRequest({
           clubName: orgRow?.name ?? "",
           memberName: m.name,
-          memberEmail: m.email,
+          memberEmail: contactEmails.get(m.userId) ?? null,
           seasonLabel: validated.seasonLabel,
           amountCents: m.amountCents,
         }),
@@ -127,7 +133,12 @@ export const issueAllCotisations = async (c: Context<HonoContext>) => {
     results.forEach((res, idx) => {
       if (!res.sent) {
         const m = batch[idx];
-        emailFailed.push({ userId: m.userId, name: m.name, email: m.email, reason: res.reason });
+        emailFailed.push({
+          userId: m.userId,
+          name: m.name,
+          email: contactEmails.get(m.userId) ?? null,
+          reason: res.reason,
+        });
       }
     });
   }

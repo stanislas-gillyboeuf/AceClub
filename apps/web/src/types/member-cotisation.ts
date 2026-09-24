@@ -6,7 +6,8 @@ export type MemberCotisationStatus = "not_generated" | "pending" | "paid" | "wai
 export interface MemberCotisation {
   userId: string
   name: string
-  email: string
+  /** null when the member has no real email (children): the contact address is resolved server-side. */
+  email: string | null
   role: string
   // Effective value (explicit flag ?? role === "member"): only adherents pay a cotisation.
   isAdherent: boolean
@@ -68,5 +69,5 @@ export interface IssueAllCotisationsInput {
 export interface IssueAllCotisationsResponse {
   issued: number
   skippedIncomplete: { userId: string; name: string; missingFields: string[] }[]
-  emailFailed: { userId: string; name: string; email: string; reason: string }[]
+  emailFailed: { userId: string; name: string; email: string | null; reason: string }[]
 }

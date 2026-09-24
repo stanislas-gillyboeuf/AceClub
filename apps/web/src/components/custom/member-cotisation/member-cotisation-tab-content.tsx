@@ -134,7 +134,7 @@ export function MemberCotisationTabContent() {
         <TableRow key={m.userId}>
           <TableCell>
             <div className="font-medium">{m.name}</div>
-            <div className="text-xs text-muted-foreground">{m.email}</div>
+            <div className="text-xs text-muted-foreground">{m.email ?? "Pas d'email"}</div>
             {m.householdName ? (
               <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                 <span>Foyer {m.householdName}</span>
@@ -435,7 +435,7 @@ export function MemberCotisationTabContent() {
                   <ul className="mt-1 space-y-0.5 text-muted-foreground">
                     {issueAll.data.emailFailed.map((f) => (
                       <li key={f.userId}>
-                        {f.name} ({f.email}) : {f.reason}
+                        {f.name}{f.email ? ` (${f.email})` : ""} : {f.reason}
                       </li>
                     ))}
                   </ul>
@@ -475,7 +475,7 @@ export function MemberCotisationTabContent() {
         <SheetContent className="overflow-y-auto">
           <SheetHeader>
             <SheetTitle>{detailMember?.name}</SheetTitle>
-            <SheetDescription>{detailMember?.email}</SheetDescription>
+            <SheetDescription>{detailMember ? (detailMember.email ?? "Pas d'email") : null}</SheetDescription>
           </SheetHeader>
           <div className="mt-4 px-4">
             {detailMember ? <BreakdownView breakdown={detailMember.breakdown} /> : null}

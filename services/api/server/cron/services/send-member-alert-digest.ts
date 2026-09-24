@@ -4,6 +4,7 @@ import { member, organization, user } from "../../../db/schema";
 import { sendEmail } from "../../../services/mailer";
 import { memberAlertDigestEmail } from "../../../services/mailer/templates";
 import { computeMemberAlerts } from "../../club-dashboard/lib/member-alerts";
+import { resolveContactEmails } from "../../pricing/lib/resolve-contact-email";
 
 /** Daily digest to every full admin, per club, of members needing attention (license, medical
  * certificate, overdue cotisation) — the same computation as the homepage "Alertes" card. */
@@ -18,12 +19,19 @@ export async function sendMemberAlertDigest(): Promise<{ clubsNotified: number; 
     if (alerts.length === 0) continue;
 
     const admins = await db
-      .select({ email: user.email })
+      .select({ userId: user.id })
       .from(member)
       .innerJoin(user, eq(member.userId, user.id))
       .where(and(eq(member.organizationId, org.id), inArray(member.role, ["owner", "admin"])));
 
-    const orgAdminEmails = admins.map((a) => a.email);
+    // An admin created by "add member" may still carry a technical address: resolve the real one.
+    const contactEmails = await resolveContactEmails(
+      org.id,
+      admins.map((a) => a.userId),
+    );
+    const orgAdminEmails = [
+      ...new Set([...contactEmails.values()].filter((e): e is string => !!e).map((e) => e.trim())),
+    ];
     if (orgAdminEmails.length === 0) continue;
 
     const email = memberAlertDigestEmail({

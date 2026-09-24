@@ -51,7 +51,7 @@ export function getClubMembersColumns(
                   </Badge>
                 ) : null}
               </div>
-              <span className="text-xs text-muted-foreground">{member.userEmail}</span>
+              <span className="text-xs text-muted-foreground">{member.userEmail ?? "Pas d'email"}</span>
             </div>
           </div>
         )

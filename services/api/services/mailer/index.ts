@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { isTechnicalEmail } from "../../lib/technical-email";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -16,6 +17,13 @@ export interface SendEmailResult {
 }
 
 export async function sendEmail(params: SendEmailParams): Promise<SendEmailResult> {
+  // Last line of defence: an address we fabricated for a member without email is never written to,
+  // whatever the caller resolved.
+  if (isTechnicalEmail(params.to)) {
+    console.error("[Mailer] Refusing to send to a technical address");
+    return { success: false, reason: "TechnicalAddress" };
+  }
+
   if (!resend) {
     console.error("[Mailer] RESEND_API_KEY is not configured — email not sent");
     return { success: false, reason: "EmailNotConfigured" };
@@ -58,14 +66,21 @@ export interface SendBatchEmailResult {
 }
 
 /** Broadcast to many recipients at once via Resend's batch endpoint, chunked to its 100/call limit. */
-export async function sendBatchEmails(emails: SendBatchEmailParams[]): Promise<SendBatchEmailResult> {
+export async function sendBatchEmails(allEmails: SendBatchEmailParams[]): Promise<SendBatchEmailResult> {
+  // Technical addresses are dropped from the batch and counted as failures.
+  const emails = allEmails.filter((email) => !isTechnicalEmail(email.to));
+  const refused = allEmails.length - emails.length;
+  if (refused > 0) {
+    console.error(`[Mailer] Refused ${refused} technical address(es) in a batch`);
+  }
+
   if (!resend) {
     console.error("[Mailer] RESEND_API_KEY is not configured — batch email not sent");
-    return { sent: 0, failed: emails.length };
+    return { sent: 0, failed: allEmails.length };
   }
 
   let sent = 0;
-  let failed = 0;
+  let failed = refused;
 
   for (let i = 0; i < emails.length; i += BATCH_CHUNK_SIZE) {
     const chunk = emails.slice(i, i + BATCH_CHUNK_SIZE);

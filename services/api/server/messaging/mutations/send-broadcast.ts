@@ -6,7 +6,7 @@ import { db } from "../../../db";
 import { broadcastMessage, organization } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { sendBroadcastValidator } from "../validators";
-import { resolveSegment } from "../lib/segments";
+import { dedupeRecipientEmails, resolveSegment } from "../lib/segments";
 import { sendBatchEmails } from "../../../services/mailer";
 import { clubAnnouncementEmail } from "../../../services/mailer/templates";
 import { sendBatchNotifications } from "../../../services/expo-push/broadcast-service";
@@ -33,14 +33,21 @@ export const sendBroadcast = async (c: Context<HonoContext>) => {
 
   const recipients = await resolveSegment(validated.organizationId, validated.segment);
 
+  // Members nobody can be emailed for (e.g. a child without an email or a household contact) are
+  // counted and reported, never silently dropped.
+  let emailAddressCount = 0;
+  let emailNoContactCount = 0;
   if (validated.channel === "email" || validated.channel === "both") {
     const email = clubAnnouncementEmail({
       clubName: org.name,
       subject: validated.subject,
       body: validated.body,
     });
+    const { emails, noContact } = dedupeRecipientEmails(recipients);
+    emailAddressCount = emails.length;
+    emailNoContactCount = noContact.length;
     await sendBatchEmails(
-      recipients.map((r) => ({ to: r.email, subject: email.subject, html: email.html, text: email.text })),
+      emails.map((to) => ({ to, subject: email.subject, html: email.html, text: email.text })),
     );
   }
 
@@ -64,5 +71,5 @@ export const sendBroadcast = async (c: Context<HonoContext>) => {
     })
     .returning();
 
-  return c.json(log, 201);
+  return c.json({ ...log, emailAddressCount, emailNoContactCount }, 201);
 };

@@ -4,7 +4,8 @@ import { z } from "zod";
 import { searchUsersValidator } from "../validators";
 import { db } from "../../../db";
 import { user } from "../../../db/schema/auth/schema";
-import { and, eq, ilike, or } from "drizzle-orm";
+import { and, eq, ilike, not, or } from "drizzle-orm";
+import { TECHNICAL_EMAIL_LIKE } from "../../../lib/technical-email";
 
 export const searchUsers = async (c: Context<HonoContext>) => {
   try {
@@ -24,7 +25,8 @@ export const searchUsers = async (c: Context<HonoContext>) => {
         and(
           or(
             ilike(user.name, `%${validated.query}%`),
-            ilike(user.email, `%${validated.query}%`),
+            // Technical addresses are never searchable (they are never shown either).
+            and(ilike(user.email, `%${validated.query}%`), not(ilike(user.email, TECHNICAL_EMAIL_LIKE))),
             ilike(user.phoneNumber, `%${phoneQuery || validated.query}%`),
           ),
           eq(user.banned, false),

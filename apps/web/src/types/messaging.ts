@@ -20,12 +20,16 @@ export interface ListBroadcastsResponse {
 export interface SegmentPreviewMember {
   userId: string
   name: string
-  email: string
+  email: string | null
   image: string | null
 }
 
 export interface SegmentPreview {
   count: number
+  /** Distinct addresses an email announcement will actually reach (shared contacts count once). */
+  emailAddressCount: number
+  /** Members with no usable contact address: they will not receive the email. */
+  emailNoContactCount: number
   sample: SegmentPreviewMember[]
 }
 

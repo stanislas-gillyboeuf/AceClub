@@ -11,7 +11,8 @@ export interface ClubMemberListItem {
   memberSince: string
   userId: string
   userName: string
-  userEmail: string
+  /** null when the member has no real email (a technical address is never exposed). */
+  userEmail: string | null
   userImage: string | null
   isGhost: boolean | null
   licenseNumber: string | null

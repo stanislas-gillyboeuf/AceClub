@@ -7,6 +7,7 @@ import { tarifGrid, memberCotisation } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { computeCotisation, type Breakdown } from "../lib/engine";
 import { buildGridSnapshot } from "../lib/snapshot";
+import { publicEmail } from "../../../lib/technical-email";
 import { loadOrgMemberProfiles } from "../lib/member-profile-adapter";
 import { listMemberCotisationsValidator } from "../validators";
 
@@ -62,7 +63,7 @@ export const listMemberCotisations = async (c: Context<HonoContext>) => {
         return {
           userId,
           name,
-          email,
+          email: publicEmail(email),
           role,
           isAdherent,
           householdId,
@@ -82,7 +83,7 @@ export const listMemberCotisations = async (c: Context<HonoContext>) => {
       return {
         userId,
         name,
-        email,
+        email: publicEmail(email),
         role,
         isAdherent,
         householdId,

@@ -8,6 +8,7 @@ import type { HonoContext } from "../../../types/hono";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { sendEmail } from "../../../services/mailer";
 import { duesReminderEmail } from "../../../services/mailer/templates";
+import { resolveContactEmail, NO_CONTACT_EMAIL_REASON } from "../lib/resolve-contact-email";
 import { sendCotisationReminderValidator } from "../validators";
 
 export const sendCotisationReminder = async (c: Context<HonoContext>) => {
@@ -41,7 +42,7 @@ export const sendCotisationReminder = async (c: Context<HonoContext>) => {
   }
 
   const [memberRow] = await db
-    .select({ email: user.email, name: user.name })
+    .select({ name: user.name })
     .from(user)
     .where(eq(user.id, record.userId))
     .limit(1);
@@ -55,6 +56,12 @@ export const sendCotisationReminder = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Member or club not found" }, 404);
   }
 
+  // Own real email, else the household's contact — never a technical address.
+  const contactEmail = await resolveContactEmail(record.organizationId, record.userId);
+  if (!contactEmail) {
+    return c.json({ error: "BadRequest", message: NO_CONTACT_EMAIL_REASON }, 400);
+  }
+
   const email = duesReminderEmail({
     clubName: orgRow.name,
     memberName: memberRow.name,
@@ -64,7 +71,7 @@ export const sendCotisationReminder = async (c: Context<HonoContext>) => {
   });
 
   const sendResult = await sendEmail({
-    to: memberRow.email,
+    to: contactEmail,
     subject: email.subject,
     html: email.html,
     text: email.text,

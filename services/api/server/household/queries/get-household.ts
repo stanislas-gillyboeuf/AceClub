@@ -1,3 +1,4 @@
+import { publicEmail } from "../../../lib/technical-email";
 import { Context } from "hono";
 import { z } from "zod";
 import { and, asc, eq } from "drizzle-orm";
@@ -55,7 +56,7 @@ export const getHousehold = async (c: Context<HonoContext>) => {
     members: memberRows.map((m) => ({
       userId: m.userId,
       name: m.name,
-      email: m.email,
+      email: publicEmail(m.email),
       role: m.role,
       isAdherent: isEffectiveAdherent(m.isAdherentOverride, m.role),
       householdRankOverride: m.householdRankOverride,

@@ -7,6 +7,7 @@ import type { HonoContext } from "../../../types/hono";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { ensureMemberCotisationRecord } from "../lib/member-cotisation";
 import { sendCotisationRequest } from "../lib/issue-email";
+import { resolveContactEmail } from "../lib/resolve-contact-email";
 import { issueCotisationValidator } from "../validators";
 
 /** "Émettre": freezes the member's price (record status `pending`) and emails the payment
@@ -46,9 +47,10 @@ export const issueCotisation = async (c: Context<HonoContext>) => {
     return c.json({ record, created: false, emailSent: false });
   }
 
-  const [[memberRow], [orgRow]] = await Promise.all([
-    db.select({ email: user.email, name: user.name }).from(user).where(eq(user.id, record.userId)).limit(1),
+  const [[memberRow], [orgRow], contactEmail] = await Promise.all([
+    db.select({ name: user.name }).from(user).where(eq(user.id, record.userId)).limit(1),
     db.select({ name: organization.name }).from(organization).where(eq(organization.id, record.organizationId)).limit(1),
+    resolveContactEmail(record.organizationId, record.userId),
   ]);
 
   if (!memberRow || !orgRow) {
@@ -58,7 +60,7 @@ export const issueCotisation = async (c: Context<HonoContext>) => {
   const email = await sendCotisationRequest({
     clubName: orgRow.name,
     memberName: memberRow.name,
-    memberEmail: memberRow.email,
+    memberEmail: contactEmail,
     seasonLabel: record.seasonLabel,
     amountCents: record.amountCents,
   });
