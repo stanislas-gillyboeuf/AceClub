@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { AlertTriangle, Download, FileText, Mail, Send } from "lucide-react"
+import { AlertTriangle, ChevronDown, Download, FileText, Mail, Send } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
   Dialog,
   DialogContent,
@@ -113,9 +114,121 @@ export function MemberCotisationTabContent() {
   }
 
   const members = data?.members ?? []
-  const everyoneIncomplete = members.length > 0 && members.every((m) => m.breakdown.status === "incomplete")
-  const issuableCount = members.filter((m) => m.status === "not_generated" && m.amountCents !== null).length
-  const notIssuableCount = members.filter((m) => m.status === "not_generated" && m.amountCents === null).length
+  // Owner/admin/coach don't pay by default: they live in a collapsible section apart, and don't
+  // count for "everyone incomplete" nor for the bulk issue.
+  const adherents = members.filter((m) => m.isAdherent)
+  const nonAdherents = members.filter((m) => !m.isAdherent)
+  const everyoneIncomplete = adherents.length > 0 && adherents.every((m) => m.breakdown.status === "incomplete")
+  const issuableCount = adherents.filter((m) => m.status === "not_generated" && m.amountCents !== null).length
+  const notIssuableCount = adherents.filter((m) => m.status === "not_generated" && m.amountCents === null).length
+
+  const renderRow = (m: MemberCotisation) => {
+      const incomplete = m.breakdown.status === "incomplete"
+      return (
+        <TableRow key={m.userId}>
+          <TableCell>
+            <div className="font-medium">{m.name}</div>
+            <div className="text-xs text-muted-foreground">{m.email}</div>
+          </TableCell>
+          <TableCell>
+            {incomplete && m.amountCents === null ? (
+              <div className="space-y-1">
+                <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+                  Données manquantes
+                </Badge>
+                {m.breakdown.status === "incomplete" ? (
+                  <p className="text-xs text-muted-foreground">
+                    {m.breakdown.missingFields.map(describeMissingField).join(", ")}
+                  </p>
+                ) : null}
+              </div>
+            ) : m.amountCents !== null ? (
+              <span className="font-medium tabular-nums">{formatCents(m.amountCents)}</span>
+            ) : (
+              <span className="text-muted-foreground">—</span>
+            )}
+          </TableCell>
+          <TableCell>
+            <Badge
+              variant={m.status === "waived" ? "secondary" : "default"}
+              className={STATUS_STYLES[m.status]}
+            >
+              {STATUS_LABELS[m.status]}
+            </Badge>
+          </TableCell>
+          <TableCell>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => setDetailMember(m)}>
+                <FileText className="mr-1.5 h-3.5 w-3.5" />
+                Détail
+              </Button>
+              {m.status === "not_generated" ? (
+                <Button
+                  size="sm"
+                  disabled={m.amountCents === null || issue.isPending}
+                  title={m.amountCents === null ? "Complétez d'abord la fiche de l'adhérent" : undefined}
+                  onClick={() =>
+                    issue.mutate({ organizationId, userId: m.userId, seasonLabel: effectiveSeason })
+                  }
+                >
+                  <Send className="mr-1.5 h-3.5 w-3.5" />
+                  Émettre
+                </Button>
+              ) : null}
+              {m.status === "not_generated" || m.status === "pending" ? (
+                <>
+                  <Button size="sm" disabled={markPaid.isPending} onClick={() => setPaidTarget(m)}>
+                    Marquer payé
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={waive.isPending}
+                    onClick={() => setWaiveTarget(m)}
+                  >
+                    Exonérer
+                  </Button>
+                </>
+              ) : null}
+              {m.status === "pending" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={sendReminder.isPending}
+                  onClick={() =>
+                    sendReminder.mutate({
+                      organizationId,
+                      userId: m.userId,
+                      seasonLabel: effectiveSeason,
+                    })
+                  }
+                >
+                  <Mail className="mr-1.5 h-3.5 w-3.5" />
+                  Relancer
+                </Button>
+              ) : null}
+              {m.status === "paid" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={downloadReceipt.isPending}
+                  onClick={() =>
+                    downloadReceipt.mutate({
+                      organizationId,
+                      userId: m.userId,
+                      seasonLabel: effectiveSeason,
+                    })
+                  }
+                >
+                  <Download className="mr-1.5 h-3.5 w-3.5" />
+                  Reçu
+                </Button>
+              ) : null}
+            </div>
+          </TableCell>
+        </TableRow>
+      )
+  }
 
   function openIssueAll() {
     issueAll.reset()
@@ -227,125 +340,43 @@ export function MemberCotisationTabContent() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {members.length === 0 ? (
+                  {adherents.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
                         Aucun adhérent dans ce club.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    members.map((m) => {
-                      const incomplete = m.breakdown.status === "incomplete"
-                      return (
-                        <TableRow key={m.userId}>
-                          <TableCell>
-                            <div className="font-medium">{m.name}</div>
-                            <div className="text-xs text-muted-foreground">{m.email}</div>
-                          </TableCell>
-                          <TableCell>
-                            {incomplete && m.amountCents === null ? (
-                              <div className="space-y-1">
-                                <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
-                                  Données manquantes
-                                </Badge>
-                                {m.breakdown.status === "incomplete" ? (
-                                  <p className="text-xs text-muted-foreground">
-                                    {m.breakdown.missingFields.map(describeMissingField).join(", ")}
-                                  </p>
-                                ) : null}
-                              </div>
-                            ) : m.amountCents !== null ? (
-                              <span className="font-medium tabular-nums">{formatCents(m.amountCents)}</span>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={m.status === "waived" ? "secondary" : "default"}
-                              className={STATUS_STYLES[m.status]}
-                            >
-                              {STATUS_LABELS[m.status]}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-wrap items-center justify-end gap-2">
-                              <Button variant="outline" size="sm" onClick={() => setDetailMember(m)}>
-                                <FileText className="mr-1.5 h-3.5 w-3.5" />
-                                Détail
-                              </Button>
-                              {m.status === "not_generated" ? (
-                                <Button
-                                  size="sm"
-                                  disabled={m.amountCents === null || issue.isPending}
-                                  title={m.amountCents === null ? "Complétez d'abord la fiche de l'adhérent" : undefined}
-                                  onClick={() =>
-                                    issue.mutate({ organizationId, userId: m.userId, seasonLabel: effectiveSeason })
-                                  }
-                                >
-                                  <Send className="mr-1.5 h-3.5 w-3.5" />
-                                  Émettre
-                                </Button>
-                              ) : null}
-                              {m.status === "not_generated" || m.status === "pending" ? (
-                                <>
-                                  <Button size="sm" disabled={markPaid.isPending} onClick={() => setPaidTarget(m)}>
-                                    Marquer payé
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={waive.isPending}
-                                    onClick={() => setWaiveTarget(m)}
-                                  >
-                                    Exonérer
-                                  </Button>
-                                </>
-                              ) : null}
-                              {m.status === "pending" ? (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  disabled={sendReminder.isPending}
-                                  onClick={() =>
-                                    sendReminder.mutate({
-                                      organizationId,
-                                      userId: m.userId,
-                                      seasonLabel: effectiveSeason,
-                                    })
-                                  }
-                                >
-                                  <Mail className="mr-1.5 h-3.5 w-3.5" />
-                                  Relancer
-                                </Button>
-                              ) : null}
-                              {m.status === "paid" ? (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  disabled={downloadReceipt.isPending}
-                                  onClick={() =>
-                                    downloadReceipt.mutate({
-                                      organizationId,
-                                      userId: m.userId,
-                                      seasonLabel: effectiveSeason,
-                                    })
-                                  }
-                                >
-                                  <Download className="mr-1.5 h-3.5 w-3.5" />
-                                  Reçu
-                                </Button>
-                              ) : null}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })
+                    adherents.map(renderRow)
                   )}
                 </TableBody>
               </Table>
             </CardContent>
           </Card>
+
+          {nonAdherents.length > 0 ? (
+            <Collapsible>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="group mt-2">
+                  <ChevronDown className="mr-1.5 h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                  Non-adhérents ({nonAdherents.length}) : propriétaire, admins, coachs
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <p className="mb-2 mt-1 text-xs text-muted-foreground">
+                  Ils ne paient pas de cotisation par défaut. Pour en faire un adhérent, ouvrez sa fiche et
+                  réglez « Adhérent » sur Oui.
+                </p>
+                <Card>
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableBody>{nonAdherents.map(renderRow)}</TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </CollapsibleContent>
+            </Collapsible>
+          ) : null}
         </>
       )}
 

@@ -3,11 +3,15 @@ import { db } from "../../../db";
 import { member, user, clubMemberProfile, clubMemberTag, course, courseEnrollment } from "../../../db/schema";
 import type { MemberPricingProfile } from "./engine";
 import { resolveBirthDate } from "./resolve-birth-date";
+import { isEffectiveAdherent } from "../../club-member/lib/adherent";
 
 export interface MemberWithProfile {
   userId: string;
   name: string;
   email: string;
+  role: string;
+  /** Effective value: `clubMemberProfile.isAdherent ?? role === "member"`. */
+  isAdherent: boolean;
   profile: MemberPricingProfile;
 }
 
@@ -38,6 +42,7 @@ export async function loadOrgMemberProfiles(
         email: user.email,
         dateOfBirth: user.date_of_birth,
         memberSince: member.createdAt,
+        role: member.role,
       })
       .from(member)
       .innerJoin(user, eq(member.userId, user.id))
@@ -49,6 +54,7 @@ export async function loadOrgMemberProfiles(
         householdRank: clubMemberProfile.householdRank,
         communeInsee: clubMemberProfile.communeInsee,
         dateOfBirth: clubMemberProfile.dateOfBirth,
+        isAdherent: clubMemberProfile.isAdherent,
       })
       .from(clubMemberProfile)
       .where(eq(clubMemberProfile.organizationId, organizationId)),
@@ -89,6 +95,13 @@ export async function loadOrgMemberProfiles(
       isNew: m.memberSince >= seasonStart,
       registrationDate: toIsoDate(m.memberSince),
     };
-    return { userId: m.userId, name: m.name, email: m.email, profile };
+    return {
+      userId: m.userId,
+      name: m.name,
+      email: m.email,
+      role: m.role,
+      isAdherent: isEffectiveAdherent(clubProfile?.isAdherent, m.role),
+      profile,
+    };
   });
 }

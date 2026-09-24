@@ -93,7 +93,7 @@ export default function ClubAdminDashboardPage() {
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
-        <StatChip label="membres" value={String(data.stats.activeMembers)} />
+        <StatChip label="adhérents" value={String(data.stats.adherentCount)} />
         <StatChip label="courts actifs" value={String(data.stats.activeCourts)} />
         <StatChip label="occupation cette semaine" value={`${data.stats.occupancyPercent}%`} />
       </div>

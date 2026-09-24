@@ -1,0 +1,1 @@
+ALTER TABLE "club_member_profile" ADD COLUMN "is_adherent" boolean;

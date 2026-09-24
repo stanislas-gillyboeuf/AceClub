@@ -13,7 +13,7 @@ import { issueAllCotisationsValidator } from "../validators";
 
 const EMAIL_BATCH_SIZE = 5;
 
-/** "Émettre et envoyer à tous": issues every member who has no record yet and whose price can be
+/** "Émettre et envoyer à tous": issues every adherent who has no record yet and whose price can be
  * computed. Grid and profiles are loaded ONCE (not per member). Incomplete profiles are skipped
  * and reported; an email failure never blocks a record's creation. */
 export const issueAllCotisations = async (c: Context<HonoContext>) => {
@@ -60,8 +60,10 @@ export const issueAllCotisations = async (c: Context<HonoContext>) => {
   const skippedIncomplete: { userId: string; name: string; missingFields: string[] }[] = [];
   const toIssue: { userId: string; name: string; email: string; amountCents: number; breakdown: object }[] = [];
 
-  for (const { userId, name, email, profile } of profiles) {
+  for (const { userId, name, email, isAdherent, profile } of profiles) {
     if (alreadyIssued.has(userId)) continue;
+    // Owner/admin/coach don't pay unless explicitly flagged as adherents.
+    if (!isAdherent) continue;
     const breakdown = computeCotisation(snapshot, profile);
     if (breakdown.status === "incomplete") {
       skippedIncomplete.push({ userId, name, missingFields: breakdown.missingFields });

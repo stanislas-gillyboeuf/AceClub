@@ -55,6 +55,9 @@ export interface ClubMemberDetail {
     dateOfBirth: string | null
     // The editable club-level override on its own (null = not set, falls back to the account's).
     clubDateOfBirth: string | null
+    // Explicit override (null = follow the role) and the resulting effective value.
+    isAdherent: boolean | null
+    isAdherentEffective: boolean
     lastBookingAt: string | null
     secondarySport: string | null
     secondarySkillLevel: string | null
@@ -87,6 +90,7 @@ export interface UpdateClubMemberProfileInput {
   communeInsee?: string | null
   communeName?: string | null
   dateOfBirth?: string | null
+  isAdherent?: boolean | null
 }
 
 export interface ClubMemberNote {

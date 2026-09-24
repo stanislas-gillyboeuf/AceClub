@@ -133,6 +133,7 @@ export default function ClubMemberDetailPage() {
   const [communeInsee, setCommuneInsee] = useState<string | null>(null)
   const [communeName, setCommuneName] = useState<string | null>(null)
   const [dateOfBirth, setDateOfBirth] = useState("")
+  const [isAdherent, setIsAdherent] = useState<boolean | null>(null)
   const [tagIds, setTagIds] = useState<string[]>([])
   const [levelDialogOpen, setLevelDialogOpen] = useState(false)
 
@@ -149,6 +150,7 @@ export default function ClubMemberDetailPage() {
     setCommuneInsee(data.member.communeInsee)
     setCommuneName(data.member.communeName)
     setDateOfBirth(isIsoDate(data.member.clubDateOfBirth) ? data.member.clubDateOfBirth : "")
+    setIsAdherent(data.member.isAdherent)
     setTagIds(data.tagIds ?? [])
   }, [data])
 
@@ -189,6 +191,7 @@ export default function ClubMemberDetailPage() {
       communeInsee,
       communeName,
       dateOfBirth: dateOfBirth || null,
+      isAdherent,
     })
   }
 
@@ -435,6 +438,25 @@ export default function ClubMemberDetailPage() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="vip">VIP</Label>
                 <Switch id="vip" checked={isVip} onCheckedChange={setIsVip} disabled={!isFullAdmin} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Adhérent (paie une cotisation)</Label>
+                <Select
+                  value={isAdherent === null ? "auto" : isAdherent ? "yes" : "no"}
+                  onValueChange={(v) => setIsAdherent(v === "auto" ? null : v === "yes")}
+                  disabled={!isFullAdmin}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">
+                      Auto ({member.role === "member" ? "adhérent" : "non adhérent"} selon son rôle)
+                    </SelectItem>
+                    <SelectItem value="yes">Oui</SelectItem>
+                    <SelectItem value="no">Non</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <Label>Licencié dans un autre club</Label>

@@ -3,10 +3,11 @@ import { z } from "zod";
 import { and, count, desc, eq, gte, inArray, lt } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { course, court, courtBooking, duesAssignment, duesType, member, user } from "../../../db/schema";
+import { clubMemberProfile, course, court, courtBooking, duesAssignment, duesType, member, user } from "../../../db/schema";
 import { assertClubAdmin } from "../../../middleware/club-admin";
 import { getWeekBounds } from "../../court/lib/quota";
 import { getCourtSettings } from "../../court/lib/settings";
+import { effectiveAdherentSql } from "../../club-member/lib/adherent";
 import { getDashboardSummaryValidator } from "../validators";
 
 const DUES_DUE_SOON_WINDOW_DAYS = 30;
@@ -117,11 +118,16 @@ export const getHomeBoard = async (c: Context<HonoContext>) => {
       ),
     );
 
-  // --- Lightweight stats strip (members, active courts, occupancy this week) ---
-  const [activeMembersResult] = await db
+  // --- Lightweight stats strip (adherents, active courts, occupancy this week) ---
+  // Adherents = members who pay a cotisation (owner/admin/coach excluded unless flagged).
+  const [adherentCountResult] = await db
     .select({ count: count() })
     .from(member)
-    .where(eq(member.organizationId, validated.organizationId));
+    .leftJoin(
+      clubMemberProfile,
+      and(eq(clubMemberProfile.userId, member.userId), eq(clubMemberProfile.organizationId, member.organizationId)),
+    )
+    .where(and(eq(member.organizationId, validated.organizationId), effectiveAdherentSql));
 
   const openHoursPerCourtPerDay = Math.max(0, settings.closingHour - settings.openingHour);
   const openHoursPerDay = activeCourts.length * openHoursPerCourtPerDay;
@@ -216,7 +222,7 @@ export const getHomeBoard = async (c: Context<HonoContext>) => {
 
   return c.json({
     stats: {
-      activeMembers: activeMembersResult?.count ?? 0,
+      adherentCount: adherentCountResult?.count ?? 0,
       activeCourts: activeCourts.length,
       occupancyPercent,
     },

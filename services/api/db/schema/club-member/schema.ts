@@ -35,6 +35,9 @@ export const clubMemberProfile = pgTable(
     // Club-level override of user.date_of_birth ("YYYY-MM-DD"). Takes priority in the pricing
     // adapter so an admin can fix a wrong/legacy value without touching the user's own account.
     dateOfBirth: text("date_of_birth"),
+    // Whether this member pays a cotisation. null = not set: follow the role (only "member" pays,
+    // see server/club-member/lib/adherent.ts) — an admin/coach can be flagged as an adherent.
+    isAdherent: boolean("is_adherent"),
     // Superseded by clubMemberNote (timestamped, authored, append-only) but kept — dropping
     // a column is a destructive migration and any pre-existing content stays intact.
     notes: text("notes"),

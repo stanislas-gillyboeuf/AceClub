@@ -38,7 +38,7 @@ export interface OccupancyDay {
 }
 
 export interface HomeBoardStats {
-  activeMembers: number
+  adherentCount: number
   activeCourts: number
   occupancyPercent: number
 }

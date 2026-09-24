@@ -14,6 +14,7 @@ import {
 } from "../../../db/schema";
 import { assertClubAdmin } from "../../../middleware/club-admin";
 import { getClubMemberDetailValidator } from "../validators";
+import { isEffectiveAdherent } from "../lib/adherent";
 
 const BOOKING_HISTORY_LIMIT = 20;
 
@@ -39,6 +40,7 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
       userPhone: user.phoneNumber,
       userDateOfBirth: user.date_of_birth,
       clubDateOfBirth: clubMemberProfile.dateOfBirth,
+      isAdherent: clubMemberProfile.isAdherent,
       isGhost: user.is_ghost,
       licenseNumber: clubMemberProfile.licenseNumber,
       licenseValidUntil: clubMemberProfile.licenseValidUntil,
@@ -124,6 +126,7 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
       // Effective value (club override wins over the account's own); raw, so the UI can flag a
       // legacy non-ISO value. `clubDateOfBirth` is the editable club-level override itself.
       dateOfBirth: memberRow.clubDateOfBirth ?? userDateOfBirth,
+      isAdherentEffective: isEffectiveAdherent(memberRow.isAdherent, memberRow.role),
       lastBookingAt: lastBooking?.startAt ?? null,
     },
     bookings,

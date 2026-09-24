@@ -6,6 +6,9 @@ export interface MemberCotisation {
   userId: string
   name: string
   email: string
+  role: string
+  // Effective value (explicit flag ?? role === "member"): only adherents pay a cotisation.
+  isAdherent: boolean
   amountCents: number | null
   status: MemberCotisationStatus
   breakdown: Breakdown

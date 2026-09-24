@@ -55,13 +55,15 @@ export const listMemberCotisations = async (c: Context<HonoContext>) => {
   const memberProfiles = await loadOrgMemberProfiles(validated.organizationId, snapshot);
 
   const members = memberProfiles
-    .map(({ userId, name, email, profile }) => {
+    .map(({ userId, name, email, role, isAdherent, profile }) => {
       const record = recordByUserId.get(userId);
       if (record) {
         return {
           userId,
           name,
           email,
+          role,
+          isAdherent,
           amountCents: record.amountCents,
           status: record.status as MemberCotisationStatusView,
           breakdown: record.breakdownSnapshot as Breakdown,
@@ -73,6 +75,8 @@ export const listMemberCotisations = async (c: Context<HonoContext>) => {
         userId,
         name,
         email,
+        role,
+        isAdherent,
         amountCents: breakdown.status === "complete" ? breakdown.totalCents : null,
         status: "not_generated" as MemberCotisationStatusView,
         breakdown,
