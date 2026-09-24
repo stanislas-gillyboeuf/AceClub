@@ -1,4 +1,11 @@
 import { z } from "zod";
+import { isValidIsoDate } from "../pricing/lib/engine";
+
+// Stored as text and read by the pricing engine, which expects a real "YYYY-MM-DD" date.
+const isoDateOfBirthSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Date of birth must be in YYYY-MM-DD format")
+  .refine(isValidIsoDate, "Date of birth must be a real calendar date");
 
 export const listClubMembersValidator = z.object({
   organizationId: z.string().min(1, "Organization ID is required"),
@@ -75,7 +82,7 @@ const bulkImportRowValidator = z.object({
   phone: z.string().max(30).optional(),
   licenseNumber: z.string().max(50).optional(),
   licenseValidUntil: z.string().datetime().optional(),
-  dateOfBirth: z.string().optional(),
+  dateOfBirth: isoDateOfBirthSchema.optional(),
 });
 
 export const bulkImportValidator = z.object({

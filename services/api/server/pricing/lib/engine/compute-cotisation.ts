@@ -1,5 +1,6 @@
 import { resolveAgeCategory } from "./age-category";
 import { buildBaseLines } from "./base-lines";
+import { isValidIsoDate } from "./iso-date";
 import { applyCapAndFloorPerLine, roundTotal } from "./rounding";
 import { evaluateAndApplyRules } from "./rules";
 import type { Breakdown, MemberPricingProfile, TarifGridSnapshot } from "./types";
@@ -22,7 +23,9 @@ import type { Breakdown, MemberPricingProfile, TarifGridSnapshot } from "./types
  * 9. Round the total to the grid's configured increment (always down).
  */
 export function computeCotisation(grid: TarifGridSnapshot, profile: MemberPricingProfile): Breakdown {
-  if (profile.birthDate === undefined) {
+  // An unparseable date (e.g. "31/12/2010" saved raw by an old import) is treated exactly like a
+  // missing one — otherwise the age computes to NaN and surfaces as a misleading category error.
+  if (profile.birthDate === undefined || !isValidIsoDate(profile.birthDate)) {
     return { status: "incomplete", missingFields: ["birthDate"] };
   }
 

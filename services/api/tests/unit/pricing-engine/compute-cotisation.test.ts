@@ -324,6 +324,21 @@ describe("computeCotisation — 10 scenarios obligatoires (grille de test du cli
     expect("totalCents" in result).toBe(false);
   });
 
+  it.each([["31/12/2010"], ["2010-02-30"], [""], ["not a date"], ["2010-13-01"]])(
+    "7b. Date de naissance invalide (%j) → incomplete/birthDate, jamais no_matching_category",
+    (birthDate) => {
+      const result = computeCotisation(baseGrid(), { birthDate });
+
+      expect(result).toEqual({ status: "incomplete", missingFields: ["birthDate"] });
+    },
+  );
+
+  it("7c. Date de naissance ISO valide → calcul normal (inchangé)", () => {
+    const result = computeCotisation(baseGrid(), { birthDate: ADULT_BIRTH_DATE, licensedElsewhere: false, lessonsPerWeek: 0 });
+
+    expect(result.status).toBe("complete");
+  });
+
   describe("8. Âge frontière — né le 1er janvier ou le 31 décembre, testé avec chaque mode de référence", () => {
     function boundaryGrid(mode: TarifAgeReferenceMode): TarifGridSnapshot {
       return {

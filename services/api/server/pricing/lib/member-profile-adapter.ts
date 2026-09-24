@@ -1,7 +1,7 @@
 import { and, count, eq } from "drizzle-orm";
 import { db } from "../../../db";
 import { member, user, clubMemberProfile, clubMemberTag, course, courseEnrollment } from "../../../db/schema";
-import type { MemberPricingProfile } from "./engine";
+import { isValidIsoDate, type MemberPricingProfile } from "./engine";
 
 export interface MemberWithProfile {
   userId: string;
@@ -76,7 +76,9 @@ export async function loadOrgMemberProfiles(
   return members.map((m) => {
     const clubProfile = profileByUserId.get(m.userId);
     const profile: MemberPricingProfile = {
-      birthDate: m.dateOfBirth ?? undefined,
+      // A non-ISO value (legacy raw import such as "31/12/2010") is treated as unknown so the
+      // engine reports birthDate as missing instead of computing a nonsense age.
+      birthDate: m.dateOfBirth && isValidIsoDate(m.dateOfBirth) ? m.dateOfBirth : undefined,
       communeInsee: clubProfile?.communeInsee ?? undefined,
       householdRank: clubProfile?.householdRank ?? undefined,
       lessonsPerWeek: lessonsByUserId.get(m.userId) ?? 0,

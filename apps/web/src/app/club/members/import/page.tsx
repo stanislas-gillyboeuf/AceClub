@@ -64,6 +64,7 @@ export default function ClubMembersImportPage() {
   const mappedRows = useMemo(() => mapClubMemberImportRows(rawRows, mapping), [rawRows, mapping])
   const validRows = mappedRows.filter((r): r is { row: BulkImportRow } => r.row !== null)
   const invalidRows = mappedRows.filter((r) => r.row === null)
+  const warningCount = mappedRows.filter((r) => r.warnings?.length).length
 
   const hasEmailMapped = Object.values(mapping).includes("email")
   const hasNameMapped = Object.values(mapping).includes("name")
@@ -170,6 +171,9 @@ export default function ClubMembersImportPage() {
               {invalidRows.length > 0 ? (
                 <Badge variant="destructive">{invalidRows.length} ligne(s) ignorée(s)</Badge>
               ) : null}
+              {warningCount > 0 ? (
+                <Badge variant="secondary">{warningCount} ligne(s) avec une date de naissance non importée</Badge>
+              ) : null}
             </div>
 
             <div className="max-h-96 overflow-auto rounded-md border">
@@ -180,6 +184,7 @@ export default function ClubMembersImportPage() {
                     <TableHead>Email</TableHead>
                     <TableHead>Téléphone</TableHead>
                     <TableHead>Licence</TableHead>
+                    <TableHead>Naissance</TableHead>
                     <TableHead>Statut</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -190,9 +195,21 @@ export default function ClubMembersImportPage() {
                       <TableCell>{mappedRow.row?.email ?? "—"}</TableCell>
                       <TableCell>{mappedRow.row?.phone ?? "—"}</TableCell>
                       <TableCell>{mappedRow.row?.licenseNumber ?? "—"}</TableCell>
+                      <TableCell>{mappedRow.row?.dateOfBirth ?? "—"}</TableCell>
                       <TableCell>
                         {mappedRow.row ? (
-                          <Badge variant="outline">OK</Badge>
+                          mappedRow.warnings?.length ? (
+                            <div className="space-y-1">
+                              <Badge variant="outline">OK</Badge>
+                              {mappedRow.warnings.map((warning) => (
+                                <p key={warning} className="text-xs text-amber-700">
+                                  {warning}
+                                </p>
+                              ))}
+                            </div>
+                          ) : (
+                            <Badge variant="outline">OK</Badge>
+                          )
                         ) : (
                           <Badge variant="destructive">{mappedRow.reason}</Badge>
                         )}
