@@ -59,6 +59,12 @@ const STATUS_STYLES: Record<MemberCotisationStatus, string> = {
   waived: "",
 }
 
+const HOUSEHOLD_RANK_SOURCE_LABELS = {
+  computed: "calculé",
+  frozen: "figé",
+  override: "forcé",
+} as const
+
 function errorMessage(error: unknown): string | null {
   return error instanceof Error ? error.message : null
 }
@@ -129,6 +135,17 @@ export function MemberCotisationTabContent() {
           <TableCell>
             <div className="font-medium">{m.name}</div>
             <div className="text-xs text-muted-foreground">{m.email}</div>
+            {m.householdName ? (
+              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                <span>Foyer {m.householdName}</span>
+                {m.householdRank !== null ? (
+                  <Badge variant="secondary" className="px-1.5 py-0 text-[10px] font-normal">
+                    {m.householdRank === 1 ? "1er" : `${m.householdRank}e`}
+                    {m.householdRankSource ? ` · ${HOUSEHOLD_RANK_SOURCE_LABELS[m.householdRankSource]}` : ""}
+                  </Badge>
+                ) : null}
+              </div>
+            ) : null}
           </TableCell>
           <TableCell>
             {incomplete && m.amountCents === null ? (

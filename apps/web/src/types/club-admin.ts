@@ -67,6 +67,7 @@ export interface ClubMemberDetail {
     // from false/0 (see services/api/server/pricing/lib/member-profile-adapter.ts).
     licensedElsewhere: boolean | null
     householdRank: number | null
+    householdId: string | null
     communeInsee: string | null
     communeName: string | null
   }

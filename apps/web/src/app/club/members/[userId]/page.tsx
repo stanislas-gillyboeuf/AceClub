@@ -43,6 +43,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { VerifiedBadge } from "@/components/ui/verified-badge"
+import { MemberHouseholdCard } from "@/components/custom/member-household-card"
 import { MemberNotesCard } from "@/components/custom/member-notes-card"
 import { SetMemberLevelDialog } from "@/components/custom/set-member-level-dialog"
 import { TarifRuleCommunePicker } from "@/components/custom/tarif-grid/tarif-rule-commune-picker"
@@ -496,7 +497,7 @@ export default function ClubMemberDetailPage() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Rang dans le foyer</Label>
+                <Label>Rang forcé (optionnel)</Label>
                 <Select
                   value={householdRank === null ? "unknown" : String(householdRank)}
                   onValueChange={(v) => setHouseholdRank(v === "unknown" ? null : Number(v))}
@@ -506,7 +507,7 @@ export default function ClubMemberDetailPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unknown">Non renseigné</SelectItem>
+                    <SelectItem value="unknown">Automatique</SelectItem>
                     <SelectItem value="1">1er</SelectItem>
                     <SelectItem value="2">2e</SelectItem>
                     <SelectItem value="3">3e</SelectItem>
@@ -537,6 +538,13 @@ export default function ClubMemberDetailPage() {
               ) : null}
             </CardContent>
           </Card>
+
+          <MemberHouseholdCard
+            organizationId={organizationId}
+            userId={member.userId}
+            householdId={data.member.householdId}
+            isFullAdmin={isFullAdmin}
+          />
 
           <Card>
             <CardHeader>

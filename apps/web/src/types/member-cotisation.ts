@@ -1,4 +1,5 @@
 import type { Breakdown } from "./tarif-grid"
+import type { HouseholdRankSource } from "./household"
 
 export type MemberCotisationStatus = "not_generated" | "pending" | "paid" | "waived"
 
@@ -13,6 +14,12 @@ export interface MemberCotisation {
   status: MemberCotisationStatus
   breakdown: Breakdown
   recordId: string | null
+  householdId: string | null
+  householdName: string | null
+  // Family rank that priced this member; the source says whether it was forced by an admin,
+  // frozen when the cotisation was issued, or computed from the household's prices.
+  householdRank: number | null
+  householdRankSource: HouseholdRankSource | null
 }
 
 export interface ListMemberCotisationsResponse {
