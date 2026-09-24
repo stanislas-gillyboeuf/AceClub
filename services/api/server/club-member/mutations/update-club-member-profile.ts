@@ -43,6 +43,7 @@ export const updateClubMemberProfile = async (c: Context<HonoContext>) => {
   if ("communeName" in validated) values.communeName = validated.communeName;
   if ("dateOfBirth" in validated) values.dateOfBirth = validated.dateOfBirth;
   if ("isAdherent" in validated) values.isAdherent = validated.isAdherent;
+  if ("isNewMember" in validated) values.isNewMember = validated.isNewMember;
 
   const [profile] = await db
     .insert(clubMemberProfile)

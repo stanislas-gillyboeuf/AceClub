@@ -58,6 +58,8 @@ export interface ClubMemberDetail {
     // Explicit override (null = follow the role) and the resulting effective value.
     isAdherent: boolean | null
     isAdherentEffective: boolean
+    // Explicit "new member" flag (null = auto: joined after the season started).
+    isNewMember: boolean | null
     lastBookingAt: string | null
     secondarySport: string | null
     secondarySkillLevel: string | null
@@ -91,6 +93,7 @@ export interface UpdateClubMemberProfileInput {
   communeName?: string | null
   dateOfBirth?: string | null
   isAdherent?: boolean | null
+  isNewMember?: boolean | null
 }
 
 export interface ClubMemberNote {

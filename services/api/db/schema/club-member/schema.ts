@@ -38,6 +38,9 @@ export const clubMemberProfile = pgTable(
     // Whether this member pays a cotisation. null = not set: follow the role (only "member" pays,
     // see server/club-member/lib/adherent.ts) — an admin/coach can be flagged as an adherent.
     isAdherent: boolean("is_adherent"),
+    // Explicit "new member" (pays the entry fee) vs "existing". null = not set: the pricing adapter
+    // falls back to "joined after the season started" (server/pricing/lib/resolve-is-new.ts).
+    isNewMember: boolean("is_new_member"),
     // Superseded by clubMemberNote (timestamped, authored, append-only) but kept — dropping
     // a column is a destructive migration and any pre-existing content stays intact.
     notes: text("notes"),

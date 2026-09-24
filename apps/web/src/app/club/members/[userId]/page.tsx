@@ -134,6 +134,7 @@ export default function ClubMemberDetailPage() {
   const [communeName, setCommuneName] = useState<string | null>(null)
   const [dateOfBirth, setDateOfBirth] = useState("")
   const [isAdherent, setIsAdherent] = useState<boolean | null>(null)
+  const [isNewMember, setIsNewMember] = useState<boolean | null>(null)
   const [tagIds, setTagIds] = useState<string[]>([])
   const [levelDialogOpen, setLevelDialogOpen] = useState(false)
 
@@ -151,6 +152,7 @@ export default function ClubMemberDetailPage() {
     setCommuneName(data.member.communeName)
     setDateOfBirth(isIsoDate(data.member.clubDateOfBirth) ? data.member.clubDateOfBirth : "")
     setIsAdherent(data.member.isAdherent)
+    setIsNewMember(data.member.isNewMember)
     setTagIds(data.tagIds ?? [])
   }, [data])
 
@@ -192,6 +194,7 @@ export default function ClubMemberDetailPage() {
       communeName,
       dateOfBirth: dateOfBirth || null,
       isAdherent,
+      isNewMember,
     })
   }
 
@@ -455,6 +458,23 @@ export default function ClubMemberDetailPage() {
                     </SelectItem>
                     <SelectItem value="yes">Oui</SelectItem>
                     <SelectItem value="no">Non</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Nouvel adhérent (droit d&apos;entrée)</Label>
+                <Select
+                  value={isNewMember === null ? "auto" : isNewMember ? "new" : "existing"}
+                  onValueChange={(v) => setIsNewMember(v === "auto" ? null : v === "new")}
+                  disabled={!isFullAdmin}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">Auto (inscrit après le début de la saison = nouveau)</SelectItem>
+                    <SelectItem value="new">Nouveau</SelectItem>
+                    <SelectItem value="existing">Existant</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

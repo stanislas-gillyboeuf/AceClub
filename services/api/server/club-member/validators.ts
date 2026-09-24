@@ -37,6 +37,7 @@ export const updateClubMemberProfileValidator = z.object({
   communeName: z.string().min(1).nullable().optional(),
   dateOfBirth: isoDateOfBirthSchema.nullable().optional(),
   isAdherent: z.boolean().nullable().optional(),
+  isNewMember: z.boolean().nullable().optional(),
 });
 
 export const addMemberValidator = z.object({
@@ -90,4 +91,7 @@ const bulkImportRowValidator = z.object({
 export const bulkImportValidator = z.object({
   organizationId: z.string().min(1, "Organization ID is required"),
   rows: z.array(bulkImportRowValidator).min(1).max(500),
+  // Whether the imported people are new members (pay the entry fee) or an existing base. Only
+  // applied to members CREATED by this import, never to ones already in the club.
+  isNewMember: z.boolean().optional(),
 });

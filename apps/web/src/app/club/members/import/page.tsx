@@ -37,6 +37,8 @@ export default function ClubMembersImportPage() {
   const bulkImport = useBulkImportClubMembers()
 
   const [step, setStep] = useState<1 | 2 | 3>(1)
+  // Existing base by default: imported members must not all pay the entry fee as "new".
+  const [memberKind, setMemberKind] = useState<"existing" | "new">("existing")
   const [fileName, setFileName] = useState("")
   const [headers, setHeaders] = useState<string[]>([])
   const [rawRows, setRawRows] = useState<Record<string, string>[]>([])
@@ -73,6 +75,7 @@ export default function ClubMembersImportPage() {
     const response = await bulkImport.mutateAsync({
       organizationId,
       rows: validRows.map((r) => r.row),
+      isNewMember: memberKind === "new",
     })
     setResult({
       created: response.created,
@@ -174,6 +177,22 @@ export default function ClubMembersImportPage() {
               {warningCount > 0 ? (
                 <Badge variant="secondary">{warningCount} ligne(s) avec une date de naissance non importée</Badge>
               ) : null}
+            </div>
+
+            <div className="mb-4 max-w-sm space-y-1.5">
+              <Label>Ces personnes sont…</Label>
+              <Select value={memberKind} onValueChange={(v) => setMemberKind(v as "existing" | "new")}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="existing">Des adhérents existants (déjà inscrits au club)</SelectItem>
+                  <SelectItem value="new">Des nouveaux adhérents (paient le droit d&apos;entrée)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Appliqué uniquement aux personnes créées par cet import.
+              </p>
             </div>
 
             <div className="max-h-96 overflow-auto rounded-md border">

@@ -3,6 +3,7 @@ import { db } from "../../../db";
 import { member, user, clubMemberProfile, clubMemberTag, course, courseEnrollment } from "../../../db/schema";
 import type { MemberPricingProfile } from "./engine";
 import { resolveBirthDate } from "./resolve-birth-date";
+import { resolveIsNew } from "./resolve-is-new";
 import { isEffectiveAdherent } from "../../club-member/lib/adherent";
 
 export interface MemberWithProfile {
@@ -55,6 +56,7 @@ export async function loadOrgMemberProfiles(
         communeInsee: clubMemberProfile.communeInsee,
         dateOfBirth: clubMemberProfile.dateOfBirth,
         isAdherent: clubMemberProfile.isAdherent,
+        isNewMember: clubMemberProfile.isNewMember,
       })
       .from(clubMemberProfile)
       .where(eq(clubMemberProfile.organizationId, organizationId)),
@@ -90,9 +92,8 @@ export async function loadOrgMemberProfiles(
       lessonsPerWeek: lessonsByUserId.get(m.userId) ?? 0,
       licensedElsewhere: clubProfile?.licensedElsewhere ?? undefined,
       tags: tagsByUserId.get(m.userId) ?? [],
-      // Heuristic: "new" means this membership started after the grid's season began. No
-      // separate "renewal" flag exists — a member who joined in a prior season is a renewal.
-      isNew: m.memberSince >= seasonStart,
+      // Explicit flag first; otherwise "new" = the membership started after the season began.
+      isNew: resolveIsNew(clubProfile?.isNewMember, m.memberSince, seasonStart),
       registrationDate: toIsoDate(m.memberSince),
     };
     return {

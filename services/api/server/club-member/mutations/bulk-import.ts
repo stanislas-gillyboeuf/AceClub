@@ -67,6 +67,7 @@ export const bulkImport = async (c: Context<HonoContext>) => {
         .where(and(eq(member.organizationId, validated.organizationId), eq(member.userId, userId)))
         .limit(1);
 
+      const memberCreatedNow = !existingMember;
       if (!existingMember) {
         await tx.insert(member).values({
           id: ulid(),
@@ -95,6 +96,23 @@ export const bulkImport = async (c: Context<HonoContext>) => {
               licenseValidUntil: row.licenseValidUntil ? new Date(row.licenseValidUntil) : null,
               phoneOverride: row.phone ?? null,
             },
+          });
+      }
+
+      // Only for members created by THIS import: a re-import must not overwrite a value an admin
+      // set by hand. Touches isNewMember alone, never the license/phone columns.
+      if (memberCreatedNow && validated.isNewMember !== undefined) {
+        await tx
+          .insert(clubMemberProfile)
+          .values({
+            id: ulid(),
+            userId,
+            organizationId: validated.organizationId,
+            isNewMember: validated.isNewMember,
+          })
+          .onConflictDoUpdate({
+            target: [clubMemberProfile.userId, clubMemberProfile.organizationId],
+            set: { isNewMember: validated.isNewMember },
           });
       }
     }

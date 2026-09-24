@@ -41,6 +41,7 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
       userDateOfBirth: user.date_of_birth,
       clubDateOfBirth: clubMemberProfile.dateOfBirth,
       isAdherent: clubMemberProfile.isAdherent,
+      isNewMember: clubMemberProfile.isNewMember,
       isGhost: user.is_ghost,
       licenseNumber: clubMemberProfile.licenseNumber,
       licenseValidUntil: clubMemberProfile.licenseValidUntil,

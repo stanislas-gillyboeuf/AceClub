@@ -42,7 +42,7 @@ export function useUpdateMemberRole() {
 export function useBulkImportClubMembers() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (data: { organizationId: string; rows: BulkImportRow[] }) =>
+    mutationFn: (data: { organizationId: string; rows: BulkImportRow[]; isNewMember?: boolean }) =>
       apiClient<BulkImportResult>("/club-member/bulk-import", {
         method: "POST",
         body: JSON.stringify(data),
