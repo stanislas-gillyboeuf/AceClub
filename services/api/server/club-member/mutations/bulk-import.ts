@@ -7,6 +7,7 @@ import { db } from "../../../db";
 import { user, member, clubMemberProfile } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { bulkImportValidator } from "../validators";
+import { buildImportProfileValues } from "../lib/import-profile";
 
 export const bulkImport = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -78,24 +79,19 @@ export const bulkImport = async (c: Context<HonoContext>) => {
         });
       }
 
-      if (row.licenseNumber || row.licenseValidUntil || row.phone) {
+      const profileValues = buildImportProfileValues(row);
+      if (Object.keys(profileValues).length > 0) {
         await tx
           .insert(clubMemberProfile)
           .values({
             id: ulid(),
             userId,
             organizationId: validated.organizationId,
-            licenseNumber: row.licenseNumber ?? null,
-            licenseValidUntil: row.licenseValidUntil ? new Date(row.licenseValidUntil) : null,
-            phoneOverride: row.phone ?? null,
+            ...profileValues,
           })
           .onConflictDoUpdate({
             target: [clubMemberProfile.userId, clubMemberProfile.organizationId],
-            set: {
-              licenseNumber: row.licenseNumber ?? null,
-              licenseValidUntil: row.licenseValidUntil ? new Date(row.licenseValidUntil) : null,
-              phoneOverride: row.phone ?? null,
-            },
+            set: profileValues,
           });
       }
 
