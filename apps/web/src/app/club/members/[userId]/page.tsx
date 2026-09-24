@@ -88,10 +88,17 @@ function getInitials(name: string) {
   return name.split(" ").filter(Boolean).slice(0, 2).map((n) => n[0]).join("").toUpperCase()
 }
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
+
+// Only a real "YYYY-MM-DD" is trusted: a legacy raw value such as "31/12/2010" (old CSV import)
+// must not be parsed by `new Date` (US month/day reading) and never yield an age like NaN.
+function isIsoDate(value: string | null | undefined): value is string {
+  return !!value && ISO_DATE.test(value) && !isNaN(new Date(value).getTime())
+}
+
 function computeAge(dateOfBirth: string | null): number | null {
-  if (!dateOfBirth) return null
+  if (!isIsoDate(dateOfBirth)) return null
   const dob = new Date(dateOfBirth)
-  if (isNaN(dob.getTime())) return null
   const now = new Date()
   let age = now.getFullYear() - dob.getFullYear()
   const monthDiff = now.getMonth() - dob.getMonth()
@@ -125,6 +132,7 @@ export default function ClubMemberDetailPage() {
   const [householdRank, setHouseholdRank] = useState<number | null>(null)
   const [communeInsee, setCommuneInsee] = useState<string | null>(null)
   const [communeName, setCommuneName] = useState<string | null>(null)
+  const [dateOfBirth, setDateOfBirth] = useState("")
   const [tagIds, setTagIds] = useState<string[]>([])
   const [levelDialogOpen, setLevelDialogOpen] = useState(false)
 
@@ -140,6 +148,7 @@ export default function ClubMemberDetailPage() {
     setHouseholdRank(data.member.householdRank)
     setCommuneInsee(data.member.communeInsee)
     setCommuneName(data.member.communeName)
+    setDateOfBirth(isIsoDate(data.member.clubDateOfBirth) ? data.member.clubDateOfBirth : "")
     setTagIds(data.tagIds ?? [])
   }, [data])
 
@@ -179,6 +188,7 @@ export default function ClubMemberDetailPage() {
       householdRank,
       communeInsee,
       communeName,
+      dateOfBirth: dateOfBirth || null,
     })
   }
 
@@ -352,6 +362,22 @@ export default function ClubMemberDetailPage() {
               <CardTitle>Dossier club</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="dateOfBirth">Date de naissance</Label>
+                <Input
+                  id="dateOfBirth"
+                  type="date"
+                  value={dateOfBirth}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  disabled={!isFullAdmin}
+                />
+                {!dateOfBirth && member.dateOfBirth && !isIsoDate(member.dateOfBirth) ? (
+                  <p className="text-xs text-amber-700">
+                    La date enregistrée sur le compte (« {member.dateOfBirth} ») n&apos;est pas exploitable :
+                    saisissez-la ici.
+                  </p>
+                ) : null}
+              </div>
               <div className="space-y-1.5">
                 <Label htmlFor="license" className="flex items-center gap-1.5">
                   <IdCard className="h-3.5 w-3.5" />

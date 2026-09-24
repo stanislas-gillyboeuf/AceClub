@@ -32,6 +32,9 @@ export const clubMemberProfile = pgTable(
     householdRank: integer("household_rank"), // 1st, 2nd, 3rd... of the household — manual entry, no real household model in DB yet
     communeInsee: text("commune_insee"),
     communeName: text("commune_name"), // kept alongside the code so the UI never has to re-resolve it
+    // Club-level override of user.date_of_birth ("YYYY-MM-DD"). Takes priority in the pricing
+    // adapter so an admin can fix a wrong/legacy value without touching the user's own account.
+    dateOfBirth: text("date_of_birth"),
     // Superseded by clubMemberNote (timestamped, authored, append-only) but kept — dropping
     // a column is a destructive migration and any pre-existing content stays intact.
     notes: text("notes"),

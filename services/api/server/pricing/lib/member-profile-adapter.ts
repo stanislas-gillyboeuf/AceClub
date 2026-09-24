@@ -1,7 +1,8 @@
 import { and, count, eq } from "drizzle-orm";
 import { db } from "../../../db";
 import { member, user, clubMemberProfile, clubMemberTag, course, courseEnrollment } from "../../../db/schema";
-import { isValidIsoDate, type MemberPricingProfile } from "./engine";
+import type { MemberPricingProfile } from "./engine";
+import { resolveBirthDate } from "./resolve-birth-date";
 
 export interface MemberWithProfile {
   userId: string;
@@ -47,6 +48,7 @@ export async function loadOrgMemberProfiles(
         licensedElsewhere: clubMemberProfile.licensedElsewhere,
         householdRank: clubMemberProfile.householdRank,
         communeInsee: clubMemberProfile.communeInsee,
+        dateOfBirth: clubMemberProfile.dateOfBirth,
       })
       .from(clubMemberProfile)
       .where(eq(clubMemberProfile.organizationId, organizationId)),
@@ -76,9 +78,7 @@ export async function loadOrgMemberProfiles(
   return members.map((m) => {
     const clubProfile = profileByUserId.get(m.userId);
     const profile: MemberPricingProfile = {
-      // A non-ISO value (legacy raw import such as "31/12/2010") is treated as unknown so the
-      // engine reports birthDate as missing instead of computing a nonsense age.
-      birthDate: m.dateOfBirth && isValidIsoDate(m.dateOfBirth) ? m.dateOfBirth : undefined,
+      birthDate: resolveBirthDate(clubProfile?.dateOfBirth, m.dateOfBirth),
       communeInsee: clubProfile?.communeInsee ?? undefined,
       householdRank: clubProfile?.householdRank ?? undefined,
       lessonsPerWeek: lessonsByUserId.get(m.userId) ?? 0,

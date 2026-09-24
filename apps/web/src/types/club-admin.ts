@@ -51,7 +51,10 @@ export interface ClubMemberDetail {
     phoneOverride: string | null
     notes: string | null
     city: string | null
+    // Effective value (club override ?? account value), raw so a legacy non-ISO value can be flagged.
     dateOfBirth: string | null
+    // The editable club-level override on its own (null = not set, falls back to the account's).
+    clubDateOfBirth: string | null
     lastBookingAt: string | null
     secondarySport: string | null
     secondarySkillLevel: string | null
@@ -83,6 +86,7 @@ export interface UpdateClubMemberProfileInput {
   householdRank?: number | null
   communeInsee?: string | null
   communeName?: string | null
+  dateOfBirth?: string | null
 }
 
 export interface ClubMemberNote {

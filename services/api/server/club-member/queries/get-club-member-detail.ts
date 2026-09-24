@@ -37,7 +37,8 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
       userEmail: user.email,
       userImage: user.image,
       userPhone: user.phoneNumber,
-      dateOfBirth: user.date_of_birth,
+      userDateOfBirth: user.date_of_birth,
+      clubDateOfBirth: clubMemberProfile.dateOfBirth,
       isGhost: user.is_ghost,
       licenseNumber: clubMemberProfile.licenseNumber,
       licenseValidUntil: clubMemberProfile.licenseValidUntil,
@@ -115,8 +116,16 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
       ),
   ]);
 
+  const { userDateOfBirth, ...memberFields } = memberRow;
+
   return c.json({
-    member: { ...memberRow, lastBookingAt: lastBooking?.startAt ?? null },
+    member: {
+      ...memberFields,
+      // Effective value (club override wins over the account's own); raw, so the UI can flag a
+      // legacy non-ISO value. `clubDateOfBirth` is the editable club-level override itself.
+      dateOfBirth: memberRow.clubDateOfBirth ?? userDateOfBirth,
+      lastBookingAt: lastBooking?.startAt ?? null,
+    },
     bookings,
     cancelledBookingCount: cancelledResult?.count ?? 0,
     tagIds: tagRows.map((t) => t.tagId),

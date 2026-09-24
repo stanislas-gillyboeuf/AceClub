@@ -1,0 +1,1 @@
+ALTER TABLE "club_member_profile" ADD COLUMN "date_of_birth" text;

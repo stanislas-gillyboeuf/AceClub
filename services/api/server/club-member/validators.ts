@@ -35,6 +35,7 @@ export const updateClubMemberProfileValidator = z.object({
   householdRank: z.number().int().min(1).max(10).nullable().optional(),
   communeInsee: z.string().min(1).nullable().optional(),
   communeName: z.string().min(1).nullable().optional(),
+  dateOfBirth: isoDateOfBirthSchema.nullable().optional(),
 });
 
 export const addMemberValidator = z.object({
