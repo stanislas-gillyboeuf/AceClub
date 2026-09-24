@@ -55,10 +55,17 @@ export const issueAllCotisations = async (c: Context<HonoContext>) => {
     db.select({ name: organization.name }).from(organization).where(eq(organization.id, validated.organizationId)).limit(1),
   ]);
   const alreadyIssued = new Set(existing.map((r) => r.userId));
-  const profiles = await loadOrgMemberProfiles(validated.organizationId, snapshot);
+  const profiles = await loadOrgMemberProfiles(validated.organizationId, snapshot, validated.seasonLabel);
 
   const skippedIncomplete: { userId: string; name: string; missingFields: string[] }[] = [];
-  const toIssue: { userId: string; name: string; email: string; amountCents: number; breakdown: object }[] = [];
+  const toIssue: {
+    userId: string;
+    name: string;
+    email: string;
+    amountCents: number;
+    breakdown: object;
+    householdRank: number | null;
+  }[] = [];
 
   for (const { userId, name, email, isAdherent, profile } of profiles) {
     if (alreadyIssued.has(userId)) continue;
@@ -69,7 +76,14 @@ export const issueAllCotisations = async (c: Context<HonoContext>) => {
       skippedIncomplete.push({ userId, name, missingFields: breakdown.missingFields });
       continue;
     }
-    toIssue.push({ userId, name, email, amountCents: breakdown.totalCents, breakdown });
+    toIssue.push({
+      userId,
+      name,
+      email,
+      amountCents: breakdown.totalCents,
+      breakdown,
+      householdRank: profile.householdRank ?? null,
+    });
   }
 
   const now = new Date();
@@ -85,6 +99,7 @@ export const issueAllCotisations = async (c: Context<HonoContext>) => {
             amountCents: m.amountCents,
             breakdownSnapshot: m.breakdown,
             status: "pending" as const,
+            householdRankFrozen: m.householdRank,
             issuedAt: now,
           })),
         )

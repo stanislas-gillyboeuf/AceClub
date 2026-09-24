@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { clubMemberProfile, clubMemberNote } from "./schema";
+import { clubMemberProfile, clubMemberNote, household } from "./schema";
 import { organization, user } from "../auth/schema";
 
 export const clubMemberProfileRelations = relations(clubMemberProfile, ({ one }) => ({
@@ -11,6 +11,22 @@ export const clubMemberProfileRelations = relations(clubMemberProfile, ({ one })
     fields: [clubMemberProfile.organizationId],
     references: [organization.id],
   }),
+  household: one(household, {
+    fields: [clubMemberProfile.householdId],
+    references: [household.id],
+  }),
+}));
+
+export const householdRelations = relations(household, ({ one, many }) => ({
+  organization: one(organization, {
+    fields: [household.organizationId],
+    references: [organization.id],
+  }),
+  payer: one(user, {
+    fields: [household.payerUserId],
+    references: [user.id],
+  }),
+  memberProfiles: many(clubMemberProfile),
 }));
 
 export const clubMemberNoteRelations = relations(clubMemberNote, ({ one }) => ({

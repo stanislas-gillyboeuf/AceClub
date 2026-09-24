@@ -3,6 +3,33 @@ import { ulid } from "ulid";
 import { organization, user } from "../auth/schema";
 
 /**
+ * A family/household within one club. Ranks for the "family discount" rules are COMPUTED from the
+ * household's members (server/pricing/lib/household-rank.ts), not typed in. `payerUserId` is the
+ * member who pays for the household; `contactEmail` is where the club writes to when a child has
+ * no email of their own.
+ */
+export const household = pgTable(
+  "household",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    payerUserId: text("payer_user_id").references(() => user.id, { onDelete: "set null" }),
+    contactEmail: text("contact_email"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("household_organizationId_idx").on(table.organizationId)],
+);
+
+/**
  * Per-club profile data for a member — a user can have a different license
  * number/phone per club, matching the multi-org membership model already in
  * place for `member`/`user_preference`.
@@ -29,7 +56,10 @@ export const clubMemberProfile = pgTable(
     // default — null means "not yet entered by an admin", not "false"/"none", so the engine can
     // tell the two apart and surface a clear "missing data" state instead of guessing.
     licensedElsewhere: boolean("licensed_elsewhere"),
-    householdRank: integer("household_rank"), // 1st, 2nd, 3rd... of the household — manual entry, no real household model in DB yet
+    // Manual OVERRIDE of the computed family rank (1st, 2nd, 3rd...). null = automatic: the rank is
+    // computed from `householdId` in server/pricing/lib/household-rank.ts.
+    householdRank: integer("household_rank"),
+    householdId: text("household_id").references(() => household.id, { onDelete: "set null" }),
     communeInsee: text("commune_insee"),
     communeName: text("commune_name"), // kept alongside the code so the UI never has to re-resolve it
     // Club-level override of user.date_of_birth ("YYYY-MM-DD"). Takes priority in the pricing
@@ -56,6 +86,7 @@ export const clubMemberProfile = pgTable(
       table.organizationId,
     ),
     index("club_member_profile_organizationId_idx").on(table.organizationId),
+    index("club_member_profile_householdId_idx").on(table.householdId),
   ],
 );
 

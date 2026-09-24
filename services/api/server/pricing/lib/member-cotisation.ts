@@ -7,7 +7,14 @@ import { buildGridSnapshot } from "./snapshot";
 import { loadOrgMemberProfiles } from "./member-profile-adapter";
 
 export type ComputeMemberBreakdownResult =
-  | { gridId: string; breakdown: Breakdown; memberName: string; memberEmail: string }
+  | {
+      gridId: string;
+      breakdown: Breakdown;
+      memberName: string;
+      memberEmail: string;
+      /** The family rank the price was computed with — frozen alongside the amount. */
+      householdRank: number | null;
+    }
   | { error: "no_active_grid" | "member_not_found" };
 
 /** Live-computes one member's breakdown against the org's active grid for a season — never
@@ -34,12 +41,18 @@ export async function computeMemberBreakdown(
   if (!grid) return { error: "no_active_grid" };
 
   const snapshot = await buildGridSnapshot(grid.id);
-  const members = await loadOrgMemberProfiles(organizationId, snapshot);
+  const members = await loadOrgMemberProfiles(organizationId, snapshot, seasonLabel);
   const found = members.find((m) => m.userId === userId);
   if (!found) return { error: "member_not_found" };
 
   const breakdown = computeCotisation(snapshot, found.profile);
-  return { gridId: grid.id, breakdown, memberName: found.name, memberEmail: found.email };
+  return {
+    gridId: grid.id,
+    breakdown,
+    memberName: found.name,
+    memberEmail: found.email,
+    householdRank: found.profile.householdRank ?? null,
+  };
 }
 
 export type EnsureMemberCotisationResult =
@@ -75,7 +88,7 @@ export async function ensureMemberCotisationRecord(
   const result = await computeMemberBreakdown(organizationId, userId, seasonLabel);
   if ("error" in result) return result;
 
-  const { gridId, breakdown } = result;
+  const { gridId, breakdown, householdRank } = result;
   if (breakdown.status === "incomplete") {
     return { error: "incomplete", missingFields: breakdown.missingFields };
   }
@@ -92,6 +105,7 @@ export async function ensureMemberCotisationRecord(
       amountCents: breakdown.totalCents,
       breakdownSnapshot: breakdown,
       status: "pending",
+      householdRankFrozen: householdRank,
       issuedAt: options.issue ? new Date() : null,
     })
     .onConflictDoNothing()

@@ -285,6 +285,9 @@ export const memberCotisation = pgTable(
     // Set when the cotisation is formally issued to the member ("Émettre"). Null for records
     // created implicitly by "mark paid"/"waive" — readers use `issuedAt ?? createdAt`.
     issuedAt: timestamp("issued_at"),
+    // The family rank used when this cotisation was frozen (see server/pricing/lib/household-rank.ts).
+    // Kept so later ranks of siblings never reshuffle an already-issued cotisation.
+    householdRankFrozen: integer("household_rank_frozen"),
     paidAt: timestamp("paid_at"),
     paidMethod: text("paid_method"),
     notes: text("notes"),

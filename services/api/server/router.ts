@@ -25,6 +25,7 @@ import { tournamentRouter } from "./tournament/router";
 import { clubLevelRouter } from "./club-level/router";
 import { clubTagRouter } from "./club-tag/router";
 import { pricingRouter } from "./pricing/router";
+import { householdRouter } from "./household/router";
 
 export const serverRouter = new Hono();
 
@@ -54,3 +55,4 @@ serverRouter.route("/tournament", tournamentRouter);
 serverRouter.route("/club-level", clubLevelRouter);
 serverRouter.route("/club-tag", clubTagRouter);
 serverRouter.route("/pricing", pricingRouter);
+serverRouter.route("/household", householdRouter);

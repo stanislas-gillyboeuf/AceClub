@@ -52,6 +52,7 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
       isVip: clubMemberProfile.isVip,
       licensedElsewhere: clubMemberProfile.licensedElsewhere,
       householdRank: clubMemberProfile.householdRank,
+      householdId: clubMemberProfile.householdId,
       communeInsee: clubMemberProfile.communeInsee,
       communeName: clubMemberProfile.communeName,
       sport: userPreference.sport,

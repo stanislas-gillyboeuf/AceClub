@@ -11,6 +11,7 @@ import { loadOrgMemberProfiles } from "../lib/member-profile-adapter";
 import { listMemberCotisationsValidator } from "../validators";
 
 export type MemberCotisationStatusView = "not_generated" | "pending" | "paid" | "waived";
+export type HouseholdRankSourceView = "override" | "frozen" | "computed" | null;
 
 export const listMemberCotisations = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -52,10 +53,10 @@ export const listMemberCotisations = async (c: Context<HonoContext>) => {
   ]);
 
   const recordByUserId = new Map(existingRecords.map((r) => [r.userId, r]));
-  const memberProfiles = await loadOrgMemberProfiles(validated.organizationId, snapshot);
+  const memberProfiles = await loadOrgMemberProfiles(validated.organizationId, snapshot, validated.seasonLabel);
 
   const members = memberProfiles
-    .map(({ userId, name, email, role, isAdherent, profile }) => {
+    .map(({ userId, name, email, role, isAdherent, householdId, householdName, householdRankSource, profile }) => {
       const record = recordByUserId.get(userId);
       if (record) {
         return {
@@ -64,6 +65,13 @@ export const listMemberCotisations = async (c: Context<HonoContext>) => {
           email,
           role,
           isAdherent,
+          householdId,
+          householdName,
+          // An issued cotisation keeps the rank it was frozen with.
+          householdRank: record.householdRankFrozen ?? profile.householdRank ?? null,
+          householdRankSource: (record.householdRankFrozen !== null
+            ? "frozen"
+            : householdRankSource) as HouseholdRankSourceView,
           amountCents: record.amountCents,
           status: record.status as MemberCotisationStatusView,
           breakdown: record.breakdownSnapshot as Breakdown,
@@ -77,6 +85,10 @@ export const listMemberCotisations = async (c: Context<HonoContext>) => {
         email,
         role,
         isAdherent,
+        householdId,
+        householdName,
+        householdRank: profile.householdRank ?? null,
+        householdRankSource: householdRankSource as HouseholdRankSourceView,
         amountCents: breakdown.status === "complete" ? breakdown.totalCents : null,
         status: "not_generated" as MemberCotisationStatusView,
         breakdown,
