@@ -23,6 +23,7 @@ export function useUpdateClubMemberProfile() {
       }),
     onSettled: (_data, _err, variables) => {
       settleClubMember(queryClient, variables.organizationId, variables.userId)
+      queryClient.invalidateQueries({ queryKey: ["member-cotisations"] })
     },
   })
 }

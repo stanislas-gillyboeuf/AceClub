@@ -55,9 +55,16 @@ export interface ClubMemberDetail {
     lastBookingAt: string | null
     secondarySport: string | null
     secondarySkillLevel: string | null
+    // Pricing-engine inputs — null means "not yet answered by an admin", a real state distinct
+    // from false/0 (see services/api/server/pricing/lib/member-profile-adapter.ts).
+    licensedElsewhere: boolean | null
+    householdRank: number | null
+    communeInsee: string | null
+    communeName: string | null
   }
   bookings: ClubMemberBooking[]
   cancelledBookingCount: number
+  tagIds: string[]
 }
 
 export interface UpdateClubMemberProfileInput {
@@ -70,6 +77,12 @@ export interface UpdateClubMemberProfileInput {
   notes?: string | null
   city?: string | null
   isVip?: boolean
+  // Only include a key when it should actually change — the API treats an absent key as "leave
+  // untouched" and an explicit null as "clear it" (see update-club-member-profile.ts backend).
+  licensedElsewhere?: boolean | null
+  householdRank?: number | null
+  communeInsee?: string | null
+  communeName?: string | null
 }
 
 export interface ClubMemberNote {

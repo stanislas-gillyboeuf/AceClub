@@ -23,3 +23,16 @@ export function useDeleteClubTag() {
     },
   })
 }
+
+export function useSetMemberTags() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { organizationId: string; userId: string; tagIds: string[] }) =>
+      apiClient<{ tagIds: string[] }>("/club-tag/set-member-tags", { method: "POST", body: JSON.stringify(data) }),
+    onSettled: (_data, _err, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["member-tags", variables.organizationId, variables.userId] })
+      queryClient.invalidateQueries({ queryKey: ["club-member-detail", variables.organizationId, variables.userId] })
+      queryClient.invalidateQueries({ queryKey: ["member-cotisations"] })
+    },
+  })
+}

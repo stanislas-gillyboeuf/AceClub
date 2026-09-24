@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   AlertDialog,
@@ -44,6 +45,10 @@ import {
 import { VerifiedBadge } from "@/components/ui/verified-badge"
 import { MemberNotesCard } from "@/components/custom/member-notes-card"
 import { SetMemberLevelDialog } from "@/components/custom/set-member-level-dialog"
+import { TarifRuleCommunePicker } from "@/components/custom/tarif-grid/tarif-rule-commune-picker"
+import { getCommuneName } from "@/components/custom/tarif-grid/commune-name-cache"
+import { useClubTags } from "@/hooks/use-club-tag-queries"
+import { useSetMemberTags } from "@/hooks/use-club-tag-mutations"
 import { useClubMemberDetail, useMemberUpcomingBookings } from "@/hooks/use-club-member-queries"
 import {
   useUpdateClubMemberProfile,
@@ -107,6 +112,8 @@ export default function ClubMemberDetailPage() {
   const updateProfile = useUpdateClubMemberProfile()
   const updateRole = useUpdateMemberRole()
   const removeMember = useRemoveClubMember()
+  const { data: tagsData } = useClubTags(organizationId)
+  const setMemberTags = useSetMemberTags()
 
   const [licenseNumber, setLicenseNumber] = useState("")
   const [licenseValidUntil, setLicenseValidUntil] = useState("")
@@ -114,6 +121,11 @@ export default function ClubMemberDetailPage() {
   const [phoneOverride, setPhoneOverride] = useState("")
   const [city, setCity] = useState("")
   const [isVip, setIsVip] = useState(false)
+  const [licensedElsewhere, setLicensedElsewhere] = useState<boolean | null>(null)
+  const [householdRank, setHouseholdRank] = useState<number | null>(null)
+  const [communeInsee, setCommuneInsee] = useState<string | null>(null)
+  const [communeName, setCommuneName] = useState<string | null>(null)
+  const [tagIds, setTagIds] = useState<string[]>([])
   const [levelDialogOpen, setLevelDialogOpen] = useState(false)
 
   useEffect(() => {
@@ -124,6 +136,11 @@ export default function ClubMemberDetailPage() {
     setPhoneOverride(data.member.phoneOverride ?? "")
     setCity(data.member.city ?? "")
     setIsVip(!!data.member.isVip)
+    setLicensedElsewhere(data.member.licensedElsewhere)
+    setHouseholdRank(data.member.householdRank)
+    setCommuneInsee(data.member.communeInsee)
+    setCommuneName(data.member.communeName)
+    setTagIds(data.tagIds ?? [])
   }, [data])
 
   if (isLoading) {
@@ -158,7 +175,19 @@ export default function ClubMemberDetailPage() {
       phoneOverride: phoneOverride || null,
       city: city || null,
       isVip,
+      licensedElsewhere,
+      householdRank,
+      communeInsee,
+      communeName,
     })
+  }
+
+  function handleSaveTags() {
+    setMemberTags.mutate({ organizationId, userId: member.userId, tagIds })
+  }
+
+  function toggleTag(tagId: string, checked: boolean) {
+    setTagIds((prev) => (checked ? [...prev, tagId] : prev.filter((id) => id !== tagId)))
   }
 
   return (
@@ -381,9 +410,89 @@ export default function ClubMemberDetailPage() {
                 <Label htmlFor="vip">VIP</Label>
                 <Switch id="vip" checked={isVip} onCheckedChange={setIsVip} disabled={!isFullAdmin} />
               </div>
+              <div className="space-y-1.5">
+                <Label>Licencié dans un autre club</Label>
+                <Select
+                  value={licensedElsewhere === null ? "unknown" : licensedElsewhere ? "yes" : "no"}
+                  onValueChange={(v) => setLicensedElsewhere(v === "unknown" ? null : v === "yes")}
+                  disabled={!isFullAdmin}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unknown">Non renseigné</SelectItem>
+                    <SelectItem value="yes">Oui</SelectItem>
+                    <SelectItem value="no">Non</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Rang dans le foyer</Label>
+                <Select
+                  value={householdRank === null ? "unknown" : String(householdRank)}
+                  onValueChange={(v) => setHouseholdRank(v === "unknown" ? null : Number(v))}
+                  disabled={!isFullAdmin}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unknown">Non renseigné</SelectItem>
+                    <SelectItem value="1">1er</SelectItem>
+                    <SelectItem value="2">2e</SelectItem>
+                    <SelectItem value="3">3e</SelectItem>
+                    <SelectItem value="4">4e et plus</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Commune de résidence</Label>
+                {isFullAdmin ? (
+                  <TarifRuleCommunePicker
+                    selectedCodes={communeInsee ? [communeInsee] : []}
+                    onChange={(codes) => {
+                      const last = codes[codes.length - 1] ?? null
+                      setCommuneInsee(last)
+                      setCommuneName(last ? (getCommuneName(last) ?? null) : null)
+                    }}
+                  />
+                ) : null}
+                <p className="text-xs text-muted-foreground">
+                  {communeInsee ? `${communeName ?? communeInsee} (${communeInsee})` : "Non renseignée"}
+                </p>
+              </div>
               {isFullAdmin ? (
                 <Button onClick={handleSaveProfile} disabled={updateProfile.isPending}>
                   {updateProfile.isPending ? "Enregistrement..." : "Enregistrer"}
+                </Button>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Statuts</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {!tagsData?.tags.length ? (
+                <p className="text-sm text-muted-foreground">Aucun statut défini pour ce club.</p>
+              ) : (
+                tagsData.tags.map((tag) => (
+                  <div key={tag.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`tag-${tag.id}`}
+                      checked={tagIds.includes(tag.id)}
+                      onCheckedChange={(checked) => toggleTag(tag.id, checked === true)}
+                      disabled={!isFullAdmin}
+                    />
+                    <Label htmlFor={`tag-${tag.id}`}>{tag.name}</Label>
+                  </div>
+                ))
+              )}
+              {isFullAdmin && tagsData?.tags.length ? (
+                <Button onClick={handleSaveTags} disabled={setMemberTags.isPending}>
+                  {setMemberTags.isPending ? "Enregistrement..." : "Enregistrer les statuts"}
                 </Button>
               ) : null}
             </CardContent>
