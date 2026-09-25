@@ -4,7 +4,7 @@ import { z } from "zod";
 import { createInvitationValidator } from "../validators";
 import { auth } from "../../../auth";
 import { db } from "../../../db";
-import { invitation, organization, user } from "../../../db/schema";
+import { invitation, organization } from "../../../db/schema";
 import { and, eq } from "drizzle-orm";
 
 export const createInvitation = async (c: Context<HonoContext>) => {
@@ -12,8 +12,15 @@ export const createInvitation = async (c: Context<HonoContext>) => {
     // @ts-ignore
     const validated = c.req.valid("json") as z.infer<typeof createInvitationValidator>;
 
+    // Duplicate check on the INVITATION itself: same recipient, same club, still pending.
+    const organizationId =
+      validated.organizationId ?? c.get("session")?.activeOrganizationId ?? undefined;
     const checkInvitation = await db.query.invitation.findFirst({
-      where: and(eq(user.email, validated.email), eq(invitation.status, "pending")),
+      where: and(
+        eq(invitation.email, validated.email.trim().toLowerCase()),
+        eq(invitation.status, "pending"),
+        ...(organizationId ? [eq(invitation.organizationId, organizationId)] : []),
+      ),
     });
 
     if (checkInvitation) {

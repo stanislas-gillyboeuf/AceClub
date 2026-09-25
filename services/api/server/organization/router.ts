@@ -18,6 +18,7 @@ import {
   regeneratePin,
   verifyPin,
   completeOnboarding,
+  joinOrganization,
 } from "./mutations";
 import {
   createOrganizationValidator,
@@ -33,6 +34,7 @@ import {
   createInvitationValidator,
   invitationIdValidator,
   listInvitationsValidator,
+  joinOrganizationValidator,
 } from "./validators";
 import { zValidator } from "@hono/zod-validator";
 import { requireAuth } from "../../middleware/auth";
@@ -117,6 +119,8 @@ organizationRouter.get("/get-active-member-role", getActiveMemberRole);
 
 // Member mutations (require appropriate permissions)
 organizationRouter.post("/add-member", zValidator("json", addMemberValidator), addMember);
+// A player joining a club by themselves (PIN checked server side); add-member is for admins.
+organizationRouter.post("/join", zValidator("json", joinOrganizationValidator), joinOrganization);
 organizationRouter.post("/remove-member", zValidator("json", removeMemberValidator), removeMember);
 organizationRouter.post(
   "/update-member-role",

@@ -3,6 +3,7 @@ import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { member, user } from "../../../db/schema/auth/schema";
 import { eq, and, ilike, ne, sql } from "drizzle-orm";
+import { assertCanViewOrg, forbidden } from "../../../lib/club-access";
 
 export const searchMembers = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user");
@@ -18,6 +19,10 @@ export const searchMembers = async (c: Context<HonoContext>) => {
     limit: number;
     offset: number;
   };
+
+  if (!(await assertCanViewOrg(currentUser, organizationId))) {
+    return forbidden(c);
+  }
 
   // Build conditions
   const conditions = [eq(member.organizationId, organizationId), ne(member.userId, currentUser.id)];

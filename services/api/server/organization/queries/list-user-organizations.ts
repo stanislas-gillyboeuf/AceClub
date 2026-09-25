@@ -5,10 +5,16 @@ import { member, organization } from "../../../db/schema/auth/schema";
 import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { listUserOrganizationsValidator } from "../validators";
+import { isSuperAdmin } from "../../../lib/club-access";
 
 export const listUserOrganizations = async (c: Context<HonoContext>) => {
   // @ts-ignore
-  const { userId } = c.req.valid("query") as z.infer<typeof listUserOrganizationsValidator>;
+  const { userId: requestedUserId } = c.req.valid("query") as z.infer<
+    typeof listUserOrganizationsValidator
+  >;
+  const currentUser = c.get("user")!;
+  // Someone else's memberships are private: the id is honored only for a platform admin.
+  const userId = isSuperAdmin(currentUser) ? requestedUserId : currentUser.id;
 
   const userMembers = await db
     .select({

@@ -7,10 +7,16 @@ import { eq, and, gte, inArray, sql, count, countDistinct } from "drizzle-orm";
 import type { z } from "zod";
 import type { getOrganizationStatsValidator } from "../validators";
 import { cacheGet, cacheSet, CacheKeys, CacheTTL } from "../../../lib/cache";
+import { assertCanViewOrg, forbidden } from "../../../lib/club-access";
 
 export const getOrganizationStats = async (c: Context<HonoContext>) => {
   // @ts-ignore
   const { organizationId } = c.req.valid("query") as z.infer<typeof getOrganizationStatsValidator>;
+
+  // Membership is checked before the cache lookup: a cached answer must not bypass it.
+  if (!(await assertCanViewOrg(c.get("user")!, organizationId))) {
+    return forbidden(c);
+  }
 
   const cacheKey = CacheKeys.orgStats(organizationId);
   const cached = await cacheGet(cacheKey);

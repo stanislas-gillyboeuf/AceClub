@@ -155,6 +155,11 @@ export const auth = betterAuth({
       : []),
   ].filter(Boolean),
 
+  // Membership writes must go through our own routes (they enforce who may add whom). The
+  // Better Auth handlers for these two would let ANY signed-in user add anyone to any club as
+  // owner / create clubs; auth.api.* calls made by our handlers are unaffected by this list.
+  disabledPaths: ["/organization/add-member", "/organization/create"],
+
   plugins: [
     expo(),
     bearer(),

@@ -3,6 +3,7 @@ import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { listMembersValidator } from "../validators";
 import { auth } from "../../../auth";
+import { httpStatusFromAuthError } from "../lib/access-rules";
 
 export const listMembers = async (c: Context<HonoContext>) => {
   try {
@@ -25,6 +26,7 @@ export const listMembers = async (c: Context<HonoContext>) => {
 
     return c.json(result);
   } catch (error) {
-    return c.json({ error: (error as Error).message }, 500);
+    // Better Auth answers 403 to a non-member: keep it a 403 instead of a generic 500.
+    return c.json({ error: (error as Error).message }, httpStatusFromAuthError(error));
   }
 };

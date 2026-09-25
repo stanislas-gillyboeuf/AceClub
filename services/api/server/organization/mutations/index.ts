@@ -15,3 +15,4 @@ export * from "./toggle-pin";
 export * from "./regenerate-pin";
 export * from "./verify-pin";
 export * from "./complete-onboarding";
+export * from "./join";

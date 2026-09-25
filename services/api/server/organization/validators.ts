@@ -42,6 +42,13 @@ export const addMemberValidator = z.object({
   role: z.union([z.string(), z.array(z.string())]),
   organizationId: z.string().optional(),
   teamId: z.string().optional(),
+  // Only used by the legacy « join » call (userId = the caller); see decideAddMember.
+  pin: z.string().optional(),
+});
+
+export const joinOrganizationValidator = z.object({
+  organizationId: z.string().min(1),
+  pin: z.string().optional(),
 });
 
 export const removeMemberValidator = z.object({

@@ -4,15 +4,16 @@ import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { invitationIdValidator } from "../validators";
 import { auth } from "../../../auth";
-import { invalidateUserClubIds } from "../../../lib/club-access";
+import { invalidateUserClubIds, notFound } from "../../../lib/club-access";
 import { db } from "../../../db";
 import { member, invitation, organization } from "../../../db/schema/auth/schema";
 import { userPreference } from "../../../db/schema/user-preference/schema";
 import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
+import { isInvitationAcceptable } from "../lib/access-rules";
 
 export const acceptInvitation = async (c: Context<HonoContext>) => {
   try {
-    const authUser = c.get("user");
+    const authUser = c.get("user")!;
     // @ts-ignore
     const validated = c.req.valid("json") as z.infer<typeof invitationIdValidator>;
 
@@ -21,20 +22,25 @@ export const acceptInvitation = async (c: Context<HonoContext>) => {
       .select({
         organizationId: invitation.organizationId,
         inviterId: invitation.inviterId,
+        email: invitation.email,
+        status: invitation.status,
+        expiresAt: invitation.expiresAt,
       })
       .from(invitation)
       .where(eq(invitation.id, validated.invitationId))
       .limit(1);
 
-    if (!inv) {
-      return c.json({ error: "Invitation not found" }, 404);
+    // Checked BEFORE touching any membership: someone else's (or a stale) invitation must not
+    // cost the caller their current club.
+    if (!isInvitationAcceptable(inv, authUser.email)) {
+      return notFound(c);
     }
 
     const newOrganizationId = inv.organizationId;
 
     // Remove user from all current clubs (user can only have one club)
-    await db.delete(member).where(eq(member.userId, authUser!.id));
-    await invalidateUserClubIds(authUser!.id);
+    await db.delete(member).where(eq(member.userId, authUser.id));
+    await invalidateUserClubIds(authUser.id);
 
     // Update user preferences to point to the new organization
     await db
@@ -43,7 +49,7 @@ export const acceptInvitation = async (c: Context<HonoContext>) => {
         organizationId: newOrganizationId,
         updatedAt: new Date(),
       })
-      .where(eq(userPreference.userId, authUser!.id));
+      .where(eq(userPreference.userId, authUser.id));
 
     // Accept the invitation (this will create the new membership)
     const result = await auth.api.acceptInvitation({
@@ -52,7 +58,7 @@ export const acceptInvitation = async (c: Context<HonoContext>) => {
       },
       headers: c.req.raw.headers,
     });
-    await invalidateUserClubIds(authUser!.id);
+    await invalidateUserClubIds(authUser.id);
 
     // Recuperer le nom de l'organisation pour la notification
     const [org] = await db
@@ -66,7 +72,7 @@ export const acceptInvitation = async (c: Context<HonoContext>) => {
       userId: inv.inviterId,
       type: "invitation_accepted",
       title: "Nouveau membre ! 🙌",
-      body: `${authUser?.name ?? "Quelqu'un"} a rejoint ${org?.name ?? "ton club"}`,
+      body: `${authUser.name ?? "Quelqu'un"} a rejoint ${org?.name ?? "ton club"}`,
       referenceId: newOrganizationId,
       referenceType: "organization",
     }).catch((err) => console.error("Failed to send notification:", err));
