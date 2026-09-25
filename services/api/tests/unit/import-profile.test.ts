@@ -30,4 +30,23 @@ describe("buildImportProfileValues", () => {
       buildImportProfileValues({ licenseNumber: "9", phone: "06", licenseValidUntil: "2027-01-01" }),
     ).toEqual({ licenseNumber: "9", phoneOverride: "06", licenseValidUntil: new Date("2027-01-01") });
   });
+
+  it("carries the new columns only when provided", () => {
+    expect(buildImportProfileValues({ dateOfBirth: "2012-05-04" })).toEqual({ dateOfBirth: "2012-05-04" });
+    expect(buildImportProfileValues({ medicalCertificateValidUntil: "2027-01-01" }).medicalCertificateValidUntil)
+      .toBeInstanceOf(Date);
+  });
+
+  it("keeps licensedElsewhere=false as an answer, but omits it when undefined", () => {
+    expect(buildImportProfileValues({ licensedElsewhere: false })).toEqual({ licensedElsewhere: false });
+    expect("licensedElsewhere" in buildImportProfileValues({})).toBe(false);
+  });
+
+  it("writes the commune only as a resolved (code, name) pair", () => {
+    expect(buildImportProfileValues({ communeInsee: "35238" })).toEqual({});
+    expect(buildImportProfileValues({ communeInsee: "35238", communeName: "Rennes" })).toEqual({
+      communeInsee: "35238",
+      communeName: "Rennes",
+    });
+  });
 });

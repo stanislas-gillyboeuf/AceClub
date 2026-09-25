@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isValidIsoDate } from "../pricing/lib/engine";
+import { isTechnicalEmail } from "../../lib/technical-email";
 
 // Stored as text and read by the pricing engine, which expects a real "YYYY-MM-DD" date.
 const isoDateOfBirthSchema = z
@@ -79,18 +80,41 @@ export const updateMemberRoleValidator = z.object({
   role: z.enum(["admin", "member", "coach"]),
 });
 
-const bulkImportRowValidator = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Valid email is required"),
-  phone: z.string().max(30).optional(),
-  licenseNumber: z.string().max(50).optional(),
-  licenseValidUntil: z.string().datetime().optional(),
-  dateOfBirth: isoDateOfBirthSchema.optional(),
-});
+const bulkImportRowValidator = z
+  .object({
+    name: z.string().min(1, "Name is required"),
+    // Optional: a child often has no email. Without one, the date of birth is what identifies
+    // the person (see lib/plan-import.ts).
+    email: z.string().email("Valid email is required").optional(),
+    phone: z.string().max(30).optional(),
+    licenseNumber: z.string().max(50).optional(),
+    licenseValidUntil: z.string().datetime().optional(),
+    medicalCertificateValidUntil: z.string().datetime().optional(),
+    dateOfBirth: isoDateOfBirthSchema.optional(),
+    postalCode: z.string().regex(/^\d{5}$/, "Postal code must be 5 digits").optional(),
+    city: z.string().max(100).optional(),
+    licensedElsewhere: z.boolean().optional(),
+    // The responsible person's email (lowercase) or a normalized "household" label: rows that
+    // share it form one household.
+    householdKey: z.string().max(200).optional(),
+    tags: z.array(z.string().min(1).max(60)).max(20).optional(),
+  })
+  .superRefine((row, ctx) => {
+    if (!row.email && !row.dateOfBirth) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["dateOfBirth"],
+        message: "Email or date of birth is required to identify the person",
+      });
+    }
+    if (row.email && isTechnicalEmail(row.email)) {
+      ctx.addIssue({ code: "custom", path: ["email"], message: "This address is reserved" });
+    }
+  });
 
 export const bulkImportValidator = z.object({
   organizationId: z.string().min(1, "Organization ID is required"),
-  rows: z.array(bulkImportRowValidator).min(1).max(500),
+  rows: z.array(bulkImportRowValidator).min(1).max(2000),
   // Whether the imported people are new members (pay the entry fee) or an existing base. Only
   // applied to members CREATED by this import, never to ones already in the club.
   isNewMember: z.boolean().optional(),
