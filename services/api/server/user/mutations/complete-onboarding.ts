@@ -8,6 +8,7 @@ import { z } from "zod";
 import { completeOnboardingValidator } from "../validators";
 import { ulid } from "ulid";
 import { cacheDel, CacheKeys } from "../../../lib/cache";
+import { invalidateUserClubIds } from "../../../lib/club-access";
 
 export const completeOnboarding = async (c: Context<HonoContext>) => {
   const authUser = c.get("user");
@@ -104,6 +105,7 @@ export const completeOnboarding = async (c: Context<HonoContext>) => {
     return updated;
   });
 
+  await invalidateUserClubIds(authUser!.id);
   await cacheDel(CacheKeys.userMe(authUser!.id));
 
   return c.json({

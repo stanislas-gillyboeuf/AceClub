@@ -5,7 +5,9 @@ import { bearer, organization } from "better-auth/plugins";
 import { admin } from "better-auth/plugins/admin";
 import { phoneNumber } from "better-auth/plugins";
 import { user as userTable, member as memberTable } from "./db/schema/auth/schema";
-import { eq } from "drizzle-orm";
+import { userPreference } from "./db/schema/user-preference/schema";
+import { asc, eq } from "drizzle-orm";
+import { invalidateAllUserClubIds, invalidateUserClubIds } from "./lib/club-access";
 import { awardPremiersPasBadge } from "./server/reward/services/badge-service";
 import { expo } from "@better-auth/expo";
 
@@ -29,17 +31,26 @@ export const auth = betterAuth({
     session: {
       create: {
         before: async (session) => {
-          const [firstMembership] = await db
+          // Deterministic active club: the user's preferred club when they are still a member of
+          // it, otherwise their oldest membership.
+          const memberships = await db
             .select()
             .from(memberTable)
             .where(eq(memberTable.userId, session.userId))
-            .limit(1);
+            .orderBy(asc(memberTable.createdAt));
 
-          if (firstMembership) {
+          if (memberships.length > 0) {
+            const [pref] = await db
+              .select({ organizationId: userPreference.organizationId })
+              .from(userPreference)
+              .where(eq(userPreference.userId, session.userId))
+              .limit(1);
+            const active =
+              memberships.find((m) => m.organizationId === pref?.organizationId) ?? memberships[0];
             return {
               data: {
                 ...session,
-                activeOrganizationId: firstMembership.organizationId,
+                activeOrganizationId: active.organizationId,
               },
             };
           }
@@ -149,6 +160,17 @@ export const auth = betterAuth({
     bearer(),
     admin(),
     organization({
+      // Safety net for every membership write that goes through Better Auth (including the
+      // direct /api/auth/organization/* endpoints): the cached club list must never go stale.
+      organizationHooks: {
+        afterAddMember: async ({ member }) => invalidateUserClubIds(member.userId),
+        afterRemoveMember: async ({ member }) => invalidateUserClubIds(member.userId),
+        afterUpdateMemberRole: async ({ member }) => invalidateUserClubIds(member.userId),
+        afterAcceptInvitation: async ({ member }) => invalidateUserClubIds(member.userId),
+        afterCreateOrganization: async ({ member, user }) =>
+          invalidateUserClubIds(member?.userId, user?.id),
+        afterDeleteOrganization: async () => invalidateAllUserClubIds(),
+      },
       schema: {
         organization: {
           additionalFields: {

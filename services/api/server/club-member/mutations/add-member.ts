@@ -6,6 +6,7 @@ import { ulid } from "ulid";
 import { hashPassword } from "better-auth/crypto";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
+import { invalidateUserClubIds } from "../../../lib/club-access";
 import { user, member, clubMemberProfile, account } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { addMemberValidator } from "../validators";
@@ -100,6 +101,8 @@ export const addMember = async (c: Context<HonoContext>) => {
   if (result.conflict) {
     return c.json({ error: "Conflict", message: "This person is already a member of this club" }, 409);
   }
+
+  await invalidateUserClubIds(result.userId);
 
   // A login is only generated for a ghost profile this call just created: an email that already
   // belongs to a real (possibly other-club) user must never get its password overwritten by a

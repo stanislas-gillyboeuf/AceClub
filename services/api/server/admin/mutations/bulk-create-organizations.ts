@@ -4,6 +4,7 @@ import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { bulkCreateOrganizationsValidator } from "../validators";
 import { auth } from "../../../auth";
+import { invalidateUserClubIds } from "../../../lib/club-access";
 import { reverseGeocode, delay } from "../../organization/services/geocoding";
 import { generatePin } from "../../organization/services/pin";
 import { db } from "../../../db";
@@ -123,6 +124,8 @@ export const bulkCreateOrganizations = async (c: Context<HonoContext>) => {
 
           results.created++;
         }
+
+        await invalidateUserClubIds(c.get("user")?.id);
 
         await stream.writeSSE({
           event: "progress",

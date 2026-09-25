@@ -4,6 +4,7 @@ import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { invitationIdValidator } from "../validators";
 import { auth } from "../../../auth";
+import { invalidateUserClubIds } from "../../../lib/club-access";
 import { db } from "../../../db";
 import { member, invitation, organization } from "../../../db/schema/auth/schema";
 import { userPreference } from "../../../db/schema/user-preference/schema";
@@ -33,6 +34,7 @@ export const acceptInvitation = async (c: Context<HonoContext>) => {
 
     // Remove user from all current clubs (user can only have one club)
     await db.delete(member).where(eq(member.userId, authUser!.id));
+    await invalidateUserClubIds(authUser!.id);
 
     // Update user preferences to point to the new organization
     await db
@@ -50,6 +52,7 @@ export const acceptInvitation = async (c: Context<HonoContext>) => {
       },
       headers: c.req.raw.headers,
     });
+    await invalidateUserClubIds(authUser!.id);
 
     // Recuperer le nom de l'organisation pour la notification
     const [org] = await db

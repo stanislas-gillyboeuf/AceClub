@@ -3,6 +3,7 @@ import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { addMemberValidator } from "../validators";
 import { auth } from "../../../auth";
+import { invalidateUserClubIds } from "../../../lib/club-access";
 import { cacheDel, cacheInvalidatePrefix, CacheKeys } from "../../../lib/cache";
 
 export const addMember = async (c: Context<HonoContext>) => {
@@ -17,6 +18,8 @@ export const addMember = async (c: Context<HonoContext>) => {
     },
     headers: c.req.raw.headers,
   });
+
+  await invalidateUserClubIds(validated.userId);
 
   if (validated.organizationId) {
     await Promise.all([

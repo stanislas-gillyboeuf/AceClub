@@ -3,6 +3,7 @@ import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
+import { invalidateUserClubIds } from "../../../lib/club-access";
 import { member, clubMemberProfile, clubMemberNote } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { removeMemberValidator } from "../validators";
@@ -53,6 +54,8 @@ export const removeMember = async (c: Context<HonoContext>) => {
         ),
       );
   });
+
+  await invalidateUserClubIds(validated.userId);
 
   return c.json({ success: true });
 };

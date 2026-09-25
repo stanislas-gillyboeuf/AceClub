@@ -3,6 +3,7 @@ import { Context } from "hono";
 import { z } from "zod";
 import { deleteOrganizationValidator } from "../validators";
 import { auth } from "../../../auth";
+import { invalidateAllUserClubIds } from "../../../lib/club-access";
 
 export const deleteOrganization = async (c: Context<HonoContext>) => {
   // @ts-ignore
@@ -13,5 +14,6 @@ export const deleteOrganization = async (c: Context<HonoContext>) => {
     },
     headers: c.req.raw.headers,
   });
+  await invalidateAllUserClubIds();
   return c.json(data);
 };

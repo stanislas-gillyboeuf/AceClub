@@ -4,6 +4,7 @@ import { eq, inArray } from "drizzle-orm";
 import { ulid } from "ulid";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
+import { invalidateUserClubIds } from "../../../lib/club-access";
 import {
   user,
   member,
@@ -156,8 +157,9 @@ export const bulkImport = async (c: Context<HonoContext>) => {
   let created = 0;
   let updated = 0;
 
+  const userIdByRow = new Map<number, string>();
+
   await db.transaction(async (tx) => {
-    const userIdByRow = new Map<number, string>();
     const createdMemberRows = new Set<number>();
 
     for (const planned of importRows) {
@@ -293,6 +295,8 @@ export const bulkImport = async (c: Context<HonoContext>) => {
       }
     }
   });
+
+  await invalidateUserClubIds(...userIdByRow.values());
 
   return c.json({ created, updated, skipped, warnings, households: plan.households.length });
 };

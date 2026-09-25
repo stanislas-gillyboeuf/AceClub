@@ -3,6 +3,7 @@ import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { updateMemberRoleAdminValidator } from "../validators";
 import { db } from "../../../db";
+import { invalidateUserClubIds } from "../../../lib/club-access";
 import { member } from "../../../db/schema/auth/schema";
 import { and, eq } from "drizzle-orm";
 
@@ -31,6 +32,8 @@ export const updateMemberRole = async (c: Context<HonoContext>) => {
       .set({ role: validated.role })
       .where(eq(member.id, validated.memberId))
       .returning();
+
+    await invalidateUserClubIds(existing.userId);
 
     return c.json(updated);
   } catch (error) {

@@ -8,6 +8,7 @@ import { generatePin } from "../services/pin";
 import { db } from "../../../db";
 import { organization, member } from "../../../db/schema/auth/schema";
 import { eq, and } from "drizzle-orm";
+import { invalidateUserClubIds } from "../../../lib/club-access";
 
 export const createOrganization = async (c: Context<HonoContext>) => {
   try {
@@ -54,6 +55,7 @@ export const createOrganization = async (c: Context<HonoContext>) => {
             and(eq(member.organizationId, createdOrganization.id), eq(member.userId, authUser.id)),
           );
       }
+      await invalidateUserClubIds(authUser?.id, validated.userId);
     }
 
     return c.json(createdOrganization);

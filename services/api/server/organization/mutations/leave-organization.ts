@@ -3,6 +3,7 @@ import { HonoContext } from "../../../types/hono";
 import { z } from "zod";
 import { leaveOrganizationValidator } from "../validators";
 import { auth } from "../../../auth";
+import { invalidateUserClubIds } from "../../../lib/club-access";
 import { cacheDel, cacheInvalidatePrefix, CacheKeys } from "../../../lib/cache";
 
 export const leaveOrganization = async (c: Context<HonoContext>) => {
@@ -16,6 +17,8 @@ export const leaveOrganization = async (c: Context<HonoContext>) => {
       },
       headers: c.req.raw.headers,
     });
+
+    await invalidateUserClubIds(c.get("user")?.id);
 
     await Promise.all([
       cacheDel(CacheKeys.orgStats(validated.organizationId)),

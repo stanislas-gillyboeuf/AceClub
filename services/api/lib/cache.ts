@@ -16,6 +16,7 @@ export const CacheKeys = {
   leaderboardOrg: (orgId: string, page: number, limit: number) =>
     `leaderboard:org:${orgId}:${page}:${limit}`,
   orgStats: (orgId: string) => `org:stats:${orgId}`,
+  userClubIds: (userId: string) => `user:clubs:${userId}`,
 
   // E2EE
   e2eePublicKey: (userId: string) => `e2ee:pubkey:${userId}`,
@@ -33,6 +34,7 @@ export const CacheKeys = {
   // Prefixes for bulk invalidation
   PREFIX_LEADERBOARD_GLOBAL: "leaderboard:global:",
   PREFIX_LEADERBOARD_WEEKLY: "leaderboard:weekly:",
+  PREFIX_USER_CLUBS: "user:clubs:",
   prefixLeaderboardOrg: (orgId: string) => `leaderboard:org:${orgId}:`,
 } as const;
 

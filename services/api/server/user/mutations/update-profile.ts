@@ -9,6 +9,7 @@ import { updateProfileValidator } from "../validators";
 import { ulid } from "ulid";
 import { auth } from "../../../auth";
 import { cacheDel, CacheKeys } from "../../../lib/cache";
+import { invalidateUserClubIds } from "../../../lib/club-access";
 
 const normalizePhoneNumber = (raw: string) => {
   const trimmed = raw.trim();
@@ -197,6 +198,8 @@ export const updateProfile = async (c: Context<HonoContext>) => {
 
       return updated;
     });
+
+    await invalidateUserClubIds(authUser!.id);
 
     if (validated.organizationId) {
       await auth.api.setActiveOrganization({

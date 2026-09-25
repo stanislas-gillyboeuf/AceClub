@@ -1,6 +1,7 @@
 import { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
+import { invalidateAllUserClubIds } from "../../../lib/club-access";
 import { organization } from "../../../db/schema/auth/schema";
 import { eq } from "drizzle-orm";
 import { deleteOrganizationAdminValidator } from "../validators";
@@ -21,6 +22,7 @@ export const deleteOrganization = async (c: Context<HonoContext>) => {
   }
 
   await db.delete(organization).where(eq(organization.id, validated.organizationId));
+  await invalidateAllUserClubIds();
 
   return c.json({ success: true });
 };
