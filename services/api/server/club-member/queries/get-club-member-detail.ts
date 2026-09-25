@@ -16,6 +16,7 @@ import { assertClubAdmin } from "../../../middleware/club-admin";
 import { getClubMemberDetailValidator } from "../validators";
 import { publicEmail } from "../../../lib/technical-email";
 import { isEffectiveAdherent } from "../lib/adherent";
+import { loadPricingMissingFields } from "../lib/pricing-missing";
 
 const BOOKING_HISTORY_LIMIT = 20;
 
@@ -122,6 +123,12 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
   ]);
 
   const { userDateOfBirth, ...memberFields } = memberRow;
+  const isAdherentEffective = isEffectiveAdherent(memberRow.isAdherent, memberRow.role);
+  const pricingMissingFields = await loadPricingMissingFields(
+    validated.organizationId,
+    validated.userId,
+    isAdherentEffective,
+  );
 
   return c.json({
     member: {
@@ -130,11 +137,12 @@ export const getClubMemberDetail = async (c: Context<HonoContext>) => {
       // Effective value (club override wins over the account's own); raw, so the UI can flag a
       // legacy non-ISO value. `clubDateOfBirth` is the editable club-level override itself.
       dateOfBirth: memberRow.clubDateOfBirth ?? userDateOfBirth,
-      isAdherentEffective: isEffectiveAdherent(memberRow.isAdherent, memberRow.role),
+      isAdherentEffective,
       lastBookingAt: lastBooking?.startAt ?? null,
     },
     bookings,
     cancelledBookingCount: cancelledResult?.count ?? 0,
     tagIds: tagRows.map((t) => t.tagId),
+    pricingMissingFields,
   });
 };

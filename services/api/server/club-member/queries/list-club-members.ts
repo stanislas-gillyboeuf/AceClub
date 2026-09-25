@@ -53,6 +53,8 @@ export const listClubMembers = async (c: Context<HonoContext>) => {
         licenseValidUntil: clubMemberProfile.licenseValidUntil,
         medicalCertificateValidUntil: clubMemberProfile.medicalCertificateValidUntil,
         isVip: clubMemberProfile.isVip,
+        communeName: clubMemberProfile.communeName,
+        city: clubMemberProfile.city,
         sport: userPreference.sport,
         skillLevel: userPreference.skillLevel,
         skillLevelVerified: userPreference.skillLevelVerified,

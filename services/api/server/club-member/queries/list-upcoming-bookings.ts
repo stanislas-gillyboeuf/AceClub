@@ -21,7 +21,7 @@ export const listUpcomingBookings = async (c: Context<HonoContext>) => {
 
   const now = new Date();
 
-  const [upcoming, totalResult] = await Promise.all([
+  const [upcoming, totalResult, upcomingResult] = await Promise.all([
     db
       .select({
         id: courtBooking.id,
@@ -53,7 +53,23 @@ export const listUpcomingBookings = async (c: Context<HonoContext>) => {
           eq(courtBooking.status, "confirmed"),
         ),
       ),
+    db
+      .select({ count: count() })
+      .from(courtBooking)
+      .innerJoin(court, eq(courtBooking.courtId, court.id))
+      .where(
+        and(
+          eq(courtBooking.userId, validated.userId),
+          eq(court.organizationId, validated.organizationId),
+          eq(courtBooking.status, "confirmed"),
+          gte(courtBooking.startAt, now),
+        ),
+      ),
   ]);
 
-  return c.json({ upcoming, totalCount: totalResult[0]?.count ?? 0 });
+  return c.json({
+    upcoming,
+    totalCount: totalResult[0]?.count ?? 0,
+    upcomingCount: upcomingResult[0]?.count ?? 0,
+  });
 };

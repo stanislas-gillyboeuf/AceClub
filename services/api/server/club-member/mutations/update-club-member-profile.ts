@@ -22,21 +22,23 @@ export const updateClubMemberProfile = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Member not found in this club" }, 404);
   }
 
-  const values: Partial<typeof clubMemberProfile.$inferInsert> = {
-    licenseNumber: validated.licenseNumber ?? null,
-    licenseValidUntil: validated.licenseValidUntil ? new Date(validated.licenseValidUntil) : null,
-    medicalCertificateValidUntil: validated.medicalCertificateValidUntil
+  // Every column is written only when the caller actually sent it (present in the validated body,
+  // even if explicitly null), so a partial save from one part of the UI never silently wipes
+  // data entered elsewhere (notes and city used to be reset to null on every save).
+  const values: Partial<typeof clubMemberProfile.$inferInsert> = {};
+  if ("licenseNumber" in validated) values.licenseNumber = validated.licenseNumber ?? null;
+  if ("licenseValidUntil" in validated) {
+    values.licenseValidUntil = validated.licenseValidUntil ? new Date(validated.licenseValidUntil) : null;
+  }
+  if ("medicalCertificateValidUntil" in validated) {
+    values.medicalCertificateValidUntil = validated.medicalCertificateValidUntil
       ? new Date(validated.medicalCertificateValidUntil)
-      : null,
-    phoneOverride: validated.phoneOverride ?? null,
-    notes: validated.notes ?? null,
-    city: validated.city ?? null,
-    isVip: validated.isVip ?? false,
-  };
-
-  // Pricing-engine fields: only touch a column when the caller actually sent it (present in the
-  // validated body, even if explicitly null), so a partial save from one part of the UI never
-  // silently wipes data entered elsewhere.
+      : null;
+  }
+  if ("phoneOverride" in validated) values.phoneOverride = validated.phoneOverride ?? null;
+  if ("notes" in validated) values.notes = validated.notes ?? null;
+  if ("city" in validated) values.city = validated.city ?? null;
+  if ("isVip" in validated && validated.isVip !== undefined) values.isVip = validated.isVip;
   if ("licensedElsewhere" in validated) values.licensedElsewhere = validated.licensedElsewhere;
   if ("householdRank" in validated) values.householdRank = validated.householdRank;
   if ("communeInsee" in validated) values.communeInsee = validated.communeInsee;
@@ -55,7 +57,8 @@ export const updateClubMemberProfile = async (c: Context<HonoContext>) => {
     })
     .onConflictDoUpdate({
       target: [clubMemberProfile.userId, clubMemberProfile.organizationId],
-      set: values,
+      // Drizzle refuses an empty `set`; a no-field call just touches the row.
+      set: Object.keys(values).length > 0 ? values : { updatedAt: new Date() },
     })
     .returning();
 
