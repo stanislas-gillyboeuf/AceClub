@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import {
@@ -14,6 +14,7 @@ import {
   Phone,
   IdCard,
   ShieldCheck,
+  AlertTriangle,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -46,8 +47,8 @@ import { VerifiedBadge } from "@/components/ui/verified-badge"
 import { MemberHouseholdCard } from "@/components/custom/member-household-card"
 import { MemberNotesCard } from "@/components/custom/member-notes-card"
 import { SetMemberLevelDialog } from "@/components/custom/set-member-level-dialog"
-import { TarifRuleCommunePicker } from "@/components/custom/tarif-grid/tarif-rule-commune-picker"
-import { getCommuneName } from "@/components/custom/tarif-grid/commune-name-cache"
+import { CommuneSinglePicker } from "@/components/custom/commune-single-picker"
+import { describeMissingField } from "@/components/custom/tarif-grid/breakdown-view"
 import { useClubTags } from "@/hooks/use-club-tag-queries"
 import { useSetMemberTags } from "@/hooks/use-club-tag-mutations"
 import { useClubMemberDetail, useMemberUpcomingBookings } from "@/hooks/use-club-member-queries"
@@ -57,6 +58,14 @@ import {
   useRemoveClubMember,
 } from "@/hooks/use-club-member-mutations"
 import { useClubAdminContext } from "@/lib/club-admin-context"
+import {
+  diffProfileForm,
+  formFromDetail,
+  isProfileFormDirty,
+  MISSING_FIELD_ANCHORS,
+  tagsChanged,
+  type ProfileForm,
+} from "@/lib/profile-form"
 import type { LevelSport } from "@/types/club-level"
 
 const ROLE_LABELS: Record<string, string> = {
@@ -123,39 +132,37 @@ export default function ClubMemberDetailPage() {
   const { data: tagsData } = useClubTags(organizationId)
   const setMemberTags = useSetMemberTags()
 
-  const [licenseNumber, setLicenseNumber] = useState("")
-  const [licenseValidUntil, setLicenseValidUntil] = useState("")
-  const [medicalCertificateValidUntil, setMedicalCertificateValidUntil] = useState("")
-  const [phoneOverride, setPhoneOverride] = useState("")
-  const [city, setCity] = useState("")
-  const [isVip, setIsVip] = useState(false)
-  const [licensedElsewhere, setLicensedElsewhere] = useState<boolean | null>(null)
-  const [householdRank, setHouseholdRank] = useState<number | null>(null)
-  const [communeInsee, setCommuneInsee] = useState<string | null>(null)
-  const [communeName, setCommuneName] = useState<string | null>(null)
-  const [dateOfBirth, setDateOfBirth] = useState("")
-  const [isAdherent, setIsAdherent] = useState<boolean | null>(null)
-  const [isNewMember, setIsNewMember] = useState<boolean | null>(null)
-  const [tagIds, setTagIds] = useState<string[]>([])
+  // One form for the single "Enregistrer" button. `initial` (state + ref) is what the server last
+  // sent; a refetch only overwrites the form when the user has not edited anything, so a
+  // background refresh never wipes what is being typed.
+  const [form, setForm] = useState<ProfileForm | null>(null)
+  const [initial, setInitial] = useState<ProfileForm | null>(null)
+  const initialRef = useRef<ProfileForm | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveNotice, setSaveNotice] = useState<string | null>(null)
   const [levelDialogOpen, setLevelDialogOpen] = useState(false)
 
   useEffect(() => {
     if (!data) return
-    setLicenseNumber(data.member.licenseNumber ?? "")
-    setLicenseValidUntil(toDateInputValue(data.member.licenseValidUntil))
-    setMedicalCertificateValidUntil(toDateInputValue(data.member.medicalCertificateValidUntil))
-    setPhoneOverride(data.member.phoneOverride ?? "")
-    setCity(data.member.city ?? "")
-    setIsVip(!!data.member.isVip)
-    setLicensedElsewhere(data.member.licensedElsewhere)
-    setHouseholdRank(data.member.householdRank)
-    setCommuneInsee(data.member.communeInsee)
-    setCommuneName(data.member.communeName)
-    setDateOfBirth(isIsoDate(data.member.clubDateOfBirth) ? data.member.clubDateOfBirth : "")
-    setIsAdherent(data.member.isAdherent)
-    setIsNewMember(data.member.isNewMember)
-    setTagIds(data.tagIds ?? [])
+    const next = formFromDetail(data)
+    const previousInitial = initialRef.current
+    setForm((current) =>
+      current && previousInitial && isProfileFormDirty(previousInitial, current) ? current : next,
+    )
+    initialRef.current = next
+    setInitial(next)
   }, [data])
+
+  const dirty = !!form && !!initial && isProfileFormDirty(initial, form)
+
+  useEffect(() => {
+    if (!dirty) return
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+    }
+    window.addEventListener("beforeunload", warn)
+    return () => window.removeEventListener("beforeunload", warn)
+  }, [dirty])
 
   if (isLoading) {
     return (
@@ -166,7 +173,7 @@ export default function ClubMemberDetailPage() {
     )
   }
 
-  if (!data) {
+  if (!data || !form || !initial) {
     return <p className="text-sm text-muted-foreground">Membre introuvable.</p>
   }
 
@@ -175,36 +182,47 @@ export default function ClubMemberDetailPage() {
   const isOwner = member.role === "owner"
   const age = computeAge(member.dateOfBirth)
   const bookingLinkParams = `userId=${member.userId}&name=${encodeURIComponent(member.userName)}`
-  const phone = phoneOverride || member.userPhone
+  const phone = form.phoneOverride || member.userPhone
 
-  function handleSaveProfile() {
-    updateProfile.mutate({
-      organizationId,
-      userId: member.userId,
-      licenseNumber: licenseNumber || null,
-      licenseValidUntil: licenseValidUntil ? new Date(licenseValidUntil).toISOString() : null,
-      medicalCertificateValidUntil: medicalCertificateValidUntil
-        ? new Date(medicalCertificateValidUntil).toISOString()
-        : null,
-      phoneOverride: phoneOverride || null,
-      city: city || null,
-      isVip,
-      licensedElsewhere,
-      householdRank,
-      communeInsee,
-      communeName,
-      dateOfBirth: dateOfBirth || null,
-      isAdherent,
-      isNewMember,
-    })
+  function updateForm(patch: Partial<ProfileForm>) {
+    setSaveNotice(null)
+    setForm((current) => (current ? { ...current, ...patch } : current))
   }
 
-  function handleSaveTags() {
-    setMemberTags.mutate({ organizationId, userId: member.userId, tagIds })
+  async function handleSave() {
+    if (!form || !initial) return
+    const patch = diffProfileForm(initial, form)
+    const tagsToSave = tagsChanged(initial, form)
+    setSaveError(null)
+    setSaveNotice(null)
+
+    let profileSaved = false
+    try {
+      if (patch) {
+        await updateProfile.mutateAsync({ organizationId, userId: member.userId, ...patch })
+        profileSaved = true
+      }
+      if (tagsToSave) {
+        await setMemberTags.mutateAsync({ organizationId, userId: member.userId, tagIds: form.tagIds })
+      }
+      setSaveNotice("Modifications enregistrées.")
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : "erreur inconnue"
+      setSaveError(
+        profileSaved
+          ? `Le profil est enregistré, mais les statuts ne l'ont pas été (${reason}). Réessayez : seuls les statuts restent à enregistrer.`
+          : `Enregistrement impossible (${reason}). Rien n'a été modifié.`,
+      )
+    }
   }
 
   function toggleTag(tagId: string, checked: boolean) {
-    setTagIds((prev) => (checked ? [...prev, tagId] : prev.filter((id) => id !== tagId)))
+    if (!form) return
+    updateForm({ tagIds: checked ? [...form.tagIds, tagId] : form.tagIds.filter((id) => id !== tagId) })
+  }
+
+  function scrollToField(fieldId: string) {
+    document.getElementById(fieldId)?.scrollIntoView({ behavior: "smooth", block: "center" })
   }
 
   return (
@@ -225,7 +243,7 @@ export default function ClubMemberDetailPage() {
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-bold tracking-tight">{member.userName}</h1>
               {member.role !== "member" ? <Badge>{ROLE_LABELS[member.role] ?? member.role}</Badge> : null}
-              {isVip ? <Badge variant="outline">VIP</Badge> : null}
+              {form.isVip ? <Badge variant="outline">VIP</Badge> : null}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
               Membre depuis {formatDate(member.memberSince)}
@@ -259,12 +277,41 @@ export default function ClubMemberDetailPage() {
         </div>
       </div>
 
+      {data.pricingMissingFields && data.pricingMissingFields.length > 0 ? (
+        <div className="mt-6 flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <div>
+            <p className="font-medium">Données tarifaires manquantes</p>
+            <p>
+              Le prix de la cotisation ne peut pas être calculé tant que ces informations manquent :{" "}
+              {data.pricingMissingFields.map((field, index) => {
+                const anchor = MISSING_FIELD_ANCHORS[field]
+                const label = describeMissingField(field)
+                return (
+                  <span key={field}>
+                    {index > 0 ? ", " : ""}
+                    {anchor ? (
+                      <button type="button" className="underline underline-offset-2" onClick={() => scrollToField(anchor)}>
+                        {label}
+                      </button>
+                    ) : (
+                      label
+                    )}
+                  </span>
+                )
+              })}
+              .
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       {/* Stats rapides */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Card>
           <CardContent className="py-4">
-            <p className="text-xs text-muted-foreground">Réservations</p>
-            <p className="text-xl font-semibold">{upcomingData?.totalCount ?? 0}</p>
+            <p className="text-xs text-muted-foreground">Réservations à venir</p>
+            <p className="text-xl font-semibold">{upcomingData?.upcomingCount ?? 0}</p>
           </CardContent>
         </Card>
         <Card>
@@ -351,10 +398,10 @@ export default function ClubMemberDetailPage() {
                   {phone}
                 </div>
               ) : null}
-              {city ? (
+              {form.communeName ?? member.city ? (
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  {city}
+                  {form.communeName ?? member.city}
                 </div>
               ) : null}
               {age != null ? (
@@ -371,16 +418,16 @@ export default function ClubMemberDetailPage() {
               <CardTitle>Dossier club</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-1.5">
+              <div className="space-y-1.5" id="field-dateOfBirth">
                 <Label htmlFor="dateOfBirth">Date de naissance</Label>
                 <Input
                   id="dateOfBirth"
                   type="date"
-                  value={dateOfBirth}
-                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  value={form.dateOfBirth}
+                  onChange={(e) => updateForm({ dateOfBirth: e.target.value })}
                   disabled={!isFullAdmin}
                 />
-                {!dateOfBirth && member.dateOfBirth && !isIsoDate(member.dateOfBirth) ? (
+                {!form.dateOfBirth && member.dateOfBirth && !isIsoDate(member.dateOfBirth) ? (
                   <p className="text-xs text-amber-700">
                     La date enregistrée sur le compte (« {member.dateOfBirth} ») n&apos;est pas exploitable :
                     saisissez-la ici.
@@ -394,8 +441,8 @@ export default function ClubMemberDetailPage() {
                 </Label>
                 <Input
                   id="license"
-                  value={licenseNumber}
-                  onChange={(e) => setLicenseNumber(e.target.value)}
+                  value={form.licenseNumber}
+                  onChange={(e) => updateForm({ licenseNumber: e.target.value })}
                   disabled={!isFullAdmin}
                 />
               </div>
@@ -404,8 +451,8 @@ export default function ClubMemberDetailPage() {
                 <Input
                   id="licenseValidUntil"
                   type="date"
-                  value={licenseValidUntil}
-                  onChange={(e) => setLicenseValidUntil(e.target.value)}
+                  value={form.licenseValidUntil}
+                  onChange={(e) => updateForm({ licenseValidUntil: e.target.value })}
                   disabled={!isFullAdmin}
                 />
               </div>
@@ -417,8 +464,8 @@ export default function ClubMemberDetailPage() {
                 <Input
                   id="medicalCertificateValidUntil"
                   type="date"
-                  value={medicalCertificateValidUntil}
-                  onChange={(e) => setMedicalCertificateValidUntil(e.target.value)}
+                  value={form.medicalCertificateValidUntil}
+                  onChange={(e) => updateForm({ medicalCertificateValidUntil: e.target.value })}
                   disabled={!isFullAdmin}
                 />
               </div>
@@ -426,30 +473,41 @@ export default function ClubMemberDetailPage() {
                 <Label htmlFor="phone">Téléphone (club)</Label>
                 <Input
                   id="phone"
-                  value={phoneOverride}
-                  onChange={(e) => setPhoneOverride(e.target.value)}
+                  value={form.phoneOverride}
+                  onChange={(e) => updateForm({ phoneOverride: e.target.value })}
                   disabled={!isFullAdmin}
                   placeholder={member.userPhone ?? undefined}
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="city">Ville</Label>
-                <Input
-                  id="city"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
+              <div className="space-y-1.5" id="field-commune">
+                <Label>Commune de résidence</Label>
+                <CommuneSinglePicker
+                  value={form.communeInsee ? { code: form.communeInsee, name: form.communeName } : null}
+                  onChange={(commune) =>
+                    updateForm({ communeInsee: commune?.code ?? null, communeName: commune?.name ?? null })
+                  }
                   disabled={!isFullAdmin}
                 />
+                {!form.communeInsee && member.city ? (
+                  <p className="text-xs text-amber-700">
+                    Ville saisie auparavant : « {member.city} ». Choisissez la commune correspondante.
+                  </p>
+                ) : null}
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="vip">VIP</Label>
-                <Switch id="vip" checked={isVip} onCheckedChange={setIsVip} disabled={!isFullAdmin} />
+                <Switch
+                  id="vip"
+                  checked={form.isVip}
+                  onCheckedChange={(isVip) => updateForm({ isVip })}
+                  disabled={!isFullAdmin}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Adhérent (paie une cotisation)</Label>
                 <Select
-                  value={isAdherent === null ? "auto" : isAdherent ? "yes" : "no"}
-                  onValueChange={(v) => setIsAdherent(v === "auto" ? null : v === "yes")}
+                  value={form.isAdherent === null ? "auto" : form.isAdherent ? "yes" : "no"}
+                  onValueChange={(v) => updateForm({ isAdherent: v === "auto" ? null : v === "yes" })}
                   disabled={!isFullAdmin}
                 >
                   <SelectTrigger>
@@ -464,11 +522,11 @@ export default function ClubMemberDetailPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5" id="field-isNewMember">
                 <Label>Nouvel adhérent (droit d&apos;entrée)</Label>
                 <Select
-                  value={isNewMember === null ? "auto" : isNewMember ? "new" : "existing"}
-                  onValueChange={(v) => setIsNewMember(v === "auto" ? null : v === "new")}
+                  value={form.isNewMember === null ? "auto" : form.isNewMember ? "new" : "existing"}
+                  onValueChange={(v) => updateForm({ isNewMember: v === "auto" ? null : v === "new" })}
                   disabled={!isFullAdmin}
                 >
                   <SelectTrigger>
@@ -481,11 +539,11 @@ export default function ClubMemberDetailPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5" id="field-licensedElsewhere">
                 <Label>Licencié dans un autre club</Label>
                 <Select
-                  value={licensedElsewhere === null ? "unknown" : licensedElsewhere ? "yes" : "no"}
-                  onValueChange={(v) => setLicensedElsewhere(v === "unknown" ? null : v === "yes")}
+                  value={form.licensedElsewhere === null ? "unknown" : form.licensedElsewhere ? "yes" : "no"}
+                  onValueChange={(v) => updateForm({ licensedElsewhere: v === "unknown" ? null : v === "yes" })}
                   disabled={!isFullAdmin}
                 >
                   <SelectTrigger>
@@ -501,8 +559,8 @@ export default function ClubMemberDetailPage() {
               <div className="space-y-1.5">
                 <Label>Rang forcé (optionnel)</Label>
                 <Select
-                  value={householdRank === null ? "unknown" : String(householdRank)}
-                  onValueChange={(v) => setHouseholdRank(v === "unknown" ? null : Number(v))}
+                  value={form.householdRank === null ? "unknown" : String(form.householdRank)}
+                  onValueChange={(v) => updateForm({ householdRank: v === "unknown" ? null : Number(v) })}
                   disabled={!isFullAdmin}
                 >
                   <SelectTrigger>
@@ -517,38 +575,22 @@ export default function ClubMemberDetailPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
-                <Label>Commune de résidence</Label>
-                {isFullAdmin ? (
-                  <TarifRuleCommunePicker
-                    selectedCodes={communeInsee ? [communeInsee] : []}
-                    onChange={(codes) => {
-                      const last = codes[codes.length - 1] ?? null
-                      setCommuneInsee(last)
-                      setCommuneName(last ? (getCommuneName(last) ?? null) : null)
-                    }}
-                  />
-                ) : null}
-                <p className="text-xs text-muted-foreground">
-                  {communeInsee ? `${communeName ?? communeInsee} (${communeInsee})` : "Non renseignée"}
-                </p>
-              </div>
-              {isFullAdmin ? (
-                <Button onClick={handleSaveProfile} disabled={updateProfile.isPending}>
-                  {updateProfile.isPending ? "Enregistrement..." : "Enregistrer"}
-                </Button>
-              ) : null}
             </CardContent>
           </Card>
 
-          <MemberHouseholdCard
-            organizationId={organizationId}
-            userId={member.userId}
-            householdId={data.member.householdId}
-            isFullAdmin={isFullAdmin}
-          />
+          <div id="member-household-card">
+            <MemberHouseholdCard
+              organizationId={organizationId}
+              userId={member.userId}
+              householdId={data.member.householdId}
+              isFullAdmin={isFullAdmin}
+            />
+            <p className="mt-1.5 px-1 text-xs text-muted-foreground">
+              Les changements du foyer s&apos;enregistrent immédiatement, sans passer par « Enregistrer ».
+            </p>
+          </div>
 
-          <Card>
+          <Card id="field-tags">
             <CardHeader>
               <CardTitle>Statuts</CardTitle>
             </CardHeader>
@@ -560,7 +602,7 @@ export default function ClubMemberDetailPage() {
                   <div key={tag.id} className="flex items-center gap-2">
                     <Checkbox
                       id={`tag-${tag.id}`}
-                      checked={tagIds.includes(tag.id)}
+                      checked={form.tagIds.includes(tag.id)}
                       onCheckedChange={(checked) => toggleTag(tag.id, checked === true)}
                       disabled={!isFullAdmin}
                     />
@@ -568,13 +610,23 @@ export default function ClubMemberDetailPage() {
                   </div>
                 ))
               )}
-              {isFullAdmin && tagsData?.tags.length ? (
-                <Button onClick={handleSaveTags} disabled={setMemberTags.isPending}>
-                  {setMemberTags.isPending ? "Enregistrement..." : "Enregistrer les statuts"}
-                </Button>
-              ) : null}
             </CardContent>
           </Card>
+
+          {isFullAdmin ? (
+            <div className="sticky bottom-4 z-10 space-y-2 rounded-lg border bg-background p-3 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs text-muted-foreground">
+                  {dirty ? "Modifications non enregistrées (dossier club, statuts)." : "Aucune modification."}
+                </p>
+                <Button onClick={handleSave} disabled={!dirty || updateProfile.isPending || setMemberTags.isPending}>
+                  {updateProfile.isPending || setMemberTags.isPending ? "Enregistrement..." : "Enregistrer"}
+                </Button>
+              </div>
+              {saveError ? <p className="text-xs text-destructive">{saveError}</p> : null}
+              {saveNotice ? <p className="text-xs text-green-700">{saveNotice}</p> : null}
+            </div>
+          ) : null}
 
           {isFullAdmin && !isOwner ? (
             <Card>
@@ -600,7 +652,8 @@ export default function ClubMemberDetailPage() {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Un coach n&apos;a accès qu&apos;à ses propres cours, pas au reste du dashboard.
+                  Un coach n&apos;a accès qu&apos;à ses propres cours, pas au reste du dashboard. Le rôle
+                  s&apos;applique immédiatement, sans passer par « Enregistrer ».
                 </p>
               </CardContent>
             </Card>

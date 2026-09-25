@@ -84,6 +84,15 @@ export function getClubMembersColumns(
       },
     },
     {
+      id: "commune",
+      header: "Commune",
+      cell: ({ row }) => {
+        // `city` is the legacy free text, shown until the profile has a resolved commune.
+        const label = row.original.communeName ?? row.original.city
+        return label ? <span className="text-sm">{label}</span> : <span className="text-sm text-muted-foreground">—</span>
+      },
+    },
+    {
       accessorKey: "licenseValidUntil",
       header: "Licence",
       cell: ({ row }) => {

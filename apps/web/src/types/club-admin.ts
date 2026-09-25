@@ -23,6 +23,9 @@ export interface ClubMemberListItem {
   sport: string | null
   skillLevel: string | null
   skillLevelVerified: boolean | null
+  /** Resolved commune name (INSEE) — `city` is the legacy free-text, kept until migrated. */
+  communeName?: string | null
+  city?: string | null
 }
 
 export interface ListClubMembersParams {
@@ -51,7 +54,6 @@ export interface ClubMemberDetail {
     userPhone: string | null
     phoneOverride: string | null
     notes: string | null
-    city: string | null
     // Effective value (club override ?? account value), raw so a legacy non-ISO value can be flagged.
     dateOfBirth: string | null
     // The editable club-level override on its own (null = not set, falls back to the account's).
@@ -75,6 +77,9 @@ export interface ClubMemberDetail {
   bookings: ClubMemberBooking[]
   cancelledBookingCount: number
   tagIds: string[]
+  /** Pricing fields still missing for this member (engine keys). null = nothing to show
+   * (no active grid, non-paying member, or amount already frozen); [] = price computable. */
+  pricingMissingFields: string[] | null
 }
 
 export interface UpdateClubMemberProfileInput {
@@ -117,6 +122,8 @@ export interface UpcomingBooking {
 export interface UpcomingBookingsResponse {
   upcoming: UpcomingBooking[]
   totalCount: number
+  /** Confirmed bookings that have not started yet (totalCount also counts past ones). */
+  upcomingCount: number
 }
 
 /**
