@@ -6,6 +6,7 @@ import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { clubTag, clubMemberTag } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
+import { isMemberOfOrg, notFound } from "../../../lib/club-access";
 import { setMemberTagsValidator } from "../validators";
 
 // Replaces a member's entire tag set in one call — simpler for a form with a multi-select than
@@ -19,6 +20,8 @@ export const setMemberTags = async (c: Context<HonoContext>) => {
   if (!isFullAdmin) {
     return c.json({ error: "Forbidden", message: "Full admin access required" }, 403);
   }
+
+  if (!(await isMemberOfOrg(validated.userId, validated.organizationId))) return notFound(c);
 
   if (validated.tagIds.length > 0) {
     const validTags = await db

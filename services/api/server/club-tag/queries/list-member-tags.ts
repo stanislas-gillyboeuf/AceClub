@@ -5,6 +5,7 @@ import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { clubMemberTag } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
+import { isMemberOfOrg, notFound } from "../../../lib/club-access";
 import { listMemberTagsValidator } from "../validators";
 
 export const listMemberTags = async (c: Context<HonoContext>) => {
@@ -16,6 +17,8 @@ export const listMemberTags = async (c: Context<HonoContext>) => {
   if (!isFullAdmin) {
     return c.json({ error: "Forbidden", message: "Full admin access required" }, 403);
   }
+
+  if (!(await isMemberOfOrg(validated.userId, validated.organizationId))) return notFound(c);
 
   const rows = await db
     .select({ tagId: clubMemberTag.tagId })

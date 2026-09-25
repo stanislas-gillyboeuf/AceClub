@@ -25,7 +25,6 @@ export const getAdminBoard = async (c: Context<HonoContext>) => {
     organizationId: query.organizationId,
     sport: query.sport,
     date: query.date,
-    userId: currentUser.id,
   });
 
   const now = new Date();

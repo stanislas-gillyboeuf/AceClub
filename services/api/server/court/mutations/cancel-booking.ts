@@ -5,7 +5,7 @@ import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { courtBooking, court } from "../../../db/schema";
 import { cancelBookingValidator } from "../validators";
-import { canAccessCourt } from "../lib/access";
+import { assertCanViewOrg, forbidden } from "../../../lib/club-access";
 import { assertOrgAdmin } from "../../../middleware/org-member";
 
 export const cancelBooking = async (c: Context<HonoContext>) => {
@@ -26,7 +26,6 @@ export const cancelBooking = async (c: Context<HonoContext>) => {
   const [bookedCourt] = await db
     .select({
       organizationId: court.organizationId,
-      accessPolicy: court.accessPolicy,
       cancellationPolicy: court.cancellationPolicy,
       cancellationWindowHours: court.cancellationWindowHours,
     })
@@ -45,15 +44,9 @@ export const cancelBooking = async (c: Context<HonoContext>) => {
     return c.json({ error: "Forbidden", message: "Not your booking" }, 403);
   }
 
-  if (bookedCourt) {
-    const allowed = await canAccessCourt(
-      currentUser.id,
-      bookedCourt.organizationId,
-      bookedCourt.accessPolicy,
-    );
-    if (!allowed) {
-      return c.json({ error: "Forbidden", message: "This court is reserved to club members" }, 403);
-    }
+  // The booker must still belong to the club; an admin override is checked above (admin/super-admin).
+  if (bookedCourt && !(await assertCanViewOrg(currentUser, bookedCourt.organizationId))) {
+    return forbidden(c);
   }
 
   if (booking.status !== "confirmed") {

@@ -9,7 +9,7 @@ import {
   post,
   db,
 } from "../helpers";
-import { court, courtBooking } from "../../db/schema";
+import { court, courtBooking, member } from "../../db/schema";
 import { eq } from "drizzle-orm";
 
 function tomorrowDate(): string {
@@ -39,6 +39,15 @@ describe("Court API (/api/court)", () => {
 
     const org = await createTestOrganization(userId);
     orgId = org.organizationId;
+
+    // Courts are reserved to members of the club, "open" courts included.
+    await db.insert(member).values({
+      id: ulid(),
+      userId: otherUserId,
+      organizationId: orgId,
+      role: "member",
+      createdAt: new Date(),
+    });
 
     const [createdCourt] = await db
       .insert(court)

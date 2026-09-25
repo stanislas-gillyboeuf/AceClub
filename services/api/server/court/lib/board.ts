@@ -2,7 +2,6 @@ import { and, eq, gte, inArray, lt } from "drizzle-orm";
 import { db } from "../../../db";
 import { court, courtBooking, user } from "../../../db/schema";
 import type { CourtSportType } from "../../../db/schema";
-import { canAccessCourt } from "./access";
 import { getCourtSettings } from "./settings";
 import { zonedDateTime } from "./timezone";
 
@@ -23,11 +22,13 @@ interface LoadBoardDataParams {
   organizationId: string;
   sport: CourtSportType;
   date: string;
-  userId: string;
 }
 
-/** Shared by get-board (member-facing) and get-admin-board — same courts/bookings, different field set. */
-export async function loadBoardData({ organizationId, sport, date, userId }: LoadBoardDataParams) {
+/**
+ * Shared by get-board (member-facing) and get-admin-board — same courts/bookings, different field set.
+ * Callers must have verified the viewer belongs to the club (or is a club admin / super-admin).
+ */
+export async function loadBoardData({ organizationId, sport, date }: LoadBoardDataParams) {
   const settings = await getCourtSettings(organizationId);
 
   const orgCourts = await db
@@ -37,16 +38,7 @@ export async function loadBoardData({ organizationId, sport, date, userId }: Loa
       and(eq(court.organizationId, organizationId), eq(court.sport, sport), eq(court.isActive, true)),
     );
 
-  const accessibleCourts = (
-    await Promise.all(
-      orgCourts.map(async (row) => ({
-        court: row,
-        allowed: await canAccessCourt(userId, organizationId, row.accessPolicy),
-      })),
-    )
-  )
-    .filter((row) => row.allowed)
-    .map((row) => row.court);
+  const accessibleCourts = orgCourts;
 
   const courtIds = accessibleCourts.map((c) => c.id);
   const dayStart = zonedDateTime(date, "00:00");

@@ -7,7 +7,8 @@ import { court, organization, user } from "../../../db/schema";
 import { createBookingValidator } from "../validators";
 import { slotFromStartTime } from "../lib/slots";
 import { BookingConflictError } from "../lib/errors";
-import { canAccessCourt } from "../lib/access";
+import { assertCanViewOrg, forbidden } from "../../../lib/club-access";
+import { validateNewBookingParticipants } from "../lib/booking-rules";
 import { participantsAreClubMembers } from "../lib/participants";
 import { resolveFeatureFlag } from "../../../lib/feature-flags";
 import { createLockedBooking } from "../lib/booking-overlap";
@@ -25,7 +26,6 @@ export const createBooking = async (c: Context<HonoContext>) => {
       id: court.id,
       isActive: court.isActive,
       organizationId: court.organizationId,
-      accessPolicy: court.accessPolicy,
       slotDurationMinutes: court.slotDurationMinutes,
       sport: court.sport,
     })
@@ -50,13 +50,24 @@ export const createBooking = async (c: Context<HonoContext>) => {
     );
   }
 
-  const allowed = await canAccessCourt(
+  // Booking is reserved to members of the club, "open" courts included.
+  if (!(await assertCanViewOrg(currentUser, targetCourt.organizationId))) return forbidden(c);
+
+  const participantRuleError = validateNewBookingParticipants(
     currentUser.id,
-    targetCourt.organizationId,
-    targetCourt.accessPolicy,
+    validated.participants.map((p) => p.userId),
   );
-  if (!allowed) {
-    return c.json({ error: "Forbidden", message: "This court is reserved to club members" }, 403);
+  if (participantRuleError) {
+    return c.json(
+      {
+        error: "BadRequest",
+        message:
+          participantRuleError === "creator_in_participants"
+            ? "The booker cannot also be listed as a participant"
+            : "A participant can only be listed once",
+      },
+      400,
+    );
   }
 
   const participantsOk = await participantsAreClubMembers(

@@ -4,17 +4,19 @@ import type { HonoContext } from "../../../types/hono";
 import { boardQueryValidator } from "../validators";
 import { loadBoardData, bookedByLabel } from "../lib/board";
 import { zonedDateTime } from "../lib/timezone";
+import { assertCanViewOrg, forbidden } from "../../../lib/club-access";
 
 export const getBoard = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
   // @ts-ignore
   const query = c.req.valid("query") as z.infer<typeof boardQueryValidator>;
 
+  if (!(await assertCanViewOrg(currentUser, query.organizationId))) return forbidden(c);
+
   const { accessibleCourts, bookings, hourList } = await loadBoardData({
     organizationId: query.organizationId,
     sport: query.sport,
     date: query.date,
-    userId: currentUser.id,
   });
 
   const now = new Date();

@@ -5,8 +5,8 @@ import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { court, courtBooking, courtBookingParticipant } from "../../../db/schema";
 import { joinBookingValidator } from "../validators";
-import { canAccessCourt } from "../lib/access";
-import { participantsAreClubMembers } from "../lib/participants";
+import { assertCanViewOrg, isMemberOfOrg, notFound } from "../../../lib/club-access";
+import { validateJoinTarget } from "../lib/booking-rules";
 import { resolveFeatureFlag } from "../../../lib/feature-flags";
 import { PADEL_TEAM_SIZE } from "../lib/padel";
 
@@ -26,22 +26,21 @@ export const joinBooking = async (c: Context<HonoContext>) => {
   }
 
   const [bookedCourt] = await db
-    .select({ organizationId: court.organizationId, accessPolicy: court.accessPolicy, sport: court.sport })
+    .select({ organizationId: court.organizationId, sport: court.sport })
     .from(court)
     .where(eq(court.id, booking.courtId))
     .limit(1);
 
-  if (!bookedCourt || bookedCourt.sport !== "padel") {
+  if (!bookedCourt) {
+    return c.json({ error: "NotFound", message: "Booking not found" }, 404);
+  }
+
+  // The caller must belong to the club of the booking ("open" courts included); a booking of
+  // another club is reported as not found.
+  if (!(await assertCanViewOrg(currentUser, bookedCourt.organizationId))) return notFound(c);
+
+  if (bookedCourt.sport !== "padel") {
     return c.json({ error: "BadRequest", message: "Only padel bookings support joining a team" }, 400);
-  }
-
-  const allowed = await canAccessCourt(currentUser.id, bookedCourt.organizationId, bookedCourt.accessPolicy);
-  if (!allowed) {
-    return c.json({ error: "Forbidden", message: "This court is reserved to club members" }, 403);
-  }
-
-  if (!(await participantsAreClubMembers(bookedCourt.organizationId, currentUser.id, [validated.userId]))) {
-    return c.json({ error: "BadRequest", message: "Participants must be members of this club" }, 400);
   }
 
   const bookingEnabled = await resolveFeatureFlag("court_booking", bookedCourt.organizationId);
@@ -53,9 +52,25 @@ export const joinBooking = async (c: Context<HonoContext>) => {
   }
 
   const existing = await db
-    .select({ slotIndex: courtBookingParticipant.slotIndex })
+    .select({ slotIndex: courtBookingParticipant.slotIndex, userId: courtBookingParticipant.userId })
     .from(courtBookingParticipant)
     .where(eq(courtBookingParticipant.bookingId, booking.id));
+
+  // Only the caller himself or a member of the club can be added, and nobody twice (owner included).
+  const joinError = validateJoinTarget({
+    callerId: currentUser.id,
+    targetUserId: validated.userId,
+    bookingOwnerId: booking.userId,
+    existingParticipantUserIds: existing.map((row) => row.userId),
+    targetIsClubMember:
+      !!validated.userId && (await isMemberOfOrg(validated.userId, bookedCourt.organizationId)),
+  });
+  if (joinError === "not_self_or_member") {
+    return c.json({ error: "BadRequest", message: "Participants must be members of this club" }, 400);
+  }
+  if (joinError === "already_in_booking") {
+    return c.json({ error: "Conflict", message: "Already part of this booking" }, 409);
+  }
 
   const takenSlots = new Set(existing.map((row) => row.slotIndex));
   let nextSlot = -1;

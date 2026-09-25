@@ -6,6 +6,7 @@ import { sendMemberAlertDigest } from "./services/send-member-alert-digest";
 import { db } from "../../db";
 import { userChallenge } from "../../db/schema/challenge/schema";
 import { eq, lt, and } from "drizzle-orm";
+import { safeEqual } from "../../lib/safe-equal";
 
 export const cronRouter = new Hono();
 
@@ -19,7 +20,7 @@ cronRouter.use("/*", async (c, next) => {
     return c.json({ error: "Cron not configured" }, 500);
   }
 
-  if (cronSecret !== expectedSecret) {
+  if (!cronSecret || !safeEqual(cronSecret, expectedSecret)) {
     return c.json({ error: "Unauthorized" }, 401);
   }
 

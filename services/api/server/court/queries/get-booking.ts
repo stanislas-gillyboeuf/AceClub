@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { court, courtBooking, courtBookingParticipant, user } from "../../../db/schema";
+import { isSuperAdmin, notFound } from "../../../lib/club-access";
+import { assertOrgAdmin } from "../../../middleware/org-member";
 
 export const getBooking = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -36,10 +38,6 @@ export const getBooking = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Booking not found" }, 404);
   }
 
-  if (row.userId !== currentUser.id) {
-    return c.json({ error: "Forbidden", message: "Not your booking" }, 403);
-  }
-
   const participantRows = await db
     .select({
       slotIndex: courtBookingParticipant.slotIndex,
@@ -51,6 +49,15 @@ export const getBooking = async (c: Context<HonoContext>) => {
     .leftJoin(user, eq(user.id, courtBookingParticipant.userId))
     .where(eq(courtBookingParticipant.bookingId, bookingId))
     .orderBy(courtBookingParticipant.slotIndex);
+
+  // Visible to the booker, the registered participants and the club's admins (or a super-admin);
+  // anyone else gets a 404 so the booking's existence is not revealed.
+  const canView =
+    row.userId === currentUser.id ||
+    participantRows.some((p) => p.userId === currentUser.id) ||
+    isSuperAdmin(currentUser) ||
+    (await assertOrgAdmin(currentUser.id, row.organizationId));
+  if (!canView) return notFound(c);
 
   const participants = participantRows.map((p) => ({
     slotIndex: p.slotIndex,

@@ -6,7 +6,7 @@ import { db } from "../../../db";
 import { court, courtBooking } from "../../../db/schema";
 import { listAvailabilityValidator } from "../validators";
 import { buildDaySlots } from "../lib/slots";
-import { canAccessCourt } from "../lib/access";
+import { assertCanViewOrg, notFound } from "../../../lib/club-access";
 import { getCourtSettings } from "../lib/settings";
 import { zonedDateTime } from "../lib/timezone";
 
@@ -18,7 +18,6 @@ export const listAvailability = async (c: Context<HonoContext>) => {
   const [targetCourt] = await db
     .select({
       organizationId: court.organizationId,
-      accessPolicy: court.accessPolicy,
       slotDurationMinutes: court.slotDurationMinutes,
     })
     .from(court)
@@ -29,14 +28,8 @@ export const listAvailability = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Court not found" }, 404);
   }
 
-  const allowed = await canAccessCourt(
-    currentUser.id,
-    targetCourt.organizationId,
-    targetCourt.accessPolicy,
-  );
-  if (!allowed) {
-    return c.json({ error: "Forbidden", message: "This court is reserved to club members" }, 403);
-  }
+  // Members only, "open" courts included; a court of another club is reported as not found.
+  if (!(await assertCanViewOrg(currentUser, targetCourt.organizationId))) return notFound(c);
 
   const settings = await getCourtSettings(targetCourt.organizationId);
 

@@ -3,7 +3,7 @@ import { db } from "../../../db";
 import { member } from "../../../db/schema";
 
 // Registered participants other than the caller must belong to the court's club: the caller's own
-// access is already gated by canAccessCourt, and guests have no userId (guestName only).
+// access is already gated by club membership, and guests have no userId (guestName only).
 export async function participantsAreClubMembers(
   organizationId: string,
   callerUserId: string,

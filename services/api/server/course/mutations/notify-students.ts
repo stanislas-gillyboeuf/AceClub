@@ -4,7 +4,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { course, courseEnrollment } from "../../../db/schema";
-import { assertClubFullAdmin } from "../../../middleware/club-admin";
+import { assertClubFullAdmin, assertCoach } from "../../../middleware/club-admin";
 import { sendBatchNotifications } from "../../../services/expo-push/broadcast-service";
 import { notifyStudentsValidator } from "../validators";
 
@@ -24,7 +24,10 @@ export const notifyStudents = async (c: Context<HonoContext>) => {
   }
 
   const isFullAdmin = await assertClubFullAdmin(currentUser.id, parentCourse.organizationId);
-  const isAssignedCoach = currentUser.id === parentCourse.coachUserId;
+  // The assigned coach must still hold the coach role in the club (a removed coach loses access).
+  const isAssignedCoach =
+    currentUser.id === parentCourse.coachUserId &&
+    (await assertCoach(currentUser.id, parentCourse.organizationId));
   if (!isFullAdmin && !isAssignedCoach) {
     return c.json({ error: "Forbidden", message: "Not authorized for this course" }, 403);
   }
