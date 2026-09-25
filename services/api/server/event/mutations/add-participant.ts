@@ -7,6 +7,7 @@ import { z } from "zod";
 import { addParticipantValidator } from "../validators";
 import { assertOrgAdmin } from "../../../middleware/org-member";
 import { assertCoach } from "../../../middleware/club-admin";
+import { isMemberOfOrg } from "../../../lib/club-access";
 
 // Organizer-only counterpart to register.ts: lets an admin/coach enroll any member directly,
 // at any time — skips the "event must be presale/on_sale" and "organization visibility
@@ -29,6 +30,11 @@ export const addParticipant = async (c: Context<HonoContext>) => {
     : false;
   if (!isAuthorized && currentUser.role !== "admin") {
     return c.json({ error: "Forbidden", message: "Not authorized to add participants" }, 403);
+  }
+
+  // Only members of the event's club can be enrolled (same rule as course enrollment).
+  if (eventRecord.organizationId && !(await isMemberOfOrg(body.userId, eventRecord.organizationId))) {
+    return c.json({ error: "BadRequest", message: "User is not a member of this club" }, 400);
   }
 
   const [existingRegistration] = await db

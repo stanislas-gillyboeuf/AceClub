@@ -2,10 +2,11 @@ import { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { event, eventParticipant } from "../../../db/schema/event/schema";
-import { organization, member } from "../../../db/schema/auth/schema";
+import { organization } from "../../../db/schema/auth/schema";
 import { eq, and, count } from "drizzle-orm";
 import { z } from "zod";
 import { getEventValidator } from "../validators";
+import { canSeeEvent, notFound } from "../../../lib/club-access";
 
 export const getEvent = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -49,43 +50,10 @@ export const getEvent = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Event not found" }, 404);
   }
 
-  // Draft events only visible to org admins or platform admins
-  if (result.status === "draft") {
-    if (result.organizationId) {
-      const [memberRecord] = await db
-        .select()
-        .from(member)
-        .where(
-          and(eq(member.organizationId, result.organizationId), eq(member.userId, currentUser.id)),
-        )
-        .limit(1);
-
-      if (!memberRecord || !["owner", "admin"].includes(memberRecord.role ?? "")) {
-        if (currentUser.role !== "admin") {
-          return c.json({ error: "NotFound", message: "Event not found" }, 404);
-        }
-      }
-    } else if (currentUser.role !== "admin") {
-      return c.json({ error: "NotFound", message: "Event not found" }, 404);
-    }
-  }
-
-  // Organization-only events require membership
-  if (result.visibility === "organization" && result.organizationId) {
-    const [memberRecord] = await db
-      .select()
-      .from(member)
-      .where(
-        and(eq(member.organizationId, result.organizationId), eq(member.userId, currentUser.id)),
-      )
-      .limit(1);
-
-    if (!memberRecord && currentUser.role !== "admin") {
-      return c.json(
-        { error: "Forbidden", message: "This event is restricted to organization members" },
-        403,
-      );
-    }
+  // One rule for every event: club members only (drafts: club admins only). A refusal is a 404
+  // so the existence of another club's event is never revealed.
+  if (!(await canSeeEvent(currentUser, { organizationId: result.organizationId, status: result.status }))) {
+    return notFound(c);
   }
 
   const [participantCount] = await db

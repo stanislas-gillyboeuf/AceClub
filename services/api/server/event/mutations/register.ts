@@ -2,10 +2,10 @@ import { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { event, eventParticipant } from "../../../db/schema/event/schema";
-import { member } from "../../../db/schema/auth/schema";
 import { eq, and, count } from "drizzle-orm";
 import { z } from "zod";
 import { registerEventValidator } from "../validators";
+import { canSeeEvent, notFound } from "../../../lib/club-access";
 
 export const registerEvent = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -18,30 +18,14 @@ export const registerEvent = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Event not found" }, 404);
   }
 
+  // Club members only, whatever the event's `visibility` says (404: never reveal another club's event).
+  if (!(await canSeeEvent(currentUser, eventRecord))) {
+    return notFound(c);
+  }
+
   // Only presale or on_sale events accept registrations
   if (eventRecord.status !== "presale" && eventRecord.status !== "on_sale") {
     return c.json({ error: "BadRequest", message: "Event is not open for registration" }, 400);
-  }
-
-  // Check visibility: organization-only events require membership
-  if (eventRecord.visibility === "organization" && eventRecord.organizationId) {
-    const [memberRecord] = await db
-      .select()
-      .from(member)
-      .where(
-        and(
-          eq(member.organizationId, eventRecord.organizationId),
-          eq(member.userId, currentUser.id),
-        ),
-      )
-      .limit(1);
-
-    if (!memberRecord && currentUser.role !== "admin") {
-      return c.json(
-        { error: "Forbidden", message: "This event is restricted to organization members" },
-        403,
-      );
-    }
   }
 
   const [existingRegistration] = await db

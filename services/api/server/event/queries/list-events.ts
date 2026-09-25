@@ -2,10 +2,12 @@ import { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { event, eventParticipant } from "../../../db/schema/event/schema";
-import { organization, member } from "../../../db/schema/auth/schema";
-import { eq, and, gte, lte, gt, lt, ne, count, sql, SQL, asc, desc } from "drizzle-orm";
+import { organization } from "../../../db/schema/auth/schema";
+import { eq, and, or, gte, lte, gt, lt, ne, count, sql, SQL, asc, desc, inArray, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { listEventsValidator } from "../validators";
+import { forbidden, getUserClubIds, isSuperAdmin } from "../../../lib/club-access";
+import { buildEventListScope } from "../lib/list-visibility";
 
 export const listEvents = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -17,41 +19,26 @@ export const listEvents = async (c: Context<HonoContext>) => {
   // Only show visible events (not draft, not cancelled)
   const conditions: SQL[] = [ne(event.status, "draft"), ne(event.status, "cancelled")];
 
-  // Visibility: public events are always visible, organization events only for members.
-  // Platform admins bypass this entirely (same rule already applied in get-event.ts) — they
-  // don't hold a `member` row for clubs they administer platform-side (see
-  // organization/mutations/create.ts, which deliberately strips it on creation).
-  if (currentUser.role === "admin") {
-    // No visibility condition — organizationId (if any) is applied by the generic filter below.
-  } else if (query.visibility === "organization") {
-    // If filtering by organization visibility, user must be a member
-    if (!query.organizationId) {
-      return c.json(
-        { error: "BadRequest", message: "organizationId required for organization visibility" },
-        400,
-      );
-    }
-    conditions.push(eq(event.visibility, "organization"));
-    conditions.push(eq(event.organizationId, query.organizationId));
-  } else {
-    // Default: show public events + organization events where user is a member
-    const userMemberships = await db
-      .select({ organizationId: member.organizationId })
-      .from(member)
-      .where(eq(member.userId, currentUser.id));
+  // Access: an event attached to a club is only listed for that club's members, whatever its
+  // `visibility` says ("public" only means something for an event with no club). Platform admins
+  // see everything. `query.visibility` below is a plain filter, never an access rule.
+  const scope = buildEventListScope({
+    isSuperAdmin: isSuperAdmin(currentUser),
+    clubIds: await getUserClubIds(currentUser.id),
+    requestedOrganizationId: query.organizationId,
+  });
+  if (scope.kind === "forbidden") return forbidden(c);
 
-    const memberOrgIds = userMemberships.map((m) => m.organizationId);
+  if (!scope.unrestricted) {
+    const access: SQL[] = [];
+    if (scope.includeClublessEvents) access.push(isNull(event.organizationId));
+    if (scope.organizationIds.length > 0) access.push(inArray(event.organizationId, scope.organizationIds));
+    // No club and no clubless events allowed: nothing is visible.
+    conditions.push(access.length > 0 ? (or(...access) as SQL) : sql`false`);
+  }
 
-    if (memberOrgIds.length > 0) {
-      conditions.push(
-        sql`(${event.visibility} = 'public' OR (${event.visibility} = 'organization' AND ${event.organizationId} IN (${sql.join(
-          memberOrgIds.map((id) => sql`${id}`),
-          sql`, `,
-        )})))`,
-      );
-    } else {
-      conditions.push(eq(event.visibility, "public"));
-    }
+  if (query.visibility) {
+    conditions.push(eq(event.visibility, query.visibility));
   }
 
   if (query.organizationId) {
