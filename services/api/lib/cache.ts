@@ -11,8 +11,10 @@ export const CacheTTL = {
 // Cache key builders
 export const CacheKeys = {
   userMe: (userId: string) => `user:me:${userId}`,
-  leaderboardGlobal: (page: number, limit: number) => `leaderboard:global:${page}:${limit}`,
-  leaderboardWeekly: (page: number, limit: number) => `leaderboard:weekly:${page}:${limit}`,
+  leaderboardGlobal: (page: number, limit: number, orgId?: string | null) =>
+    `leaderboard:global:${orgId ?? "all"}:${page}:${limit}`,
+  leaderboardWeekly: (page: number, limit: number, orgId?: string | null) =>
+    `leaderboard:weekly:${orgId ?? "all"}:${page}:${limit}`,
   leaderboardOrg: (orgId: string, page: number, limit: number) =>
     `leaderboard:org:${orgId}:${page}:${limit}`,
   orgStats: (orgId: string) => `org:stats:${orgId}`,

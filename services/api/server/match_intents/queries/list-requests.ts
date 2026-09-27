@@ -20,7 +20,6 @@ export const listRequests = async (c: Context<HonoContext>) => {
           columns: {
             id: true,
             name: true,
-            email: true,
             image: true,
           },
         },

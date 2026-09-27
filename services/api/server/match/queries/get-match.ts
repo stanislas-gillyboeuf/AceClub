@@ -13,11 +13,13 @@ import {
 } from "../../../db/schema/match/schema";
 import { user, organization, member } from "../../../db/schema/auth/schema";
 import { eq, and, inArray, sql, count } from "drizzle-orm";
+import { canViewMatch, notFound } from "../../../lib/club-access";
+import { projectMatchUser } from "../lib/user-projection";
 
 export const getMatch = async (c: Context<HonoContext>) => {
   try {
     const matchId = c.req.param("id");
-    const currentUser = c.get("user");
+    const currentUser = c.get("user")!;
 
     if (!matchId) {
       return c.json({ error: "Match ID is required" }, 400);
@@ -26,10 +28,13 @@ export const getMatch = async (c: Context<HonoContext>) => {
     const matchData = await db.select().from(match).where(eq(match.id, matchId)).limit(1);
 
     if (matchData.length === 0) {
-      return c.json({ error: "Match not found" }, 404);
+      return notFound(c);
     }
 
     const foundMatch = matchData[0];
+
+    // Same 404 for "does not exist" and "not yours to see": never reveal a match by its id.
+    if (!(await canViewMatch(currentUser, matchId))) return notFound(c);
 
     const [participantsRaw, setsData, commentsRaw, photosData, likeData] = await Promise.all([
       db
@@ -40,7 +45,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
           side: matchParticipant.side,
           isWinner: matchParticipant.isWinner,
           createdAt: matchParticipant.createdAt,
-          user: user,
+          user: { id: user.id, name: user.name, image: user.image },
         })
         .from(matchParticipant)
         .leftJoin(user, eq(matchParticipant.userId, user.id))
@@ -72,7 +77,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
           content: matchComment.content,
           createdAt: matchComment.createdAt,
           updatedAt: matchComment.updatedAt,
-          user: user,
+          user: { id: user.id, name: user.name, image: user.image },
         })
         .from(matchComment)
         .leftJoin(user, eq(matchComment.userId, user.id))
@@ -99,7 +104,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
       side: p.side,
       isWinner: p.isWinner,
       createdAt: p.createdAt,
-      user: p.user,
+      user: projectMatchUser(p.user),
     }));
 
     const comments = commentsRaw.map((c) => ({
@@ -109,7 +114,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
       content: c.content,
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
-      user: c.user,
+      user: projectMatchUser(c.user),
     }));
 
     // Group scores by set efficiently

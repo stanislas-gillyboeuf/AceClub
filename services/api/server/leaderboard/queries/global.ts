@@ -6,11 +6,27 @@ import { user } from "../../../db/schema/auth/schema";
 import { userLevel } from "../../../db/schema/level/schema";
 import { userStreak } from "../../../db/schema/streak/schema";
 import { cacheGet, cacheSet, CacheKeys, CacheTTL } from "../../../lib/cache";
+import { isMemberOfOrg, forbidden } from "../../../lib/club-access";
+import { rankableUserSql, resolveLeaderboardScope } from "../lib/scope";
+import { buildOrganizationLeaderboard } from "./organization";
 
 export const getGlobalLeaderboard = async (c: Context<HonoContext>) => {
+  const currentUser = c.get("user")!;
   const page = Number(c.req.query("page") ?? "1");
   const limit = Math.min(Number(c.req.query("limit") ?? "20"), 100);
   const offset = (page - 1) * limit;
+
+  // With a club: that club's ranking (members only). Without: the platform ranking, super-admin only.
+  const organizationId = c.req.query("organizationId");
+  const scope = resolveLeaderboardScope({
+    organizationId,
+    user: currentUser,
+    isMember: organizationId ? await isMemberOfOrg(currentUser.id, organizationId) : false,
+  });
+  if (scope.kind === "forbidden") return forbidden(c);
+  if (scope.kind === "club") {
+    return c.json(await buildOrganizationLeaderboard(scope.organizationId, page, limit));
+  }
 
   const cacheKey = CacheKeys.leaderboardGlobal(page, limit);
   const cached = await cacheGet(cacheKey);
@@ -28,11 +44,15 @@ export const getGlobalLeaderboard = async (c: Context<HonoContext>) => {
     .from(user)
     .leftJoin(userLevel, sql`${user.id} = ${userLevel.userId}`)
     .leftJoin(userStreak, sql`${user.id} = ${userStreak.userId}`)
+    .where(rankableUserSql)
     .orderBy(desc(sql`coalesce(${userLevel.totalAces}, 0)`))
     .limit(limit)
     .offset(offset);
 
-  const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(user);
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(user)
+    .where(rankableUserSql);
 
   const response = {
     leaderboard: results.map((r, index) => ({

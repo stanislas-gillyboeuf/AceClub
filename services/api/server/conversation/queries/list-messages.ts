@@ -9,7 +9,7 @@ import {
 } from "../../../db/schema/conversation/schema";
 import { user } from "../../../db/schema/auth/schema";
 import { userPreference } from "../../../db/schema/user-preference/schema";
-import { member, organization } from "../../../db/schema/auth/schema";
+import { organization } from "../../../db/schema/auth/schema";
 import { matchRequest as matchRequestTable } from "../../../db/schema/match_intents/schema";
 import { eq, and, desc, lt, inArray } from "drizzle-orm";
 import { decryptMessageContent } from "../lib/decrypt-content";
@@ -194,8 +194,7 @@ export const listMessages = async (c: Context<HonoContext>) => {
           organizationName: organization.name,
         })
         .from(userPreference)
-        .leftJoin(member, eq(userPreference.userId, member.userId))
-        .leftJoin(organization, eq(member.organizationId, organization.id))
+        .leftJoin(organization, eq(userPreference.organizationId, organization.id))
         .where(inArray(userPreference.userId, requesterIds));
 
       for (const p of profileRows) {

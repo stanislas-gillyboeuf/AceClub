@@ -7,12 +7,31 @@ import { match, matchParticipant, set, setScore } from "../../../db/schema/match
 import { conversation, conversationParticipant } from "../../../db/schema/conversation/schema";
 import { user, member, organization } from "../../../db/schema/auth/schema";
 import { NewSetScore } from "../../../db/schema/match/type";
+import { userPreference } from "../../../db/schema";
 import { and, eq, inArray, sql } from "drizzle-orm";
+import { isSuperAdmin } from "../../../lib/club-access";
+import { projectMatchUser } from "../lib/user-projection";
+import { pickVenueOrganizationId } from "../lib/venue";
 
 export const createMatch = async (c: Context<HonoContext>) => {
   try {
+    const currentUser = c.get("user")!;
     // @ts-ignore
     const validated = c.req.valid("json") as z.infer<typeof createMatchValidator>;
+
+    // `createdBy` from the body is no longer trusted (kept in the validator only so installed apps
+    // keep working): the creator is always the caller, and the caller must be one of the players.
+    // Otherwise anybody could create a match, and a private conversation, between two other people.
+    if (
+      !isSuperAdmin(currentUser) &&
+      !validated.participants.some((p) => p.userId === currentUser.id)
+    ) {
+      return c.json(
+        { error: "Forbidden", message: "You must be one of the match participants" },
+        403,
+      );
+    }
+    const createdBy = currentUser.id;
 
     if (validated.participants.length !== 2) {
       return c.json(
@@ -160,47 +179,38 @@ export const createMatch = async (c: Context<HonoContext>) => {
         );
       }
 
-      // Auto-determine venue from participants' organizations
-      let venueOrganizationId: string | null = null;
+      // Auto-determine venue from participants' organizations (deterministic, see lib/venue.ts)
       const participantUserIds = validated.participants.map((p) => p.userId);
+      const venueUserIds = [...new Set([...participantUserIds, createdBy])];
 
-      const memberships = await tx
-        .select({
-          userId: member.userId,
-          organizationId: member.organizationId,
-        })
-        .from(member)
-        .where(inArray(member.userId, participantUserIds));
+      const [memberships, [creatorPreference]] = await Promise.all([
+        tx
+          .select({ userId: member.userId, organizationId: member.organizationId })
+          .from(member)
+          .where(inArray(member.userId, venueUserIds)),
+        tx
+          .select({ organizationId: userPreference.organizationId })
+          .from(userPreference)
+          .where(eq(userPreference.userId, createdBy))
+          .limit(1),
+      ]);
 
-      if (memberships.length > 0) {
-        const orgsByUser = new Map<string, string[]>();
-        for (const m of memberships) {
-          const orgs = orgsByUser.get(m.userId) || [];
-          orgs.push(m.organizationId);
-          orgsByUser.set(m.userId, orgs);
-        }
-
-        // Check for common organization
-        const user1Orgs = orgsByUser.get(participantUserIds[0]) || [];
-        const user2Orgs = orgsByUser.get(participantUserIds[1]) || [];
-        const commonOrg = user1Orgs.find((org) => user2Orgs.includes(org));
-
-        if (commonOrg) {
-          venueOrganizationId = commonOrg;
-        } else {
-          // Default to creator's first org
-          const creatorOrgs = orgsByUser.get(validated.createdBy) || [];
-          if (creatorOrgs.length > 0) {
-            venueOrganizationId = creatorOrgs[0];
-          }
-        }
+      const clubsByUser = new Map<string, string[]>();
+      for (const m of memberships) {
+        clubsByUser.set(m.userId, [...(clubsByUser.get(m.userId) ?? []), m.organizationId]);
       }
+      const venueOrganizationId = pickVenueOrganizationId({
+        participantIds: participantUserIds,
+        clubsByUser,
+        creatorId: createdBy,
+        creatorPreferredOrgId: creatorPreference?.organizationId ?? null,
+      });
 
       // Create match with conversationId
       const [createdMatch] = await tx
         .insert(match)
         .values({
-          createdBy: validated.createdBy,
+          createdBy,
           conversationId: conversationId,
           venueOrganizationId,
           status: validated.status,
@@ -281,7 +291,7 @@ export const createMatch = async (c: Context<HonoContext>) => {
           side: matchParticipant.side,
           isWinner: matchParticipant.isWinner,
           createdAt: matchParticipant.createdAt,
-          user: user,
+          user: { id: user.id, name: user.name, image: user.image },
         })
         .from(matchParticipant)
         .leftJoin(user, eq(matchParticipant.userId, user.id))
@@ -294,7 +304,7 @@ export const createMatch = async (c: Context<HonoContext>) => {
         side: p.side,
         isWinner: p.isWinner,
         createdAt: p.createdAt,
-        user: p.user,
+        user: projectMatchUser(p.user),
       }));
 
       return {

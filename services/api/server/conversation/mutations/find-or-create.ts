@@ -6,6 +6,8 @@ import { user } from "../../../db/schema/auth/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { ulid } from "ulid";
 import { generateConversationKey } from "../lib/generate-key";
+import { z } from "zod";
+import { findOrCreateConversationValidator } from "../validators";
 
 export const findOrCreateConversation = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user");
@@ -13,7 +15,8 @@ export const findOrCreateConversation = async (c: Context<HonoContext>) => {
     return c.json({ error: "Unauthorized" }, 401);
   }
 
-  const { participantId } = await c.req.json();
+  // @ts-ignore
+  const { participantId } = c.req.valid("json") as z.infer<typeof findOrCreateConversationValidator>;
 
   if (participantId === currentUser.id) {
     return c.json(
@@ -24,12 +27,12 @@ export const findOrCreateConversation = async (c: Context<HonoContext>) => {
 
   // Verify participant exists
   const [participant] = await db
-    .select({ id: user.id })
+    .select({ id: user.id, banned: user.banned })
     .from(user)
     .where(eq(user.id, participantId))
     .limit(1);
 
-  if (!participant) {
+  if (!participant || participant.banned) {
     return c.json({ error: "NotFound", message: "Participant not found" }, 404);
   }
 

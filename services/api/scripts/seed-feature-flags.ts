@@ -6,13 +6,6 @@ import { ulid } from "ulid";
 const FEATURE_FLAGS = [
   {
     id: ulid(),
-    key: "restrict_discovery",
-    enabled: false,
-    description:
-      "Restreint la découverte aux membres de la même organisation. Désactive la géolocalisation et le filtre par rayon.",
-  },
-  {
-    id: ulid(),
     key: "court_booking",
     enabled: false,
     description: "Active la réservation de terrain (carte profil + écran de réservation).",

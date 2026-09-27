@@ -5,7 +5,9 @@ import { updateVenueValidator } from "../validators";
 import { db } from "../../../db";
 import { match, matchParticipant } from "../../../db/schema/match/schema";
 import { organization } from "../../../db/schema/auth/schema";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
+import { member } from "../../../db/schema/auth/schema";
+import { isAllowedVenue } from "../lib/venue";
 
 export const updateVenue = async (c: Context<HonoContext>) => {
   try {
@@ -39,8 +41,26 @@ export const updateVenue = async (c: Context<HonoContext>) => {
       );
     }
 
-    // Validate organization exists (if not null)
+    // The venue must be the club of one of the participants (or none): a match cannot be attached
+    // to a club nobody in it belongs to.
     if (validated.venueOrganizationId) {
+      const participantIds = participants.map((p) => p.userId);
+      const memberships = await db
+        .select({ userId: member.userId, organizationId: member.organizationId })
+        .from(member)
+        .where(inArray(member.userId, participantIds));
+      const clubsByUser = new Map<string, string[]>();
+      for (const row of memberships) {
+        clubsByUser.set(row.userId, [...(clubsByUser.get(row.userId) ?? []), row.organizationId]);
+      }
+      if (!isAllowedVenue(validated.venueOrganizationId, participantIds, clubsByUser)) {
+        return c.json(
+          { error: "Forbidden", message: "The venue must be the club of one of the participants" },
+          403,
+        );
+      }
+
+      // Validate organization exists
       const [org] = await db
         .select()
         .from(organization)

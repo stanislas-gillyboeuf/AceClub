@@ -3,6 +3,7 @@ import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { match, matchParticipant, matchLike } from "../../../db/schema/match/schema";
 import { eq, and, ne, count } from "drizzle-orm";
+import { canViewMatch, notFound } from "../../../lib/club-access";
 import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
 
 export const toggleLike = async (c: Context<HonoContext>) => {
@@ -24,8 +25,9 @@ export const toggleLike = async (c: Context<HonoContext>) => {
     .where(eq(match.id, matchId))
     .limit(1);
 
-  if (!foundMatch) {
-    return c.json({ error: "Match not found" }, 404);
+  // A match you may not see is a 404, and cannot be liked (no notification spam either).
+  if (!foundMatch || !(await canViewMatch(currentUser, matchId))) {
+    return notFound(c);
   }
 
   // Check if already liked

@@ -5,7 +5,10 @@ import { createMatchIntentValidator } from "../validators";
 import { db } from "../../../db";
 import { matchIntent, matchIntentTeammate } from "../../../db/schema/match_intents/schema";
 import { userPreference } from "../../../db/schema/user-preference/schema";
-import { eq } from "drizzle-orm";
+import { user as userTable, member } from "../../../db/schema";
+import { eq, inArray } from "drizzle-orm";
+import { getUserClubIds } from "../../../lib/club-access";
+import { invalidTeammateIds } from "../lib/visibility";
 import { zonedDateTime } from "../../court/lib/timezone";
 
 export const createMatchIntent = async (c: Context<HonoContext>) => {
@@ -28,6 +31,36 @@ export const createMatchIntent = async (c: Context<HonoContext>) => {
     const teammateUserIds = [...new Set(validated.teammateUserIds)].filter((id) => id !== userId);
     if (teammateUserIds.length !== validated.teammateUserIds.length) {
       return c.json({ error: "BadRequest", message: "Invalid teammates list" }, 400);
+    }
+
+    if (teammateUserIds.length > 0) {
+      const [callerClubIds, teammateRows, teammateMembers] = await Promise.all([
+        getUserClubIds(userId),
+        db
+          .select({ id: userTable.id, isGhost: userTable.is_ghost })
+          .from(userTable)
+          .where(inArray(userTable.id, teammateUserIds)),
+        db
+          .select({ userId: member.userId, organizationId: member.organizationId })
+          .from(member)
+          .where(inArray(member.userId, teammateUserIds)),
+      ]);
+      const clubsByUser = new Map<string, string[]>();
+      for (const row of teammateMembers) {
+        clubsByUser.set(row.userId, [...(clubsByUser.get(row.userId) ?? []), row.organizationId]);
+      }
+      const refused = invalidTeammateIds(
+        teammateUserIds,
+        callerClubIds,
+        teammateRows.map((row) => ({
+          userId: row.id,
+          isGhost: !!row.isGhost,
+          clubIds: clubsByUser.get(row.id) ?? [],
+        })),
+      );
+      if (refused.length > 0) {
+        return c.json({ error: "BadRequest", message: "Invalid teammates list" }, 400);
+      }
     }
 
     const [preference] = await db

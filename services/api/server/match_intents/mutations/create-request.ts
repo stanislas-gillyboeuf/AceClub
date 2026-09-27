@@ -4,11 +4,13 @@ import { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { matchIntent, matchIntentTeammate, matchRequest, user, userPreference } from "../../../db/schema";
 import { conversation, conversationParticipant } from "../../../db/schema/conversation/schema";
-import { member, organization } from "../../../db/schema/auth/schema";
+import { organization } from "../../../db/schema/auth/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { generateConversationKey } from "../../conversation/lib/generate-key";
 import { insertSystemMessage } from "../../conversation/lib/insert-message";
 import { createRequestValidator } from "../validators";
+import { getUserClubIds, isSuperAdmin, notFound } from "../../../lib/club-access";
+import { canRequestIntent } from "../lib/visibility";
 
 const PADEL_TEAM_SIZE = 3;
 
@@ -34,6 +36,15 @@ export const createRequest = async (c: Context<HonoContext>) => {
     }
     if (intent.userId === userId) {
       return c.json({ error: "BadRequest", message: "Cannot request your own intent" }, 400);
+    }
+
+    // Partner search is closed to other clubs: an intent is visible to members of its owner's clubs.
+    const [requesterClubIds, ownerClubIds] = await Promise.all([
+      getUserClubIds(userId),
+      getUserClubIds(intent.userId),
+    ]);
+    if (!canRequestIntent({ isSuperAdmin: isSuperAdmin(c.get("user")!), requesterClubIds, ownerClubIds })) {
+      return notFound(c);
     }
 
     let sport = intent.sport;
@@ -130,8 +141,7 @@ export const createRequest = async (c: Context<HonoContext>) => {
         organizationName: organization.name,
       })
       .from(userPreference)
-      .leftJoin(member, eq(userPreference.userId, member.userId))
-      .leftJoin(organization, eq(member.organizationId, organization.id))
+      .leftJoin(organization, eq(userPreference.organizationId, organization.id))
       .where(eq(userPreference.userId, userId))
       .limit(1);
 

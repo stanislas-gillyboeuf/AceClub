@@ -12,14 +12,24 @@ import {
 } from "../../../db/schema";
 import { userLevel } from "../../../db/schema/level/schema";
 import { and, desc, eq, gte, inArray, lt, ne, or, isNull, sql } from "drizzle-orm";
-import { resolveFeatureFlag } from "../../../lib/feature-flags";
+import { forbidden, isSuperAdmin, resolveClubId } from "../../../lib/club-access";
 import { alias } from "drizzle-orm/pg-core";
 
 export const discover = async (c: Context<HonoContext>) => {
   try {
-    const userId = c.get("user")?.id;
-    if (!userId) {
+    const currentUser = c.get("user");
+    const userId = currentUser?.id;
+    if (!currentUser || !userId) {
       return c.json({ error: "User not authenticated" }, 401);
+    }
+
+    // Discovery is always scoped to ONE club: the explicit one (checked), else the preferred club.
+    // A player without a club sees nothing; the platform super-admin is not scoped.
+    const clubResolution = await resolveClubId(currentUser, c.req.query("organizationId"));
+    if ("error" in clubResolution && clubResolution.error === "forbidden") return forbidden(c);
+    const scopedClubId = "clubId" in clubResolution ? clubResolution.clubId : null;
+    if (!scopedClubId && !isSuperAdmin(currentUser)) {
+      return c.json({ data: [], pagination: { nextCursor: null, hasMore: false, limit: 20 } });
     }
 
     const cursor = c.req.query("cursor");
@@ -41,21 +51,17 @@ export const discover = async (c: Context<HonoContext>) => {
     const [currentUserData] = await db
       .select({
         level: sql<number>`coalesce(${userLevel.currentLevel}, 1)`,
-        organizationId: member.organizationId,
         sport: userPreference.sport,
       })
       .from(userTable)
       .leftJoin(userLevel, eq(userTable.id, userLevel.userId))
-      .leftJoin(member, eq(userTable.id, member.userId))
       .leftJoin(userPreference, eq(userTable.id, userPreference.userId))
       .where(eq(userTable.id, userId))
       .limit(1);
 
     const currentUserLevel = currentUserData?.level ?? 1;
-    const currentUserOrgId = currentUserData?.organizationId;
+    const currentUserOrgId = scopedClubId;
     const currentUserSport = currentUserData?.sport;
-
-    const isDiscoveryRestricted = await resolveFeatureFlag("restrict_discovery", currentUserOrgId);
 
     const intentOwnerMember = alias(member, "intent_owner_member");
     const intentOwnerPreference = alias(userPreference, "intent_owner_preference");
@@ -66,9 +72,9 @@ export const discover = async (c: Context<HonoContext>) => {
       or(isNull(matchIntent.date), gte(matchIntent.date, now)),
     ];
 
-    // When restrict_discovery is enabled, hard filter to same organization only
-    if (isDiscoveryRestricted && currentUserOrgId) {
-      conditions.push(eq(intentOwnerMember.organizationId, currentUserOrgId));
+    // Hard filter: only intents whose owner belongs to the active club.
+    if (scopedClubId) {
+      conditions.push(eq(intentOwnerMember.organizationId, scopedClubId));
     }
 
     // The intent's own sport is the source of truth (a dual-sport player's intents can be
@@ -225,7 +231,6 @@ export const discover = async (c: Context<HonoContext>) => {
         createdAt: matchIntent.createdAt,
         user_id: userTable.id,
         user_name: userTable.name,
-        user_email: userTable.email,
         user_image: userTable.image,
         user_level: sql<number>`coalesce(${userLevel.currentLevel}, 1)`.as("user_level"),
         user_skill_level: intentOwnerPreference.skillLevel,
@@ -327,11 +332,10 @@ export const discover = async (c: Context<HonoContext>) => {
             }))
           : null,
       user:
-        row.user_id != null && row.user_name != null && row.user_email != null
+        row.user_id != null && row.user_name != null
           ? {
               id: row.user_id,
               name: row.user_name,
-              email: row.user_email,
               image: row.user_image,
               level: Number(row.user_level) || 1,
               // Level for THIS intent's sport, not necessarily the owner's primary sport.
@@ -357,7 +361,6 @@ export const discover = async (c: Context<HonoContext>) => {
         hasMore,
         limit,
       },
-      isDiscoveryRestricted,
     });
   } catch (error) {
     const errorMessage = (error as Error).message;

@@ -1,21 +1,21 @@
 import { Context } from "hono";
-import { eq, desc, sql } from "drizzle-orm";
+import { and, eq, desc, sql } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { user, member } from "../../../db/schema/auth/schema";
 import { userLevel } from "../../../db/schema/level/schema";
 import { userStreak } from "../../../db/schema/streak/schema";
 import { cacheGet, cacheSet, CacheKeys, CacheTTL } from "../../../lib/cache";
+import { assertCanViewOrg, forbidden } from "../../../lib/club-access";
+import { rankableUserSql } from "../lib/scope";
 
-export const getOrganizationLeaderboard = async (c: Context<HonoContext>) => {
-  const orgId = c.req.param("orgId");
-  const page = Number(c.req.query("page") ?? "1");
-  const limit = Math.min(Number(c.req.query("limit") ?? "20"), 100);
+/** A club's ranking: its members only, without ghosts and banned accounts. */
+export async function buildOrganizationLeaderboard(orgId: string, page: number, limit: number) {
   const offset = (page - 1) * limit;
 
   const cacheKey = CacheKeys.leaderboardOrg(orgId, page, limit);
   const cached = await cacheGet(cacheKey);
-  if (cached) return c.json(cached);
+  if (cached) return cached;
 
   const results = await db
     .select({
@@ -30,7 +30,7 @@ export const getOrganizationLeaderboard = async (c: Context<HonoContext>) => {
     .innerJoin(user, eq(member.userId, user.id))
     .leftJoin(userLevel, eq(user.id, userLevel.userId))
     .leftJoin(userStreak, eq(user.id, userStreak.userId))
-    .where(eq(member.organizationId, orgId))
+    .where(and(eq(member.organizationId, orgId), rankableUserSql))
     .orderBy(desc(sql`coalesce(${userLevel.totalAces}, 0)`))
     .limit(limit)
     .offset(offset);
@@ -38,7 +38,8 @@ export const getOrganizationLeaderboard = async (c: Context<HonoContext>) => {
   const [{ count }] = await db
     .select({ count: sql<number>`count(*)` })
     .from(member)
-    .where(eq(member.organizationId, orgId));
+    .innerJoin(user, eq(member.userId, user.id))
+    .where(and(eq(member.organizationId, orgId), rankableUserSql));
 
   const response = {
     leaderboard: results.map((r, index) => ({
@@ -61,5 +62,15 @@ export const getOrganizationLeaderboard = async (c: Context<HonoContext>) => {
   };
 
   await cacheSet(cacheKey, response, CacheTTL.MEDIUM);
-  return c.json(response);
+  return response;
+}
+
+export const getOrganizationLeaderboard = async (c: Context<HonoContext>) => {
+  const orgId = c.req.param("orgId");
+  const currentUser = c.get("user")!;
+  if (!(await assertCanViewOrg(currentUser, orgId))) return forbidden(c);
+
+  const page = Number(c.req.query("page") ?? "1");
+  const limit = Math.min(Number(c.req.query("limit") ?? "20"), 100);
+  return c.json(await buildOrganizationLeaderboard(orgId, page, limit));
 };

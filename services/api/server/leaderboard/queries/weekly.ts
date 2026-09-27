@@ -2,16 +2,32 @@ import { Context } from "hono";
 import { eq, desc, sql, and, gte } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { user } from "../../../db/schema/auth/schema";
+import { user, member } from "../../../db/schema/auth/schema";
 import { acesTransaction } from "../../../db/schema/level/schema";
 import { cacheGet, cacheSet, CacheKeys, CacheTTL } from "../../../lib/cache";
+import { isMemberOfOrg, forbidden } from "../../../lib/club-access";
+import { rankableUserSql, resolveLeaderboardScope } from "../lib/scope";
 
 export const getWeeklyLeaderboard = async (c: Context<HonoContext>) => {
+  const currentUser = c.get("user")!;
   const page = Number(c.req.query("page") ?? "1");
   const limit = Math.min(Number(c.req.query("limit") ?? "20"), 100);
   const offset = (page - 1) * limit;
 
-  const cacheKey = CacheKeys.leaderboardWeekly(page, limit);
+  // The weekly ranking is a club's (members only); the platform-wide one is super-admin only.
+  const organizationId = c.req.query("organizationId");
+  const scope = resolveLeaderboardScope({
+    organizationId,
+    user: currentUser,
+    isMember: organizationId ? await isMemberOfOrg(currentUser.id, organizationId) : false,
+  });
+  if (scope.kind === "forbidden") return forbidden(c);
+  const orgId = scope.kind === "club" ? scope.organizationId : null;
+  const clubFilter = orgId
+    ? sql`${user.id} in (select ${member.userId} from ${member} where ${member.organizationId} = ${orgId})`
+    : sql`true`;
+
+  const cacheKey = CacheKeys.leaderboardWeekly(page, limit, orgId);
   const cached = await cacheGet(cacheKey);
   if (cached) return c.json(cached);
 
@@ -34,6 +50,7 @@ export const getWeeklyLeaderboard = async (c: Context<HonoContext>) => {
       acesTransaction,
       and(eq(user.id, acesTransaction.userId), gte(acesTransaction.createdAt, startOfWeek)),
     )
+    .where(and(rankableUserSql, clubFilter))
     .groupBy(user.id, user.name, user.image)
     .orderBy(desc(sql`coalesce(sum(${acesTransaction.amount}), 0)`))
     .limit(limit)
@@ -45,7 +62,8 @@ export const getWeeklyLeaderboard = async (c: Context<HonoContext>) => {
     .leftJoin(
       acesTransaction,
       and(eq(user.id, acesTransaction.userId), gte(acesTransaction.createdAt, startOfWeek)),
-    );
+    )
+    .where(and(rankableUserSql, clubFilter));
 
   const response = {
     leaderboard: results.map((r, index) => ({
