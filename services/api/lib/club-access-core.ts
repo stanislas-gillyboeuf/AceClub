@@ -92,12 +92,21 @@ export interface MatchVisibilityData {
   /** Participants who set `matchFeedback.visibleToClub = false`. */
   hiddenFromClub: ReadonlySet<string>;
   viewerClubIds: readonly string[];
+  /**
+   * Participants who still owe an explicit cross-club confirmation
+   * (`server/match/lib/confirmation.ts`). While any exists, the match is withheld from EVERY club
+   * feed — a single unconfirmed participant is enough, regardless of whose club is looking —
+   * though it always stays visible in the participants' own personal match views. Omitted (or
+   * empty) by callers that don't track confirmation, so existing behavior is unaffected.
+   */
+  unconfirmedParticipantIds?: ReadonlySet<string>;
 }
 
 /**
  * The ONE rule for "who can see this match": its participants; a super-admin; and members of a
- * club that has a participant who kept the match visible to their club. It is deliberately the
- * single place to extend later (confirmation, "partners") without touching the routes.
+ * club that has a participant who kept the match visible to their club, provided no participant is
+ * still owed a cross-club confirmation. It is deliberately the single place to extend later
+ * ("partners") without touching the routes.
  */
 export function canViewMatchPure(
   viewer: AccessUser,
@@ -105,6 +114,9 @@ export function canViewMatchPure(
 ): boolean {
   if (isSuperAdmin(viewer)) return true;
   if (data.participantIds.includes(viewer.id)) return true;
+  if (data.unconfirmedParticipantIds?.size) {
+    if (data.participantIds.some((id) => data.unconfirmedParticipantIds!.has(id))) return false;
+  }
   for (const participantId of data.participantIds) {
     if (data.hiddenFromClub.has(participantId)) continue;
     const clubs = data.participantClubIds.get(participantId) ?? [];

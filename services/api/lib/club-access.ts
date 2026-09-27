@@ -95,11 +95,14 @@ export async function canViewMatch(viewer: AccessUser, matchId: string): Promise
   if (isSuperAdmin(viewer)) return true;
 
   const participants = await db
-    .select({ userId: matchParticipant.userId })
+    .select({ userId: matchParticipant.userId, confirmedAt: matchParticipant.confirmedAt })
     .from(matchParticipant)
     .where(eq(matchParticipant.matchId, matchId));
   const participantIds = participants.map((row) => row.userId);
   if (participantIds.length === 0) return false;
+  const unconfirmedParticipantIds = new Set(
+    participants.filter((row) => row.confirmedAt === null).map((row) => row.userId),
+  );
 
   const viewerClubIds = await getUserClubIds(viewer.id);
 
@@ -124,6 +127,7 @@ export async function canViewMatch(viewer: AccessUser, matchId: string): Promise
     participantClubIds,
     hiddenFromClub: new Set(feedbackRows.map((row) => row.userId)),
     viewerClubIds,
+    unconfirmedParticipantIds,
   });
 }
 

@@ -27,6 +27,7 @@ import {
   uploadPhoto,
   deletePhoto,
   toggleLike,
+  confirmMatch,
 } from "./mutations";
 import { getMatch, listMatches } from "./queries";
 
@@ -73,3 +74,6 @@ matchRouter.delete("/:id/feedback", deleteFeedback);
 
 // Like endpoint (toggle)
 matchRouter.post("/:id/like", toggleLike);
+
+// Cross-club participant confirms their own row on the match (see server/match/lib/confirmation.ts)
+matchRouter.post("/:id/confirm", confirmMatch);

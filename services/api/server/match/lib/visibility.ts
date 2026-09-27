@@ -17,7 +17,11 @@ export async function filterViewableMatchIds(
 
   const [participants, hiddenRows, viewerClubIds] = await Promise.all([
     db
-      .select({ matchId: matchParticipant.matchId, userId: matchParticipant.userId })
+      .select({
+        matchId: matchParticipant.matchId,
+        userId: matchParticipant.userId,
+        confirmedAt: matchParticipant.confirmedAt,
+      })
       .from(matchParticipant)
       .where(inArray(matchParticipant.matchId, [...matchIds])),
     db
@@ -51,6 +55,13 @@ export async function filterViewableMatchIds(
     set.add(row.userId);
     hiddenByMatch.set(row.matchId, set);
   }
+  const unconfirmedByMatch = new Map<string, Set<string>>();
+  for (const row of participants) {
+    if (row.confirmedAt !== null) continue;
+    const set = unconfirmedByMatch.get(row.matchId) ?? new Set<string>();
+    set.add(row.userId);
+    unconfirmedByMatch.set(row.matchId, set);
+  }
 
   const viewable = new Set<string>();
   for (const matchId of matchIds) {
@@ -59,6 +70,7 @@ export async function filterViewableMatchIds(
       participantClubIds: clubsByUser,
       hiddenFromClub: hiddenByMatch.get(matchId) ?? new Set<string>(),
       viewerClubIds,
+      unconfirmedParticipantIds: unconfirmedByMatch.get(matchId),
     });
     if (canView) viewable.add(matchId);
   }

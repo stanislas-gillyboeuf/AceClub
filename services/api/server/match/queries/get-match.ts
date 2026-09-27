@@ -15,6 +15,8 @@ import { user, organization, member } from "../../../db/schema/auth/schema";
 import { eq, and, inArray, sql, count } from "drizzle-orm";
 import { canViewMatch, notFound } from "../../../lib/club-access";
 import { projectMatchUser } from "../lib/user-projection";
+import { isConfirmationExpired, isMatchSettledPure } from "../lib/confirmation";
+import { applyMatchFinishRewards } from "../lib/finish-match-rewards";
 
 export const getMatch = async (c: Context<HonoContext>) => {
   try {
@@ -44,6 +46,7 @@ export const getMatch = async (c: Context<HonoContext>) => {
           userId: matchParticipant.userId,
           side: matchParticipant.side,
           isWinner: matchParticipant.isWinner,
+          confirmedAt: matchParticipant.confirmedAt,
           createdAt: matchParticipant.createdAt,
           user: { id: user.id, name: user.name, image: user.image },
         })
@@ -97,15 +100,29 @@ export const getMatch = async (c: Context<HonoContext>) => {
         .where(eq(matchLike.matchId, matchId)),
     ]);
 
+    const now = new Date();
     const participants = participantsRaw.map((p) => ({
       id: p.id,
       matchId: p.matchId,
       userId: p.userId,
       side: p.side,
       isWinner: p.isWinner,
+      confirmedAt: p.confirmedAt,
+      // Only meaningful while confirmedAt is null: whether the 7-day window has passed.
+      confirmationExpired: p.confirmedAt === null && isConfirmationExpired(foundMatch.createdAt, now),
       createdAt: p.createdAt,
       user: projectMatchUser(p.user),
     }));
+
+    // Lazy settle-on-read: nothing polls for expiry, so a read is what notices the window has
+    // passed and finally releases Aces that were only deferred, never denied (see confirmation.ts).
+    if (foundMatch.status === "finished" && isMatchSettledPure(participantsRaw, foundMatch.createdAt, now)) {
+      try {
+        await applyMatchFinishRewards(matchId);
+      } catch (settleError) {
+        console.error("Error settling deferred match rewards:", settleError);
+      }
+    }
 
     const comments = commentsRaw.map((c) => ({
       id: c.id,

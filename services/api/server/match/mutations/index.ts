@@ -12,3 +12,4 @@ export { deleteFeedback } from "./delete-feedback";
 export { uploadPhoto } from "./upload-photo";
 export { deletePhoto } from "./delete-photo";
 export { toggleLike } from "./toggle-like";
+export { confirmMatch } from "./confirm-match";

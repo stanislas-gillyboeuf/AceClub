@@ -54,6 +54,10 @@ export const matchParticipant = pgTable(
       .references(() => user.id),
     side: MatchSide("side").notNull(),
     isWinner: boolean("is_winner").default(false).notNull(),
+    // Null only while a cross-club confirmation is still owed (see server/match/lib/confirmation.ts).
+    // Set immediately at creation for self-added participants, same-club opponents, and matches
+    // born from an already-mutually-accepted partner request — consent already exists there.
+    confirmedAt: timestamp("confirmed_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [

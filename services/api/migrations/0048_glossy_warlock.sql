@@ -1,0 +1,1 @@
+ALTER TABLE "match_participant" ADD COLUMN "confirmed_at" timestamp;

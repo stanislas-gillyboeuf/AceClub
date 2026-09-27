@@ -115,6 +115,32 @@ describe("canViewMatchPure", () => {
   it("lets the super-admin see every match", () => {
     expect(canViewMatchPure(superAdmin, { ...base, viewerClubIds: [] })).toBe(true);
   });
+
+  describe("cross-club confirmation pending", () => {
+    const pending = { ...base, unconfirmedParticipantIds: new Set(["p2"]) };
+
+    it("withholds the match from every club feed while any participant is unconfirmed", () => {
+      expect(canViewMatchPure({ id: "x" }, { ...pending, viewerClubIds: ["A"] })).toBe(false);
+      expect(canViewMatchPure({ id: "y" }, { ...pending, viewerClubIds: ["B"] })).toBe(false);
+    });
+
+    it("never affects a participant's own view of their match", () => {
+      expect(canViewMatchPure({ id: "p1" }, { ...pending, viewerClubIds: [] })).toBe(true);
+      expect(canViewMatchPure({ id: "p2" }, { ...pending, viewerClubIds: [] })).toBe(true);
+    });
+
+    it("never affects the super-admin", () => {
+      expect(canViewMatchPure(superAdmin, { ...pending, viewerClubIds: [] })).toBe(true);
+    });
+
+    it("reveals it again once nobody is left unconfirmed", () => {
+      expect(canViewMatchPure({ id: "x" }, { ...base, unconfirmedParticipantIds: new Set(), viewerClubIds: ["A"] })).toBe(true);
+    });
+
+    it("ignores an omitted unconfirmedParticipantIds (existing callers unaffected)", () => {
+      expect(canViewMatchPure({ id: "x" }, { ...base, viewerClubIds: ["A"] })).toBe(true);
+    });
+  });
 });
 
 describe("getUserClubIdsWith", () => {

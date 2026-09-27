@@ -12,6 +12,7 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import { isSuperAdmin } from "../../../lib/club-access";
 import { projectMatchUser } from "../lib/user-projection";
 import { pickVenueOrganizationId } from "../lib/venue";
+import { requiresConfirmation } from "../lib/confirmation";
 
 export const createMatch = async (c: Context<HonoContext>) => {
   try {
@@ -222,16 +223,28 @@ export const createMatch = async (c: Context<HonoContext>) => {
         })
         .returning();
 
-      // Create participants in batch
+      // Create participants in batch. A participant added by someone else, with no club in common
+      // with the creator, owes an explicit confirmation (see server/match/lib/confirmation.ts) —
+      // everyone else (self-added, same club) carries consent already, confirmed immediately.
+      const creatorClubIds = clubsByUser.get(createdBy) ?? [];
       const participants = await tx
         .insert(matchParticipant)
         .values(
-          validated.participants.map((participant) => ({
-            matchId: createdMatch.id,
-            userId: participant.userId,
-            side: participant.side,
-            isWinner: participant.isWinner || false,
-          })),
+          validated.participants.map((participant) => {
+            const needsConfirmation = requiresConfirmation({
+              creatorClubIds,
+              participantClubIds: clubsByUser.get(participant.userId) ?? [],
+              wasSelfAdded: participant.userId === createdBy,
+              viaAcceptedRequest: false,
+            });
+            return {
+              matchId: createdMatch.id,
+              userId: participant.userId,
+              side: participant.side,
+              isWinner: participant.isWinner || false,
+              confirmedAt: needsConfirmation ? null : new Date(),
+            };
+          }),
         )
         .returning();
 

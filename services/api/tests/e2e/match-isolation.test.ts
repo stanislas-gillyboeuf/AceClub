@@ -63,9 +63,11 @@ describe("Matches, feeds and leaderboards are scoped to clubs", () => {
       status: "finished",
       createdAt: new Date(),
     });
+    // Settled fixtures: these tests are about club isolation, not confirmation (covered by
+    // tests/e2e/match-confirmation.test.ts) — never leave confirmedAt null here.
     await db.insert(matchParticipant).values([
-      { id: ulid(), matchId: id, userId: p1, side: "home" },
-      { id: ulid(), matchId: id, userId: p2, side: "away" },
+      { id: ulid(), matchId: id, userId: p1, side: "home", confirmedAt: new Date() },
+      { id: ulid(), matchId: id, userId: p2, side: "away", confirmedAt: new Date() },
     ]);
     matchIds.push(id);
     return id;

@@ -71,9 +71,12 @@ async function acceptTennisRequest(c: Context<HonoContext>, request: RequestRow,
     })
     .returning();
 
+  // Both sides already consented (a request was sent and mutually accepted) — confirmed
+  // immediately, whatever their clubs, per requiresConfirmation's `viaAcceptedRequest` case.
+  const confirmedAt = new Date();
   await db.insert(matchParticipant).values([
-    { matchId: newMatch.id, userId: intent.userId, side: "home" },
-    { matchId: newMatch.id, userId: request.requesterId, side: "away" },
+    { matchId: newMatch.id, userId: intent.userId, side: "home", confirmedAt },
+    { matchId: newMatch.id, userId: request.requesterId, side: "away", confirmedAt },
   ]);
 
   const [updatedRequest] = await db

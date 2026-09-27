@@ -1,9 +1,19 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "../../../db";
 import { userLevel, acesTransaction } from "../../../db/schema/level/schema";
 import { getAcesRewards } from "../../../lib/game-config-service";
 import { calculateLevelFromAcesAsync } from "./xp-calculator";
 import type { MatchParticipant } from "../../../db/schema/match/type";
+
+/** Idempotency guard: has this match already had Aces attributed for it? */
+export async function hasAttributedAces(matchId: string): Promise<boolean> {
+  const [existing] = await db
+    .select({ id: acesTransaction.id })
+    .from(acesTransaction)
+    .where(and(eq(acesTransaction.referenceId, matchId), eq(acesTransaction.referenceType, "match")))
+    .limit(1);
+  return !!existing;
+}
 
 export async function attributeMatchAces(
   matchId: string,

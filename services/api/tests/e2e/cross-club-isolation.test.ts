@@ -185,9 +185,10 @@ describe("Cross-cutting club isolation", () => {
       status: "finished",
       createdAt: new Date(),
     });
+    // Settled fixture: confirmation is covered by tests/e2e/match-confirmation.test.ts.
     await db.insert(matchParticipant).values([
-      { id: ulid(), matchId, userId: owner.user.id, side: "home" },
-      { id: ulid(), matchId, userId: regular.id, side: "away" },
+      { id: ulid(), matchId, userId: owner.user.id, side: "home", confirmedAt: new Date() },
+      { id: ulid(), matchId, userId: regular.id, side: "away", confirmedAt: new Date() },
     ]);
     matchIds.push(matchId);
 
