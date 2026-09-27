@@ -81,14 +81,12 @@ export interface DiscoverItemRaw {
 export interface DiscoverResponseRaw {
   data: DiscoverItemRaw[];
   pagination: CursorPagination;
-  isDiscoveryRestricted: boolean;
 }
 
 /** Mapped response used by the UI */
 export interface DiscoverResponse {
   data: MatchIntentWithUser[];
   pagination: CursorPagination;
-  isDiscoveryRestricted: boolean;
 }
 
 export interface CreateMatchIntentRequest {

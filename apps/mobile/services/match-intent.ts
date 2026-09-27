@@ -42,12 +42,12 @@ export const matchIntentService = {
   listMatchIntents: (cursor?: string, limit = 20) =>
     api.get<ListMatchIntentsResponse>("/match-intents", { cursor, limit }),
 
+  // Always scoped to the active club server-side — the old radius/geolocation
+  // filter is moot now that discovery never spans clubs.
   discover: async (params?: {
+    organizationId?: string;
     cursor?: string;
     limit?: number;
-    latitude?: number;
-    longitude?: number;
-    radius?: number;
     sport?: "tennis" | "padel";
     levels?: string[];
   }): Promise<DiscoverResponse> => {
@@ -60,7 +60,6 @@ export const matchIntentService = {
     return {
       data: raw.data.map(mapDiscoverItem),
       pagination: raw.pagination,
-      isDiscoveryRestricted: raw.isDiscoveryRestricted,
     };
   },
 

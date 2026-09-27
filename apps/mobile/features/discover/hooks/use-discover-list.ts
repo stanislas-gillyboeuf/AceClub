@@ -1,38 +1,32 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDiscover } from "@/hooks/use-match-intent";
 import { usePreferences } from "@/hooks/use-user";
+import { useActiveClub } from "@/hooks/use-active-club";
 import type { MatchIntentWithUser } from "@/types/match-intent";
-
-interface LocationState {
-  latitude: number | null;
-  longitude: number | null;
-}
 
 export function useDiscoverList() {
   const { data: preferences } = usePreferences();
+  const { activeClubId } = useActiveClub();
   const [sport, setSport] = useState<"tennis" | "padel">("tennis");
   const [hasAppliedOwnSport, setHasAppliedOwnSport] = useState(false);
   const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
-  const [selectedRadius, setSelectedRadius] = useState<number | undefined>(undefined);
-  const [location, setLocation] = useState<LocationState>({ latitude: null, longitude: null });
   const [items, setItems] = useState<MatchIntentWithUser[]>([]);
   const [cursor, setCursor] = useState<string | undefined>(undefined);
 
   const queryParams = useMemo(
     () => ({
-      latitude: location.latitude ?? undefined,
-      longitude: location.longitude ?? undefined,
-      radius: selectedRadius,
+      organizationId: activeClubId ?? undefined,
       sport,
       levels: selectedLevels,
       cursor,
       limit: 20,
     }),
-    [location.latitude, location.longitude, selectedRadius, sport, selectedLevels, cursor]
+    [activeClubId, sport, selectedLevels, cursor]
   );
 
+  // Discovery is always scoped to the active club server-side, so it's
+  // pointless to query before we know which club that is.
   const discoverQuery = useDiscover(queryParams);
-  const isDiscoveryRestricted = discoverQuery.data?.isDiscoveryRestricted ?? false;
 
   // Default the sport toggle to the viewer's own registered sport (once), instead of always
   // starting on tennis — otherwise a padel-only player sees an empty feed until they toggle manually.
@@ -47,7 +41,7 @@ export function useDiscoverList() {
   useEffect(() => {
     setCursor(undefined);
     setItems([]);
-  }, [sport, selectedLevels, selectedRadius, location.latitude, location.longitude]);
+  }, [sport, selectedLevels, activeClubId]);
 
   useEffect(() => {
     if (!discoverQuery.data) return;
@@ -74,10 +68,6 @@ export function useDiscoverList() {
     setSelectedLevels([]);
   }, []);
 
-  const updateLocation = useCallback((lat: number, lng: number) => {
-    setLocation({ latitude: lat, longitude: lng });
-  }, []);
-
   const refetchRef = useRef(discoverQuery.refetch);
   refetchRef.current = discoverQuery.refetch;
   const refresh = useCallback(async () => {
@@ -91,15 +81,12 @@ export function useDiscoverList() {
     changeSport,
     selectedLevels,
     toggleLevel,
-    selectedRadius,
-    setSelectedRadius,
-    isDiscoveryRestricted,
+    hasClub: !!activeClubId,
     isLoading: discoverQuery.isLoading,
     isRefreshing: discoverQuery.isFetching && !discoverQuery.isLoading && !cursor,
     isFetchingMore: discoverQuery.isFetching && !!cursor,
     hasMore,
     loadMore,
-    updateLocation,
     refresh,
   };
 }

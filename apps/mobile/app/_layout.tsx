@@ -18,8 +18,18 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
 import { GoogleSignin } from "@/lib/google-signin";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useActiveClub } from "@/hooks/use-active-club";
 import { OfflineSheet } from "@/components/offline-sheet";
 import { DiscoverFab } from "@/components/ui/discover-fab";
+
+/** Mounted once near the root purely to run `useActiveClub`'s init effect
+ * (pick/repair the active club as soon as memberships are known). Every
+ * screen that needs the active club calls the hook itself; this just
+ * guarantees it runs even before any of them mount. */
+function ActiveClubSync() {
+  useActiveClub();
+  return null;
+}
 
 if (GoogleSignin) {
   GoogleSignin.configure({
@@ -60,6 +70,7 @@ function RootNavigator() {
       </Stack>
       <DiscoverFab />
       <OfflineSheet />
+      <ActiveClubSync />
     </View>
   );
 }

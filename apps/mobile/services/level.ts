@@ -6,8 +6,8 @@ export const levelService = {
     api.get<UserLevel>("/level/me"),
 
   getUserLevel: (userId: string) =>
-    api.get<UserLevel>(`/level/${userId}`),
+    api.get<UserLevel>(`/level/user/${userId}`),
 
   getAcesHistory: (page = 1, limit = 20) =>
-    api.get<AcesHistoryResponse>("/level/aces-history", { page, limit }),
+    api.get<AcesHistoryResponse>("/level/history", { page, limit }),
 };

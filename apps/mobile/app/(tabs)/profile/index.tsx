@@ -17,6 +17,7 @@ import { useMyLevel } from "@/hooks/use-level";
 import { useMyBadges, useAllBadges } from "@/hooks/use-reward";
 import { useMatchIntents, useDeleteMatchIntent } from "@/hooks/use-match-intent";
 import { useMyOrganizations, useActiveMemberRole } from "@/hooks/use-organization";
+import { useActiveClub } from "@/hooks/use-active-club";
 import { useUserInvitations, useAcceptInvitation, useRejectInvitation } from "@/hooks/use-invitation";
 import { useMatches } from "@/hooks/use-match";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -95,6 +96,7 @@ export default function Profile() {
     refetch: refetchIntents,
   } = useMatchIntents();
   const { data: orgs, refetch: refetchOrgs } = useMyOrganizations();
+  const { activeClubId } = useActiveClub();
   const { data: memberRole } = useActiveMemberRole();
   const {
     data: invitations,
@@ -115,7 +117,7 @@ export default function Profile() {
   // Derived data
   const currentUserId = user?.id ?? "";
   const matchIntents = intentsData?.data ?? [];
-  const primaryOrg = orgs?.[0] ?? null;
+  const primaryOrg = orgs?.find((o) => o.id === activeClubId) ?? orgs?.[0] ?? null;
   const pendingInvitations = (invitations ?? []).filter((i) => i.status === "pending");
   const badges = (badgesData?.badges ?? []).map((b) => ({ ...b, isUnlocked: true }));
   const totalBadges = allBadgesData?.badges?.length ?? 0;

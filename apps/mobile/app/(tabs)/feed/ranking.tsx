@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState } from "react";
 import {
   View,
   Platform,
-  PlatformColor,
   Pressable,
   StyleSheet,
   ActivityIndicator,
@@ -13,11 +12,10 @@ import { Stack, useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 import {
-  useInfiniteGlobalLeaderboard,
   useInfiniteOrganizationLeaderboard,
   useInfiniteWeeklyLeaderboard,
 } from "@/hooks/use-leaderboard";
-import { useActiveMember } from "@/hooks/use-organization";
+import { useActiveClub } from "@/hooks/use-active-club";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 import { LeaderboardRow } from "@/features/leaderboard/components/leaderboard-row";
@@ -29,10 +27,12 @@ import { SkeletonRow } from "@/components/ui/skeleton";
 import { colors, semanticColors, spacing } from "@/constants/theme";
 import type { LeaderboardEntry, WeeklyLeaderboardEntry } from "@/types/leaderboard";
 
-type LeaderboardType = "global" | "organization" | "weekly";
+// The platform-wide "Global" leaderboard is now reserved to super-admins
+// server-side (matches and feeds are club-scoped) — only "Club" and "Semaine"
+// remain, and "Semaine" is now the club's weekly leaderboard, not a global one.
+type LeaderboardType = "organization" | "weekly";
 
 const LEADERBOARD_OPTIONS: { value: LeaderboardType; label: string }[] = [
-  { value: "global", label: "Global" },
   { value: "organization", label: "Club" },
   { value: "weekly", label: "Semaine" },
 ];
@@ -40,21 +40,10 @@ const LEADERBOARD_OPTIONS: { value: LeaderboardType; label: string }[] = [
 export default function Ranking() {
   const scheme = useColorScheme();
   const router = useRouter();
-  const [selectedType, setSelectedType] = useState<LeaderboardType>("global");
+  const [selectedType, setSelectedType] = useState<LeaderboardType>("organization");
 
-  const { data: activeMember } = useActiveMember();
-  const organizationId = activeMember?.organizationId ?? "";
-
-  // Global leaderboard
-  const {
-    data: globalData,
-    fetchNextPage: fetchNextGlobal,
-    hasNextPage: hasNextGlobal,
-    isFetchingNextPage: isFetchingNextGlobal,
-    isLoading: globalLoading,
-    isRefetching: globalRefetching,
-    refetch: refetchGlobal,
-  } = useInfiniteGlobalLeaderboard();
+  const { activeClubId } = useActiveClub();
+  const organizationId = activeClubId ?? "";
 
   // Organization leaderboard
   const {
@@ -67,7 +56,7 @@ export default function Ranking() {
     refetch: refetchOrg,
   } = useInfiniteOrganizationLeaderboard(organizationId);
 
-  // Weekly leaderboard
+  // Weekly leaderboard (club-scoped)
   const {
     data: weeklyData,
     fetchNextPage: fetchNextWeekly,
@@ -76,13 +65,9 @@ export default function Ranking() {
     isLoading: weeklyLoading,
     isRefetching: weeklyRefetching,
     refetch: refetchWeekly,
-  } = useInfiniteWeeklyLeaderboard();
+  } = useInfiniteWeeklyLeaderboard(organizationId);
 
   // Flatten pages
-  const globalEntries = useMemo(
-    () => globalData?.pages.flatMap((p) => p.leaderboard) ?? [],
-    [globalData]
-  );
   const orgEntries = useMemo(
     () => orgData?.pages.flatMap((p) => p.leaderboard) ?? [],
     [orgData]
@@ -93,57 +78,28 @@ export default function Ranking() {
   );
 
   // Current state based on selected type
-  const isLoading =
-    selectedType === "global"
-      ? globalLoading
-      : selectedType === "organization"
-        ? orgLoading
-        : weeklyLoading;
-
-  const isRefetching =
-    selectedType === "global"
-      ? globalRefetching
-      : selectedType === "organization"
-        ? orgRefetching
-        : weeklyRefetching;
-
-  const isFetchingNext =
-    selectedType === "global"
-      ? isFetchingNextGlobal
-      : selectedType === "organization"
-        ? isFetchingNextOrg
-        : isFetchingNextWeekly;
-
-  const hasNext =
-    selectedType === "global"
-      ? hasNextGlobal
-      : selectedType === "organization"
-        ? hasNextOrg
-        : hasNextWeekly;
+  const isLoading = selectedType === "organization" ? orgLoading : weeklyLoading;
+  const isRefetching = selectedType === "organization" ? orgRefetching : weeklyRefetching;
+  const isFetchingNext = selectedType === "organization" ? isFetchingNextOrg : isFetchingNextWeekly;
+  const hasNext = selectedType === "organization" ? hasNextOrg : hasNextWeekly;
 
   const onEndReached = useCallback(() => {
     if (!hasNext || isFetchingNext) return;
-    if (selectedType === "global") fetchNextGlobal();
-    else if (selectedType === "organization") fetchNextOrg();
+    if (selectedType === "organization") fetchNextOrg();
     else fetchNextWeekly();
-  }, [selectedType, hasNext, isFetchingNext, fetchNextGlobal, fetchNextOrg, fetchNextWeekly]);
+  }, [selectedType, hasNext, isFetchingNext, fetchNextOrg, fetchNextWeekly]);
 
   const onRefresh = useCallback(() => {
-    if (selectedType === "global") refetchGlobal();
-    else if (selectedType === "organization") refetchOrg();
+    if (selectedType === "organization") refetchOrg();
     else refetchWeekly();
-  }, [selectedType, refetchGlobal, refetchOrg, refetchWeekly]);
+  }, [selectedType, refetchOrg, refetchWeekly]);
 
   const goBack = () => router.dismiss();
 
   // Use a unified data structure for rendering
   const isWeekly = selectedType === "weekly";
   const entries: (LeaderboardEntry | WeeklyLeaderboardEntry)[] =
-    selectedType === "global"
-      ? globalEntries
-      : selectedType === "organization"
-        ? orgEntries
-        : weeklyEntries;
+    selectedType === "organization" ? orgEntries : weeklyEntries;
 
   return (
     <>

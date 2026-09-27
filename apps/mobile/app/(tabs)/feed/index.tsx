@@ -15,9 +15,11 @@ import { Gauge } from "lucide-react-native";
 import { useMe, usePreferences } from "@/hooks/use-user";
 import { useMyLevel } from "@/hooks/use-level";
 import { useInfiniteMatches } from "@/hooks/use-match";
-import { useActiveMember } from "@/hooks/use-organization";
+import { useActiveClub } from "@/hooks/use-active-club";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useUnreadMessagesCount } from "@/hooks/use-conversation";
+import { ClubSwitcher } from "@/components/ui/club-switcher";
+import { JoinClubPrompt } from "@/components/ui/join-club-prompt";
 
 import { MessagesHeaderButton } from "@/features/chat/components/MessagesHeaderButton";
 import { LevelProgressCard } from "@/features/feed/components/level-progress-card";
@@ -43,8 +45,8 @@ export default function Feed() {
   const goToRanking = () => router.push("/(tabs)/feed/ranking");
   const goToProgression = () => router.push("/(tabs)/feed/progression");
 
-  const { data: activeMember } = useActiveMember();
-  const organizationId = activeMember?.organizationId;
+  const { activeClubId, clubs, hasMultipleClubs, hasNoClub, setActiveClub } = useActiveClub();
+  const organizationId = activeClubId ?? undefined;
 
   const {
     data: finishedData,
@@ -54,12 +56,15 @@ export default function Feed() {
     isLoading: finishedLoading,
     isRefetching,
     refetch,
-  } = useInfiniteMatches({
-    status: "finished",
-    limit: 20,
-    organizationId,
-    participantOnly: false,
-  });
+  } = useInfiniteMatches(
+    {
+      status: "finished",
+      limit: 20,
+      organizationId,
+      participantOnly: false,
+    },
+    { enabled: !!organizationId }
+  );
 
   const finishedMatches = useMemo(
     () => finishedData?.pages.flatMap((p) => p.matches) ?? [],
@@ -128,6 +133,18 @@ export default function Feed() {
         onEndReachedThreshold={0.3}
         ListHeaderComponent={
           <View>
+            {hasMultipleClubs ? (
+              <View style={styles.section}>
+                <ClubSwitcher
+                  clubs={clubs.map((c) => ({ id: c.id, name: c.name }))}
+                  selectedId={activeClubId}
+                  onSelect={setActiveClub}
+                />
+              </View>
+            ) : null}
+
+            {hasNoClub ? <JoinClubPrompt /> : null}
+
             {/* Skill level (FFT/padel), not the Aces/XP level below */}
             {skillLevelLabel ? (
               <View style={[styles.section, styles.skillLevelRow]}>

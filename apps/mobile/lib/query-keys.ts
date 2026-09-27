@@ -68,14 +68,18 @@ export const queryKeys = {
     const all = root("leaderboard");
     return {
       all,
-      global: (page: number, limit: number) => [...all, "global", page, limit] as const,
-      globalInfinite: (limit: number) => [...all, "global", "infinite", limit] as const,
+      global: (page: number, limit: number, organizationId?: string) =>
+        [...all, "global", organizationId, page, limit] as const,
+      globalInfinite: (limit: number, organizationId?: string) =>
+        [...all, "global", "infinite", organizationId, limit] as const,
       organization: (organizationId: string, page: number, limit: number) =>
         [...all, "organization", organizationId, page, limit] as const,
       organizationInfinite: (organizationId: string, limit: number) =>
         [...all, "organization", "infinite", organizationId, limit] as const,
-      weekly: (page: number, limit: number) => [...all, "weekly", page, limit] as const,
-      weeklyInfinite: (limit: number) => [...all, "weekly", "infinite", limit] as const,
+      weekly: (page: number, limit: number, organizationId?: string) =>
+        [...all, "weekly", organizationId, page, limit] as const,
+      weeklyInfinite: (limit: number, organizationId?: string) =>
+        [...all, "weekly", "infinite", organizationId, limit] as const,
     };
   })(),
 

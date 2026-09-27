@@ -46,13 +46,16 @@ export function useMatches(params?: {
   });
 }
 
-export function useInfiniteMatches(params?: {
-  status?: string;
-  userId?: string;
-  organizationId?: string;
-  participantOnly?: boolean;
-  limit?: number;
-}) {
+export function useInfiniteMatches(
+  params?: {
+    status?: string;
+    userId?: string;
+    organizationId?: string;
+    participantOnly?: boolean;
+    limit?: number;
+  },
+  options?: { enabled?: boolean }
+) {
   const limit = params?.limit ?? 20;
 
   return useInfiniteQuery({
@@ -60,6 +63,7 @@ export function useInfiniteMatches(params?: {
     queryFn: ({ pageParam = 1 }) =>
       matchService.listMatches({ ...params, page: pageParam, limit }),
     initialPageParam: 1,
+    enabled: options?.enabled,
     getNextPageParam: getNextPageParamFromPagination,
   });
 }

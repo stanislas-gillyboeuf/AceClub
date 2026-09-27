@@ -11,11 +11,9 @@ export function useMatchIntents(cursor?: string, limit = 20) {
 }
 
 export function useDiscover(params?: {
+  organizationId?: string;
   cursor?: string;
   limit?: number;
-  latitude?: number;
-  longitude?: number;
-  radius?: number;
   sport?: "tennis" | "padel";
   levels?: string[];
 }) {

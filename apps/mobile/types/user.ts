@@ -30,7 +30,8 @@ export interface UserSearchResponse {
 export interface GhostUser {
   id: string;
   name: string;
-  email: string;
+  /** Omitted by the API when returning an existing ghost, to avoid leaking it across clubs. */
+  email?: string;
   image?: string | null;
   isGhost: boolean;
   createdAt: string;

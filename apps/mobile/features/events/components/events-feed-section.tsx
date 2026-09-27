@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useMyEvents, useInfiniteEvents } from "@/hooks/use-event";
+import { useActiveClub } from "@/hooks/use-active-club";
 import { SectionHeader } from "@/components/ui/section-header";
 import { EventPreviewCard } from "./event-preview-card";
 import { DiscoverMoreCard } from "./discover-more-card";
@@ -9,6 +10,7 @@ import { spacing } from "@/constants/theme";
 
 export function EventsFeedSection() {
   const router = useRouter();
+  const { activeClubId } = useActiveClub();
   const { data: myEvents } = useMyEvents({
     status: "registered",
     timeFilter: "upcoming",
@@ -16,6 +18,7 @@ export function EventsFeedSection() {
   });
 
   const { data: discoverData } = useInfiniteEvents({
+    organizationId: activeClubId ?? undefined,
     sortBy: "upcoming",
     limit: 5,
   });

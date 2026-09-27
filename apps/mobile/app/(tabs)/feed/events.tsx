@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { View, Text, FlatList, StyleSheet, RefreshControl } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { useInfiniteEvents } from "@/hooks/use-event";
+import { useActiveClub } from "@/hooks/use-active-club";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { EmptyState } from "@/components/ui/empty-state";
 import { EventRow } from "@/features/events/components/event-row";
@@ -25,6 +26,7 @@ export default function EventsScreen() {
   const scheme = useColorScheme();
   const router = useRouter();
   const [tab, setTab] = useState<TimeTab>("upcoming");
+  const { activeClubId } = useActiveClub();
 
   const {
     data: eventsData,
@@ -34,7 +36,7 @@ export default function EventsScreen() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteEvents({ sortBy: tab, limit: 20 });
+  } = useInfiniteEvents({ organizationId: activeClubId ?? undefined, sortBy: tab, limit: 20 });
 
   const listItems = useMemo<ListItem[]>(() => {
     const events = eventsData?.pages.flatMap((p) => p.data) ?? [];
