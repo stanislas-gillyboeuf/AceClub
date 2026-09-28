@@ -1,4 +1,4 @@
-# Isolation entre clubs — tableau d'audit final (phase 1)
+# Isolation entre clubs — tableau d'audit final (phases 1 et 2)
 
 Audit initial : 270 routes (71 « joueurs » + 199 « club » ; `e2ee` = 4 routes non montées, hors périmètre). État après les 8 commits de la phase 1, tous locaux sur `dev`, non poussés au moment de l'écriture :
 
@@ -98,6 +98,55 @@ Helpers centralisés introduits au commit 1, utilisés par tous les commits suiv
 - Les fiches de match n'affichent plus l'email, le téléphone, la date de naissance ni le statut de bannissement des autres joueurs.
 - Les demandes de partenaire n'affichent plus l'adresse email du demandeur ou du propriétaire de l'annonce.
 
-## Phase 2 (hors périmètre de ce travail, à faire séparément)
+## Phase 2 — relations entre joueurs
 
-Statut de confirmation des matchs entre clubs (`pending_confirmation`), demandes de message entre joueurs sans relation commune, blocage et signalement, profil partageable par lien/QR — voir la section « PHASE 2 » du plan.
+| # | Commit | Message |
+|---|---|---|
+| 9 | `d586785` | feat(api): cross-club matches require participant confirmation before entering feeds |
+| 10 | `478b56f` | feat(api): first message between unlinked players becomes an acceptable conversation request |
+| 11 | `b95d427` | feat(api): block and report between players |
+| 12 | `a58da3d` | feat(api): revocable shareable profile link and past partners |
+| 13 | `783b4ee` | feat(mobile): match confirmation, message requests, block/report and shareable profile screens |
+| 14 | *(ce commit)* | test(api): cross-cutting phase 2 e2e and audit table update |
+
+### Nouvelles routes et mécanismes
+
+| Route / mécanisme | Protection | Commit |
+|---|---|---|
+| `POST /match/:id/confirm` | l'appelant doit être CE participant précis ; idempotent ; refuse au-delà de 7 jours sans confirmation (`CONFIRMATION_WINDOW_MS`, calculé à la lecture, sans cron) | 9 |
+| `canViewMatchPure` (étendue) | un match avec un participant cross-club non confirmé (et non expiré) reste invisible de tout fil de club, mais toujours visible par ses participants directs ; une fois confirmé, visible normalement | 9 |
+| Attribution des Aces | différée jusqu'à ce que chaque participant soit « réglé » (confirmé ou expiré) ; un bug latent de double-attribution (aucune idempotence sur un match déjà `finished`) corrigé au passage (`hasAttributedAces`) | 9 |
+| `conversation.status` (`active`/`pending_request`/`rejected`) | posé par `find-or-create` selon la relation directe existante (même club, match commun, conversation déjà active) | 10 |
+| `POST /conversation/:id/message` (garde) | tant que `pending_request`, l'initiateur n'a droit qu'à un seul message (400 ensuite) ; la réponse du destinataire vaut acceptation implicite | 10 |
+| `POST /conversation/:id/accept-request`, `/reject-request` | participant destinataire uniquement (self refusé, 400) | 10 |
+| `POST /user/block`, `/unblock` | self refusé (400) ; idempotent | 11 |
+| `GET /user/blocked` | self | 11 |
+| `POST /user/report` | self refusé (400) | 11 |
+| `isBlockedEitherWay`/`getBlockedUserIds` | branché sur : `user/search` (partielle et exacte), `conversation/find-or-create` et `send-message` (revérifié à chaque envoi), `match_intents/create-request` et `create-intent` (coéquipiers), `canViewMatchPure` (masque un match pour tout NON-participant lié à un blocage — jamais pour un participant lui-même) | 11 |
+| `GET /admin/reports`, `PUT /admin/reports/:id/status` | `isAdmin` | 11 |
+| `POST /user/profile-share-token/create`, `/revoke` | self | 12 |
+| `GET /user/profile-by-token` | authentifié ; 404 identique pour jeton inconnu, révoqué, ou blocage dans un sens ou l'autre (ne distingue jamais les cas) ; profil minimal `{id,name,image,skillLevel}`, jamais le club ni les coordonnées | 12 |
+| `GET /user/past-partners` | self ; matchs + conversations `active` en commun, tous clubs, hors bloqués | 12 |
+
+### Décisions d'implémentation notables
+
+- **Attribution des Aces après expiration** : l'expiration à 7 jours ne bloque que la publication dans un fil de club, jamais les gains personnels des joueurs qui ont réellement joué.
+- **Confirmation implicite** : un participant auto-ajouté, du même club que le créateur, ou issu d'une demande de partenaire déjà mutuellement acceptée (`accept-request`) est confirmé immédiatement — seule une invitation cross-club directe (`create-match` avec un participant ajouté par un tiers) exige une confirmation explicite.
+- **Blocage et visibilité de match** : un match reste visible à SES DEUX participants même s'ils se sont bloqués entre-temps ; le blocage ne masque le match que pour un tiers (club-mate non participant) lié à l'un des deux camps. Vérifié dans `services/api/tests/e2e/phase2-cross-cutting.test.ts`.
+- **Recherche cross-club après blocage** : une adresse email bloquée ne remonte plus ni via le club (si même club) ni via la recherche exacte hors club — les deux chemins sont couverts par le même garde-fou (`getBlockedUserIds`).
+- **Lien de profil partageable** : deep link mobile uniquement (`aceclub://profile/<token>`), pas de page web publique ; pas d'expiration automatique, seulement une révocation manuelle.
+
+### Changements visibles pour les utilisateurs (phase 2)
+
+- Un match entre joueurs de clubs différents n'apparaît dans le fil d'aucun des deux clubs tant que le joueur invité ne l'a pas confirmé (bandeau « Confirmer » côté mobile). Sans confirmation sous 7 jours, il n'apparaîtra jamais dans un fil de club.
+- Un match né d'une demande de partenaire déjà acceptée par les deux joueurs (via « Trouver un partenaire ») est publié immédiatement, sans étape supplémentaire.
+- Le premier message envoyé à un joueur qu'on ne connaît pas (aucun club, match ou conversation en commun) devient une « demande » que le destinataire doit accepter ou refuser avant tout échange libre.
+- Chaque joueur peut désormais bloquer et signaler un autre joueur (depuis son profil ou une conversation) ; un joueur bloqué disparaît de la recherche, ne peut plus écrire ni proposer de partie, mais un match déjà joué ensemble reste visible aux deux principaux concernés.
+- Chaque joueur peut générer un lien/QR code de profil révocable (nom, photo, niveau) à partager en dehors de l'app pour se faire ajouter à un match ou contacter, sans exposer son club ni ses coordonnées.
+- La liste « Anciens partenaires » (matchs ou conversations en commun, tous clubs) est proposée en premier lors de l'ajout d'un joueur à un match.
+
+### Résidus connus, non corrigés en phase 2
+
+- Le lien de profil partageable n'a pas de page web publique (deep link mobile uniquement) — un utilisateur qui reçoit le lien sur ordinateur ne peut pas l'ouvrir directement.
+- `admin/reports` n'a pas encore de page dans le dashboard web — uniquement l'API, consommée pour l'instant par aucun client (à construire si le super-admin en a besoin avant la prochaine itération).
+- Les résidus de la phase 1 (bypass super-admin non centralisé sur les routes admin de club, 403 au lieu de 404 dessus, `bulk-import`/`add-member` sans consentement, limiteurs en mémoire non partagés entre instances) restent inchangés.
