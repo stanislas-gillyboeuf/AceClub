@@ -99,12 +99,19 @@ export default function ConversationListScreen() {
     router.push("/chat/new");
   }, [router]);
 
-  const filteredConversations = conversations?.filter((c) => {
-    if (!searchText.trim()) return true;
-    const query = searchText.toLowerCase();
-    const name = c.name || c.otherParticipants[0]?.user?.name || "";
-    return name.toLowerCase().includes(query);
-  });
+  const filteredConversations = conversations
+    ?.filter((c) => {
+      if (!searchText.trim()) return true;
+      const query = searchText.toLowerCase();
+      const name = c.name || c.otherParticipants[0]?.user?.name || "";
+      return name.toLowerCase().includes(query);
+    })
+    .sort((a, b) => {
+      // Pending requests surface first so they don't get lost in the list.
+      const aPending = a.status === "pending_request" ? 1 : 0;
+      const bPending = b.status === "pending_request" ? 1 : 0;
+      return bPending - aPending;
+    });
 
   const renderItem = useCallback(
     ({ item }: { item: Conversation }) => (

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Pressable, Text, StyleSheet, Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { Stack } from "expo-router";
@@ -8,6 +8,8 @@ import { Avatar } from "@/components/ui/avatar";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { semanticColors } from "@/constants/theme";
 import { getDisplayName, getAvatarUrl } from "../utils/message-helpers";
+import { useBlockUser, useUnblockUser, useBlockedUsers } from "@/hooks/use-block";
+import { ReportUserSheet } from "@/features/matches/components/report-user-sheet";
 import type { Conversation } from "@/types/conversation";
 
 interface ChatHeaderProps {
@@ -23,9 +25,15 @@ export function ChatHeader({
 }: ChatHeaderProps) {
   const scheme = useColorScheme();
   const router = useRouter();
+  const [reportVisible, setReportVisible] = useState(false);
+  const { data: blockedData } = useBlockedUsers();
+  const blockUser = useBlockUser();
+  const unblockUser = useUnblockUser();
 
   const displayName = getDisplayName(conversation);
   const avatarUrl = getAvatarUrl(conversation);
+  const otherUserId = conversation.otherParticipants[0]?.user.id ?? null;
+  const isBlocked = !!otherUserId && blockedData?.users.some((u) => u.id === otherUserId);
 
   const handleProfilePress = useCallback(() => {
     Alert.alert(displayName, undefined, [
@@ -33,6 +41,16 @@ export function ChatHeader({
         text: conversation.isMuted ? "R\u00e9activer" : "Mettre en sourdine",
         onPress: onToggleMute,
       },
+      {
+        text: isBlocked ? "D\u00e9bloquer" : "Bloquer",
+        style: isBlocked ? "default" : "destructive",
+        onPress: () => {
+          if (!otherUserId) return;
+          if (isBlocked) unblockUser.mutate(otherUserId);
+          else blockUser.mutate(otherUserId);
+        },
+      },
+      { text: "Signaler", style: "destructive", onPress: () => setReportVisible(true) },
       {
         text: "Supprimer la conversation",
         style: "destructive",
@@ -43,34 +61,52 @@ export function ChatHeader({
       },
       { text: "Annuler", style: "cancel" },
     ]);
-  }, [displayName, conversation.isMuted, onToggleMute, onDeleteConversation, router]);
+  }, [
+    displayName,
+    conversation.isMuted,
+    onToggleMute,
+    onDeleteConversation,
+    router,
+    isBlocked,
+    otherUserId,
+    blockUser,
+    unblockUser,
+  ]);
 
   return (
-    <Stack.Screen
-      options={{
-        headerTransparent: false,
-        headerLeft: () => (
-          <Pressable onPress={() => router.back()} hitSlop={8} style={styles.backButton}>
-            {Platform.OS === "ios" ? (
-              <Ionicons name="chevron-back" size={28} color={semanticColors.labelPrimary[scheme]} />
-            ) : (
-              <MaterialIcons name="arrow-back" size={24} color={semanticColors.labelPrimary[scheme]} />
-            )}
-          </Pressable>
-        ),
-        headerTitle: () => (
-          <Pressable onPress={handleProfilePress} style={styles.headerTitle}>
-            <Avatar imageUrl={avatarUrl} name={displayName} size={28} />
-            <Text
-              style={[styles.headerName, { color: semanticColors.labelPrimary[scheme] }]}
-              numberOfLines={1}
-            >
-              {displayName}
-            </Text>
-          </Pressable>
-        ),
-      }}
-    />
+    <>
+      <Stack.Screen
+        options={{
+          headerTransparent: false,
+          headerLeft: () => (
+            <Pressable onPress={() => router.back()} hitSlop={8} style={styles.backButton}>
+              {Platform.OS === "ios" ? (
+                <Ionicons name="chevron-back" size={28} color={semanticColors.labelPrimary[scheme]} />
+              ) : (
+                <MaterialIcons name="arrow-back" size={24} color={semanticColors.labelPrimary[scheme]} />
+              )}
+            </Pressable>
+          ),
+          headerTitle: () => (
+            <Pressable onPress={handleProfilePress} style={styles.headerTitle}>
+              <Avatar imageUrl={avatarUrl} name={displayName} size={28} />
+              <Text
+                style={[styles.headerName, { color: semanticColors.labelPrimary[scheme] }]}
+                numberOfLines={1}
+              >
+                {displayName}
+              </Text>
+            </Pressable>
+          ),
+        }}
+      />
+      <ReportUserSheet
+        visible={reportVisible}
+        userId={otherUserId}
+        context={`conversation:${conversation.id}`}
+        onClose={() => setReportVisible(false)}
+      />
+    </>
   );
 }
 

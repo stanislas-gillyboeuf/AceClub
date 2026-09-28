@@ -45,6 +45,7 @@ export function ConversationRow({ conversation }: ConversationRowProps) {
   const isVoice = preview === "Message vocal";
   const isPhoto = preview === "Photo";
   const hasUnread = conversation.unreadCount > 0;
+  const isPendingRequest = conversation.status === "pending_request";
 
   return (
     <View style={styles.container}>
@@ -97,6 +98,11 @@ export function ConversationRow({ conversation }: ConversationRowProps) {
             </View>
           ) : null}
           <View style={styles.badges}>
+            {isPendingRequest && (
+              <View style={styles.requestBadge}>
+                <Text style={styles.requestText}>Demande</Text>
+              </View>
+            )}
             {hasUnread && (
               <View style={styles.unreadBadge}>
                 <Text style={styles.unreadText}>{conversation.unreadCount}</Text>
@@ -174,6 +180,19 @@ const styles = StyleSheet.create({
   unreadText: {
     color: colors.white,
     fontSize: 12,
+    fontWeight: "700",
+  },
+  requestBadge: {
+    backgroundColor: colors.accentOrange,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    height: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  requestText: {
+    color: colors.white,
+    fontSize: 11,
     fontWeight: "700",
   },
 });

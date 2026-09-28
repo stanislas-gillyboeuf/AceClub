@@ -1,5 +1,17 @@
 import { api } from "@/lib/api";
-import type { User, UserSearchResponse, UserPreferences, CompleteOnboardingRequest, UpdateProfileRequest, CreateGhostRequest, GhostUser } from "@/types/user";
+import type {
+  User,
+  UserSearchResponse,
+  UserPreferences,
+  CompleteOnboardingRequest,
+  UpdateProfileRequest,
+  CreateGhostRequest,
+  GhostUser,
+  BlockedUser,
+  PastPartner,
+  MinimalProfile,
+  ProfileShareTokenResponse,
+} from "@/types/user";
 
 export const userService = {
   getMe: () =>
@@ -19,4 +31,28 @@ export const userService = {
 
   createGhost: (data: CreateGhostRequest) =>
     api.post<GhostUser>("/user/ghost", data),
+
+  blockUser: (userId: string) =>
+    api.post<{ blockerUserId: string; blockedUserId: string }>("/user/block", { userId }),
+
+  unblockUser: (userId: string) =>
+    api.post<{ success: boolean }>("/user/unblock", { userId }),
+
+  listBlocked: () =>
+    api.get<{ users: BlockedUser[] }>("/user/blocked"),
+
+  reportUser: (userId: string, reason: string, context?: string) =>
+    api.post<{ id: string }>("/user/report", { userId, reason, context }),
+
+  createProfileShareToken: () =>
+    api.post<ProfileShareTokenResponse>("/user/profile-share-token/create"),
+
+  revokeProfileShareToken: (token: string) =>
+    api.post<{ success: boolean }>("/user/profile-share-token/revoke", { token }),
+
+  getProfileByToken: (token: string) =>
+    api.get<MinimalProfile>("/user/profile-by-token", { token }),
+
+  listPastPartners: () =>
+    api.get<{ partners: PastPartner[] }>("/user/past-partners"),
 };

@@ -16,6 +16,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
 import { MessageBubble } from "@/features/chat/components/MessageBubble";
 import { ChatBottomBar } from "@/features/chat/components/ChatBottomBar";
+import { ConversationRequestBar } from "@/features/chat/components/ConversationRequestBar";
 import { ChatHeader } from "@/features/chat/components/ChatHeader";
 import { TypingIndicator } from "@/features/chat/components/TypingIndicator";
 import { MessageContextMenu } from "@/features/chat/components/MessageContextMenu";
@@ -217,14 +218,18 @@ function ChatContent({
 
         {isOtherUserTyping && <TypingIndicator />}
 
-        <ChatBottomBar
-          onSendText={handleSendText}
-          onSendVoice={sendVoiceMessage}
-          onSendImage={sendImageMessage}
-          onTyping={sendTypingIndicator}
-          replyingTo={replyingTo}
-          onCancelReply={clearReply}
-        />
+        {conversation.status === "pending_request" ? (
+          <ConversationRequestBar conversation={conversation} currentUserId={currentUserId} />
+        ) : (
+          <ChatBottomBar
+            onSendText={handleSendText}
+            onSendVoice={sendVoiceMessage}
+            onSendImage={sendImageMessage}
+            onTyping={sendTypingIndicator}
+            replyingTo={replyingTo}
+            onCancelReply={clearReply}
+          />
+        )}
       </KeyboardAvoidingView>
 
       <MessageContextMenu

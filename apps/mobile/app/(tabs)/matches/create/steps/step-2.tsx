@@ -14,6 +14,7 @@ import { Search, X } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useMe, useSearchUsers } from "@/hooks/use-user";
+import { usePastPartners } from "@/hooks/use-past-partners";
 import { useCreateMatchFormStore } from "@/store/create-match-form";
 import { EmptyState } from "@/components/ui/empty-state";
 import { colors, semanticColors, radii } from "@/constants/theme";
@@ -45,11 +46,23 @@ export default function Step2() {
   }, [searchText]);
 
   const { data: searchData, isLoading, isFetching } = useSearchUsers(debouncedQuery, 20);
+  const { data: pastPartnersData } = usePastPartners();
 
   const results = useMemo(() => {
     if (!searchData?.users) return [];
     return searchData.users.filter((u) => u.id !== me?.id);
   }, [searchData, me?.id]);
+
+  // Proposed before any search is typed, so a player finds a regular partner in one tap.
+  const pastPartners = useMemo<UserSearchItem[]>(() => {
+    if (!pastPartnersData?.partners) return [];
+    return pastPartnersData.partners.map((p) => ({
+      id: p.id,
+      name: p.name,
+      image: p.image,
+      isGhost: false,
+    }));
+  }, [pastPartnersData]);
 
   const handleSelect = useCallback(
     (user: UserSearchItem) => {
@@ -115,7 +128,7 @@ export default function Step2() {
   return (
     <FlatList
       style={[styles.list, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
-      data={hasQuery ? results : []}
+      data={hasQuery ? results : pastPartners}
       keyExtractor={(item) => item.id}
       renderItem={renderUser}
       contentInsetAdjustmentBehavior="automatic"
@@ -150,6 +163,11 @@ export default function Step2() {
               </Pressable>
             )}
           </GlassView>
+          {!hasQuery && pastPartners.length > 0 && (
+            <Text style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}>
+              Anciens partenaires
+            </Text>
+          )}
         </View>
       }
       ListFooterComponent={hasQuery && results.length > 0 ? addGhostButton : null}
@@ -167,13 +185,13 @@ export default function Step2() {
             />
             {addGhostButton}
           </View>
-        ) : (
+        ) : !hasQuery && pastPartners.length === 0 ? (
           <View style={styles.centered}>
             <Text style={[styles.hintText, { color: semanticColors.labelSecondary[scheme] }]}>
               Tapez au moins 2 caractères pour rechercher
             </Text>
           </View>
-        )
+        ) : null
       }
     />
   );
@@ -224,5 +242,12 @@ const styles = StyleSheet.create({
   },
   hintText: {
     fontSize: 15,
+  },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    marginHorizontal: 16,
+    marginTop: 4,
   },
 });

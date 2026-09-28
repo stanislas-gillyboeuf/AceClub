@@ -24,6 +24,10 @@ export interface MatchParticipant {
   userId: string;
   side: string;
   isWinner: boolean;
+  /** Set once this participant has confirmed a cross-club match; null while awaiting confirmation. */
+  confirmedAt?: string | null;
+  /** Only meaningful while confirmedAt is null: the 7-day confirmation window has passed. */
+  confirmationExpired?: boolean;
   createdAt: string;
   user?: User | null;
 }

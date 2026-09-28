@@ -78,6 +78,8 @@ export interface Message {
   matchRequest?: MatchRequestCardInfo | null;
 }
 
+export type ConversationStatus = "active" | "pending_request" | "rejected";
+
 export interface Conversation {
   id: string;
   name?: string | null;
@@ -90,6 +92,11 @@ export interface Conversation {
   isMuted: boolean;
   encryptionKey?: string | null;
   otherParticipants: ConversationParticipant[];
+  /** "pending_request" only for a fresh direct conversation between two players with no prior
+   * link — the initiator may send a single message, the recipient must accept or reject it. */
+  status: ConversationStatus;
+  /** Who called find-or-create — only meaningful while status is "pending_request". */
+  initiatedByUserId?: string | null;
 }
 
 export interface SendMessageRequest {
@@ -112,4 +119,5 @@ export interface UploadAttachmentResponse {
 export interface FindOrCreateConversationResponse {
   conversationId: string;
   created: boolean;
+  status: ConversationStatus;
 }

@@ -85,3 +85,32 @@ export interface CreateGhostRequest {
   name: string;
   email: string;
 }
+
+export interface BlockedUser {
+  id: string;
+  name: string;
+  image?: string | null;
+  blockedAt: string;
+}
+
+export interface PastPartner {
+  id: string;
+  name: string;
+  image?: string | null;
+  skillLevel?: string | null;
+  lastInteractionAt: string;
+}
+
+/** The minimal profile revealed by a shareable profile link/QR — never a club, never contact
+ * details. */
+export interface MinimalProfile {
+  id: string;
+  name: string;
+  image?: string | null;
+  skillLevel?: string | null;
+}
+
+export interface ProfileShareTokenResponse {
+  token: string;
+  deepLink: string;
+}

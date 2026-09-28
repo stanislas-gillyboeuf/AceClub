@@ -94,6 +94,34 @@ export function useFindOrCreateConversation() {
   });
 }
 
+function conversationInvalidationKeys(conversationId: string) {
+  return [queryKeys.conversation.detail(conversationId), queryKeys.conversation.list()];
+}
+
+export function useAcceptConversationRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (conversationId: string) => conversationService.acceptRequest(conversationId),
+    onSettled: (_data, _err, conversationId) => {
+      for (const key of conversationInvalidationKeys(conversationId)) {
+        queryClient.invalidateQueries({ queryKey: key });
+      }
+    },
+  });
+}
+
+export function useRejectConversationRequest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (conversationId: string) => conversationService.rejectRequest(conversationId),
+    onSettled: (_data, _err, conversationId) => {
+      for (const key of conversationInvalidationKeys(conversationId)) {
+        queryClient.invalidateQueries({ queryKey: key });
+      }
+    },
+  });
+}
+
 export function useMuteConversation() {
   const queryClient = useQueryClient();
   return useMutation({

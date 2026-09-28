@@ -10,9 +10,11 @@ import {
 import { Search, X } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useSearchUsers } from "@/hooks/use-user";
+import { usePastPartners } from "@/hooks/use-past-partners";
 import { Avatar } from "@/components/ui/avatar";
 import { colors, semanticColors, radii, spacing } from "@/constants/theme";
 import type { UserSearchItem } from "@/types/user";
+import type { PastPartner } from "@/types/user";
 
 interface UserSearchFieldProps {
   label: string;
@@ -34,9 +36,19 @@ export function UserSearchField({
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data, isLoading } = useSearchUsers(debouncedQuery, 10);
+  const { data: pastPartnersData } = usePastPartners();
 
   const filteredUsers =
     data?.users.filter((u) => !excludedUserIds.includes(u.id)) ?? [];
+  const pastPartners =
+    pastPartnersData?.partners.filter((p) => !excludedUserIds.includes(p.id)) ?? [];
+
+  const handleSelectPastPartner = useCallback(
+    (partner: PastPartner) => {
+      onSelect({ id: partner.id, name: partner.name, image: partner.image ?? null, isGhost: false });
+    },
+    [onSelect]
+  );
 
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -159,6 +171,39 @@ export function UserSearchField({
         )}
       </View>
 
+      {!showResults && pastPartners.length > 0 && (
+        <View
+          style={[
+            styles.resultsContainer,
+            {
+              backgroundColor: semanticColors.cardBackground[scheme],
+              borderColor: semanticColors.borderColor[scheme],
+            },
+          ]}
+        >
+          <Text
+            style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}
+          >
+            Anciens partenaires
+          </Text>
+          {pastPartners.slice(0, 5).map((partner) => (
+            <Pressable
+              key={partner.id}
+              onPress={() => handleSelectPastPartner(partner)}
+              style={({ pressed }) => [styles.resultRow, pressed && { opacity: 0.7 }]}
+            >
+              <Avatar imageUrl={partner.image} name={partner.name} size={32} />
+              <Text
+                style={[styles.resultName, { color: semanticColors.labelPrimary[scheme] }]}
+                numberOfLines={1}
+              >
+                {partner.name}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
+
       {showResults && filteredUsers.length > 0 && (
         <View
           style={[
@@ -280,5 +325,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: "center",
     paddingVertical: 12,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 4,
   },
 });

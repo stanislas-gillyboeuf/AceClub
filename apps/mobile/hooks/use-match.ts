@@ -419,4 +419,16 @@ export function useToggleLike() {
   });
 }
 
+export function useConfirmMatch() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (matchId: string) => matchService.confirmMatch(matchId),
+    onSettled: (_, __, matchId) => {
+      for (const key of matchInvalidationKeys(matchId)) {
+        queryClient.invalidateQueries({ queryKey: key });
+      }
+    },
+  });
+}
+
 export type { MatchWithParticipants };

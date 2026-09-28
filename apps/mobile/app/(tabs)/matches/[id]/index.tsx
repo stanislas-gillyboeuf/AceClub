@@ -18,6 +18,7 @@ import { PhotoCard } from "@/features/matches/components/match-detail/photo-card
 import { SheetActionBar } from "@/features/matches/components/match-detail/floating-action-bar";
 import { FeedbackCta } from "@/features/matches/components/feedback/feedback-cta";
 import { VisibilityToggle } from "@/features/matches/components/feedback/visibility-toggle";
+import { ConfirmationCard } from "@/features/matches/components/match-detail/confirmation-card";
 
 export default function MatchDetail() {
   const { id, openEditScores } = useLocalSearchParams<{
@@ -240,6 +241,10 @@ export default function MatchDetail() {
           <RefreshControl refreshing={isManualRefresh} onRefresh={handleRefresh} />
         }
       >
+        {isParticipant && (
+          <ConfirmationCard matchDetail={matchDetail} currentUserId={currentUserId} />
+        )}
+
         <ScoreCard matchDetail={matchDetail} currentUserId={currentUserId} />
 
         {isOngoing && matchDetail.match.startedAt && (

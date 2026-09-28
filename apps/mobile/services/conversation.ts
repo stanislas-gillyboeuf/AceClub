@@ -35,6 +35,16 @@ export const conversationService = {
   findOrCreateConversation: (participantId: string) =>
     api.post<FindOrCreateConversationResponse>("/conversation/find-or-create", { participantId }),
 
+  acceptRequest: (conversationId: string) =>
+    api.post<{ conversationId: string; status: string }>(
+      `/conversation/${conversationId}/accept-request`,
+    ),
+
+  rejectRequest: (conversationId: string) =>
+    api.post<{ conversationId: string; status: string }>(
+      `/conversation/${conversationId}/reject-request`,
+    ),
+
   muteConversation: (conversationId: string, isMuted: boolean) =>
     api.post<void>(`/conversation/${conversationId}/mute`, { isMuted }),
 

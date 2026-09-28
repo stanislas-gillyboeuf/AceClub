@@ -80,4 +80,9 @@ export const matchService = {
 
   toggleLike: (matchId: string) =>
     api.post<ToggleLikeResponse>(`/match/${matchId}/like`),
+
+  confirmMatch: (matchId: string) =>
+    api.post<{ success: boolean; confirmedAt: string; alreadyConfirmed: boolean }>(
+      `/match/${matchId}/confirm`,
+    ),
 };

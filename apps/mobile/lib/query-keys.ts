@@ -39,6 +39,9 @@ export const queryKeys = {
       preferences: () => [...all, "preferences"] as const,
       search: (query: string, limit: number) => [...all, "search", query, limit] as const,
       searchAll: () => [...all, "search"] as const,
+      blocked: () => [...all, "blocked"] as const,
+      pastPartners: () => [...all, "past-partners"] as const,
+      profileByToken: (token: string) => [...all, "profile-by-token", token] as const,
     };
   })(),
 

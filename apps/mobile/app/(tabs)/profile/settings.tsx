@@ -11,7 +11,7 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import { Stack, useRouter, useFocusEffect } from "expo-router";
-import { Building2, Shield, X, Check } from "lucide-react-native";
+import { Building2, Shield, X, Check, ShieldOff, QrCode } from "lucide-react-native";
 import type * as ImagePicker from "expo-image-picker";
 
 import { useMe, usePreferences, useUpdateProfile, useDeleteAccount } from "@/hooks/use-user";
@@ -392,6 +392,19 @@ export default function Settings() {
             onNotificationsToggle={osPermissions.handleNotificationsToggle}
             onLocationToggle={osPermissions.handleLocationToggle}
           />
+
+          <SectionCard title="Confidentialité">
+            <SettingsRow
+              icon={<QrCode size={20} color={colors.accentGreen} strokeWidth={1.5} />}
+              label="Mon profil partageable"
+              onPress={() => router.push("/(tabs)/profile/share-profile")}
+            />
+            <SettingsRow
+              icon={<ShieldOff size={20} color={colors.accentGreen} strokeWidth={1.5} />}
+              label="Utilisateurs bloqués"
+              onPress={() => router.push("/(tabs)/profile/blocked-users")}
+            />
+          </SectionCard>
 
           <LegalSection scheme={scheme} />
 
