@@ -10,6 +10,7 @@ import { eq, inArray } from "drizzle-orm";
 import { getUserClubIds } from "../../../lib/club-access";
 import { invalidTeammateIds } from "../lib/visibility";
 import { getBlockedUserIds } from "../../../lib/block";
+import { getDirectRelationUserIds } from "../../user/lib/past-partners";
 import { zonedDateTime } from "../../court/lib/timezone";
 
 export const createMatchIntent = async (c: Context<HonoContext>) => {
@@ -35,18 +36,20 @@ export const createMatchIntent = async (c: Context<HonoContext>) => {
     }
 
     if (teammateUserIds.length > 0) {
-      const [callerClubIds, teammateRows, teammateMembers, blockedTeammateIds] = await Promise.all([
-        getUserClubIds(userId),
-        db
-          .select({ id: userTable.id, isGhost: userTable.is_ghost })
-          .from(userTable)
-          .where(inArray(userTable.id, teammateUserIds)),
-        db
-          .select({ userId: member.userId, organizationId: member.organizationId })
-          .from(member)
-          .where(inArray(member.userId, teammateUserIds)),
-        getBlockedUserIds(userId, teammateUserIds),
-      ]);
+      const [callerClubIds, teammateRows, teammateMembers, blockedTeammateIds, directRelationIds] =
+        await Promise.all([
+          getUserClubIds(userId),
+          db
+            .select({ id: userTable.id, isGhost: userTable.is_ghost })
+            .from(userTable)
+            .where(inArray(userTable.id, teammateUserIds)),
+          db
+            .select({ userId: member.userId, organizationId: member.organizationId })
+            .from(member)
+            .where(inArray(member.userId, teammateUserIds)),
+          getBlockedUserIds(userId, teammateUserIds),
+          getDirectRelationUserIds(userId, teammateUserIds),
+        ]);
       const clubsByUser = new Map<string, string[]>();
       for (const row of teammateMembers) {
         clubsByUser.set(row.userId, [...(clubsByUser.get(row.userId) ?? []), row.organizationId]);
@@ -59,6 +62,7 @@ export const createMatchIntent = async (c: Context<HonoContext>) => {
           isGhost: !!row.isGhost,
           clubIds: clubsByUser.get(row.id) ?? [],
         })),
+        directRelationIds,
       );
       if (refused.length > 0 || blockedTeammateIds.size > 0) {
         return c.json({ error: "BadRequest", message: "Invalid teammates list" }, 400);

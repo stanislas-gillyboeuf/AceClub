@@ -351,6 +351,13 @@
       "when": 1790584460471,
       "tag": "0050_steady_amphibian",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1790585352285,
+      "tag": "0051_white_nekra",
+      "breakpoints": true
     }
   ]
 }

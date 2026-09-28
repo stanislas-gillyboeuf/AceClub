@@ -43,6 +43,16 @@ describe("invalidTeammateIds", () => {
   it("refuses a teammate id that does not exist at all", () => {
     expect(invalidTeammateIds(["missing"], ["A"], [])).toEqual(["missing"]);
   });
+
+  it("accepts a real account of another club when a direct relation already exists", () => {
+    const found = [{ userId: "t1", isGhost: false, clubIds: ["B"] }];
+    expect(invalidTeammateIds(["t1"], ["A"], found, new Set(["t1"]))).toEqual([]);
+  });
+
+  it("still refuses a real account of another club with no direct relation", () => {
+    const found = [{ userId: "t1", isGhost: false, clubIds: ["B"] }];
+    expect(invalidTeammateIds(["t1"], ["A"], found, new Set(["someone-else"]))).toEqual(["t1"]);
+  });
 });
 
 describe("canRequestIntent", () => {

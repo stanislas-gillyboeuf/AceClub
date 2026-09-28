@@ -28,6 +28,31 @@ export const userBlock = pgTable(
   ],
 );
 
+/**
+ * A revocable, opaque link to a player's minimal public profile (name, photo, level — never the
+ * club or contact details, see server/user/queries/get-profile-by-token.ts). A user may hold
+ * several active tokens; the mobile app only ever surfaces the latest non-revoked one. No
+ * expiry — only manual revocation, which is simpler and sufficient here.
+ */
+export const profileShareToken = pgTable(
+  "profile_share_token",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    token: text("token").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    revokedAt: timestamp("revoked_at"),
+  },
+  (table) => [
+    uniqueIndex("profile_share_token_token_uidx").on(table.token),
+    index("profile_share_token_userId_idx").on(table.userId),
+  ],
+);
+
 export const userReportStatus = pgEnum("user_report_status", ["open", "reviewed", "dismissed"]);
 
 export const userReport = pgTable(

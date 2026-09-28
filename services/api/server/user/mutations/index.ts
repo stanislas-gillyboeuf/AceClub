@@ -5,3 +5,5 @@ export * from "./clear-must-change-password";
 export * from "./block-user";
 export * from "./unblock-user";
 export * from "./report-user";
+export * from "./create-profile-share-token";
+export * from "./revoke-profile-share-token";

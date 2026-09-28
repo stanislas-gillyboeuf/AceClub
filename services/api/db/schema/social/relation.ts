@@ -1,10 +1,14 @@
 import { relations } from "drizzle-orm";
 import { user } from "../auth/schema";
-import { userBlock, userReport } from "./schema";
+import { profileShareToken, userBlock, userReport } from "./schema";
 
 export const userBlockRelations = relations(userBlock, ({ one }) => ({
   blocker: one(user, { fields: [userBlock.blockerUserId], references: [user.id] }),
   blocked: one(user, { fields: [userBlock.blockedUserId], references: [user.id] }),
+}));
+
+export const profileShareTokenRelations = relations(profileShareToken, ({ one }) => ({
+  user: one(user, { fields: [profileShareToken.userId], references: [user.id] }),
 }));
 
 export const userReportRelations = relations(userReport, ({ one }) => ({

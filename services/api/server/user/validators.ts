@@ -37,6 +37,14 @@ export const reportUserValidator = z.object({
   context: z.string().max(200).optional(),
 });
 
+export const revokeProfileShareTokenValidator = z.object({
+  token: z.string().min(1, "Token is required"),
+});
+
+export const getProfileByTokenValidator = z.object({
+  token: z.string().min(1, "Token is required"),
+});
+
 export const searchUsersValidator = z.object({
   query: z.string().min(1, "Search query must not be empty"),
   limit: z.coerce.number().min(1).max(50).optional().default(10),

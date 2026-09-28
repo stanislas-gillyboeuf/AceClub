@@ -2,7 +2,14 @@ import { Hono } from "hono";
 import { requireAuth } from "../../middleware/auth";
 import type { HonoContext } from "../../types/hono";
 import { zValidator } from "@hono/zod-validator";
-import { me, searchUsers, getPreferences, listBlocked } from "./queries";
+import {
+  me,
+  searchUsers,
+  getPreferences,
+  listBlocked,
+  getProfileByToken,
+  listPastPartners,
+} from "./queries";
 import {
   completeOnboarding,
   updateProfile,
@@ -11,6 +18,8 @@ import {
   blockUser,
   unblockUser,
   reportUser,
+  createProfileShareToken,
+  revokeProfileShareToken,
 } from "./mutations";
 import {
   completeOnboardingValidator,
@@ -20,6 +29,8 @@ import {
   blockUserValidator,
   unblockUserValidator,
   reportUserValidator,
+  revokeProfileShareTokenValidator,
+  getProfileByTokenValidator,
 } from "./validators";
 
 export const userRouter = new Hono<HonoContext>();
@@ -51,3 +62,15 @@ userRouter.get("/blocked", listBlocked);
 userRouter.post("/block", zValidator("json", blockUserValidator), blockUser);
 userRouter.post("/unblock", zValidator("json", unblockUserValidator), unblockUser);
 userRouter.post("/report", zValidator("json", reportUserValidator), reportUser);
+userRouter.post("/profile-share-token/create", createProfileShareToken);
+userRouter.post(
+  "/profile-share-token/revoke",
+  zValidator("json", revokeProfileShareTokenValidator),
+  revokeProfileShareToken,
+);
+userRouter.get(
+  "/profile-by-token",
+  zValidator("query", getProfileByTokenValidator),
+  getProfileByToken,
+);
+userRouter.get("/past-partners", listPastPartners);
