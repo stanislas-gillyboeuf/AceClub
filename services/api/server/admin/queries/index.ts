@@ -9,3 +9,4 @@ export * from "./list-feature-flags";
 export * from "./list-game-config";
 export * from "./list-challenge-templates";
 export * from "./list-badges";
+export * from "./list-reports";

@@ -5,6 +5,7 @@ import { member, userPreference, matchParticipant, matchFeedback } from "../db/s
 import { assertOrgAdmin } from "../middleware/org-member";
 import type { HonoContext } from "../types/hono";
 import { cacheDel, cacheGet, cacheInvalidatePrefix, cacheSet, CacheKeys, CacheTTL } from "./cache";
+import { getBlockedUserIds } from "./block";
 import {
   canSeeEvent as canSeeEventPure,
   canViewMatchPure,
@@ -106,7 +107,7 @@ export async function canViewMatch(viewer: AccessUser, matchId: string): Promise
 
   const viewerClubIds = await getUserClubIds(viewer.id);
 
-  const [memberRows, feedbackRows] = await Promise.all([
+  const [memberRows, feedbackRows, blockedParticipantIds] = await Promise.all([
     db
       .select({ userId: member.userId, organizationId: member.organizationId })
       .from(member)
@@ -115,6 +116,7 @@ export async function canViewMatch(viewer: AccessUser, matchId: string): Promise
       .select({ userId: matchFeedback.userId })
       .from(matchFeedback)
       .where(and(eq(matchFeedback.matchId, matchId), eq(matchFeedback.visibleToClub, false))),
+    getBlockedUserIds(viewer.id, participantIds),
   ]);
 
   const participantClubIds = new Map<string, string[]>();
@@ -128,6 +130,7 @@ export async function canViewMatch(viewer: AccessUser, matchId: string): Promise
     hiddenFromClub: new Set(feedbackRows.map((row) => row.userId)),
     viewerClubIds,
     unconfirmedParticipantIds,
+    blockedParticipantIds,
   });
 }
 

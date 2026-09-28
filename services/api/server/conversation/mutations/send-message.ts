@@ -14,6 +14,7 @@ import { sendNotificationToUser } from "../../../services/expo-push/notification
 import { isUserConnectedWs } from "../../ws/bun-chat-handler";
 import { decryptMessageContent } from "../lib/decrypt-content";
 import { canSendMessage } from "../lib/request-link";
+import { isBlockedEitherWay } from "../../../lib/block";
 
 export const sendMessage = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user");
@@ -72,12 +73,31 @@ export const sendMessage = async (c: Context<HonoContext>) => {
         encryptionKey: conversation.encryptionKey,
         status: conversation.status,
         initiatedByUserId: conversation.initiatedByUserId,
+        type: conversation.type,
       })
       .from(conversation)
       .where(eq(conversation.id, conversationId))
       .limit(1),
   ]);
   const encryptionKey = conv?.encryptionKey ?? null;
+
+  // A direct conversation can go stale if either side blocks the other after it was created —
+  // check on every send, not just at find-or-create time.
+  if (conv && conv.type === "direct") {
+    const [otherParticipant] = await db
+      .select({ userId: conversationParticipant.userId })
+      .from(conversationParticipant)
+      .where(
+        and(
+          eq(conversationParticipant.conversationId, conversationId),
+          ne(conversationParticipant.userId, currentUser.id),
+        ),
+      )
+      .limit(1);
+    if (otherParticipant && (await isBlockedEitherWay(currentUser.id, otherParticipant.userId))) {
+      return c.json({ error: "Forbidden", message: "Action impossible" }, 403);
+    }
+  }
 
   if (conv && conv.status === "pending_request") {
     let initiatorHasSentMessage = false;

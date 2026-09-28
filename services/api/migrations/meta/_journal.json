@@ -344,6 +344,13 @@
       "when": 1790525037894,
       "tag": "0049_swift_warbound",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1790584460471,
+      "tag": "0050_steady_amphibian",
+      "breakpoints": true
     }
   ]
 }

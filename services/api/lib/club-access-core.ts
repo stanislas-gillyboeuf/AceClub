@@ -100,6 +100,13 @@ export interface MatchVisibilityData {
    * empty) by callers that don't track confirmation, so existing behavior is unaffected.
    */
   unconfirmedParticipantIds?: ReadonlySet<string>;
+  /**
+   * Participants who have a block relationship (either direction) with the viewer. Outranks club
+   * visibility: a single blocked/blocking participant hides the match, unless the viewer is a
+   * participant themself (block never hides a player's own matches). Omitted by callers that
+   * don't check blocks.
+   */
+  blockedParticipantIds?: ReadonlySet<string>;
 }
 
 /**
@@ -114,6 +121,9 @@ export function canViewMatchPure(
 ): boolean {
   if (isSuperAdmin(viewer)) return true;
   if (data.participantIds.includes(viewer.id)) return true;
+  if (data.blockedParticipantIds?.size) {
+    if (data.participantIds.some((id) => data.blockedParticipantIds!.has(id))) return false;
+  }
   if (data.unconfirmedParticipantIds?.size) {
     if (data.participantIds.some((id) => data.unconfirmedParticipantIds!.has(id))) return false;
   }

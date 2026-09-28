@@ -23,6 +23,20 @@ export const createGhostValidator = z.object({
   email: z.string().email("Valid email is required"),
 });
 
+export const blockUserValidator = z.object({
+  userId: z.string().min(1, "User id is required"),
+});
+
+export const unblockUserValidator = z.object({
+  userId: z.string().min(1, "User id is required"),
+});
+
+export const reportUserValidator = z.object({
+  userId: z.string().min(1, "User id is required"),
+  reason: z.string().min(1, "Reason is required").max(2000),
+  context: z.string().max(200).optional(),
+});
+
 export const searchUsersValidator = z.object({
   query: z.string().min(1, "Search query must not be empty"),
   limit: z.coerce.number().min(1).max(50).optional().default(10),

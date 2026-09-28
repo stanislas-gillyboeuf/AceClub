@@ -217,3 +217,13 @@ export const bulkCreateOrganizationsValidator = z.object({
     .min(1)
     .max(10000),
 });
+
+export const listReportsValidator = z.object({
+  status: z.enum(["open", "reviewed", "dismissed"]).optional(),
+  limit: z.coerce.number().min(1).max(100).optional().default(50),
+  offset: z.coerce.number().min(0).optional().default(0),
+});
+
+export const updateReportStatusValidator = z.object({
+  status: z.enum(["open", "reviewed", "dismissed"]),
+});

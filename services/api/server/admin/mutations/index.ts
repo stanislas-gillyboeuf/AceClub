@@ -28,3 +28,4 @@ export * from "./assign-challenge-template-now";
 export * from "./create-badge";
 export * from "./update-badge";
 export * from "./delete-badge";
+export * from "./update-report-status";

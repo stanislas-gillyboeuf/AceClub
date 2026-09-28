@@ -11,6 +11,7 @@ import { insertSystemMessage } from "../../conversation/lib/insert-message";
 import { createRequestValidator } from "../validators";
 import { getUserClubIds, isSuperAdmin, notFound } from "../../../lib/club-access";
 import { canRequestIntent } from "../lib/visibility";
+import { isBlockedEitherWay } from "../../../lib/block";
 
 const PADEL_TEAM_SIZE = 3;
 
@@ -36,6 +37,10 @@ export const createRequest = async (c: Context<HonoContext>) => {
     }
     if (intent.userId === userId) {
       return c.json({ error: "BadRequest", message: "Cannot request your own intent" }, 400);
+    }
+
+    if (await isBlockedEitherWay(userId, intent.userId)) {
+      return c.json({ error: "Forbidden", message: "Action impossible" }, 403);
     }
 
     // Partner search is closed to other clubs: an intent is visible to members of its owner's clubs.

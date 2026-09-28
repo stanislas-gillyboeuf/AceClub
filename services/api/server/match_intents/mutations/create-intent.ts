@@ -9,6 +9,7 @@ import { user as userTable, member } from "../../../db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { getUserClubIds } from "../../../lib/club-access";
 import { invalidTeammateIds } from "../lib/visibility";
+import { getBlockedUserIds } from "../../../lib/block";
 import { zonedDateTime } from "../../court/lib/timezone";
 
 export const createMatchIntent = async (c: Context<HonoContext>) => {
@@ -34,7 +35,7 @@ export const createMatchIntent = async (c: Context<HonoContext>) => {
     }
 
     if (teammateUserIds.length > 0) {
-      const [callerClubIds, teammateRows, teammateMembers] = await Promise.all([
+      const [callerClubIds, teammateRows, teammateMembers, blockedTeammateIds] = await Promise.all([
         getUserClubIds(userId),
         db
           .select({ id: userTable.id, isGhost: userTable.is_ghost })
@@ -44,6 +45,7 @@ export const createMatchIntent = async (c: Context<HonoContext>) => {
           .select({ userId: member.userId, organizationId: member.organizationId })
           .from(member)
           .where(inArray(member.userId, teammateUserIds)),
+        getBlockedUserIds(userId, teammateUserIds),
       ]);
       const clubsByUser = new Map<string, string[]>();
       for (const row of teammateMembers) {
@@ -58,7 +60,7 @@ export const createMatchIntent = async (c: Context<HonoContext>) => {
           clubIds: clubsByUser.get(row.id) ?? [],
         })),
       );
-      if (refused.length > 0) {
+      if (refused.length > 0 || blockedTeammateIds.size > 0) {
         return c.json({ error: "BadRequest", message: "Invalid teammates list" }, 400);
       }
     }

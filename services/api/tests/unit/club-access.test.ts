@@ -141,6 +141,33 @@ describe("canViewMatchPure", () => {
       expect(canViewMatchPure({ id: "x" }, { ...base, viewerClubIds: ["A"] })).toBe(true);
     });
   });
+
+  describe("blocking", () => {
+    const blocked = { ...base, blockedParticipantIds: new Set(["p2"]) };
+
+    it("hides the match from a non-participant blocked/blocking a participant", () => {
+      expect(canViewMatchPure({ id: "y" }, { ...blocked, viewerClubIds: ["B"] })).toBe(false);
+    });
+
+    it("hides the whole match, even via a different, unblocked participant's club", () => {
+      // A single blocked/blocking participant is enough to hide the match entirely for a
+      // non-participant viewer — it doesn't matter which participant's club is looking.
+      expect(canViewMatchPure({ id: "x" }, { ...blocked, viewerClubIds: ["A"] })).toBe(false);
+    });
+
+    it("never hides a participant's own matches, even if they blocked a co-participant", () => {
+      expect(canViewMatchPure({ id: "p1" }, { ...blocked, viewerClubIds: [] })).toBe(true);
+      expect(canViewMatchPure({ id: "p2" }, { ...blocked, viewerClubIds: [] })).toBe(true);
+    });
+
+    it("never affects the super-admin", () => {
+      expect(canViewMatchPure(superAdmin, { ...blocked, viewerClubIds: [] })).toBe(true);
+    });
+
+    it("ignores an omitted blockedParticipantIds (existing callers unaffected)", () => {
+      expect(canViewMatchPure({ id: "x" }, { ...base, viewerClubIds: ["A"] })).toBe(true);
+    });
+  });
 });
 
 describe("getUserClubIdsWith", () => {

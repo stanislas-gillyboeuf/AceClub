@@ -2,13 +2,24 @@ import { Hono } from "hono";
 import { requireAuth } from "../../middleware/auth";
 import type { HonoContext } from "../../types/hono";
 import { zValidator } from "@hono/zod-validator";
-import { me, searchUsers, getPreferences } from "./queries";
-import { completeOnboarding, updateProfile, createGhost, clearMustChangePassword } from "./mutations";
+import { me, searchUsers, getPreferences, listBlocked } from "./queries";
+import {
+  completeOnboarding,
+  updateProfile,
+  createGhost,
+  clearMustChangePassword,
+  blockUser,
+  unblockUser,
+  reportUser,
+} from "./mutations";
 import {
   completeOnboardingValidator,
   createGhostValidator,
   searchUsersValidator,
   updateProfileValidator,
+  blockUserValidator,
+  unblockUserValidator,
+  reportUserValidator,
 } from "./validators";
 
 export const userRouter = new Hono<HonoContext>();
@@ -36,3 +47,7 @@ userRouter.post(
 userRouter.put("/profile", zValidator("json", updateProfileValidator), updateProfile);
 userRouter.post("/ghost", zValidator("json", createGhostValidator), createGhost);
 userRouter.post("/clear-must-change-password", clearMustChangePassword);
+userRouter.get("/blocked", listBlocked);
+userRouter.post("/block", zValidator("json", blockUserValidator), blockUser);
+userRouter.post("/unblock", zValidator("json", unblockUserValidator), unblockUser);
+userRouter.post("/report", zValidator("json", reportUserValidator), reportUser);

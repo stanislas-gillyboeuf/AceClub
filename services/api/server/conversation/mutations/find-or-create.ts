@@ -11,6 +11,7 @@ import { z } from "zod";
 import { findOrCreateConversationValidator } from "../validators";
 import { getUserClubIds } from "../../../lib/club-access";
 import { initialConversationStatus } from "../lib/request-link";
+import { isBlockedEitherWay } from "../../../lib/block";
 
 export const findOrCreateConversation = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user");
@@ -37,6 +38,10 @@ export const findOrCreateConversation = async (c: Context<HonoContext>) => {
 
   if (!participant || participant.banned) {
     return c.json({ error: "NotFound", message: "Participant not found" }, 404);
+  }
+
+  if (await isBlockedEitherWay(currentUser.id, participantId)) {
+    return c.json({ error: "Forbidden", message: "Action impossible" }, 403);
   }
 
   // Single query: find existing direct conversation between these two users

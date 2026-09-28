@@ -9,6 +9,7 @@ import { TECHNICAL_EMAIL_LIKE } from "../../../lib/technical-email";
 import { forbidden, isSuperAdmin, resolveClubId } from "../../../lib/club-access";
 import { createAttemptLimiter } from "../../../lib/attempt-limiter";
 import { classifySearchQuery, escapeLike, EXACT_SEARCHES_PER_HOUR } from "../../../lib/user-search";
+import { getBlockedUserIds } from "../../../lib/block";
 
 // Exact lookups outside the club are the only way to reach someone from another club: rate limited.
 const exactSearchLimiter = createAttemptLimiter({ max: EXACT_SEARCHES_PER_HOUR, windowMs: 60 * 60 * 1000 });
@@ -70,8 +71,13 @@ export const searchUsers = async (c: Context<HonoContext>) => {
         .innerJoin(member, and(eq(member.userId, user.id), eq(member.organizationId, clubId)))
         .where(and(matchCondition, eq(user.banned, false)))
         .limit(validated.limit);
-      if (clubUsers.length > 0 || !identifierCondition) {
-        return c.json({ users: clubUsers, count: clubUsers.length });
+      const blocked = await getBlockedUserIds(
+        currentUser.id,
+        clubUsers.map((u) => u.id),
+      );
+      const visibleClubUsers = clubUsers.filter((u) => !blocked.has(u.id));
+      if (visibleClubUsers.length > 0 || !identifierCondition) {
+        return c.json({ users: visibleClubUsers, count: visibleClubUsers.length });
       }
     }
 
@@ -96,7 +102,8 @@ export const searchUsers = async (c: Context<HonoContext>) => {
       .where(and(identifierCondition, eq(user.banned, false), eq(user.is_ghost, false)))
       .limit(1);
 
-    const users = found && found.id !== currentUser.id ? [{ ...found, isGhost: false }] : [];
+    const isBlocked = found ? (await getBlockedUserIds(currentUser.id, [found.id])).has(found.id) : false;
+    const users = found && found.id !== currentUser.id && !isBlocked ? [{ ...found, isGhost: false }] : [];
     return c.json({ users, count: users.length });
   } catch (error) {
     return c.json({ error: "Internal server error", message: (error as Error).message }, 500);

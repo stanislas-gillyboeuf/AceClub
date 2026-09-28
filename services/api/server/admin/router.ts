@@ -14,6 +14,7 @@ import {
   listGameConfig,
   listChallengeTemplates,
   listBadges,
+  listReports,
 } from "./queries";
 import { zValidator } from "@hono/zod-validator";
 import {
@@ -47,6 +48,8 @@ import {
   updateChallengeTemplateValidator,
   createBadgeValidator,
   updateBadgeValidator,
+  listReportsValidator,
+  updateReportStatusValidator,
 } from "./validators";
 import {
   banUser,
@@ -79,6 +82,7 @@ import {
   createBadge,
   updateBadge,
   deleteBadge,
+  updateReportStatus,
 } from "./mutations";
 
 export const adminRouter = new Hono<HonoContext>();
@@ -260,3 +264,12 @@ adminRouter.post("/badges", zValidator("json", createBadgeValidator), createBadg
 adminRouter.put("/badges/:id", zValidator("json", updateBadgeValidator), updateBadge);
 
 adminRouter.delete("/badges/:id", deleteBadge);
+
+// Player reports
+adminRouter.get("/reports", zValidator("query", listReportsValidator), listReports);
+
+adminRouter.put(
+  "/reports/:id/status",
+  zValidator("json", updateReportStatusValidator),
+  updateReportStatus,
+);
