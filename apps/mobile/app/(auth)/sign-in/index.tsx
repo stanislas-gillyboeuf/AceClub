@@ -4,12 +4,12 @@ import {
   Text,
   Image,
   Pressable,
-  TextInput,
   StyleSheet,
   Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,17 +17,14 @@ import { GoogleSignin } from "@/lib/google-signin";
 import { authClient } from "@/lib/auth-client";
 import { colors, radii } from "@/constants/theme";
 import GoogleLogo from "@/features/auth/components/google-logo";
-
-const __DEV__ = process.env.NODE_ENV !== "production";
+import { EmailAuthForm } from "@/features/auth/components/email-auth-form";
 
 export default function SignIn() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Dev-only email/password
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   const handleAppleSignIn = async () => {
     setIsLoading(true);
@@ -87,22 +84,6 @@ export default function SignIn() {
       if (e.code !== "SIGN_IN_CANCELLED") {
         setError(e.message || "Une erreur est survenue avec Google Sign-In");
       }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleEmailSignIn = async () => {
-    if (!email || !password) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await authClient.signIn.email({ email, password });
-      if (res.error) {
-        setError(res.error.message ?? "Email ou mot de passe incorrect");
-      }
-    } catch {
-      setError("Une erreur est survenue");
     } finally {
       setIsLoading(false);
     }
@@ -179,37 +160,30 @@ export default function SignIn() {
           </Pressable>
         </View>
 
-        {/* Dev-only: Email/Password */}
-        {__DEV__ && (
-          <View style={styles.devSection}>
-            <View style={styles.devDivider}>
-              <View style={styles.devDividerLine} />
-              <Text style={styles.devDividerText}>DEV</Text>
-              <View style={styles.devDividerLine} />
-            </View>
-            <TextInput
-              style={styles.devInput}
-              placeholder="Email"
-              placeholderTextColor="rgba(255,255,255,0.5)"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-            <TextInput
-              style={styles.devInput}
-              placeholder="Mot de passe"
-              placeholderTextColor="rgba(255,255,255,0.5)"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-            <Pressable onPress={handleEmailSignIn} disabled={isLoading}>
-              <View style={styles.devButton}>
-                <Text style={styles.devButtonText}>Se connecter (dev)</Text>
-              </View>
+        {/* Email/password */}
+        {showEmailForm ? (
+          <View style={styles.emailSection}>
+            <EmailAuthForm mode="sign-in" />
+            <Pressable
+              onPress={() => router.push("/sign-up")}
+              hitSlop={8}
+              style={styles.emailToggle}
+            >
+              <Text style={styles.emailToggleText}>
+                Pas de compte ? Créer un compte
+              </Text>
             </Pressable>
           </View>
+        ) : (
+          <Pressable
+            onPress={() => setShowEmailForm(true)}
+            hitSlop={8}
+            style={styles.emailToggle}
+          >
+            <Text style={styles.emailToggleText}>
+              Se connecter avec un email
+            </Text>
+          </Pressable>
         )}
 
         {/* Footer */}
@@ -314,47 +288,20 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.black,
   },
-  // Dev section
-  devSection: {
-    gap: 10,
+  // Email sign-in
+  emailSection: {
+    gap: 12,
     marginTop: 16,
   },
-  devDivider: {
-    flexDirection: "row",
+  emailToggle: {
     alignItems: "center",
-    gap: 8,
+    marginTop: 16,
   },
-  devDividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "rgba(255,255,255,0.3)",
-  },
-  devDividerText: {
-    fontSize: 11,
+  emailToggleText: {
+    fontSize: 14,
     fontWeight: "600",
-    color: "rgba(255,255,255,0.6)",
-  },
-  devInput: {
-    height: 44,
-    borderRadius: radii.sm,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.3)",
-    paddingHorizontal: 14,
-    fontSize: 15,
-    color: colors.white,
-    backgroundColor: "rgba(255,255,255,0.1)",
-  },
-  devButton: {
-    height: 44,
-    borderRadius: radii.sm,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  devButtonText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: colors.white,
+    color: "rgba(255,255,255,0.85)",
+    textDecorationLine: "underline",
   },
   // Footer
   footer: {
