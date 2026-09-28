@@ -34,6 +34,9 @@ yarn-error.*
 .env
 .env*.local
 
+# service account credentials (EAS Android submit)
+google-service-account.json
+
 # typescript
 *.tsbuildinfo
 
