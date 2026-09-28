@@ -4,6 +4,8 @@ export { muteConversation } from "./mute-conversation";
 export { deleteConversation } from "./delete-conversation";
 export { deleteMessage } from "./delete-message";
 export { findOrCreateConversation } from "./find-or-create";
+export { acceptConversationRequest } from "./accept-request";
+export { rejectConversationRequest } from "./reject-request";
 export { uploadAttachment } from "./upload-attachment";
 export { addReaction } from "./add-reaction";
 export { removeReaction } from "./remove-reaction";

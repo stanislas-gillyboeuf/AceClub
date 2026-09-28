@@ -19,6 +19,8 @@ import {
   uploadAttachment,
   addReaction,
   removeReaction,
+  acceptConversationRequest,
+  rejectConversationRequest,
 } from "./mutations";
 import { listConversations, getConversation, listMessages } from "./queries";
 
@@ -36,6 +38,10 @@ conversationRouter.post(
   zValidator("json", findOrCreateConversationValidator),
   findOrCreateConversation,
 );
+
+// Accept or reject a pending conversation request
+conversationRouter.post("/:id/accept-request", acceptConversationRequest);
+conversationRouter.post("/:id/reject-request", rejectConversationRequest);
 
 // Get a specific conversation
 conversationRouter.get("/:id", getConversation);

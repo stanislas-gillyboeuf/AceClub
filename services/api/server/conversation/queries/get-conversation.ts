@@ -68,6 +68,8 @@ export const getConversation = async (c: Context<HonoContext>) => {
     id: conv.id,
     name: conv.name,
     type: conv.type,
+    status: conv.status,
+    initiatedByUserId: conv.initiatedByUserId,
     lastMessageAt: conv.lastMessageAt?.toISOString() || null,
     lastMessagePreview: conv.lastMessagePreview,
     lastMessageSenderId: conv.lastMessageSenderId,

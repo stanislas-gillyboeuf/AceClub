@@ -14,6 +14,15 @@ import { ulid } from "ulid";
 
 export const ConversationType = pgEnum("conversation_type", ["match", "group", "direct"]);
 export const MessageType = pgEnum("message_type", ["text", "voice", "image", "match_request"]);
+// A "direct" conversation between two players with no prior link (no shared club, match, or
+// existing active conversation) starts "pending_request": the initiator may send one message,
+// the recipient must accept (or reject) before it becomes a normal conversation. Every other
+// conversation — including all pre-existing rows — is "active" and never transitions.
+export const ConversationStatus = pgEnum("conversation_status", [
+  "active",
+  "pending_request",
+  "rejected",
+]);
 
 export const conversation = pgTable(
   "conversation",
@@ -24,6 +33,16 @@ export const conversation = pgTable(
     // Name for group conversations (null for 1:1 match conversations)
     name: text("name"),
     type: ConversationType("type").notNull().default("match"),
+    status: ConversationStatus("status").notNull().default("active"),
+    // Who created the conversation via find-or-create — only meaningful while status is
+    // "pending_request", to tell the initiator (limited to one message) from the recipient
+    // (whose reply implicitly accepts the request).
+    initiatedByUserId: text("initiated_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    // Set once a request notification has been sent, so a blocked second message never
+    // re-notifies the recipient.
+    requestNotifiedAt: timestamp("request_notified_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
     // Denormalized fields for efficient list queries

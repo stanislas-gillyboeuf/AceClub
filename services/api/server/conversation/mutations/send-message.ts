@@ -13,6 +13,7 @@ import { redis, CHAT_CHANNEL } from "../../../lib/redis";
 import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
 import { isUserConnectedWs } from "../../ws/bun-chat-handler";
 import { decryptMessageContent } from "../lib/decrypt-content";
+import { canSendMessage } from "../lib/request-link";
 
 export const sendMessage = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user");
@@ -67,12 +68,60 @@ export const sendMessage = async (c: Context<HonoContext>) => {
       .where(eq(user.id, currentUser.id))
       .limit(1),
     db
-      .select({ encryptionKey: conversation.encryptionKey })
+      .select({
+        encryptionKey: conversation.encryptionKey,
+        status: conversation.status,
+        initiatedByUserId: conversation.initiatedByUserId,
+      })
       .from(conversation)
       .where(eq(conversation.id, conversationId))
       .limit(1),
   ]);
   const encryptionKey = conv?.encryptionKey ?? null;
+
+  if (conv && conv.status === "pending_request") {
+    let initiatorHasSentMessage = false;
+    if (conv.initiatedByUserId === currentUser.id) {
+      const [priorMessage] = await db
+        .select({ id: message.id })
+        .from(message)
+        .where(
+          and(eq(message.conversationId, conversationId), eq(message.senderId, currentUser.id)),
+        )
+        .limit(1);
+      initiatorHasSentMessage = !!priorMessage;
+    }
+
+    const decision = canSendMessage({
+      status: conv.status,
+      initiatedByUserId: conv.initiatedByUserId,
+      senderId: currentUser.id,
+      initiatorHasSentMessage,
+    });
+
+    if (!decision.allowed) {
+      return c.json(
+        {
+          error: "BadRequest",
+          message: "Attendez que le destinataire accepte votre demande",
+        },
+        400,
+      );
+    }
+
+    // The recipient replying is the implicit acceptance of the request.
+    if (conv.initiatedByUserId !== currentUser.id) {
+      await db
+        .update(conversation)
+        .set({ status: "active", updatedAt: new Date() })
+        .where(eq(conversation.id, conversationId));
+    }
+  } else if (conv && conv.status === "rejected") {
+    return c.json(
+      { error: "BadRequest", message: "Cette demande de conversation a été refusée" },
+      400,
+    );
+  }
 
   // Insert the message
   const messageId = ulid();
@@ -257,6 +306,15 @@ export const sendMessage = async (c: Context<HonoContext>) => {
         ),
       ),
   ).catch(() => {});
+
+  if (conv?.status === "pending_request" && conv.initiatedByUserId === currentUser.id) {
+    // This was the initiator's one allowed message — record that the recipient was notified,
+    // so nothing re-notifies them while the request sits unanswered.
+    await db
+      .update(conversation)
+      .set({ requestNotifiedAt: now })
+      .where(eq(conversation.id, conversationId));
+  }
 
   return c.json(
     {
