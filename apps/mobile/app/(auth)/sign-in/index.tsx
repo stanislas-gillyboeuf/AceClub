@@ -24,7 +24,10 @@ export default function SignIn() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showEmailForm, setShowEmailForm] = useState(false);
+  // Google Sign-In is temporarily disabled on Android (OAuth/SHA-1 config issue
+  // being resolved on the Google Cloud / Play Console side) — email is the only
+  // option there for now, so skip the toggle and show the form right away.
+  const [showEmailForm, setShowEmailForm] = useState(Platform.OS !== "ios");
 
   const handleAppleSignIn = async () => {
     setIsLoading(true);
@@ -130,9 +133,10 @@ export default function SignIn() {
           </View>
         )}
 
-        {/* Sign-in pills */}
-        <View style={styles.pillsRow}>
-          {Platform.OS === "ios" && (
+        {/* Sign-in pills — Apple and Google are iOS-only for now (Google Sign-In
+            is disabled on Android until its OAuth config is fixed) */}
+        {Platform.OS === "ios" && (
+          <View style={styles.pillsRow}>
             <Pressable
               onPress={handleAppleSignIn}
               disabled={isLoading}
@@ -144,21 +148,20 @@ export default function SignIn() {
               <Ionicons name="logo-apple" size={20} color={colors.black} />
               <Text style={styles.pillText}>Apple</Text>
             </Pressable>
-          )}
 
-          <Pressable
-            onPress={handleGoogleSignIn}
-            disabled={isLoading}
-            style={({ pressed }) => [
-              styles.pill,
-              pressed && styles.pillPressed,
-              Platform.OS !== "ios" && styles.pillFull,
-            ]}
-          >
-            <GoogleLogo size={18} />
-            <Text style={styles.pillText}>Google</Text>
-          </Pressable>
-        </View>
+            <Pressable
+              onPress={handleGoogleSignIn}
+              disabled={isLoading}
+              style={({ pressed }) => [
+                styles.pill,
+                pressed && styles.pillPressed,
+              ]}
+            >
+              <GoogleLogo size={18} />
+              <Text style={styles.pillText}>Google</Text>
+            </Pressable>
+          </View>
+        )}
 
         {/* Email/password */}
         {showEmailForm ? (
@@ -279,9 +282,6 @@ const styles = StyleSheet.create({
   },
   pillPressed: {
     opacity: 0.85,
-  },
-  pillFull: {
-    flex: 1,
   },
   pillText: {
     fontSize: 16,
