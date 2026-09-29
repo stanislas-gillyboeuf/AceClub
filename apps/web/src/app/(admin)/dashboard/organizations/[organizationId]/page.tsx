@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Pencil, Trash2, Plus, UserPlus, X, Eye, EyeOff, MapPin, Lock, LockOpen, RefreshCw, Copy, Check } from "lucide-react"
+import { ArrowLeft, Pencil, Trash2, Plus, UserPlus, X, Eye, EyeOff, MapPin, Lock, LockOpen, RefreshCw, Copy, Check, Globe } from "lucide-react"
+import { siteConfig } from "@/lib/config"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -166,6 +167,7 @@ export default function OrganizationDetailPage() {
   const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
   const [pinVisible, setPinVisible] = useState(false)
   const [pinCopied, setPinCopied] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
 
   const { data: orgData, isLoading: orgLoading } = useAdminOrganization(organizationId)
 
@@ -203,6 +205,23 @@ export default function OrganizationDetailPage() {
       setTimeout(() => setPinCopied(false), 2000)
     }
   }, [org?.pin])
+
+  const publicMemberUrl = org ? `${siteConfig.url}/adherent/${org.slug}` : ""
+
+  const handleCopyPublicLink = useCallback(() => {
+    if (!publicMemberUrl) return
+    navigator.clipboard.writeText(publicMemberUrl)
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 2000)
+  }, [publicMemberUrl])
+
+  const handleToggleClient = useCallback(() => {
+    if (!org) return
+    updateOrganizationMutation.mutate({
+      organizationId: org.id,
+      data: { isClient: !org.isClient },
+    })
+  }, [org, updateOrganizationMutation])
 
   const isHidden = (() => {
     if (!org?.metadata) return false
@@ -419,6 +438,54 @@ export default function OrganizationDetailPage() {
                 >
                   <RefreshCw className="mr-2 h-3 w-3" />
                   R\u00e9g\u00e9n\u00e9rer
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {org && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Globe className={`h-5 w-5 ${org.isClient ? "text-green-600" : "text-muted-foreground"}`} />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold">Club client</h3>
+                    <Badge variant={org.isClient ? "default" : "secondary"}>
+                      {org.isClient ? "Activé" : "Désactivé"}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Donne acc&egrave;s &agrave; la page web publique adh&eacute;rents (r&eacute;servation et &eacute;v&eacute;nements)
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                {org.isClient && (
+                  <div className="flex items-center gap-2">
+                    <span className="max-w-[220px] truncate font-mono text-sm text-muted-foreground sm:max-w-xs">
+                      {publicMemberUrl}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleCopyPublicLink}
+                      title="Copier le lien"
+                    >
+                      {linkCopied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleToggleClient}
+                  disabled={updateOrganizationMutation.isPending}
+                >
+                  {org.isClient ? "Désactiver" : "Activer"}
                 </Button>
               </div>
             </div>
