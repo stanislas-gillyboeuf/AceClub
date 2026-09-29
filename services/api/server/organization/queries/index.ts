@@ -11,3 +11,4 @@ export * from "./get-organization-stats";
 export * from "./get-pin";
 export * from "./list-user-organizations";
 export * from "./search-members";
+export * from "./public-by-slug";

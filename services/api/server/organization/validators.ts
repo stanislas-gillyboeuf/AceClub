@@ -42,7 +42,7 @@ export const addMemberValidator = z.object({
   role: z.union([z.string(), z.array(z.string())]),
   organizationId: z.string().optional(),
   teamId: z.string().optional(),
-  // Only used by the legacy « join » call (userId = the caller); see decideAddMember.
+  // Only used by the legacy ï¿½ join ï¿½ call (userId = the caller); see decideAddMember.
   pin: z.string().optional(),
 });
 
@@ -101,6 +101,10 @@ export const searchOrganizationsValidator = z.object({
 
 export const getOrganizationStatsValidator = z.object({
   organizationId: z.string(),
+});
+
+export const publicBySlugValidator = z.object({
+  slug: z.string().min(1, "Slug is required"),
 });
 
 export const requestClubValidator = z.object({

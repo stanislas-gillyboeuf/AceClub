@@ -53,6 +53,7 @@ import {
   searchOrganizations,
   getOrganizationStats,
   getPin,
+  publicBySlug,
 } from "./queries";
 import {
   searchOrganizationsValidator,
@@ -65,11 +66,21 @@ import {
   verifyPinValidator,
   listUserOrganizationsValidator,
   completeOnboardingValidator,
+  publicBySlugValidator,
 } from "./validators";
 
 export const organizationRouter = new Hono<HonoContext>();
 
-// Apply auth middleware to all routes
+// Public, unauthenticated — MUST stay registered before the blanket requireAuth below, since
+// that "/*" middleware runs for every route registered after it. Powers the public
+// /adherent/[slug] member page (club name/logo/slug only, gated on organization.isClient).
+organizationRouter.get(
+  "/public-by-slug",
+  zValidator("query", publicBySlugValidator),
+  publicBySlug,
+);
+
+// Apply auth middleware to all routes below this point
 organizationRouter.use("/*", requireAuth);
 
 // Organization queries (accessible to authenticated users)

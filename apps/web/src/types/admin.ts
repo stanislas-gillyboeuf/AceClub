@@ -85,6 +85,7 @@ export interface Organization {
   longitude: number | null
   pin: string | null
   pinEnabled: boolean
+  isClient: boolean
 }
 
 export interface OrganizationMember {

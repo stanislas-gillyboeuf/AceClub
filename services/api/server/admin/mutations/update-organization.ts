@@ -28,6 +28,8 @@ export const updateOrganization = async (c: Context<HonoContext>) => {
   if (validated.data.metadata !== undefined)
     updateData.metadata = JSON.stringify(validated.data.metadata);
 
+  if (validated.data.isClient !== undefined) updateData.isClient = validated.data.isClient;
+
   if (validated.data.address !== undefined) {
     updateData.address = validated.data.address || null;
     const coords = validated.data.address ? await geocodeAddress(validated.data.address) : null;

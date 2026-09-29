@@ -109,6 +109,8 @@ export const organization = pgTable(
     pin: text("pin"),
     pinEnabled: boolean("pin_enabled").default(false),
     onboardingCompleted: boolean("onboarding_completed").default(false).notNull(),
+    // Set manually by the platform super-admin — gates the public /adherent/[slug] member page.
+    isClient: boolean("is_client").notNull().default(false),
   },
   (table) => [uniqueIndex("organization_slug_uidx").on(table.slug)],
 );

@@ -1,0 +1,1 @@
+ALTER TABLE "organization" ADD COLUMN "is_client" boolean DEFAULT false NOT NULL;
