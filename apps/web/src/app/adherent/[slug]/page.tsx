@@ -3,6 +3,7 @@
 import { use } from "react"
 import { Download } from "lucide-react"
 import { AdherentLoginForm } from "@/components/custom/adherent/adherent-login-form"
+import { BookingWidget } from "@/components/custom/adherent/booking-widget"
 import { EventsWidget } from "@/components/custom/adherent/events-widget"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -87,9 +88,7 @@ export default function AdherentPage({ params }: AdherentPageProps) {
         </Card>
       ) : (
         <div className="space-y-8">
-          {/* TODO: BookingWidget, ajouté séparément — s'insère ici, après la sonde d'appartenance
-              (isMember, ci-dessus) et avant/à côté de la section Événements. Ne rend que si
-              isMember.data?.enabled est true. */}
+          {isMember.data?.enabled && <BookingWidget organizationId={org.id} />}
           <EventsWidget organizationId={org.id} />
         </div>
       )}
