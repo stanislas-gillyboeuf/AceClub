@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 import { apiClient } from "@/lib/api-client"
 import type {
-  AdherentAvailability,
   AdherentBooking,
-  AdherentCourt,
   AdherentEvent,
   AdherentMember,
-  AdherentWeeklyQuota,
+  CourtBoard,
+  CourtSettings,
+  CourtSport,
   MyEventRegistration,
   PublicOrganization,
 } from "@/types/adherent"
@@ -54,28 +54,20 @@ export function useMyEventRegistrations(enabled: boolean) {
   })
 }
 
-export function useAdherentCourts(organizationId: string | undefined) {
+/** Same day/sport grid the mobile app's booking screen reads — all active courts, hour by hour. */
+export function useAdherentBoard(organizationId: string | undefined, sport: CourtSport, date: string) {
   return useQuery({
-    queryKey: ["adherent-courts", organizationId],
-    queryFn: () => apiClient<AdherentCourt[]>(`/court/list?organizationId=${organizationId}`),
+    queryKey: ["adherent-board", organizationId, sport, date],
+    queryFn: () => apiClient<CourtBoard>(`/court/board?organizationId=${organizationId}&sport=${sport}&date=${date}`),
     enabled: !!organizationId,
     retry: false,
   })
 }
 
-export function useAdherentAvailability(courtId: string | undefined, date: string | undefined) {
+export function useAdherentCourtSettings(organizationId: string | undefined) {
   return useQuery({
-    queryKey: ["adherent-availability", courtId, date],
-    queryFn: () => apiClient<AdherentAvailability>(`/court/availability?courtId=${courtId}&date=${date}`),
-    enabled: !!courtId && !!date,
-    retry: false,
-  })
-}
-
-export function useAdherentWeeklyQuota(organizationId: string | undefined) {
-  return useQuery({
-    queryKey: ["adherent-weekly-quota", organizationId],
-    queryFn: () => apiClient<AdherentWeeklyQuota>(`/court/my-weekly-quota?organizationId=${organizationId}`),
+    queryKey: ["adherent-court-settings", organizationId],
+    queryFn: () => apiClient<CourtSettings>(`/court/settings?organizationId=${organizationId}`),
     enabled: !!organizationId,
     retry: false,
   })

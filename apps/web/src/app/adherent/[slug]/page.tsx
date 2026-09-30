@@ -1,6 +1,6 @@
 "use client"
 
-import { use } from "react"
+import { use, useState } from "react"
 import { Download } from "lucide-react"
 import { AdherentLoginForm } from "@/components/custom/adherent/adherent-login-form"
 import { BookingWidget } from "@/components/custom/adherent/booking-widget"
@@ -9,7 +9,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAdherentBookingEnabled, usePublicOrganization } from "@/hooks/use-adherent-queries"
 import { siteConfig } from "@/lib/config"
-import { useSession } from "@/lib/auth-client"
 
 interface AdherentPageProps {
   params: Promise<{ slug: string }>
@@ -18,9 +17,12 @@ interface AdherentPageProps {
 export default function AdherentPage({ params }: AdherentPageProps) {
   const { slug } = use(params)
   const { data: org, isLoading: isOrgLoading, isError: isOrgError } = usePublicOrganization(slug)
-  const { data: session, isPending: isSessionPending, refetch: refetchSession } = useSession()
+  // Shared/public device: never trust a session cookie already sitting in the browser (e.g. left
+  // open on a club's reception tablet, or from an admin also logged into the dashboard) — every
+  // visit to this page requires signing in again, regardless of any existing Better Auth session.
+  const [hasSignedInThisVisit, setHasSignedInThisVisit] = useState(false)
 
-  const isMember = useAdherentBookingEnabled(session ? org?.id : undefined)
+  const isMember = useAdherentBookingEnabled(hasSignedInThisVisit ? org?.id : undefined)
 
   if (isOrgLoading) {
     return (
@@ -75,10 +77,8 @@ export default function AdherentPage({ params }: AdherentPageProps) {
         </a>
       </header>
 
-      {isSessionPending ? (
-        <Skeleton className="h-64 w-full rounded-2xl bg-adh-border/60" />
-      ) : !session ? (
-        <AdherentLoginForm clubName={org.name} onSignedIn={() => refetchSession()} />
+      {!hasSignedInThisVisit ? (
+        <AdherentLoginForm clubName={org.name} onSignedIn={() => setHasSignedInThisVisit(true)} />
       ) : isMember.isLoading ? (
         <div className="space-y-4">
           <Skeleton className="h-24 w-full rounded-2xl bg-adh-border/60" />

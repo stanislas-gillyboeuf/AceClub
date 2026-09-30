@@ -42,42 +42,39 @@ export type CourtSurface = "clay" | "hard" | "grass" | "carpet"
 export type CourtCancellationPolicy = "anytime" | "window" | "disabled"
 export type CourtBookingStatus = "confirmed" | "cancelled"
 
-/** One row of GET /court/list. */
-export interface AdherentCourt {
+export interface BoardHourCell {
+  hour: number
+  status: "free" | "booked" | "mine" | "past"
+  bookedByLabel?: string
+  bookedAsClub?: boolean
+}
+
+/** One court's row on GET /court/board. */
+export interface BoardCourt {
   id: string
-  organizationId: string
   name: string
-  sport: CourtSport
   surface: CourtSurface | null
   indoor: boolean
-  isActive: boolean
   accessPolicy: "members_only" | "open"
-  pricePerHour: number | null
-  slotDurationMinutes: number
   cancellationPolicy: CourtCancellationPolicy
   cancellationWindowHours: number | null
+  pricePerHour: number | null
+  slotDurationMinutes: number
+  hours: BoardHourCell[]
 }
 
-export interface AdherentAvailabilitySlot {
-  startTime: string
-  start: string
-  end: string
-  available: boolean
-  bookedAsClub: boolean
-  purpose: string | null
-}
-
-/** GET /court/availability response. */
-export interface AdherentAvailability {
-  courtId: string
+/** GET /court/board response — the same day/sport grid the mobile app's booking screen uses. */
+export interface CourtBoard {
   date: string
-  slots: AdherentAvailabilitySlot[]
+  sport: CourtSport
+  courts: BoardCourt[]
 }
 
-/** GET /court/my-weekly-quota response. `limit: null` means unlimited. */
-export interface AdherentWeeklyQuota {
-  weekday: { used: number; limit: number | null }
-  weekend: { used: number; limit: number | null }
+/** GET /court/settings response. `bookingWindowDays: null` means the default (today + 6). */
+export interface CourtSettings {
+  maxBookingsPerWeekWeekday: number | null
+  maxBookingsPerWeekWeekend: number | null
+  bookingWindowDays: number | null
 }
 
 /** One row of GET /court/my-bookings — NOT organization-scoped server-side, must be
