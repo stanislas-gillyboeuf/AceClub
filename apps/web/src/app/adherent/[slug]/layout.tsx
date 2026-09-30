@@ -7,7 +7,7 @@ export default function AdherentLayout({
 }) {
   return (
     <Providers>
-      <div className="marketing-theme min-h-screen bg-mkt-bg text-mkt-fg">{children}</div>
+      <div className="adherent-theme min-h-screen bg-adh-bg text-adh-fg">{children}</div>
     </Providers>
   )
 }

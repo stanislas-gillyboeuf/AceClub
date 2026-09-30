@@ -11,7 +11,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -58,17 +57,19 @@ function EventCard({ event }: EventCardProps) {
   }
 
   return (
-    <Card>
+    <Card className="rounded-2xl border-adh-border bg-adh-card shadow-none">
       <CardHeader className="flex flex-row items-start justify-between space-y-0">
         <div>
-          <CardTitle className="text-base">{event.name}</CardTitle>
-          <p className="mt-1 text-sm text-muted-foreground">{formatDate(event.startDate)}</p>
-          {event.address && <p className="text-sm text-muted-foreground">{event.address}</p>}
+          <CardTitle className="text-base font-extrabold text-adh-fg">{event.name}</CardTitle>
+          <p className="mt-1 text-sm text-adh-fg-dim">{formatDate(event.startDate)}</p>
+          {event.address && <p className="text-sm text-adh-fg-dim">{event.address}</p>}
         </div>
-        <Badge variant="secondary">{STATUS_LABELS[event.status]}</Badge>
+        <span className="shrink-0 rounded-full bg-adh-bg px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-adh-fg-dim">
+          {STATUS_LABELS[event.status]}
+        </span>
       </CardHeader>
       <CardContent className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-adh-fg-dim">
           {event.participantCount} inscrit{event.participantCount !== 1 ? "s" : ""}
           {event.maxParticipants ? ` / ${event.maxParticipants} places` : ""}
           {!event.isFree && (event.price != null ? ` · ${event.price} €` : " · Payant")}
@@ -76,24 +77,28 @@ function EventCard({ event }: EventCardProps) {
         {status === "registered" ? (
           <>
             <Button
-              variant="destructive"
-              size="sm"
               disabled={isMutating}
               onClick={() => setConfirmCancelOpen(true)}
+              className="h-9 rounded-full border border-adh-danger/30 bg-transparent px-4 text-sm font-bold text-adh-danger hover:bg-adh-danger/10"
             >
               Annuler l&apos;inscription
             </Button>
             <AlertDialog open={confirmCancelOpen} onOpenChange={setConfirmCancelOpen}>
-              <AlertDialogContent>
+              <AlertDialogContent className="rounded-3xl border-adh-border bg-adh-card text-adh-fg">
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Annuler l&apos;inscription ?</AlertDialogTitle>
-                  <AlertDialogDescription>
+                  <AlertDialogTitle className="text-adh-fg">Annuler l&apos;inscription ?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-adh-fg-dim">
                     Vous ne serez plus inscrit à « {event.name} ».
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Non</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => cancelMutation.mutate(event.id)}>
+                  <AlertDialogCancel className="rounded-full border-adh-border bg-transparent text-adh-fg hover:bg-adh-bg">
+                    Non
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => cancelMutation.mutate(event.id)}
+                    className="rounded-full bg-adh-danger font-bold text-white hover:bg-adh-danger/90"
+                  >
                     Oui, annuler
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -101,11 +106,15 @@ function EventCard({ event }: EventCardProps) {
             </AlertDialog>
           </>
         ) : status === "waitlisted" ? (
-          <Button size="sm" disabled>
+          <Button disabled className="h-9 rounded-full bg-adh-border px-4 text-sm font-bold text-adh-fg-dim">
             Sur liste d&apos;attente
           </Button>
         ) : (
-          <Button size="sm" disabled={isMutating} onClick={handleRegister}>
+          <Button
+            disabled={isMutating}
+            onClick={handleRegister}
+            className="h-9 rounded-full bg-adh-accent px-4 text-sm font-bold text-adh-accent-foreground hover:bg-adh-accent/90"
+          >
             {!event.isFree && event.paymentLink ? "S'inscrire et payer" : "S'inscrire"}
           </Button>
         )}
@@ -130,15 +139,15 @@ export function EventsWidget({ organizationId }: EventsWidgetProps) {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-lg font-semibold">Événements</h2>
+      <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-adh-fg-dim">Événements</h2>
       {isLoading ? (
         <div className="space-y-3">
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full rounded-2xl bg-adh-border/60" />
+          <Skeleton className="h-24 w-full rounded-2xl bg-adh-border/60" />
         </div>
       ) : events.length === 0 ? (
-        <Card>
-          <CardContent className="py-8 text-center text-sm text-muted-foreground">
+        <Card className="rounded-2xl border-adh-border bg-adh-card shadow-none">
+          <CardContent className="py-8 text-center text-sm text-adh-fg-dim">
             Aucun événement à venir pour le moment.
           </CardContent>
         </Card>

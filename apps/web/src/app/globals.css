@@ -60,6 +60,19 @@
   --color-mkt-light-border: var(--mkt-light-border);
   --color-mkt-light-raised: var(--mkt-light-raised);
 
+  /* Adherent member page tokens — mirrors the mobile app's light booking screens, not
+     the dark marketing site or the admin dashboard's shadcn theme. */
+  --color-adh-bg: var(--adh-bg);
+  --color-adh-card: var(--adh-card);
+  --color-adh-border: var(--adh-border);
+  --color-adh-fg: var(--adh-fg);
+  --color-adh-fg-dim: var(--adh-fg-dim);
+  --color-adh-fg-faint: var(--adh-fg-faint);
+  --color-adh-accent: var(--adh-accent);
+  --color-adh-accent-dim: var(--adh-accent-dim);
+  --color-adh-accent-foreground: var(--adh-accent-foreground);
+  --color-adh-danger: var(--adh-danger);
+
   --animate-marquee: marquee var(--duration) linear infinite;
   --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
   --animate-border-beam: border-beam calc(var(--duration) * 1s) infinite linear;
@@ -270,6 +283,31 @@
 .mkt-light-section {
   background-color: var(--mkt-light-bg);
   color: var(--mkt-light-fg);
+}
+
+/*
+ * Adherent member page (/adherent/[slug]) — reuses the mobile app's own light booking
+ * screens palette (semanticColors.primaryBackground.light + the chartreuse "bookingGreen"
+ * accent from apps/mobile/features/court-booking/theme.ts) so it reads as the same
+ * product as the app, not a plain admin-dashboard page dropped onto the web. Fixed,
+ * self-contained theme like .marketing-theme — ignores the admin dashboard's dark mode.
+ */
+.adherent-theme {
+  --adh-bg: #f2f2f7;
+  --adh-card: #ffffff;
+  --adh-border: #e5e5ea;
+  --adh-fg: #000000;
+  --adh-fg-dim: #8e8e93;
+  --adh-fg-faint: #c7c7cc;
+  --adh-accent: #d7ff3f;
+  --adh-accent-dim: #8fae2a;
+  --adh-accent-foreground: #081814;
+  --adh-danger: #ef4444;
+
+  background-color: var(--adh-bg);
+  color: var(--adh-fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
 }
 
 .dark {

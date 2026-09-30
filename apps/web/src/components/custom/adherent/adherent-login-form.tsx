@@ -39,19 +39,23 @@ export function AdherentLoginForm({ clubName, onSignedIn }: AdherentLoginFormPro
   }
 
   return (
-    <Card className="mx-auto w-full max-w-sm">
+    <Card className="mx-auto w-full max-w-sm rounded-3xl border-adh-border bg-adh-card shadow-none">
       <CardHeader className="text-center">
-        <CardTitle className="text-xl">Espace adhérent</CardTitle>
-        <CardDescription>Connectez-vous avec le compte utilisé sur l&apos;app {clubName}</CardDescription>
+        <CardTitle className="text-xl font-extrabold text-adh-fg">Connexion adhérent</CardTitle>
+        <CardDescription className="text-adh-fg-dim">
+          Utilisez le compte de l&apos;app {clubName}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4">
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+              <div className="rounded-xl bg-adh-danger/10 p-3 text-sm text-adh-danger">{error}</div>
             )}
-            <div className="grid gap-2">
-              <Label htmlFor="adherent-email">Email</Label>
+            <div className="grid gap-1.5">
+              <Label htmlFor="adherent-email" className="text-xs font-bold uppercase tracking-wide text-adh-fg-dim">
+                Email
+              </Label>
               <Input
                 id="adherent-email"
                 type="email"
@@ -60,10 +64,16 @@ export function AdherentLoginForm({ clubName, onSignedIn }: AdherentLoginFormPro
                 required
                 disabled={isLoading}
                 autoComplete="email"
+                className="h-12 rounded-2xl border-adh-border bg-adh-bg px-4 text-adh-fg placeholder:text-adh-fg-faint focus-visible:ring-adh-accent-dim"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="adherent-password">Mot de passe</Label>
+            <div className="grid gap-1.5">
+              <Label
+                htmlFor="adherent-password"
+                className="text-xs font-bold uppercase tracking-wide text-adh-fg-dim"
+              >
+                Mot de passe
+              </Label>
               <Input
                 id="adherent-password"
                 type="password"
@@ -72,9 +82,14 @@ export function AdherentLoginForm({ clubName, onSignedIn }: AdherentLoginFormPro
                 required
                 disabled={isLoading}
                 autoComplete="current-password"
+                className="h-12 rounded-2xl border-adh-border bg-adh-bg px-4 text-adh-fg placeholder:text-adh-fg-faint focus-visible:ring-adh-accent-dim"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="h-12 w-full rounded-full bg-adh-accent text-sm font-bold text-adh-accent-foreground hover:bg-adh-accent/90"
+            >
               {isLoading ? (
                 <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               ) : null}

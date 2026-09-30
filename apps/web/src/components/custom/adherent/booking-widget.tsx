@@ -11,7 +11,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -70,6 +69,7 @@ function MemberPicker({ organizationId, excludeUserIds, onSelect }: MemberPicker
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Nom du partenaire…"
+        className="h-11 rounded-xl border-adh-border bg-adh-bg px-3 text-adh-fg placeholder:text-adh-fg-faint focus-visible:ring-adh-accent-dim"
         onKeyDown={(e) => {
           if (e.key === "Enter" && query.trim().length > 0) {
             e.preventDefault()
@@ -79,12 +79,12 @@ function MemberPicker({ organizationId, excludeUserIds, onSelect }: MemberPicker
         }}
       />
       {query.length >= 2 && filtered.length > 0 && (
-        <div className="absolute z-10 mt-1 w-full rounded-md border bg-popover shadow-md">
+        <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-adh-border bg-adh-card shadow-lg">
           {filtered.map((m) => (
             <button
               key={m.userId}
               type="button"
-              className="block w-full px-3 py-2 text-left text-sm hover:bg-accent"
+              className="block w-full px-3 py-2 text-left text-sm text-adh-fg hover:bg-adh-bg"
               onClick={() => {
                 onSelect({ userId: m.userId, name: m.name })
                 setQuery("")
@@ -154,25 +154,25 @@ function BookingConfirmDialog({ organizationId, court, date, startTime, onOpenCh
 
   return (
     <Dialog open onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="rounded-3xl border-adh-border bg-adh-card text-adh-fg">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="font-extrabold text-adh-fg">
             {court.name} · {startTime}
           </DialogTitle>
         </DialogHeader>
 
         {errorMessage && (
-          <p className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <p className="rounded-xl border border-adh-danger/30 bg-adh-danger/10 px-3 py-2 text-sm text-adh-danger">
             {errorMessage}
           </p>
         )}
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-bold uppercase tracking-wide text-adh-fg-dim">
               {isPadel ? `Avec qui (${PADEL_TEAM_SIZE + 1} joueurs au total)` : "Avec qui"}
             </p>
-            {isPadel && <span className="text-xs text-muted-foreground">optionnel</span>}
+            {isPadel && <span className="text-xs text-adh-fg-faint">optionnel</span>}
           </div>
 
           {slots.map((slot, index) => (
@@ -180,14 +180,17 @@ function BookingConfirmDialog({ organizationId, court, date, startTime, onOpenCh
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
-                  variant="outline"
-                  className="flex-1 justify-start"
+                  className="h-11 flex-1 justify-start rounded-xl border border-adh-border bg-adh-bg px-4 text-sm font-semibold text-adh-fg hover:bg-adh-border/50"
                   onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
                 >
                   {slot.name ?? slot.label}
                 </Button>
                 {slot.name && (
-                  <Button type="button" variant="ghost" size="sm" onClick={() => handleRemove(index)}>
+                  <Button
+                    type="button"
+                    className="h-11 rounded-xl bg-transparent px-3 text-sm font-semibold text-adh-fg-dim hover:bg-adh-bg"
+                    onClick={() => handleRemove(index)}
+                  >
                     Retirer
                   </Button>
                 )}
@@ -203,13 +206,22 @@ function BookingConfirmDialog({ organizationId, court, date, startTime, onOpenCh
           ))}
         </div>
 
-        <p className="text-xs text-muted-foreground">{cancellationText}</p>
+        <p className="text-xs text-adh-fg-dim">{cancellationText}</p>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="h-11 rounded-full border border-adh-border bg-transparent px-5 text-sm font-bold text-adh-fg hover:bg-adh-bg"
+          >
             Annuler
           </Button>
-          <Button type="button" disabled={!canConfirm || createBooking.isPending} onClick={handleConfirm}>
+          <Button
+            type="button"
+            disabled={!canConfirm || createBooking.isPending}
+            onClick={handleConfirm}
+            className="h-11 rounded-full bg-adh-accent px-5 text-sm font-bold text-adh-accent-foreground hover:bg-adh-accent/90"
+          >
             {createBooking.isPending ? "…" : "Confirmer"}
           </Button>
         </DialogFooter>
@@ -229,7 +241,7 @@ function MyBookingsList({ organizationId, courtsById }: MyBookingsListProps) {
   const [cancelTargetId, setCancelTargetId] = useState<string | null>(null)
 
   if (isLoading) {
-    return <Skeleton className="h-20 w-full" />
+    return <Skeleton className="h-20 w-full rounded-2xl bg-adh-border/60" />
   }
 
   if (!bookings || bookings.length === 0) {
@@ -238,39 +250,48 @@ function MyBookingsList({ organizationId, courtsById }: MyBookingsListProps) {
 
   return (
     <div className="space-y-2">
-      <h3 className="text-sm font-semibold text-mkt-fg/80">Mes réservations à venir</h3>
+      <h3 className="text-xs font-bold uppercase tracking-[0.12em] text-adh-fg-dim">Mes réservations à venir</h3>
       <div className="space-y-2">
         {bookings.map((booking) => {
           const court = courtsById.get(booking.courtId)
           return (
-            <Card key={booking.id}>
+            <Card key={booking.id} className="rounded-2xl border-adh-border bg-adh-card shadow-none">
               <CardContent className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div>
-                  <p className="text-sm font-medium">
-                    {booking.courtName} <Badge variant="secondary">{booking.sport === "padel" ? "Padel" : "Tennis"}</Badge>
+                  <p className="flex items-center gap-2 text-sm font-bold text-adh-fg">
+                    {booking.courtName}
+                    <span className="rounded-full bg-adh-bg px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-adh-fg-dim">
+                      {booking.sport === "padel" ? "Padel" : "Tennis"}
+                    </span>
                   </p>
-                  <p className="text-sm text-muted-foreground">{formatBookingDate(booking.startAt)}</p>
+                  <p className="text-sm text-adh-fg-dim">{formatBookingDate(booking.startAt)}</p>
                 </div>
-                <Button variant="destructive" size="sm" onClick={() => setCancelTargetId(booking.id)}>
+                <Button
+                  onClick={() => setCancelTargetId(booking.id)}
+                  className="h-9 rounded-full border border-adh-danger/30 bg-transparent px-4 text-sm font-bold text-adh-danger hover:bg-adh-danger/10"
+                >
                   Annuler
                 </Button>
               </CardContent>
               <AlertDialog open={cancelTargetId === booking.id} onOpenChange={(open) => !open && setCancelTargetId(null)}>
-                <AlertDialogContent>
+                <AlertDialogContent className="rounded-3xl border-adh-border bg-adh-card text-adh-fg">
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Annuler la réservation ?</AlertDialogTitle>
-                    <AlertDialogDescription>
+                    <AlertDialogTitle className="text-adh-fg">Annuler la réservation ?</AlertDialogTitle>
+                    <AlertDialogDescription className="text-adh-fg-dim">
                       {booking.courtName}, {formatBookingDate(booking.startAt)}.{" "}
                       {court && buildCancellationText(court.cancellationPolicy, court.cancellationWindowHours)}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Non</AlertDialogCancel>
+                    <AlertDialogCancel className="rounded-full border-adh-border bg-transparent text-adh-fg hover:bg-adh-bg">
+                      Non
+                    </AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() => {
                         cancelBooking.mutate(booking.id)
                         setCancelTargetId(null)
                       }}
+                      className="rounded-full bg-adh-danger font-bold text-white hover:bg-adh-danger/90"
                     >
                       Oui, annuler
                     </AlertDialogAction>
@@ -306,8 +327,8 @@ export function BookingWidget({ organizationId }: BookingWidgetProps) {
   if (isCourtsLoading) {
     return (
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Réservation de courts</h2>
-        <Skeleton className="h-40 w-full" />
+        <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-adh-fg-dim">Réservation de courts</h2>
+        <Skeleton className="h-40 w-full rounded-2xl bg-adh-border/60" />
       </section>
     )
   }
@@ -318,16 +339,16 @@ export function BookingWidget({ organizationId }: BookingWidgetProps) {
 
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-semibold">Réservation de courts</h2>
+      <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-adh-fg-dim">Réservation de courts</h2>
 
       <div className="flex flex-wrap gap-3">
         <Select value={courtId} onValueChange={setSelectedCourtId}>
-          <SelectTrigger className="w-[220px]">
+          <SelectTrigger className="h-11 w-[220px] rounded-full border-adh-border bg-adh-card px-4 text-sm font-semibold text-adh-fg">
             <SelectValue placeholder="Court" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="rounded-xl border-adh-border bg-adh-card text-adh-fg">
             {activeCourts.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
+              <SelectItem key={c.id} value={c.id} className="focus:bg-adh-bg focus:text-adh-fg">
                 {c.name} · {c.sport === "padel" ? "Padel" : "Tennis"}
               </SelectItem>
             ))}
@@ -339,34 +360,37 @@ export function BookingWidget({ organizationId }: BookingWidgetProps) {
           value={selectedDate}
           min={todayISO()}
           onChange={(e) => setSelectedDate(e.target.value)}
-          className="w-[180px]"
+          className="h-11 w-[180px] rounded-full border-adh-border bg-adh-card px-4 text-sm font-semibold text-adh-fg focus-visible:ring-adh-accent-dim"
         />
       </div>
 
       {quota && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-adh-fg-dim">
           Cette semaine : {quota.weekday.used}
           {quota.weekday.limit != null ? `/${quota.weekday.limit}` : ""} en semaine · {quota.weekend.used}
           {quota.weekend.limit != null ? `/${quota.weekend.limit}` : ""} le week-end
         </p>
       )}
 
-      <Card>
+      <Card className="rounded-2xl border-adh-border bg-adh-card shadow-none">
         <CardContent className="py-4">
           {isAvailabilityLoading ? (
-            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full rounded-xl bg-adh-border/60" />
           ) : !availability || availability.slots.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">Aucun créneau pour cette date.</p>
+            <p className="py-4 text-center text-sm text-adh-fg-dim">Aucun créneau pour cette date.</p>
           ) : (
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
               {availability.slots.map((slot) => (
                 <Button
                   key={slot.startTime}
                   type="button"
-                  variant={slot.available ? "outline" : "ghost"}
-                  size="sm"
                   disabled={!slot.available}
                   onClick={() => setPendingSlot({ startTime: slot.startTime })}
+                  className={
+                    slot.available
+                      ? "h-11 rounded-xl bg-adh-accent text-sm font-bold text-adh-accent-foreground hover:bg-adh-accent/90"
+                      : "h-11 rounded-xl bg-adh-bg text-sm font-semibold text-adh-fg-faint"
+                  }
                 >
                   {slot.startTime}
                 </Button>
