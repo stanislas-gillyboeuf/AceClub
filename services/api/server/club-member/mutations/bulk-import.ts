@@ -193,6 +193,7 @@ export const bulkImport = async (c: Context<HonoContext>) => {
           organizationId,
           userId,
           role: "member",
+          source: "csv_import",
           createdAt: new Date(),
         });
         createdMemberRows.add(planned.index);

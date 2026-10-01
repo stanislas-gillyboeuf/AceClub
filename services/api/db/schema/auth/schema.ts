@@ -7,7 +7,18 @@ import {
   index,
   uniqueIndex,
   doublePrecision,
+  pgEnum,
 } from "drizzle-orm/pg-core";
+
+// Nullable, no default: existing memberships predate this column and their real provenance is
+// unknown — NULL is honest, a guessed backfill value would not be.
+export const memberSource = pgEnum("member_source", [
+  "csv_import",
+  "club_code",
+  "open_club",
+  "admin_added",
+  "invitation",
+]);
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -31,6 +42,10 @@ export const user = pgTable("user", {
   gender: text("gender"),
   date_of_birth: text("date_of_birth"),
   must_change_password: boolean("must_change_password").default(false),
+  // Apple can mask the real address behind a privaterelay.appleid.com alias. When it does, the
+  // mobile app asks the player to type the email their club actually has on file, stored here
+  // separately from the login identity (`email`, which stays whatever Apple/Google/password gave).
+  contactEmail: text("contact_email"),
 });
 
 export const session = pgTable(
@@ -127,6 +142,9 @@ export const member = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     role: text("role").default("member").notNull(),
     restrictedDashboardAccess: boolean("restricted_dashboard_access").default(false).notNull(),
+    // How this membership came to exist — lets a club admin tell "joined with our code" apart
+    // from "imported from our CSV" etc. See memberSource above.
+    source: memberSource("source"),
     createdAt: timestamp("created_at").notNull(),
   },
   (table) => [

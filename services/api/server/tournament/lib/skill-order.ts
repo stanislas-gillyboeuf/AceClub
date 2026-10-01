@@ -32,6 +32,12 @@ const TENNIS_LEVELS = [
   "30/4",
   "30/5",
   "40",
+  // Self-declared tier from onboarding's "Débutant / Intermédiaire / Confirmé" cards — weaker
+  // than any precise ranking but stronger than fully unrated ("NC"). Arbitrary placement, easy
+  // to move. Mirrors GENERIC_LEVELS in services/api/server/user/validators.ts.
+  "Confirmé",
+  "Intermédiaire",
+  "Débutant",
   "NC",
 ] as const;
 
@@ -40,6 +46,8 @@ const LEGACY_PADEL_LEVELS: Record<string, string> = {
   Débutant: "2",
   Intermédiaire: "5",
   Avancé: "7",
+  // Same tier as "Avancé" — onboarding's generic "Confirmé" card, no precise padel scale behind it.
+  Confirmé: "7",
   Expert: "9",
 };
 

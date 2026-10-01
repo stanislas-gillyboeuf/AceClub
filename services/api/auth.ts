@@ -4,12 +4,26 @@ import { db } from "./db";
 import { bearer, organization } from "better-auth/plugins";
 import { admin } from "better-auth/plugins/admin";
 import { phoneNumber } from "better-auth/plugins";
+import { emailOTP } from "better-auth/plugins";
 import { user as userTable, member as memberTable } from "./db/schema/auth/schema";
 import { userPreference } from "./db/schema/user-preference/schema";
 import { asc, eq } from "drizzle-orm";
 import { invalidateAllUserClubIds, invalidateUserClubIds } from "./lib/club-access";
 import { awardPremiersPasBadge } from "./server/reward/services/badge-service";
 import { expo } from "@better-auth/expo";
+import { sendEmail } from "./services/mailer";
+import { resetPasswordEmail, emailVerificationOtpEmail } from "./services/mailer/templates";
+
+/** Best-effort: records how a Better-Auth-managed membership came to exist (member.source has
+ * no default — see db/schema/auth/schema.ts). Never throws, this is metadata, not the write
+ * the hook is actually there for. */
+async function setMemberSource(memberId: string, source: "admin_added" | "invitation") {
+  try {
+    await db.update(memberTable).set({ source }).where(eq(memberTable.id, memberId));
+  } catch (error) {
+    console.error(`[AUTH] Failed to set member ${memberId} source to ${source}:`, error);
+  }
+}
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -112,6 +126,12 @@ export const auth = betterAuth({
         defaultValue: false,
         input: true,
       },
+      contactEmail: {
+        type: "string",
+        fieldName: "contact_email",
+        input: true,
+        required: false,
+      },
     },
     deleteUser: {
       enabled: true,
@@ -124,6 +144,15 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      const email = resetPasswordEmail({ resetUrl: url });
+      await sendEmail({
+        to: user.email,
+        subject: email.subject,
+        html: email.html,
+        text: email.text,
+      });
+    },
   },
   socialProviders: {
     google: {
@@ -168,12 +197,20 @@ export const auth = betterAuth({
       // Safety net for every membership write that goes through Better Auth (including the
       // direct /api/auth/organization/* endpoints): the cached club list must never go stale.
       organizationHooks: {
-        afterAddMember: async ({ member }) => invalidateUserClubIds(member.userId),
+        afterAddMember: async ({ member }) => {
+          await setMemberSource(member.id, "admin_added");
+          await invalidateUserClubIds(member.userId);
+        },
         afterRemoveMember: async ({ member }) => invalidateUserClubIds(member.userId),
         afterUpdateMemberRole: async ({ member }) => invalidateUserClubIds(member.userId),
-        afterAcceptInvitation: async ({ member }) => invalidateUserClubIds(member.userId),
-        afterCreateOrganization: async ({ member, user }) =>
-          invalidateUserClubIds(member?.userId, user?.id),
+        afterAcceptInvitation: async ({ member }) => {
+          await setMemberSource(member.id, "invitation");
+          await invalidateUserClubIds(member.userId);
+        },
+        afterCreateOrganization: async ({ member, user }) => {
+          if (member) await setMemberSource(member.id, "admin_added");
+          await invalidateUserClubIds(member?.userId, user?.id);
+        },
         afterDeleteOrganization: async () => invalidateAllUserClubIds(),
       },
       schema: {
@@ -216,5 +253,26 @@ export const auth = betterAuth({
       },
     }),
     phoneNumber(),
+    emailOTP({
+      otpLength: 6,
+      expiresIn: 600, // 10 minutes
+      allowedAttempts: 5,
+      changeEmail: {
+        // Apple's relay email already counts as emailVerified (Apple vouches for it), so this
+        // flow is how a relay user swaps it for the real address they type on /apple-email
+        // (apps/mobile/app/(auth)/apple-email.tsx).
+        enabled: true,
+        verifyCurrentEmail: true,
+      },
+      sendVerificationOTP: async ({ email, otp, type }) => {
+        const content = emailVerificationOtpEmail({ otp, type });
+        await sendEmail({
+          to: email,
+          subject: content.subject,
+          html: content.html,
+          text: content.text,
+        });
+      },
+    }),
   ],
 });

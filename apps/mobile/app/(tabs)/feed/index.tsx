@@ -20,6 +20,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useUnreadMessagesCount } from "@/hooks/use-conversation";
 import { ClubSwitcher } from "@/components/ui/club-switcher";
 import { JoinClubPrompt } from "@/components/ui/join-club-prompt";
+import { VerifyEmailPrompt } from "@/components/ui/verify-email-prompt";
 
 import { MessagesHeaderButton } from "@/features/chat/components/MessagesHeaderButton";
 import { LevelProgressCard } from "@/features/feed/components/level-progress-card";
@@ -144,6 +145,8 @@ export default function Feed() {
             ) : null}
 
             {hasNoClub ? <JoinClubPrompt /> : null}
+
+            <VerifyEmailPrompt />
 
             {/* Skill level (FFT/padel), not the Aces/XP level below */}
             {skillLevelLabel ? (

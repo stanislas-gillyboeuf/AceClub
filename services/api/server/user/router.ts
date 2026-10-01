@@ -9,6 +9,7 @@ import {
   listBlocked,
   getProfileByToken,
   listPastPartners,
+  findImportedProfiles,
 } from "./queries";
 import {
   completeOnboarding,
@@ -20,6 +21,7 @@ import {
   reportUser,
   createProfileShareToken,
   revokeProfileShareToken,
+  claimProfile,
 } from "./mutations";
 import {
   completeOnboardingValidator,
@@ -31,6 +33,7 @@ import {
   reportUserValidator,
   revokeProfileShareTokenValidator,
   getProfileByTokenValidator,
+  claimProfileValidator,
 } from "./validators";
 
 export const userRouter = new Hono<HonoContext>();
@@ -74,3 +77,5 @@ userRouter.get(
   getProfileByToken,
 );
 userRouter.get("/past-partners", listPastPartners);
+userRouter.get("/find-imported-profiles", findImportedProfiles);
+userRouter.post("/claim-profile", zValidator("json", claimProfileValidator), claimProfile);

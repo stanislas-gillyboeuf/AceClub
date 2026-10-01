@@ -24,6 +24,7 @@ export const updateProfile = async (c: Context<HonoContext>) => {
   const validated = c.req.valid("json") as z.infer<typeof updateProfileValidator>;
 
   // If organizationId is provided, verify it exists and check PIN
+  let joinedOrgRequiresPin = false;
   if (validated.organizationId) {
     const [org] = await db
       .select({
@@ -54,6 +55,7 @@ export const updateProfile = async (c: Context<HonoContext>) => {
         403,
       );
     }
+    joinedOrgRequiresPin = !!(org.pinEnabled && org.pin);
   }
 
   let updatedUserRow: typeof userTable.$inferSelect;
@@ -190,6 +192,7 @@ export const updateProfile = async (c: Context<HonoContext>) => {
               organizationId: validated.organizationId,
               userId: authUser!.id,
               role: "member",
+              source: joinedOrgRequiresPin ? "club_code" : "open_club",
               createdAt: new Date(),
             });
           }

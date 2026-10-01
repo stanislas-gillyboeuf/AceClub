@@ -11,6 +11,7 @@ import type {
   PastPartner,
   MinimalProfile,
   ProfileShareTokenResponse,
+  ImportedProfile,
 } from "@/types/user";
 
 export const userService = {
@@ -55,4 +56,13 @@ export const userService = {
 
   listPastPartners: () =>
     api.get<{ partners: PastPartner[] }>("/user/past-partners"),
+
+  findImportedProfiles: () =>
+    api.get<{ profiles: ImportedProfile[] }>("/user/find-imported-profiles"),
+
+  claimProfile: (ghostUserId: string, organizationId: string) =>
+    api.post<{ success: boolean; organizationId: string }>("/user/claim-profile", {
+      ghostUserId,
+      organizationId,
+    }),
 };

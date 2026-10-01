@@ -8,6 +8,8 @@ export interface ClubOrganization {
 export interface ClubMemberListItem {
   memberId: string
   role: string
+  /** How this membership was created. null for memberships that predate this field. */
+  source: "csv_import" | "club_code" | "open_club" | "admin_added" | "invitation" | null
   memberSince: string
   userId: string
   userName: string

@@ -82,6 +82,7 @@ export const completeOnboarding = async (c: Context<HonoContext>) => {
         organizationId: validated.organizationId,
         userId: authUser!.id,
         role: "member",
+        source: org.pinEnabled && org.pin ? "club_code" : "open_club",
         createdAt: new Date(),
       });
     }

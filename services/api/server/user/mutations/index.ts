@@ -7,3 +7,4 @@ export * from "./unblock-user";
 export * from "./report-user";
 export * from "./create-profile-share-token";
 export * from "./revoke-profile-share-token";
+export * from "./claim-profile";

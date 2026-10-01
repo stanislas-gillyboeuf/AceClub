@@ -3,6 +3,7 @@ import { expoClient } from "@better-auth/expo/client";
 import {
     inferAdditionalFields,
     organizationClient,
+    emailOTPClient,
 } from "better-auth/client/plugins";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
@@ -35,6 +36,7 @@ export const authClient = createAuthClient({
             storage: SecureStore,
         }),
         organizationClient(),
+        emailOTPClient(),
         inferAdditionalFields({
             user: {
                 onboardingCompleted: {
@@ -43,6 +45,14 @@ export const authClient = createAuthClient({
                 },
                 isGhost: {
                     type: "boolean",
+                    required: false,
+                },
+                contactEmail: {
+                    type: "string",
+                    required: false,
+                },
+                dateOfBirth: {
+                    type: "string",
                     required: false,
                 },
             },

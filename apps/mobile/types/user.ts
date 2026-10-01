@@ -114,3 +114,13 @@ export interface ProfileShareTokenResponse {
   token: string;
   deepLink: string;
 }
+
+/** One CSV-imported ("ghost") member profile matching the caller's verified email. */
+export interface ImportedProfile {
+  userId: string;
+  name: string;
+  licenseNumber: string | null;
+  organizationId: string;
+  organizationName: string;
+  dateOfBirth: string | null;
+}

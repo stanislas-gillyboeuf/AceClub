@@ -8,16 +8,19 @@ import {
   StyleSheet,
 } from "react-native";
 import { authClient } from "@/lib/auth-client";
-import { colors, radii } from "@/constants/theme";
+import { onboardingColors } from "@/features/onboarding/theme";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
 
 interface EmailAuthFormProps {
   mode: "sign-in" | "sign-up";
+  /** Called after a successful sign-up only — sign-in still relies on the (auth) layout's
+   * reactive redirect, nothing extra to do there. Used to trigger email verification. */
+  onSignUpSuccess?: (email: string) => void;
 }
 
-export function EmailAuthForm({ mode }: EmailAuthFormProps) {
+export function EmailAuthForm({ mode, onSignUpSuccess }: EmailAuthFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,9 +62,13 @@ export function EmailAuthForm({ mode }: EmailAuthFormProps) {
               ? "Email ou mot de passe incorrect"
               : "Impossible de créer le compte"),
         );
+        return;
       }
-      // On success, the (auth) layout redirects automatically once the
-      // session updates — no manual navigation needed here.
+      if (mode === "sign-up") {
+        onSignUpSuccess?.(trimmedEmail);
+      }
+      // Sign-in success: the (auth) layout redirects automatically once the session updates —
+      // no manual navigation needed here.
     } catch {
       setError("Une erreur est survenue");
     } finally {
@@ -81,7 +88,7 @@ export function EmailAuthForm({ mode }: EmailAuthFormProps) {
         <TextInput
           style={styles.input}
           placeholder="Nom"
-          placeholderTextColor="rgba(255,255,255,0.5)"
+          placeholderTextColor={onboardingColors.fgDim}
           value={name}
           onChangeText={setName}
           autoCapitalize="words"
@@ -91,7 +98,7 @@ export function EmailAuthForm({ mode }: EmailAuthFormProps) {
       <TextInput
         style={styles.input}
         placeholder="Email"
-        placeholderTextColor="rgba(255,255,255,0.5)"
+        placeholderTextColor={onboardingColors.fgDim}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
@@ -101,7 +108,7 @@ export function EmailAuthForm({ mode }: EmailAuthFormProps) {
       <TextInput
         style={styles.input}
         placeholder="Mot de passe"
-        placeholderTextColor="rgba(255,255,255,0.5)"
+        placeholderTextColor={onboardingColors.fgDim}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -118,10 +125,10 @@ export function EmailAuthForm({ mode }: EmailAuthFormProps) {
         ]}
       >
         {isLoading ? (
-          <ActivityIndicator color={colors.black} />
+          <ActivityIndicator color={onboardingColors.accentForeground} />
         ) : (
           <Text style={styles.submitButtonText}>
-            {mode === "sign-in" ? "Se connecter" : "Créer mon compte"}
+            {mode === "sign-in" ? "Se connecter" : "Continuer"}
           </Text>
         )}
       </Pressable>
@@ -134,30 +141,30 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   errorContainer: {
-    backgroundColor: "rgba(255,255,255,0.15)",
-    borderRadius: radii.sm,
+    backgroundColor: "rgba(239,68,68,0.15)",
+    borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
   errorText: {
-    color: colors.white,
+    color: onboardingColors.fg,
     fontSize: 13,
     textAlign: "center",
   },
   input: {
-    height: 48,
-    borderRadius: radii.sm,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.3)",
-    paddingHorizontal: 14,
+    height: 52,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: onboardingColors.cardBorder,
+    paddingHorizontal: 16,
     fontSize: 15,
-    color: colors.white,
-    backgroundColor: "rgba(255,255,255,0.1)",
+    color: onboardingColors.fg,
+    backgroundColor: onboardingColors.cardBg,
   },
   submitButton: {
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: colors.white,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: onboardingColors.accent,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 4,
@@ -170,7 +177,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     fontSize: 16,
-    fontWeight: "600",
-    color: colors.black,
+    fontWeight: "700",
+    color: onboardingColors.accentForeground,
   },
 });

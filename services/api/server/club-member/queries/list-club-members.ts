@@ -43,6 +43,7 @@ export const listClubMembers = async (c: Context<HonoContext>) => {
       .select({
         memberId: member.id,
         role: member.role,
+        source: member.source,
         memberSince: member.createdAt,
         userId: user.id,
         userName: user.name,

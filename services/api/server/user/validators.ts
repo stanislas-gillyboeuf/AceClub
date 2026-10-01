@@ -81,8 +81,13 @@ const PADEL_LEVELS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"] as cons
 // Accepted alongside PADEL_LEVELS so clients still on an older build (pre-numeric-scale)
 // don't get rejected while they update — old accounts may also still carry these values.
 const LEGACY_PADEL_LEVELS = ["Débutant", "Intermédiaire", "Avancé", "Expert"] as const;
+// Self-declared tier a player picks instead of an exact ranking (onboarding's "Débutant /
+// Intermédiaire / Confirmé" cards) — accepted for both sports alongside their precise scale.
+// Mirrored in services/api/server/tournament/lib/skill-order.ts for seeding order.
+const GENERIC_LEVELS = ["Débutant", "Intermédiaire", "Confirmé"] as const;
 
 function isValidSkillLevel(sport: "tennis" | "padel", skillLevel: string): boolean {
+  if ((GENERIC_LEVELS as readonly string[]).includes(skillLevel)) return true;
   if (sport === "tennis") return (TENNIS_LEVELS as readonly string[]).includes(skillLevel);
   return (
     (PADEL_LEVELS as readonly string[]).includes(skillLevel) ||
@@ -185,3 +190,9 @@ export const updateProfileValidator = z
     },
     { message: "Invalid skill level for the selected secondary sport", path: ["secondarySkillLevel"] },
   );
+
+
+export const claimProfileValidator = z.object({
+  ghostUserId: z.string().min(1, "ghostUserId is required"),
+  organizationId: z.string().min(1, "organizationId is required"),
+});

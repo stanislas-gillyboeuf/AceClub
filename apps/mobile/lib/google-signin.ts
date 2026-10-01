@@ -1,9 +1,12 @@
 let GoogleSignin: any = null;
+let GoogleSigninButton: any = null;
 
 try {
-  GoogleSignin = require("@react-native-google-signin/google-signin").GoogleSignin;
+  const nativeModule = require("@react-native-google-signin/google-signin");
+  GoogleSignin = nativeModule.GoogleSignin;
+  GoogleSigninButton = nativeModule.GoogleSigninButton;
 } catch {
   // Native module unavailable (Expo Go)
 }
 
-export { GoogleSignin };
+export { GoogleSignin, GoogleSigninButton };

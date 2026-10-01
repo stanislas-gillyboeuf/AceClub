@@ -1,11 +1,16 @@
+import { useState } from "react";
 import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
-import { colors } from "@/constants/theme";
 import { Check } from "lucide-react-native";
-import { GlassView } from "@/components/ui/glass-view";
-import { getSkillLevels, type SkillLevel } from "@/lib/skill-levels";
-import type { Sport } from "@/types/common";
-import Animated, { FadeIn, withTiming, withDelay } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import Animated, { FadeIn } from "react-native-reanimated";
+import { onboardingColors } from "../theme";
+import { SelectableCard } from "./selectable-card";
+import { fftGroups } from "../lib/fft-groups";
+import { padelLevels } from "@/lib/skill-levels";
+import type { Sport } from "@/types/common";
+
+const GENERIC_LEVELS = ["Débutant", "Intermédiaire", "Confirmé"] as const;
+type GenericLevel = (typeof GENERIC_LEVELS)[number];
 
 interface LevelStepProps {
   sport: Sport;
@@ -14,10 +19,23 @@ interface LevelStepProps {
 }
 
 export function LevelStep({ sport, selectedLevel, onSelect }: LevelStepProps) {
-  const levels = getSkillLevels(sport);
   const isPadel = sport === "padel";
+  const isGeneric = selectedLevel != null && (GENERIC_LEVELS as readonly string[]).includes(selectedLevel);
+  const hasPreciseLevel = selectedLevel != null && !isGeneric;
+  const [showClassement, setShowClassement] = useState(hasPreciseLevel);
 
-  const handleSelect = (value: string) => {
+  const handleSelectGeneric = (level: GenericLevel) => {
+    Haptics.selectionAsync();
+    setShowClassement(false);
+    onSelect(level);
+  };
+
+  const handleOpenClassement = () => {
+    Haptics.selectionAsync();
+    setShowClassement(true);
+  };
+
+  const handleSelectPrecise = (value: string) => {
     Haptics.selectionAsync();
     onSelect(value);
   };
@@ -25,262 +43,201 @@ export function LevelStep({ sport, selectedLevel, onSelect }: LevelStepProps) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Animated.Text
-          entering={FadeIn.delay(100).duration(400)}
-          style={styles.title}
-        >
+        <Animated.Text entering={FadeIn.delay(100).duration(400)} style={styles.title}>
           {`Et en ${isPadel ? "padel" : "tennis"}, quel est ton niveau ?`}
         </Animated.Text>
-        <Animated.Text
-          entering={FadeIn.delay(250).duration(400)}
-          style={styles.subtitle}
-        >
-          {isPadel
-            ? "Ça nous aide à te trouver les meilleurs matchs."
-            : "Sélectionne ton classement pour des matchs équilibrés."}
+        <Animated.Text entering={FadeIn.delay(250).duration(400)} style={styles.subtitle}>
+          Ça nous aide à te trouver des matchs équilibrés.
         </Animated.Text>
       </View>
 
-      {isPadel ? (
-        <PadelGrid
-          levels={levels}
-          selectedLevel={selectedLevel}
-          onSelect={handleSelect}
+      <ScrollView contentContainerStyle={styles.cards} showsVerticalScrollIndicator={false}>
+        {GENERIC_LEVELS.map((level) => (
+          <SelectableCard
+            key={level}
+            label={level}
+            height={76}
+            selected={selectedLevel === level}
+            onPress={() => handleSelectGeneric(level)}
+          />
+        ))}
+        <SelectableCard
+          label="Je suis classé(e)"
+          height={76}
+          selected={hasPreciseLevel || showClassement}
+          onPress={handleOpenClassement}
         />
-      ) : (
-        <TennisList
-          levels={levels}
-          selectedLevel={selectedLevel}
-          onSelect={handleSelect}
-        />
-      )}
+
+        {showClassement &&
+          (isPadel ? (
+            <PadelGrid selectedLevel={selectedLevel} onSelect={handleSelectPrecise} />
+          ) : (
+            <TennisClassementGroups selectedLevel={selectedLevel} onSelect={handleSelectPrecise} />
+          ))}
+      </ScrollView>
+    </View>
+  );
+}
+
+function TennisClassementGroups({
+  selectedLevel,
+  onSelect,
+}: {
+  selectedLevel: string | null;
+  onSelect: (value: string) => void;
+}) {
+  return (
+    <View style={styles.classementWrap}>
+      {fftGroups.map((group) => (
+        <View key={group.key} style={styles.group}>
+          <Text style={styles.groupLabel}>{group.label}</Text>
+          <View style={styles.groupRow}>
+            {group.levels.map((level) => {
+              const isSelected = selectedLevel === level.value;
+              return (
+                <Pressable
+                  key={level.value}
+                  onPress={() => onSelect(level.value)}
+                  style={({ pressed }) => [pressed && styles.pressed]}
+                >
+                  <View style={[styles.chip, isSelected && styles.chipSelected]}>
+                    <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
+                      {level.displayName}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      ))}
     </View>
   );
 }
 
 function PadelGrid({
-  levels,
   selectedLevel,
   onSelect,
 }: {
-  levels: SkillLevel[];
   selectedLevel: string | null;
   onSelect: (value: string) => void;
 }) {
   return (
-    <View style={styles.grid}>
-      {levels.map((level, index) => {
-        const isSelected = selectedLevel === level.value;
-        return (
-          <Animated.View
-            key={level.value}
-            entering={() => {
-              'worklet';
-              const d = 200 + index * 50;
-              return {
-                initialValues: { opacity: 0, transform: [{ scale: 0.96 }] },
-                animations: {
-                  opacity: withDelay(d, withTiming(1, { duration: 350 })),
-                  transform: [{ scale: withDelay(d, withTiming(1, { duration: 400 })) }],
-                },
-              };
-            }}
-            style={styles.gridItemSmall}
-          >
+    <View style={styles.classementWrap}>
+      <View style={styles.groupRow}>
+        {padelLevels.map((level) => {
+          const isSelected = selectedLevel === level.value;
+          return (
             <Pressable
+              key={level.value}
               onPress={() => onSelect(level.value)}
-              style={({ pressed }) => [
-                pressed && { transform: [{ scale: 0.98 }] },
-              ]}
+              style={({ pressed }) => [pressed && styles.pressed]}
             >
-              <GlassView style={styles.padelTileSmall}>
+              <View style={[styles.padelTile, isSelected && styles.chipSelected]}>
                 {isSelected && (
-                  <View style={styles.tileCheckSmall}>
-                    <Check size={10} color={colors.white} />
+                  <View style={styles.padelCheck}>
+                    <Check size={10} color={onboardingColors.accentForeground} />
                   </View>
                 )}
-                <View
-                  style={[
-                    styles.padelIconCircle,
-                    isSelected && styles.padelIconCircleSelected,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.padelIconText,
-                      isSelected && styles.padelIconTextSelected,
-                    ]}
-                  >
-                    {level.displayName}
-                  </Text>
-                </View>
-              </GlassView>
+                <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
+                  {level.displayName}
+                </Text>
+              </View>
             </Pressable>
-          </Animated.View>
-        );
-      })}
+          );
+        })}
+      </View>
     </View>
-  );
-}
-
-function TennisList({
-  levels,
-  selectedLevel,
-  onSelect,
-}: {
-  levels: SkillLevel[];
-  selectedLevel: string | null;
-  onSelect: (value: string) => void;
-}) {
-  return (
-    <ScrollView
-      contentContainerStyle={styles.tennisListContent}
-      showsVerticalScrollIndicator={false}
-    >
-      {levels.map((level) => {
-        const isSelected = selectedLevel === level.value;
-        return (
-          <Pressable
-            key={level.value}
-            onPress={() => onSelect(level.value)}
-            style={({ pressed }) => [
-              pressed && { transform: [{ scale: 0.98 }] },
-            ]}
-          >
-            <GlassView style={styles.tennisRow}>
-              <View
-                style={[
-                  styles.tennisDot,
-                  isSelected && styles.tennisDotSelected,
-                ]}
-              />
-              <Text
-                style={[
-                  styles.tennisLabel,
-                  isSelected && styles.tennisLabelSelected,
-                ]}
-              >
-                {level.displayName}
-              </Text>
-              {isSelected && (
-                <View style={styles.tennisCheck}>
-                  <Check size={14} color={colors.white} />
-                </View>
-              )}
-            </GlassView>
-          </Pressable>
-        );
-      })}
-    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
   },
   header: {
     paddingHorizontal: 20,
-    marginBottom: 28,
+    marginTop: 12,
+    marginBottom: 24,
   },
   title: {
-    fontSize: 34,
+    fontSize: 32,
+    lineHeight: 38,
     fontWeight: "700",
-    color: colors.black,
-    letterSpacing: 0.37,
+    color: onboardingColors.fg,
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 17,
-    color: colors.gray500,
+    fontSize: 16,
+    color: onboardingColors.fgDim,
     lineHeight: 22,
   },
-  // Padel grid (1-10 scale)
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
+  cards: {
     paddingHorizontal: 20,
+    paddingBottom: 24,
     gap: 12,
   },
-  gridItemSmall: {},
-  padelTileSmall: {
-    width: 60,
-    height: 60,
-    borderRadius: 16,
+  pressed: {
+    opacity: 0.85,
+  },
+  classementWrap: {
+    marginTop: 4,
+    gap: 16,
+  },
+  group: {
+    gap: 8,
+  },
+  groupLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: onboardingColors.fgDim,
+  },
+  groupRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: onboardingColors.cardBg,
+    borderWidth: 1.5,
+    borderColor: onboardingColors.cardBorder,
+  },
+  chipSelected: {
+    backgroundColor: onboardingColors.cardBgSelected,
+    borderColor: onboardingColors.cardBorderSelected,
+  },
+  chipText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: onboardingColors.fg,
+  },
+  chipTextSelected: {
+    color: onboardingColors.accent,
+  },
+  padelTile: {
+    width: 52,
+    height: 52,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: onboardingColors.cardBg,
+    borderWidth: 1.5,
+    borderColor: onboardingColors.cardBorder,
     position: "relative",
   },
-  tileCheckSmall: {
+  padelCheck: {
     position: "absolute",
     top: 4,
     right: 4,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: colors.accentGreen,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  padelIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.gray100,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  padelIconCircleSelected: {
-    backgroundColor: `${colors.accentGreen}20`,
-  },
-  padelIconText: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: colors.gray500,
-  },
-  padelIconTextSelected: {
-    color: colors.accentGreen,
-  },
-  // Tennis list
-  tennisListContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    gap: 6,
-  },
-  tennisRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    gap: 12,
-  },
-  tennisDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.gray300,
-  },
-  tennisDotSelected: {
-    backgroundColor: colors.accentGreen,
-  },
-  tennisLabel: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "500",
-    color: colors.black,
-  },
-  tennisLabelSelected: {
-    fontWeight: "600",
-    color: colors.accentGreen,
-  },
-  tennisCheck: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.accentGreen,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: onboardingColors.accent,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -16,13 +16,17 @@ export const searchOrganizations = async (c: Context<HonoContext>) => {
       sql`${organization.metadata} IS NULL`,
       not(sql`${organization.metadata} LIKE '%"hidden":true%'`),
     );
-    const whereClause = query ? and(ilike(organization.name, `%${query}%`), notHidden) : notHidden;
+    const matchCondition = query
+      ? or(ilike(organization.name, `%${query}%`), ilike(organization.address, `%${query}%`))
+      : undefined;
+    const whereClause = matchCondition ? and(matchCondition, notHidden) : notHidden;
 
     const selectFields = {
       id: organization.id,
       name: organization.name,
       slug: organization.slug,
       logo: organization.logo,
+      address: organization.address,
       pinEnabled: organization.pinEnabled,
     };
 

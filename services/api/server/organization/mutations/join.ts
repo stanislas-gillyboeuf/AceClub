@@ -10,7 +10,8 @@ import { member, organization } from "../../../db/schema/auth/schema";
 import { userPreference } from "../../../db/schema/user-preference/schema";
 import { cacheDel, CacheKeys } from "../../../lib/cache";
 import { invalidateUserClubIds } from "../../../lib/club-access";
-import { checkClubPin, tooManyAttempts } from "../lib/pin";
+import { safeEqual } from "../../../lib/safe-equal";
+import { checkJoinRateLimit, joinClientIp, resetJoinRateLimit } from "../lib/join-rate-limit";
 
 function isHidden(metadata: string | null): boolean {
   if (!metadata) return false;
@@ -47,16 +48,25 @@ export const joinOrganization = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Organization not found" }, 404);
   }
 
-  if (org.pinEnabled && org.pin) {
-    const check = checkClubPin(authUser.id, org.id, validated.pin ?? "", org.pin);
-    if (check.status === "limited") {
-      c.header("Retry-After", String(check.retryAfterSeconds));
-      return c.json(tooManyAttempts(check.retryAfterSeconds), 429);
+  const ip = joinClientIp(c.req.header("x-forwarded-for"), c.req.header("x-real-ip"));
+  const requiresPin = org.pinEnabled && !!org.pin;
+
+  if (requiresPin) {
+    const rateLimit = checkJoinRateLimit(authUser.id, org.id, ip);
+    if (!rateLimit.allowed) {
+      c.header("Retry-After", String(rateLimit.retryAfterSeconds));
+      return c.json(
+        { error: "TooManyRequests", message: `Too many attempts, retry in ${rateLimit.retryAfterSeconds}s` },
+        429,
+      );
     }
-    if (check.status === "invalid") {
+    if (!safeEqual(validated.pin ?? "", org.pin!)) {
       return c.json({ error: "InvalidPin", message: "Code PIN incorrect" }, 403);
     }
+    resetJoinRateLimit(authUser.id, org.id, ip);
   }
+
+  const source = requiresPin ? "club_code" : "open_club";
 
   await db.transaction(async (tx) => {
     await tx
@@ -75,6 +85,7 @@ export const joinOrganization = async (c: Context<HonoContext>) => {
         organizationId: org.id,
         userId: authUser.id,
         role: "member",
+        source,
         createdAt: new Date(),
       });
     }

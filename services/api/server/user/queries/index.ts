@@ -4,3 +4,4 @@ export * from "./preferences";
 export * from "./list-blocked";
 export * from "./get-profile-by-token";
 export * from "./past-partners";
+export * from "./find-imported-profiles";

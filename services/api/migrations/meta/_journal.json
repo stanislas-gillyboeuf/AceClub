@@ -365,6 +365,20 @@
       "when": 1790698830536,
       "tag": "0052_tiny_master_chief",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1790840865409,
+      "tag": "0053_safe_scarlet_spider",
+      "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1790852027535,
+      "tag": "0054_nice_human_robot",
+      "breakpoints": true
     }
   ]
 }

@@ -122,6 +122,22 @@ export function getClubMembersColumns(
       cell: ({ row }) => formatDate(row.original.memberSince),
     },
     {
+      accessorKey: "source",
+      header: "Arrivé par",
+      cell: ({ row }) => {
+        const { source } = row.original
+        if (!source) return <span className="text-sm text-muted-foreground">—</span>
+        const labels: Record<NonNullable<typeof source>, string> = {
+          csv_import: "Import",
+          club_code: "Code",
+          open_club: "Club ouvert",
+          admin_added: "Ajout admin",
+          invitation: "Invitation",
+        }
+        return <Badge variant="outline">{labels[source]}</Badge>
+      },
+    },
+    {
       id: "actions",
       header: "",
       cell: ({ row }) => {

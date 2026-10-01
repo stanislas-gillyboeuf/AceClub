@@ -78,6 +78,7 @@ export const addMember = async (c: Context<HonoContext>) => {
       organizationId: validated.organizationId,
       userId,
       role: validated.role,
+      source: "admin_added",
       createdAt: new Date(),
     });
 

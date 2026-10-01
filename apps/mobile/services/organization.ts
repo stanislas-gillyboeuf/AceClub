@@ -73,4 +73,7 @@ export const organizationService = {
 
   requestClub: (data: { name: string; city: string }) =>
     api.post<ClubRequestResponse>("/organization/request-club", data),
+
+  join: (organizationId: string, pin?: string) =>
+    api.post<{ organizationId: string; joined: boolean }>("/organization/join", { organizationId, pin }),
 };
