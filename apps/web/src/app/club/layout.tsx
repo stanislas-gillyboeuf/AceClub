@@ -3,12 +3,22 @@
 import { useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { useSession } from "@/lib/auth-client"
-import { useClubAdminAccess } from "@/hooks/use-club-admin-queries"
+import { useClubAdminAccess, useClubOrganizations } from "@/hooks/use-club-admin-queries"
 import { ClubAdminProvider } from "@/lib/club-admin-context"
 import { ClubAdminTopNav, type ClubAdminNavItem } from "@/components/custom/club-admin-top-nav"
 import { ClubAdminIconRail } from "@/components/custom/club-admin-icon-rail"
 import { ClubAdminNavUser } from "@/components/custom/club-admin-nav-user"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Providers } from "@/app/providers"
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2)
+}
 
 export default function ClubAdminLayout({
   children,
@@ -29,6 +39,7 @@ function ClubAdminGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const { data: session, isPending: isSessionPending } = useSession()
   const { data: access, isPending: isAccessPending } = useClubAdminAccess()
+  const { data: organizations } = useClubOrganizations()
 
   const isPending = isSessionPending || isAccessPending
   const activeOrganizationId = (session?.session as { activeOrganizationId?: string } | undefined)
@@ -102,6 +113,8 @@ function ClubAdminGate({ children }: { children: React.ReactNode }) {
           : []),
       ]
 
+  const activeOrg = organizations?.find((org) => org.id === activeOrganizationId)
+
   return (
     <ClubAdminProvider
       value={{ organizationId: activeOrganizationId, access: access.access, role: access.role! }}
@@ -110,7 +123,19 @@ function ClubAdminGate({ children }: { children: React.ReactNode }) {
         <ClubAdminIconRail activeOrganizationId={activeOrganizationId} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <header className="flex items-center justify-between px-6 py-4">
-            <span className="w-40 text-sm font-bold tracking-tight">Ace Club</span>
+            <div className="flex w-40 items-center gap-2">
+              {activeOrg ? (
+                <>
+                  <Avatar className="h-7 w-7 shrink-0">
+                    <AvatarImage src={activeOrg.logo ?? undefined} alt={activeOrg.name} />
+                    <AvatarFallback className="text-xs">{getInitials(activeOrg.name)}</AvatarFallback>
+                  </Avatar>
+                  <span className="truncate text-sm font-bold tracking-tight">{activeOrg.name}</span>
+                </>
+              ) : (
+                <span className="text-sm font-bold tracking-tight">Ace Club</span>
+              )}
+            </div>
             <div className="flex flex-1 justify-center">
               <ClubAdminTopNav items={navItems} />
             </div>
