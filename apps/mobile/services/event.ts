@@ -6,6 +6,7 @@ import type {
   ListEventsResponse,
   MyEvent,
   EventParticipant,
+  EventParticipantPreview,
   CreateEventRequest,
   UpdateEventRequest,
   AdminEventItem,
@@ -36,6 +37,9 @@ export const eventService = {
     offset?: number;
   }) =>
     api.get<MyEvent[]>("/event/list-my-events", params),
+
+  listParticipants: (eventId: string, params?: { status?: string; limit?: number }) =>
+    api.get<EventParticipantPreview[]>("/event/list-participants", { eventId, ...params }),
 
   register: (eventId: string) =>
     api.post<EventParticipant>("/event/register", { eventId }),

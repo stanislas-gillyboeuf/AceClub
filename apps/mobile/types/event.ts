@@ -13,11 +13,15 @@ export type EventSortBy = "upcoming" | "nearest" | "recent" | "past";
 
 export type RegistrationStatus = "registered" | "waitlisted" | "cancelled";
 
+// Not a real column yet (see EventCard's design-gap notes) — always undefined from the API today.
+export type EventCategory = "tournament" | "party" | "camp";
+
 export interface EventSummary {
   id: string;
   name: string;
   description: string | null;
   coverImage: string | null;
+  category?: EventCategory | null;
   startDate: string;
   endDate: string;
   address: string | null;
@@ -39,6 +43,15 @@ export interface EventSummary {
   organizationLatitude: number | null;
   organizationLongitude: number | null;
   participantCount: number;
+}
+
+export interface EventParticipantPreview {
+  id: string;
+  userId: string;
+  status: RegistrationStatus;
+  registeredAt: string;
+  userName: string;
+  userImage: string | null;
 }
 
 export interface MyEvent extends EventSummary {

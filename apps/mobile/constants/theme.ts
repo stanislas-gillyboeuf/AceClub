@@ -47,6 +47,32 @@ export const sizes = {
   buttonHeight: 52,
 } as const;
 
+/**
+ * Frosted-glass (expo-blur BlurView) surfaces for photo-backed cards — the Liquid Glass
+ * `GlassView` (expo-glass-effect, iOS 26+) is a different look reserved for standard controls;
+ * these tokens are for the blurred panels/pills sitting over an event cover image.
+ */
+export const glass = {
+  panelTint: { light: "rgba(255,255,255,0.55)", dark: "rgba(28,28,30,0.55)" },
+  panelBorder: { light: "rgba(255,255,255,0.4)", dark: "rgba(255,255,255,0.16)" },
+  pillTint: { light: "rgba(255,255,255,0.35)", dark: "rgba(0,0,0,0.35)" },
+  pillBorder: { light: "rgba(255,255,255,0.5)", dark: "rgba(255,255,255,0.2)" },
+  // colors.accentGreen (#21874D = rgb(33,135,77)) at low/medium opacity for the accent CTA bar.
+  accentTint: "rgba(33,135,77,0.28)",
+  accentBorder: "rgba(33,135,77,0.65)",
+  // Android fallback (BlurView support is inconsistent there): a flat, ~85%-opaque surface —
+  // the alpha lives in the color itself, never as a View `opacity` (that would also fade content).
+  panelTintAndroidFallback: { light: "rgba(255,255,255,0.85)", dark: "rgba(28,28,30,0.85)" },
+} as const;
+
+/** Cover-less fallback backgrounds per event category — "Stage" needed a blue that didn't exist
+ * anywhere else in the palette, added here rather than reusing an unrelated hue. */
+export const eventCategoryColors = {
+  tournament: { from: "#B5651D", to: "#8A4513" }, // terre battue
+  party: "#0B3A2A", // vert foncé
+  camp: "#2B5A8C", // bleu (nouveau — aucun bleu existant dans la palette)
+} as const;
+
 export const semanticColors = {
   cardBackground: { light: "#FFFFFF", dark: "#2C2C2E" },
   primaryBackground: { light: "#F2F2F7", dark: "#000000" },

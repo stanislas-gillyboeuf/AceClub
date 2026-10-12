@@ -28,6 +28,8 @@ export const queryKeys = {
       adminList: (params?: unknown) => [...all, "admin-list", params] as const,
       adminListAll: () => [...all, "admin-list"] as const,
       detail: (id: string) => [...all, id] as const,
+      participants: (eventId: string, limit?: number) =>
+        [...all, eventId, "participants", limit] as const,
     };
   })(),
 

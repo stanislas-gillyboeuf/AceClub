@@ -45,6 +45,17 @@ export function useEvent(eventId: string) {
   });
 }
 
+/** Small participant preview (name + avatar) — used for the overlapping-avatars stack on
+ * EventCard, not the full admin participant list. */
+export function useEventParticipants(eventId: string, options?: { limit?: number; enabled?: boolean }) {
+  const limit = options?.limit ?? 3;
+  return useQuery({
+    queryKey: queryKeys.event.participants(eventId, limit),
+    queryFn: () => eventService.listParticipants(eventId, { status: "registered", limit }),
+    enabled: !!eventId && (options?.enabled ?? true),
+  });
+}
+
 // --- Mutations ---
 
 export function useRegisterEvent() {
