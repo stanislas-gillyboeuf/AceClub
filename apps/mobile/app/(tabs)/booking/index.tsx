@@ -10,7 +10,6 @@ import { SportToggle } from "@/features/court-booking/components/sport-toggle";
 import { CourtTypeChipRow } from "@/features/court-booking/components/court-type-chip-row";
 import { DayChipRow } from "@/features/court-booking/components/day-chip-row";
 import { BookingBoard } from "@/features/court-booking/components/booking-board";
-import { ClubSelector } from "@/features/court-booking/components/club-selector";
 import { WhoBookedPopover, type PopoverState } from "@/features/court-booking/components/who-booked-popover";
 import { buildCourtTypeFilters } from "@/features/court-booking/lib/court-filters";
 import { toDateKey, formatFullDay } from "@/features/court-booking/lib/date";
@@ -78,11 +77,6 @@ export default function BookingBoardScreen() {
     setCourtTypeKey("any");
   };
 
-  const handleSelectClub = (id: string) => {
-    setSelectedOrgId(id);
-    setCourtTypeKey("any");
-  };
-
   const handleSelectFree = (court: BoardCourt, hour: number) => {
     router.push({
       pathname: "/(tabs)/booking/confirm",
@@ -122,7 +116,6 @@ export default function BookingBoardScreen() {
             </Pressable>
           )}
           <View style={styles.titleBlock}>
-            <ClubSelector clubs={orgs ?? []} selectedId={selectedOrgId} onSelect={handleSelectClub} />
             <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>Réserver</Text>
           </View>
         </View>
@@ -259,8 +252,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: "800",
-    fontSize: 26,
-    marginTop: 2,
+    fontSize: 34,
   },
   myBookingsButton: {
     flexShrink: 0,

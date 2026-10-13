@@ -11,7 +11,7 @@ const accentGreenVariants = {
   muted: { bright: "#21874D", dim: "#21874D", onBright: "#FFFFFF" },
   flashy: { bright: "#d7ff3f", dim: "#8fae2a", onBright: "#081814" },
 };
-const ACTIVE_ACCENT = accentGreenVariants.flashy;
+const ACTIVE_ACCENT = accentGreenVariants.muted;
 
 export const colors = {
   // Brand
