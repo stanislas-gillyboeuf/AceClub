@@ -10,17 +10,10 @@ export default function AuthLayout() {
   }
 
   // These screens all run right after sign-in/sign-up, while a session already exists but
-  // before onboarding/feed (email verification, Apple's masked-email follow-up, matching a
-  // CSV-imported profile, joining a club) — they need an exception from the redirect below,
-  // otherwise it would bounce away before the player can even see them.
-  const POST_SIGNUP_SCREENS = [
-    "/apple-email",
-    "/verify-email",
-    "/reconcile-welcome",
-    "/reconcile-choose",
-    "/find-club",
-    "/club-code",
-  ];
+  // before onboarding/feed (Apple's masked-email follow-up, matching a CSV-imported profile,
+  // joining a club) — they need an exception from the redirect below, otherwise it would bounce
+  // away before the player can even see them.
+  const POST_SIGNUP_SCREENS = ["/apple-email", "/reconcile-welcome", "/reconcile-choose", "/find-club", "/club-code"];
   const isPostSignupScreen = POST_SIGNUP_SCREENS.includes(pathname);
 
   if (session?.user && !isPostSignupScreen) {

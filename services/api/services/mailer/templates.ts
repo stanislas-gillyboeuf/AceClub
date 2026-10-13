@@ -186,39 +186,3 @@ Ceci est un email automatique envoyé par AceClub.
     `,
   };
 }
-
-/** 6-digit code — sent by Better Auth's emailOTP plugin (services/api/auth.ts) for both
- * `email-verification` (after email/password sign-up) and `change-email` (Apple relay users
- * confirming the real address they typed on /apple-email). Same code/UI either way, only the
- * subject differs. */
-export function emailVerificationOtpEmail(params: {
-  otp: string;
-  type: "sign-in" | "email-verification" | "forget-password" | "change-email";
-}) {
-  const subject =
-    params.type === "change-email"
-      ? "Confirme ta nouvelle adresse email Ace Club"
-      : "Vérifie ton adresse email Ace Club";
-
-  return {
-    subject,
-    html: `
-      <h2>${subject}</h2>
-      <p>Voici ton code de vérification :</p>
-      <p style="font-size: 28px; font-weight: 700; letter-spacing: 4px;">${params.otp}</p>
-      <p>Ce code expire dans 10 minutes. Si tu n'es pas à l'origine de cette demande, tu peux ignorer cet email.</p>
-      <hr>
-      <p style="color: #666; font-size: 12px;">Ceci est un email automatique envoyé par AceClub.</p>
-    `,
-    text: `
-${subject}
-
-Voici ton code de vérification : ${params.otp}
-
-Ce code expire dans 10 minutes. Si tu n'es pas à l'origine de cette demande, tu peux ignorer cet email.
-
----
-Ceci est un email automatique envoyé par AceClub.
-    `,
-  };
-}

@@ -6,7 +6,7 @@ import { user, organization } from "../../../db/schema/auth/schema";
 import { clubMemberProfile, household } from "../../../db/schema/club-member/schema";
 
 /**
- * Looks up CSV-imported ("ghost") member profiles whose email matches the CALLER's own verified
+ * Looks up CSV-imported ("ghost") member profiles whose email matches the CALLER's own
  * email — never an arbitrary address the client passes in, so this can't be used to probe whether
  * some other email exists in the system. Two ways a profile can match:
  *  - Direct: the ghost's own `user.email` is the real one from the import (no sharing/ambiguity).
@@ -15,10 +15,6 @@ import { clubMemberProfile, household } from "../../../db/schema/club-member/sch
  */
 export const findImportedProfiles = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
-
-  if (!currentUser.emailVerified) {
-    return c.json({ error: "Forbidden", message: "Email not verified" }, 403);
-  }
 
   const targetEmail = currentUser.email.trim().toLowerCase();
 

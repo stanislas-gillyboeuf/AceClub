@@ -4,7 +4,6 @@ import { db } from "./db";
 import { bearer, organization } from "better-auth/plugins";
 import { admin } from "better-auth/plugins/admin";
 import { phoneNumber } from "better-auth/plugins";
-import { emailOTP } from "better-auth/plugins";
 import { user as userTable, member as memberTable } from "./db/schema/auth/schema";
 import { userPreference } from "./db/schema/user-preference/schema";
 import { asc, eq } from "drizzle-orm";
@@ -12,7 +11,7 @@ import { invalidateAllUserClubIds, invalidateUserClubIds } from "./lib/club-acce
 import { awardPremiersPasBadge } from "./server/reward/services/badge-service";
 import { expo } from "@better-auth/expo";
 import { sendEmail } from "./services/mailer";
-import { resetPasswordEmail, emailVerificationOtpEmail } from "./services/mailer/templates";
+import { resetPasswordEmail } from "./services/mailer/templates";
 
 /** Best-effort: records how a Better-Auth-managed membership came to exist (member.source has
  * no default — see db/schema/auth/schema.ts). Never throws, this is metadata, not the write
@@ -253,26 +252,5 @@ export const auth = betterAuth({
       },
     }),
     phoneNumber(),
-    emailOTP({
-      otpLength: 6,
-      expiresIn: 600, // 10 minutes
-      allowedAttempts: 5,
-      changeEmail: {
-        // Apple's relay email already counts as emailVerified (Apple vouches for it), so this
-        // flow is how a relay user swaps it for the real address they type on /apple-email
-        // (apps/mobile/app/(auth)/apple-email.tsx).
-        enabled: true,
-        verifyCurrentEmail: true,
-      },
-      sendVerificationOTP: async ({ email, otp, type }) => {
-        const content = emailVerificationOtpEmail({ otp, type });
-        await sendEmail({
-          to: email,
-          subject: content.subject,
-          html: content.html,
-          text: content.text,
-        });
-      },
-    }),
   ],
 });

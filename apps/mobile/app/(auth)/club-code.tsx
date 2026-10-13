@@ -19,8 +19,7 @@ function friendlyMessage(error: unknown, fallback: string): string {
 }
 
 /** "Ce club demande un code" — reached from find-club.tsx when the selected club has
- * `pinEnabled`. One plain text field, not digit boxes: a club PIN has no fixed length client
- * side (unlike the 6-digit email OTP in verify-email.tsx). */
+ * `pinEnabled`. One plain text field, not digit boxes: a club PIN has no fixed length. */
 export default function ClubCodeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();

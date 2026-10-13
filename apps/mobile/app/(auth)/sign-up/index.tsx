@@ -102,15 +102,7 @@ export default function SignUp() {
           </>
         )}
 
-        <EmailAuthForm
-          mode="sign-up"
-          onSignUpSuccess={(email) =>
-            router.replace({
-              pathname: "/verify-email",
-              params: { email, mode: "verify", backTo: "/sign-up" },
-            })
-          }
-        />
+        <EmailAuthForm mode="sign-up" onSignUpSuccess={() => runReconciliation(router)} />
 
         <Pressable onPress={() => router.push("/sign-in")} hitSlop={8} style={styles.signInLink}>
           <Text style={styles.signInLinkText}>Déjà un compte ? Se connecter</Text>

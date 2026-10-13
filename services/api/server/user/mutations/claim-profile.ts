@@ -10,17 +10,14 @@ import { invalidateUserClubIds } from "../../../lib/club-access";
 
 /**
  * Merges a CSV-imported ("ghost") member profile into the caller's own account, once their email
- * is verified and matches that ghost — see queries/find-imported-profiles.ts for how a match is
- * found. The match is re-validated here server-side; the client's claim is never trusted blindly.
+ * matches that ghost — see queries/find-imported-profiles.ts for how a match is found. The match
+ * is re-validated here server-side; the client's claim is never trusted blindly.
  */
 export const claimProfile = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
   // @ts-ignore
   const validated = c.req.valid("json") as z.infer<typeof claimProfileValidator>;
 
-  if (!currentUser.emailVerified) {
-    return c.json({ error: "Forbidden", message: "Email not verified" }, 403);
-  }
   const realEmail = currentUser.email.trim().toLowerCase();
 
   const [ghost] = await db

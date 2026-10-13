@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { authClient } from "@/lib/auth-client";
 import { onboardingColors } from "@/features/onboarding/theme";
+import { runReconciliation } from "@/features/auth/lib/run-reconciliation";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -32,12 +33,7 @@ export default function AppleEmailScreen() {
         setError(res.error.message ?? "Impossible d'enregistrer cet email");
         return;
       }
-      // Verifying this email (next screen) also promotes it to the login email — see the
-      // emailOTP "change-email" config in services/api/auth.ts.
-      router.replace({
-        pathname: "/verify-email",
-        params: { email: trimmed, mode: "change", backTo: "/apple-email" },
-      });
+      await runReconciliation(router);
     } catch {
       setError("Une erreur est survenue");
     } finally {
