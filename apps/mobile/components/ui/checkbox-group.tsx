@@ -55,7 +55,7 @@ export function CheckboxGroup<T extends string>({
                 },
               ]}
             >
-              {isSelected && <Check size={14} color={colors.white} strokeWidth={2.5} />}
+              {isSelected && <Check size={14} color={colors.onAccentGreen} strokeWidth={2.5} />}
             </View>
           </Pressable>
         );

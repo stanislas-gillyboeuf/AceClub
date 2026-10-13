@@ -17,7 +17,7 @@ export function MatchFab({ onPress }: MatchFabProps) {
       style={({ pressed }) => [styles.fab, { bottom: insets.bottom + 24 }, pressed && styles.fabPressed]}
     >
       <GlassView style={styles.fabGlass} tintColor={colors.accentGreen}>
-        <Plus size={28} color={colors.white} />
+        <Plus size={28} color={colors.onAccentGreen} />
       </GlassView>
     </Pressable>
   );

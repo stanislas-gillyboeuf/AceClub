@@ -228,7 +228,7 @@ export function ChatBottomBar({
             ]}
           >
             <View style={styles.sendCircle}>
-              <ArrowUp size={18} color={colors.white} strokeWidth={2.5} />
+              <ArrowUp size={18} color={colors.onAccentGreen} strokeWidth={2.5} />
             </View>
           </Pressable>
         ) : (

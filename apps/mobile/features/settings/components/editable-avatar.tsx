@@ -85,9 +85,9 @@ export function EditableAvatar({
       {/* Camera badge */}
       <View style={styles.cameraBadge}>
         {isUploading ? (
-          <ActivityIndicator size="small" color="#FFFFFF" />
+          <ActivityIndicator size="small" color={colors.onAccentGreen} />
         ) : (
-          <Camera size={14} color="#FFFFFF" strokeWidth={2} />
+          <Camera size={14} color={colors.onAccentGreen} strokeWidth={2} />
         )}
       </View>
     </Pressable>

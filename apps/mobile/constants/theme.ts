@@ -1,8 +1,23 @@
 import { Platform } from "react-native";
 
+/**
+ * The app's single accent green has two variants so it can be swapped app-wide for a visual
+ * test by changing ONE line (`ACTIVE_ACCENT` below) — nothing else needs to change.
+ * `dim` is a readable-as-plain-text shade (the bright variant is too light to read as text),
+ * `onBright` is the color to draw TEXT/ICONS on top of a solid `bright` fill (never hardcode
+ * white there — use `colors.onAccentGreen` so it follows the swap).
+ */
+const accentGreenVariants = {
+  muted: { bright: "#21874D", dim: "#21874D", onBright: "#FFFFFF" },
+  flashy: { bright: "#d7ff3f", dim: "#8fae2a", onBright: "#081814" },
+};
+const ACTIVE_ACCENT = accentGreenVariants.flashy;
+
 export const colors = {
   // Brand
-  accentGreen: "#21874D",
+  accentGreen: ACTIVE_ACCENT.bright,
+  accentGreenDim: ACTIVE_ACCENT.dim,
+  onAccentGreen: ACTIVE_ACCENT.onBright,
   accentOrange: "#E8832A",
   accentOrangeDark: "#F09B3E",
 
@@ -57,9 +72,10 @@ export const glass = {
   panelBorder: { light: "rgba(255,255,255,0.4)", dark: "rgba(255,255,255,0.16)" },
   pillTint: { light: "rgba(255,255,255,0.35)", dark: "rgba(0,0,0,0.35)" },
   pillBorder: { light: "rgba(255,255,255,0.5)", dark: "rgba(255,255,255,0.2)" },
-  // colors.accentGreen (#21874D = rgb(33,135,77)) at low/medium opacity for the accent CTA bar.
-  accentTint: "rgba(33,135,77,0.28)",
-  accentBorder: "rgba(33,135,77,0.65)",
+  // Derived from the active accent (hex + alpha suffix, same convention as `${colors.red500}14`
+  // elsewhere) so these follow `ACTIVE_ACCENT` automatically instead of drifting out of sync.
+  accentTint: `${ACTIVE_ACCENT.bright}47`,
+  accentBorder: `${ACTIVE_ACCENT.bright}A6`,
   // Android fallback (BlurView support is inconsistent there): a flat, ~85%-opaque surface —
   // the alpha lives in the color itself, never as a View `opacity` (that would also fade content).
   panelTintAndroidFallback: { light: "rgba(255,255,255,0.85)", dark: "rgba(28,28,30,0.85)" },

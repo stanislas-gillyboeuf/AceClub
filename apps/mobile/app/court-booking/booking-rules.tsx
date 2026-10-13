@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { View, Text, TextInput, Pressable, ScrollView, Alert, StyleSheet } from "react-native";
 import { Stack, router } from "expo-router";
-import { courtColors, courtFontMono } from "@/features/court-booking/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { colors, semanticColors, radii, spacing } from "@/constants/theme";
 import { useMyOrganizations, useActiveMemberRole } from "@/hooks/use-organization";
 import { useCourtSettings, useUpsertSettings } from "@/hooks/use-court";
 import Button from "@/components/ui/button";
 import type { MemberRole } from "@/types/common";
 
 export default function BookingRulesScreen() {
+  const scheme = useColorScheme();
   const { data: orgs } = useMyOrganizations();
   const { data: memberRole } = useActiveMemberRole();
   const organizationId = orgs?.[0]?.id;
@@ -77,10 +79,12 @@ export default function BookingRulesScreen() {
     return (
       <>
         <Stack.Screen options={{ title: "Règles de réservation" }} />
-        <View style={styles.screen}>
+        <View style={[styles.screen, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
           <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>Accès réservé</Text>
-            <Text style={styles.emptyDescription}>
+            <Text style={[styles.emptyTitle, { color: semanticColors.labelPrimary[scheme] }]}>
+              Accès réservé
+            </Text>
+            <Text style={[styles.emptyDescription, { color: semanticColors.labelSecondary[scheme] }]}>
               Seuls les admins du club peuvent modifier ces règles.
             </Text>
           </View>
@@ -92,34 +96,51 @@ export default function BookingRulesScreen() {
   return (
     <>
       <Stack.Screen options={{ title: "Règles de réservation" }} />
-      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        <Text style={styles.sectionLabel}>HORAIRES D&apos;OUVERTURE</Text>
+      <ScrollView
+        style={[styles.screen, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
+        contentContainerStyle={styles.content}
+      >
+        <Text style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}>
+          HORAIRES D&apos;OUVERTURE
+        </Text>
         <View style={styles.hourRow}>
-          <View style={styles.hourField}>
-            <Text style={styles.hourLabel}>Ouverture</Text>
+          <View
+            style={[
+              styles.hourField,
+              { backgroundColor: semanticColors.cardBackground[scheme], borderColor: semanticColors.borderColor[scheme] },
+            ]}
+          >
+            <Text style={[styles.hourLabel, { color: semanticColors.labelPrimary[scheme] }]}>Ouverture</Text>
             <TextInput
               value={openingHour}
               onChangeText={setOpeningHour}
               keyboardType="numeric"
               maxLength={2}
-              style={styles.hourInput}
+              style={[styles.hourInput, { color: colors.accentGreen }]}
             />
-            <Text style={styles.hourSuffix}>h</Text>
+            <Text style={[styles.hourSuffix, { color: colors.accentGreen }]}>h</Text>
           </View>
-          <View style={styles.hourField}>
-            <Text style={styles.hourLabel}>Fermeture</Text>
+          <View
+            style={[
+              styles.hourField,
+              { backgroundColor: semanticColors.cardBackground[scheme], borderColor: semanticColors.borderColor[scheme] },
+            ]}
+          >
+            <Text style={[styles.hourLabel, { color: semanticColors.labelPrimary[scheme] }]}>Fermeture</Text>
             <TextInput
               value={closingHour}
               onChangeText={setClosingHour}
               keyboardType="numeric"
               maxLength={2}
-              style={styles.hourInput}
+              style={[styles.hourInput, { color: colors.accentGreen }]}
             />
-            <Text style={styles.hourSuffix}>h</Text>
+            <Text style={[styles.hourSuffix, { color: colors.accentGreen }]}>h</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionLabel}>QUOTAS HEBDOMADAIRES</Text>
+        <Text style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}>
+          QUOTAS HEBDOMADAIRES
+        </Text>
 
         <LimitField
           label="Réservations en semaine"
@@ -136,7 +157,9 @@ export default function BookingRulesScreen() {
           onChangeValue={setWeekendLimit}
         />
 
-        <Text style={styles.sectionLabel}>FENÊTRE DE RÉSERVATION</Text>
+        <Text style={[styles.sectionLabel, { color: semanticColors.labelSecondary[scheme] }]}>
+          FENÊTRE DE RÉSERVATION
+        </Text>
         <LimitField
           label="Jours à l'avance (J+N)"
           limited={windowLimited}
@@ -162,22 +185,43 @@ interface LimitFieldProps {
 }
 
 function LimitField({ label, limited, onToggleLimited, value, onChangeValue }: LimitFieldProps) {
+  const scheme = useColorScheme();
+
   return (
-    <View style={styles.limitField}>
+    <View
+      style={[
+        styles.limitField,
+        { backgroundColor: semanticColors.cardBackground[scheme], borderColor: semanticColors.borderColor[scheme] },
+      ]}
+    >
       <View style={styles.limitHeader}>
-        <Text style={styles.limitLabel}>{label}</Text>
-        <View style={styles.toggleRow}>
+        <Text style={[styles.limitLabel, { color: semanticColors.labelPrimary[scheme] }]}>{label}</Text>
+        <View style={[styles.toggleRow, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
           <Pressable
             onPress={() => onToggleLimited(false)}
-            style={[styles.toggleOption, !limited && styles.toggleOptionActive]}
+            style={[styles.toggleOption, !limited && { backgroundColor: colors.accentGreen }]}
           >
-            <Text style={[styles.toggleText, !limited && styles.toggleTextActive]}>Illimité</Text>
+            <Text
+              style={[
+                styles.toggleText,
+                { color: !limited ? colors.onAccentGreen : semanticColors.labelSecondary[scheme] },
+              ]}
+            >
+              Illimité
+            </Text>
           </Pressable>
           <Pressable
             onPress={() => onToggleLimited(true)}
-            style={[styles.toggleOption, limited && styles.toggleOptionActive]}
+            style={[styles.toggleOption, limited && { backgroundColor: colors.accentGreen }]}
           >
-            <Text style={[styles.toggleText, limited && styles.toggleTextActive]}>Limité</Text>
+            <Text
+              style={[
+                styles.toggleText,
+                { color: limited ? colors.onAccentGreen : semanticColors.labelSecondary[scheme] },
+              ]}
+            >
+              Limité
+            </Text>
           </Pressable>
         </View>
       </View>
@@ -186,9 +230,16 @@ function LimitField({ label, limited, onToggleLimited, value, onChangeValue }: L
           value={value}
           onChangeText={onChangeValue}
           placeholder="Nombre de réservations"
-          placeholderTextColor={courtColors.chalkDim}
+          placeholderTextColor={semanticColors.labelTertiary[scheme]}
           keyboardType="numeric"
-          style={styles.limitInput}
+          style={[
+            styles.limitInput,
+            {
+              backgroundColor: semanticColors.primaryBackground[scheme],
+              borderColor: semanticColors.borderColor[scheme],
+              color: semanticColors.labelPrimary[scheme],
+            },
+          ]}
         />
       )}
     </View>
@@ -198,10 +249,9 @@ function LimitField({ label, limited, onToggleLimited, value, onChangeValue }: L
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: courtColors.ink900,
   },
   content: {
-    padding: 20,
+    padding: spacing.horizontal,
     gap: 14,
     paddingBottom: 48,
   },
@@ -209,7 +259,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 12,
     letterSpacing: 1,
-    color: courtColors.chalkDim,
     marginTop: 8,
   },
   hourRow: {
@@ -221,10 +270,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: courtColors.ink700,
-    borderRadius: 10,
+    borderRadius: radii.sm,
     borderWidth: 1,
-    borderColor: courtColors.line,
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
@@ -232,25 +279,20 @@ const styles = StyleSheet.create({
     flex: 1,
     fontWeight: "500",
     fontSize: 13,
-    color: courtColors.chalk,
   },
   hourInput: {
-    fontFamily: courtFontMono,
     fontSize: 16,
-    color: courtColors.chartreuse,
+    fontWeight: "700",
     minWidth: 28,
     textAlign: "right",
   },
   hourSuffix: {
-    fontFamily: courtFontMono,
     fontSize: 16,
-    color: courtColors.chartreuse,
+    fontWeight: "700",
   },
   limitField: {
-    backgroundColor: courtColors.ink700,
-    borderRadius: 10,
+    borderRadius: radii.sm,
     borderWidth: 1,
-    borderColor: courtColors.line,
     padding: 14,
     gap: 10,
   },
@@ -263,40 +305,27 @@ const styles = StyleSheet.create({
     flex: 1,
     fontWeight: "500",
     fontSize: 14,
-    color: courtColors.chalk,
   },
   toggleRow: {
     flexDirection: "row",
-    backgroundColor: courtColors.ink900,
-    borderRadius: 8,
+    borderRadius: radii.sm - 2,
     padding: 2,
   },
   toggleOption: {
     paddingVertical: 6,
     paddingHorizontal: 10,
-    borderRadius: 6,
-  },
-  toggleOptionActive: {
-    backgroundColor: courtColors.chartreuse,
+    borderRadius: radii.sm - 4,
   },
   toggleText: {
     fontWeight: "600",
     fontSize: 12,
-    color: courtColors.chalkDim,
-  },
-  toggleTextActive: {
-    color: courtColors.ink900,
   },
   limitInput: {
-    backgroundColor: courtColors.ink900,
-    borderRadius: 8,
+    borderRadius: radii.sm - 4,
     borderWidth: 1,
-    borderColor: courtColors.line,
     paddingVertical: 9,
     paddingHorizontal: 12,
-    fontFamily: courtFontMono,
     fontSize: 15,
-    color: courtColors.chalk,
   },
   actions: {
     marginTop: 10,
@@ -311,11 +340,9 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontWeight: "700",
     fontSize: 15,
-    color: courtColors.chalk,
   },
   emptyDescription: {
     fontSize: 13.5,
-    color: courtColors.chalkDim,
     textAlign: "center",
   },
 });

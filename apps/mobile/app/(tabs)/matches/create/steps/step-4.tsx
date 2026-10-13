@@ -68,7 +68,7 @@ export default function Step4() {
               styles.segmentedLabel,
               {
                 color: !isPast
-                  ? "#fff"
+                  ? colors.onAccentGreen
                   : semanticColors.labelSecondary[scheme],
               },
             ]}
@@ -90,7 +90,7 @@ export default function Step4() {
               styles.segmentedLabel,
               {
                 color: isPast
-                  ? "#fff"
+                  ? colors.onAccentGreen
                   : semanticColors.labelSecondary[scheme],
               },
             ]}

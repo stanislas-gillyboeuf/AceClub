@@ -98,7 +98,7 @@ function GenderCard({
         <GlassView style={styles.card}>
           {isSelected && (
             <View style={styles.checkBadge}>
-              <Check size={14} color={colors.white} />
+              <Check size={14} color={colors.onAccentGreen} />
             </View>
           )}
 

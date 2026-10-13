@@ -23,9 +23,9 @@ interface ButtonProps {
 const variantConfig = {
   primary: {
     tintColor: colors.accentGreen,
-    text: "#FFFFFF",
-    textDisabled: "rgba(255,255,255,0.5)",
-    loader: "#FFFFFF",
+    text: colors.onAccentGreen,
+    textDisabled: `${colors.onAccentGreen}80`,
+    loader: colors.onAccentGreen,
   },
   secondary: {
     tintColor: undefined,

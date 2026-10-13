@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   badgeText: {
-    color: "#FFFFFF",
+    color: colors.onAccentGreen,
     fontSize: 12,
     fontWeight: "700",
   },

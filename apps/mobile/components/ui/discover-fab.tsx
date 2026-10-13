@@ -18,6 +18,7 @@ export function DiscoverFab({ sport }: DiscoverFabProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const accent = sport === "padel" ? colors.accentOrange : colors.accentGreen;
+  const onAccent = sport === "padel" ? colors.white : colors.onAccentGreen;
 
   const bottom = insets.bottom + TAB_BAR_HEIGHT + 12;
 
@@ -27,8 +28,8 @@ export function DiscoverFab({ sport }: DiscoverFabProps) {
       style={({ pressed }) => [styles.fab, { bottom }, pressed && styles.fabPressed]}
     >
       <GlassView style={styles.fabGlass} tintColor={accent}>
-        <Plus size={20} color={colors.white} strokeWidth={2.5} />
-        <Text style={styles.label}>Crée ta demande</Text>
+        <Plus size={20} color={onAccent} strokeWidth={2.5} />
+        <Text style={[styles.label, { color: onAccent }]}>Crée ta demande</Text>
       </GlassView>
     </Pressable>
   );
@@ -53,7 +54,6 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.97 }],
   },
   label: {
-    color: colors.white,
     fontSize: 16,
     fontWeight: "700",
   },

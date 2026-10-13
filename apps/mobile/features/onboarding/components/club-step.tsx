@@ -143,7 +143,7 @@ export function ClubStep({
                 </View>
                 {isPinVerified || !selectedOrganization.pinEnabled ? (
                   <View style={styles.checkCircle}>
-                    <Check size={14} color={colors.white} />
+                    <Check size={14} color={colors.onAccentGreen} />
                   </View>
                 ) : (
                   <Lock size={14} color={colors.gray400} />

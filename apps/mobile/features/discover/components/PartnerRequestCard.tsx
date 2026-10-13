@@ -25,6 +25,7 @@ export function PartnerRequestCard({ item }: PartnerRequestCardProps) {
   const sport = (item.intent.sport ?? item.user?.sport) === "padel" ? "padel" : "tennis";
   const isPadel = sport === "padel";
   const accent = isPadel ? colors.accentOrange : colors.accentGreen;
+  const onAccent = isPadel ? colors.white : colors.onAccentGreen;
   const displayName = item.user?.name ?? "Joueur";
   const level = formatSkillLevel(item.user?.skillLevel, item.user?.sport);
 
@@ -126,9 +127,14 @@ export function PartnerRequestCard({ item }: PartnerRequestCardProps) {
                     ]}
                   >
                     {isBusy ? (
-                      <ActivityIndicator size="small" color="#FFFFFF" />
+                      <ActivityIndicator size="small" color={onAccent} />
                     ) : (
-                      <Text style={[styles.pillText, isMine && { color: semanticColors.labelSecondary[scheme] }]}>
+                      <Text
+                        style={[
+                          styles.pillText,
+                          { color: isMine ? semanticColors.labelSecondary[scheme] : onAccent },
+                        ]}
+                      >
                         {isMine ? "Envoyée" : "Rejoindre"}
                       </Text>
                     )}
@@ -154,12 +160,15 @@ export function PartnerRequestCard({ item }: PartnerRequestCardProps) {
             ]}
           >
             {pendingSlot === "tennis" ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color={onAccent} />
             ) : (
               <Text
                 style={[
                   styles.pillText,
-                  item.myRequestStatus === "pending" && { color: semanticColors.labelSecondary[scheme] },
+                  {
+                    color:
+                      item.myRequestStatus === "pending" ? semanticColors.labelSecondary[scheme] : onAccent,
+                  },
                 ]}
               >
                 {item.myRequestStatus === "pending" ? "Demande envoyée" : "Accepter"}
@@ -228,7 +237,6 @@ const styles = StyleSheet.create({
     minWidth: 140,
   },
   pillText: {
-    color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "600",
   },

@@ -56,7 +56,7 @@ export function TimeSlotGrid({
                   styles.chipText,
                   {
                     color: isSelected
-                      ? "#fff"
+                      ? colors.onAccentGreen
                       : semanticColors.labelPrimary[scheme],
                     fontWeight: isSelected ? "600" : "500",
                   },

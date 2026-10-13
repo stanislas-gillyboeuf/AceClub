@@ -44,7 +44,7 @@ export function EventOptionsSection({
                   {
                     color:
                       visibility === opt.value
-                        ? "#FFFFFF"
+                        ? colors.onAccentGreen
                         : semanticColors.labelSecondary[scheme],
                   },
                 ]}

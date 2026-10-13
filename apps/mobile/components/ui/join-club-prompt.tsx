@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   buttonText: {
-    color: "#fff",
+    color: colors.onAccentGreen,
     fontSize: 15,
     fontWeight: "600",
   },

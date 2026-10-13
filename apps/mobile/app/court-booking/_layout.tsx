@@ -1,15 +1,18 @@
 import { Stack } from "expo-router";
-import { courtColors } from "@/features/court-booking/theme";
+import { semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export default function CourtBookingLayout() {
+  const scheme = useColorScheme();
+
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: courtColors.ink900 },
-        headerTintColor: courtColors.chalk,
-        headerTitleStyle: { color: courtColors.chalk },
+        headerStyle: { backgroundColor: semanticColors.cardBackground[scheme] },
+        headerTintColor: semanticColors.labelPrimary[scheme],
+        headerTitleStyle: { color: semanticColors.labelPrimary[scheme] },
         headerShadowVisible: false,
-        contentStyle: { backgroundColor: courtColors.ink900 },
+        contentStyle: { backgroundColor: semanticColors.primaryBackground[scheme] },
       }}
     >
       <Stack.Screen name="manage-courts" options={{ title: "Gérer mes terrains" }} />

@@ -136,7 +136,7 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
                         <Text style={styles.payButtonText}>
                           {event.paymentLink.toLowerCase().includes("lydia") ? "Payer avec Lydia" : "Payer"}
                         </Text>
-                        <ExternalLink size={16} color="#FFFFFF" strokeWidth={2} />
+                        <ExternalLink size={16} color={colors.onAccentGreen} strokeWidth={2} />
                       </View>
                     </Pressable>
                   ) : (
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
   },
   payButtonText: {
-    color: "#FFFFFF",
+    color: colors.onAccentGreen,
     fontSize: 16,
     fontWeight: "600",
   },

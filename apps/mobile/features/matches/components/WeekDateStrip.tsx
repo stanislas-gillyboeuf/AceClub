@@ -52,7 +52,7 @@ export function WeekDateStrip({
           const key = formatDayKey(day);
           const isSelected = key === selectedKey;
           const hasMatches = (matchCountByDay.get(key) ?? 0) > 0;
-          const textColor = isSelected ? colors.white : undefined;
+          const textColor = isSelected ? colors.onAccentGreen : undefined;
 
           const Wrapper = isSelected ? GlassView : View;
           const wrapperProps = isSelected ? { tintColor: colors.accentGreen } : {};

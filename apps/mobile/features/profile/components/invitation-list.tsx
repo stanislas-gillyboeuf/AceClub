@@ -56,7 +56,7 @@ export function InvitationList({
                   style={[styles.actionButton, styles.acceptButton]}
                   hitSlop={4}
                 >
-                  <Check size={18} color="#FFFFFF" strokeWidth={2.5} />
+                  <Check size={18} color={colors.onAccentGreen} strokeWidth={2.5} />
                 </Pressable>
                 <Pressable
                   onPress={() => onReject(invitation.id)}

@@ -56,7 +56,7 @@ export function DurationTile({
 
         {isSelected && (
           <View style={styles.checkBadge}>
-            <Check size={12} color="#fff" strokeWidth={3} />
+            <Check size={12} color={colors.onAccentGreen} strokeWidth={3} />
           </View>
         )}
       </GlassView>

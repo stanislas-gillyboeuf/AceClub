@@ -107,7 +107,7 @@ export function GhostForm({ initialName, onCreated, onBack, scheme }: GhostFormP
         ]}
       >
         {createGhost.isPending ? (
-          <ActivityIndicator color="#fff" size="small" />
+          <ActivityIndicator color={colors.onAccentGreen} size="small" />
         ) : (
           <Text style={styles.submitText}>Ajouter</Text>
         )}
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   submitText: {
-    color: "#fff",
+    color: colors.onAccentGreen,
     fontSize: 16,
     fontWeight: "600",
   },

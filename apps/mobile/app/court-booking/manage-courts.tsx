@@ -1,7 +1,8 @@
 import { useCallback } from "react";
 import { View, Text, FlatList, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { Stack, router } from "expo-router";
-import { courtColors } from "@/features/court-booking/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { colors, semanticColors, radii, spacing } from "@/constants/theme";
 import { useMyOrganizations, useActiveMemberRole } from "@/hooks/use-organization";
 import { useAllCourtsForOrg, useUpdateCourt } from "@/hooks/use-court";
 import { CourtRow } from "@/features/court-booking/components/admin/court-row";
@@ -9,6 +10,7 @@ import type { Court } from "@/types/court";
 import type { MemberRole } from "@/types/common";
 
 export default function ManageCourtsScreen() {
+  const scheme = useColorScheme();
   const { data: orgs, isLoading: orgsLoading } = useMyOrganizations();
   const { data: memberRole, isLoading: roleLoading } = useActiveMemberRole();
   const organizationId = orgs?.[0]?.id;
@@ -35,10 +37,12 @@ export default function ManageCourtsScreen() {
     return (
       <>
         <Stack.Screen options={{ title: "Gérer mes terrains" }} />
-        <View style={styles.screen}>
+        <View style={[styles.screen, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
           <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>Accès réservé</Text>
-            <Text style={styles.emptyDescription}>
+            <Text style={[styles.emptyTitle, { color: semanticColors.labelPrimary[scheme] }]}>
+              Accès réservé
+            </Text>
+            <Text style={[styles.emptyDescription, { color: semanticColors.labelSecondary[scheme] }]}>
               Seuls les admins du club peuvent gérer les terrains.
             </Text>
           </View>
@@ -63,7 +67,7 @@ export default function ManageCourtsScreen() {
             />
           </View>
         )}
-        style={styles.screen}
+        style={[styles.screen, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={styles.listContent}
         onRefresh={refetch}
@@ -71,18 +75,20 @@ export default function ManageCourtsScreen() {
         ListHeaderComponent={
           <Pressable
             onPress={() => router.push("/court-booking/court-form")}
-            style={styles.addButton}
+            style={[styles.addButton, { backgroundColor: colors.accentGreen }]}
           >
-            <Text style={styles.addButtonText}>+ Ajouter un court</Text>
+            <Text style={[styles.addButtonText, { color: colors.onAccentGreen }]}>+ Ajouter un court</Text>
           </Pressable>
         }
         ListEmptyComponent={
           isLoading ? (
-            <ActivityIndicator style={styles.loader} color={courtColors.chartreuse} />
+            <ActivityIndicator style={styles.loader} color={colors.accentGreen} />
           ) : (
             <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>Aucun terrain</Text>
-              <Text style={styles.emptyDescription}>
+              <Text style={[styles.emptyTitle, { color: semanticColors.labelPrimary[scheme] }]}>
+                Aucun terrain
+              </Text>
+              <Text style={[styles.emptyDescription, { color: semanticColors.labelSecondary[scheme] }]}>
                 Ajoute ton premier terrain pour activer les réservations.
               </Text>
             </View>
@@ -96,16 +102,14 @@ export default function ManageCourtsScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: courtColors.ink900,
   },
   listContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.horizontal,
     paddingBottom: 32,
     gap: 10,
   },
   addButton: {
-    backgroundColor: courtColors.chartreuse,
-    borderRadius: 10,
+    borderRadius: radii.sm,
     paddingVertical: 12,
     alignItems: "center",
     marginBottom: 16,
@@ -113,7 +117,6 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontWeight: "700",
     fontSize: 15,
-    color: courtColors.ink900,
   },
   row: {
     marginBottom: 10,
@@ -129,11 +132,9 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontWeight: "700",
     fontSize: 15,
-    color: courtColors.chalk,
   },
   emptyDescription: {
     fontSize: 13.5,
-    color: courtColors.chalkDim,
     textAlign: "center",
   },
 });

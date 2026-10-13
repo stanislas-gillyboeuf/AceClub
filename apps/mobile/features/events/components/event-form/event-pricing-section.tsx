@@ -41,7 +41,7 @@ export function EventPricingSection({
             <Text
               style={[
                 styles.optionText,
-                { color: isFree ? "#FFFFFF" : semanticColors.labelSecondary[scheme] },
+                { color: isFree ? colors.onAccentGreen : semanticColors.labelSecondary[scheme] },
               ]}
             >
               Gratuit

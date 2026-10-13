@@ -27,6 +27,7 @@ export function DiscoverFilters({
   const scheme = useColorScheme();
   const [showLevelMenu, setShowLevelMenu] = useState(false);
   const accent = sport === "padel" ? colors.accentOrange : colors.accentGreen;
+  const onAccent = sport === "padel" ? colors.white : colors.onAccentGreen;
   const levels = getSkillLevels(sport);
 
   const levelButtonLabel =
@@ -58,7 +59,7 @@ export function DiscoverFilters({
               <Text
                 style={[
                   styles.sportLabel,
-                  { color: active ? "#FFFFFF" : semanticColors.labelSecondary[scheme] },
+                  { color: active ? onAccent : semanticColors.labelSecondary[scheme] },
                 ]}
               >
                 {option.label}
@@ -139,7 +140,7 @@ export function DiscoverFilters({
               onPress={() => setShowLevelMenu(false)}
               style={[styles.menuDoneButton, { backgroundColor: accent }]}
             >
-              <Text style={styles.menuDoneText}>Terminé</Text>
+              <Text style={[styles.menuDoneText, { color: onAccent }]}>Terminé</Text>
             </Pressable>
           </GlassView>
         </Pressable>
@@ -236,7 +237,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   menuDoneText: {
-    color: "#FFFFFF",
     fontSize: 15,
     fontWeight: "600",
   },

@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   unreadText: {
-    color: colors.white,
+    color: colors.onAccentGreen,
     fontSize: 12,
     fontWeight: "700",
   },

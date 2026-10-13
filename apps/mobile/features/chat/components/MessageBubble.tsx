@@ -212,7 +212,7 @@ function MessageContent({
             styles.textContent,
             {
               color: message.isFromMe
-                ? colors.white
+                ? colors.onAccentGreen
                 : semanticColors.labelPrimary[scheme],
             },
           ]}
@@ -242,7 +242,7 @@ function MatchRequestContent({
       <Text
         style={[
           styles.textContent,
-          { color: message.isFromMe ? colors.white : semanticColors.labelPrimary[scheme] },
+          { color: message.isFromMe ? colors.onAccentGreen : semanticColors.labelPrimary[scheme] },
         ]}
       >
         {message.content}
@@ -250,8 +250,8 @@ function MatchRequestContent({
     );
   }
 
-  const textColor = message.isFromMe ? colors.white : semanticColors.labelPrimary[scheme];
-  const subColor = message.isFromMe ? "rgba(255,255,255,0.75)" : semanticColors.labelSecondary[scheme];
+  const textColor = message.isFromMe ? colors.onAccentGreen : semanticColors.labelPrimary[scheme];
+  const subColor = message.isFromMe ? `${colors.onAccentGreen}BF` : semanticColors.labelSecondary[scheme];
   const level = formatSkillLevel(info.requesterSkillLevel, info.requesterSport);
 
   const handleAccept = async () => {
@@ -320,9 +320,9 @@ function MatchRequestContent({
             ]}
           >
             {isResponding ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color={colors.onAccentGreen} />
             ) : (
-              <Text style={[styles.requestButtonText, { color: "#FFFFFF" }]}>Accepter</Text>
+              <Text style={[styles.requestButtonText, { color: colors.onAccentGreen }]}>Accepter</Text>
             )}
           </Pressable>
         </View>

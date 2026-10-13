@@ -9,7 +9,8 @@ import {
   StyleSheet,
 } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
-import { courtColors } from "@/features/court-booking/theme";
+import { useColorScheme, type ColorScheme } from "@/hooks/use-color-scheme";
+import { colors, semanticColors, radii, spacing } from "@/constants/theme";
 import { useMyOrganizations } from "@/hooks/use-organization";
 import { useAllCourtsForOrg, useCreateCourt, useUpdateCourt } from "@/hooks/use-court";
 import Button from "@/components/ui/button";
@@ -45,6 +46,7 @@ const ACCESS_OPTIONS: { value: CourtAccessPolicy; label: string }[] = [
 ];
 
 export default function CourtFormScreen() {
+  const scheme = useColorScheme();
   const { courtId } = useLocalSearchParams<{ courtId?: string }>();
   const isEditing = !!courtId;
 
@@ -137,32 +139,36 @@ export default function CourtFormScreen() {
   return (
     <>
       <Stack.Screen options={{ title: isEditing ? "Modifier le terrain" : "Nouveau terrain" }} />
-      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        <Field label="NOM">
+      <ScrollView
+        style={[styles.screen, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
+        contentContainerStyle={styles.content}
+      >
+        <Field label="NOM" scheme={scheme}>
           <TextInput
             value={name}
             onChangeText={setName}
             placeholder="Ex : Court 1"
-            placeholderTextColor={courtColors.chalkDim}
-            style={styles.input}
+            placeholderTextColor={semanticColors.labelTertiary[scheme]}
+            style={[styles.input, inputThemeStyle(scheme)]}
           />
         </Field>
 
-        <Field label="SPORT">
-          <SegmentedOptions options={SPORT_OPTIONS} value={sport} onChange={setSport} />
+        <Field label="SPORT" scheme={scheme}>
+          <SegmentedOptions options={SPORT_OPTIONS} value={sport} onChange={setSport} scheme={scheme} />
         </Field>
 
         {sport === "tennis" && (
-          <Field label="SURFACE">
+          <Field label="SURFACE" scheme={scheme}>
             <SegmentedOptions
               options={SURFACE_OPTIONS}
               value={surface}
               onChange={setSurface}
+              scheme={scheme}
             />
           </Field>
         )}
 
-        <Field label="EMPLACEMENT">
+        <Field label="EMPLACEMENT" scheme={scheme}>
           <SegmentedOptions
             options={[
               { value: false, label: "Extérieur" },
@@ -170,48 +176,51 @@ export default function CourtFormScreen() {
             ]}
             value={indoor}
             onChange={setIndoor}
+            scheme={scheme}
           />
         </Field>
 
-        <Field label="PRIX PAR HEURE (OPTIONNEL)">
+        <Field label="PRIX PAR HEURE (OPTIONNEL)" scheme={scheme}>
           <TextInput
             value={pricePerHour}
             onChangeText={setPricePerHour}
             placeholder="Ex : 20"
-            placeholderTextColor={courtColors.chalkDim}
+            placeholderTextColor={semanticColors.labelTertiary[scheme]}
             keyboardType="numeric"
-            style={styles.input}
+            style={[styles.input, inputThemeStyle(scheme)]}
           />
         </Field>
 
-        <Field label="DURÉE DE CRÉNEAU">
+        <Field label="DURÉE DE CRÉNEAU" scheme={scheme}>
           <SegmentedOptions
             options={SLOT_DURATIONS.map((d) => ({ value: d, label: `${d} min` }))}
             value={slotDurationMinutes}
             onChange={setSlotDurationMinutes}
+            scheme={scheme}
           />
         </Field>
 
-        <Field label="RÈGLE D'ANNULATION">
+        <Field label="RÈGLE D'ANNULATION" scheme={scheme}>
           <SegmentedOptions
             options={CANCELLATION_OPTIONS}
             value={cancellationPolicy}
             onChange={setCancellationPolicy}
+            scheme={scheme}
           />
           {cancellationPolicy === "window" && (
             <TextInput
               value={cancellationWindowHours}
               onChangeText={setCancellationWindowHours}
               placeholder="Nombre d'heures avant le créneau"
-              placeholderTextColor={courtColors.chalkDim}
+              placeholderTextColor={semanticColors.labelTertiary[scheme]}
               keyboardType="numeric"
-              style={[styles.input, styles.inputSpaced]}
+              style={[styles.input, inputThemeStyle(scheme), styles.inputSpaced]}
             />
           )}
         </Field>
 
-        <Field label="ACCÈS">
-          <SegmentedOptions options={ACCESS_OPTIONS} value={accessPolicy} onChange={setAccessPolicy} />
+        <Field label="ACCÈS" scheme={scheme}>
+          <SegmentedOptions options={ACCESS_OPTIONS} value={accessPolicy} onChange={setAccessPolicy} scheme={scheme} />
         </Field>
 
         <View style={styles.actions}>
@@ -227,10 +236,18 @@ export default function CourtFormScreen() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function inputThemeStyle(scheme: ColorScheme) {
+  return {
+    backgroundColor: semanticColors.cardBackground[scheme],
+    borderColor: semanticColors.borderColor[scheme],
+    color: semanticColors.labelPrimary[scheme],
+  };
+}
+
+function Field({ label, scheme, children }: { label: string; scheme: ColorScheme; children: React.ReactNode }) {
   return (
     <View style={styles.field}>
-      <Text style={styles.fieldLabel}>{label}</Text>
+      <Text style={[styles.fieldLabel, { color: semanticColors.labelSecondary[scheme] }]}>{label}</Text>
       {children}
     </View>
   );
@@ -240,10 +257,12 @@ function SegmentedOptions<T>({
   options,
   value,
   onChange,
+  scheme,
 }: {
   options: { value: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
+  scheme: ColorScheme;
 }) {
   return (
     <View style={styles.optionsRow}>
@@ -253,9 +272,20 @@ function SegmentedOptions<T>({
           <Pressable
             key={index}
             onPress={() => onChange(option.value)}
-            style={[styles.option, isSelected && styles.optionActive]}
+            style={[
+              styles.option,
+              {
+                backgroundColor: isSelected ? colors.accentGreen : semanticColors.cardBackground[scheme],
+                borderColor: isSelected ? colors.accentGreen : semanticColors.borderColor[scheme],
+              },
+            ]}
           >
-            <Text style={[styles.optionText, isSelected && styles.optionTextActive]}>
+            <Text
+              style={[
+                styles.optionText,
+                { color: isSelected ? colors.onAccentGreen : semanticColors.labelPrimary[scheme] },
+              ]}
+            >
               {option.label}
             </Text>
           </Pressable>
@@ -268,10 +298,9 @@ function SegmentedOptions<T>({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: courtColors.ink900,
   },
   content: {
-    padding: 20,
+    padding: spacing.horizontal,
     gap: 22,
     paddingBottom: 48,
   },
@@ -282,17 +311,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 11,
     letterSpacing: 0.6,
-    color: courtColors.chalkDim,
   },
   input: {
-    backgroundColor: courtColors.ink700,
-    borderRadius: 10,
+    borderRadius: radii.sm,
     borderWidth: 1,
-    borderColor: courtColors.line,
     paddingVertical: 12,
     paddingHorizontal: 14,
     fontSize: 15,
-    color: courtColors.chalk,
   },
   inputSpaced: {
     marginTop: 10,
@@ -303,24 +328,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   option: {
-    backgroundColor: courtColors.ink700,
-    borderRadius: 9,
+    borderRadius: radii.sm - 1,
     borderWidth: 1,
-    borderColor: courtColors.line,
     paddingVertical: 9,
     paddingHorizontal: 13,
-  },
-  optionActive: {
-    backgroundColor: courtColors.chartreuse,
-    borderColor: courtColors.chartreuse,
   },
   optionText: {
     fontWeight: "600",
     fontSize: 13,
-    color: courtColors.chalk,
-  },
-  optionTextActive: {
-    color: courtColors.ink900,
   },
   actions: {
     marginTop: 8,

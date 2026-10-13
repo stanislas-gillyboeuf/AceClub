@@ -73,7 +73,7 @@ export function SelectableTile({
 
         {isSelected && (
           <View style={[styles.checkBadge, { backgroundColor: accentColor }]}>
-            <Check size={14} color="#fff" strokeWidth={3} />
+            <Check size={14} color={colors.onAccentGreen} strokeWidth={3} />
           </View>
         )}
       </GlassView>

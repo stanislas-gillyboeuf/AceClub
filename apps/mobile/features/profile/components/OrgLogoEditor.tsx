@@ -38,7 +38,7 @@ export function OrgLogoEditor({ logoUri, onPick }: OrgLogoEditorProps) {
         </View>
       )}
       <View style={styles.cameraBadge}>
-        <Camera size={16} color="#FFFFFF" strokeWidth={2} />
+        <Camera size={16} color={colors.onAccentGreen} strokeWidth={2} />
       </View>
     </Pressable>
   );

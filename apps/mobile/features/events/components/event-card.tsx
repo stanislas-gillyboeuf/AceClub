@@ -163,7 +163,7 @@ function PriceBadge({
       <Text
         style={[
           styles.priceBadgeText,
-          { color: isFree ? semanticColors.labelPrimary[scheme] : "#FFFFFF" },
+          { color: isFree ? semanticColors.labelPrimary[scheme] : colors.onAccentGreen },
         ]}
       >
         {label}

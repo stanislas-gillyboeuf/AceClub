@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { courtColors, courtFontMono } from "../../theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { colors, semanticColors, radii } from "@/constants/theme";
 import type { Court } from "@/types/court";
 
 const SURFACE_LABELS: Record<string, string> = {
@@ -17,34 +18,49 @@ interface CourtRowProps {
 }
 
 export function CourtRow({ court, onEdit, onToggleActive, isToggling }: CourtRowProps) {
+  const scheme = useColorScheme();
   const surfaceLabel = court.surface ? SURFACE_LABELS[court.surface] : null;
+  const nameColor = court.isActive ? semanticColors.labelPrimary[scheme] : semanticColors.labelSecondary[scheme];
 
   return (
-    <View style={[styles.card, !court.isActive && styles.cardInactive]}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: semanticColors.cardBackground[scheme],
+          borderColor: semanticColors.borderColor[scheme],
+        },
+        !court.isActive && styles.cardInactive,
+      ]}
+    >
       <View style={styles.info}>
-        <Text style={[styles.name, !court.isActive && styles.textMuted]}>{court.name}</Text>
-        <Text style={styles.meta}>
+        <Text style={[styles.name, { color: nameColor }]}>{court.name}</Text>
+        <Text style={[styles.meta, { color: semanticColors.labelSecondary[scheme] }]}>
           {[surfaceLabel, court.indoor ? "Intérieur" : "Extérieur", `${court.slotDurationMinutes} min`]
             .filter(Boolean)
             .join(" · ")}
         </Text>
         {court.pricePerHour != null && (
-          <Text style={styles.price}>{court.pricePerHour} € / heure</Text>
+          <Text style={[styles.price, { color: colors.accentGreen }]}>{court.pricePerHour} € / heure</Text>
         )}
       </View>
       <View style={styles.actions}>
         {court.isActive ? (
           <>
             <Pressable onPress={onEdit} style={styles.actionButton}>
-              <Text style={styles.actionText}>Modifier</Text>
+              <Text style={[styles.actionText, { color: colors.accentGreen }]}>Modifier</Text>
             </Pressable>
             <Pressable onPress={onToggleActive} disabled={isToggling} style={styles.actionButton}>
-              <Text style={styles.destructiveText}>Désactiver</Text>
+              <Text style={[styles.destructiveText, { color: colors.red500 }]}>Désactiver</Text>
             </Pressable>
           </>
         ) : (
-          <Pressable onPress={onToggleActive} disabled={isToggling} style={styles.reactivateButton}>
-            <Text style={styles.reactivateText}>Réactiver</Text>
+          <Pressable
+            onPress={onToggleActive}
+            disabled={isToggling}
+            style={[styles.reactivateButton, { backgroundColor: colors.accentGreen }]}
+          >
+            <Text style={[styles.reactivateText, { color: colors.onAccentGreen }]}>Réactiver</Text>
           </Pressable>
         )}
       </View>
@@ -54,10 +70,8 @@ export function CourtRow({ court, onEdit, onToggleActive, isToggling }: CourtRow
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: courtColors.ink700,
-    borderRadius: 12,
+    borderRadius: radii.md,
     borderWidth: 1,
-    borderColor: courtColors.line,
     padding: 14,
     gap: 10,
   },
@@ -70,20 +84,13 @@ const styles = StyleSheet.create({
   name: {
     fontWeight: "700",
     fontSize: 16,
-    color: courtColors.chalk,
-  },
-  textMuted: {
-    color: courtColors.chalkDim,
   },
   meta: {
-    fontFamily: courtFontMono,
     fontSize: 12,
-    color: courtColors.chalkDim,
   },
   price: {
-    fontFamily: courtFontMono,
     fontSize: 12,
-    color: courtColors.chartreuse,
+    fontWeight: "600",
   },
   actions: {
     flexDirection: "row",
@@ -95,23 +102,19 @@ const styles = StyleSheet.create({
   actionText: {
     fontWeight: "600",
     fontSize: 13,
-    color: courtColors.chartreuse,
   },
   destructiveText: {
     fontWeight: "600",
     fontSize: 13,
-    color: courtColors.rust,
   },
   reactivateButton: {
     alignSelf: "flex-start",
-    backgroundColor: courtColors.chartreuse,
-    borderRadius: 8,
+    borderRadius: radii.sm,
     paddingVertical: 6,
     paddingHorizontal: 12,
   },
   reactivateText: {
     fontWeight: "600",
     fontSize: 13,
-    color: courtColors.ink900,
   },
 });

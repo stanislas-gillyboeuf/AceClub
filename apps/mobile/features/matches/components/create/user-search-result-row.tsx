@@ -45,7 +45,7 @@ export function UserSearchResultRow({
         </View>
         {isSelected && (
           <View style={styles.checkCircle}>
-            <Check size={14} color="#fff" strokeWidth={3} />
+            <Check size={14} color={colors.onAccentGreen} strokeWidth={3} />
           </View>
         )}
       </GlassView>
