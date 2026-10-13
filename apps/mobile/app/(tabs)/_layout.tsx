@@ -26,15 +26,15 @@ export default function TabLayout() {
     <NativeTabs tintColor={colors.accentGreen} minimizeBehavior="onScrollDown" >
       <NativeTabs.Trigger name="feed">
         <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
-        <NativeTabs.Trigger.Label>Feed</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Actus</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="matches">
         <NativeTabs.Trigger.Icon sf={{ default: "sportscourt", selected: "sportscourt.fill" }} md="sports_tennis" />
-        <NativeTabs.Trigger.Label>Matches</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Matchs</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="discover">
         <NativeTabs.Trigger.Icon sf={{ default: "magnifyingglass", selected: "magnifyingglass" }} md="search" />
-        <NativeTabs.Trigger.Label>Discover</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Rechercher</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="booking">
         <NativeTabs.Trigger.Icon sf={{ default: "calendar", selected: "calendar" }} md="event" />
@@ -42,7 +42,7 @@ export default function TabLayout() {
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <NativeTabs.Trigger.Icon sf={{ default: "person", selected: "person.fill" }} md="person" />
-        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Profil</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );

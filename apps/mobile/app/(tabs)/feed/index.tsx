@@ -20,7 +20,6 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useUnreadMessagesCount } from "@/hooks/use-conversation";
 import { ClubSwitcher } from "@/components/ui/club-switcher";
 import { JoinClubPrompt } from "@/components/ui/join-club-prompt";
-import { VerifyEmailPrompt } from "@/components/ui/verify-email-prompt";
 
 import { MessagesHeaderButton } from "@/features/chat/components/MessagesHeaderButton";
 import { LevelProgressCard } from "@/features/feed/components/level-progress-card";
@@ -93,7 +92,7 @@ export default function Feed() {
     <>
       <Stack.Screen
         options={{
-          title: "Activite",
+          title: "Fil d'actus",
           headerRight:
             Platform.OS === "android"
               ? () => (
@@ -146,8 +145,6 @@ export default function Feed() {
 
             {hasNoClub ? <JoinClubPrompt /> : null}
 
-            <VerifyEmailPrompt />
-
             {/* Skill level (FFT/padel), not the Aces/XP level below */}
             {skillLevelLabel ? (
               <View style={[styles.section, styles.skillLevelRow]}>
@@ -181,7 +178,7 @@ export default function Feed() {
             {/* Recent matches section header */}
             {finishedMatches.length > 0 && (
               <View style={styles.section}>
-                <SectionHeader title="Matchs récents" />
+                <SectionHeader title="Matchs récents" variant="prominent" />
               </View>
             )}
           </View>

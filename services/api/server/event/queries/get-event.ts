@@ -2,7 +2,7 @@ import { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { event, eventParticipant } from "../../../db/schema/event/schema";
-import { organization } from "../../../db/schema/auth/schema";
+import { organization, user } from "../../../db/schema/auth/schema";
 import { eq, and, count } from "drizzle-orm";
 import { z } from "zod";
 import { getEventValidator } from "../validators";
@@ -40,9 +40,11 @@ export const getEvent = async (c: Context<HonoContext>) => {
       organizationAddress: organization.address,
       organizationLatitude: organization.latitude,
       organizationLongitude: organization.longitude,
+      creatorName: user.name,
     })
     .from(event)
     .leftJoin(organization, eq(event.organizationId, organization.id))
+    .innerJoin(user, eq(event.userId, user.id))
     .where(eq(event.id, eventId))
     .limit(1);
 

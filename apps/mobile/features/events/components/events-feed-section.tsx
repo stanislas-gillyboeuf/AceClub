@@ -60,7 +60,7 @@ export function EventsFeedSection() {
   return (
     <View style={styles.section}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: semanticColors.labelSecondary[scheme] }]}>{title}</Text>
+        <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>{title}</Text>
         <Pressable onPress={goToEvents} hitSlop={8} style={styles.seeAllButton}>
           <Text style={styles.seeAllText}>Tout voir</Text>
         </Pressable>
@@ -111,8 +111,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
-    fontSize: 13,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "700",
     letterSpacing: 0.5,
   },
   seeAllButton: {

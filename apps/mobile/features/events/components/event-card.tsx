@@ -224,10 +224,16 @@ const styles = StyleSheet.create({
   titleLarge: {
     fontSize: 17,
     fontWeight: "700",
+    lineHeight: 22,
+    // Fixed to exactly 2 lines' worth regardless of the actual title length, so every card's
+    // blurred panel is the same height — a 1-line title just leaves reserved space below it.
+    height: 44,
   },
   titleCompact: {
     fontSize: 14,
     fontWeight: "700",
+    lineHeight: 18,
+    height: 18,
   },
   dateRow: {
     flexDirection: "row",

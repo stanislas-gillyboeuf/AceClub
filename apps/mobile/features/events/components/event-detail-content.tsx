@@ -2,20 +2,20 @@ import { View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator, Pressable
 import { Image } from "expo-image";
 import { GlassView } from "@/components/ui/glass-view";
 import { Avatar } from "@/components/ui/avatar";
+import { AvatarStack } from "@/components/ui/avatar-stack";
 import Button from "@/components/ui/button";
 import { MapPreview } from "@/features/matches/components/match-detail/map-preview";
 import {
   Calendar,
   Clock,
   MapPin,
-  Users,
   CalendarDays,
   ExternalLink,
   Ticket,
 } from "lucide-react-native";
 import { colors, semanticColors, radii, spacing } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { useEvent, useRegisterEvent, useCancelRegistration } from "@/hooks/use-event";
+import { useEvent, useEventParticipants, useRegisterEvent, useCancelRegistration } from "@/hooks/use-event";
 import { formatFullDate, formatEventTime } from "@/lib/format";
 
 interface EventDetailContentProps {
@@ -25,6 +25,7 @@ interface EventDetailContentProps {
 export function EventDetailContent({ eventId }: EventDetailContentProps) {
   const scheme = useColorScheme();
   const { data: event, isLoading } = useEvent(eventId);
+  const { data: participants } = useEventParticipants(eventId);
   const registerMutation = useRegisterEvent();
   const cancelMutation = useCancelRegistration();
 
@@ -103,7 +104,10 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
 
           {/* Participants */}
           <View style={styles.infoRow}>
-            <Users size={16} color={colors.accentGreen} strokeWidth={2} />
+            <AvatarStack
+              avatars={(participants ?? []).map((p) => ({ imageUrl: p.userImage, name: p.userName }))}
+              size={22}
+            />
             <Text style={[styles.infoText, { color: semanticColors.labelPrimary[scheme] }]}>
               {event.participantCount} inscrit{event.participantCount !== 1 ? "s" : ""}
               {event.maxParticipants ? ` / ${event.maxParticipants} places` : ""}
@@ -145,6 +149,23 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
             </View>
           )}
 
+          {/* Location */}
+          <LocationSection event={event} />
+
+          {/* Description */}
+          {event.description && event.description.length > 0 && (
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: semanticColors.labelPrimary[scheme] }]}>
+                A propos
+              </Text>
+              <GlassView style={styles.descriptionCard}>
+                <Text style={[styles.descriptionText, { color: semanticColors.labelSecondary[scheme] }]}>
+                  {event.description}
+                </Text>
+              </GlassView>
+            </View>
+          )}
+
           {/* Host */}
           {event.organizationName ? (
             <View style={styles.section}>
@@ -162,28 +183,16 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
                     <Text style={[styles.hostName, { color: semanticColors.labelPrimary[scheme] }]}>
                       {event.organizationName}
                     </Text>
+                    {event.creatorName ? (
+                      <Text style={[styles.hostCreator, { color: semanticColors.labelSecondary[scheme] }]}>
+                        Créé par {event.creatorName}
+                      </Text>
+                    ) : null}
                   </View>
                 </View>
               </GlassView>
             </View>
           ) : null}
-
-          {/* Location */}
-          <LocationSection event={event} />
-
-          {/* Description */}
-          {event.description && event.description.length > 0 && (
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: semanticColors.labelPrimary[scheme] }]}>
-                A propos
-              </Text>
-              <GlassView style={styles.descriptionCard}>
-                <Text style={[styles.descriptionText, { color: semanticColors.labelSecondary[scheme] }]}>
-                  {event.description}
-                </Text>
-              </GlassView>
-            </View>
-          )}
         </View>
       </ScrollView>
 
@@ -352,6 +361,10 @@ const styles = StyleSheet.create({
   hostName: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  hostCreator: {
+    fontSize: 13,
+    marginTop: 2,
   },
   locationCard: {
     padding: spacing.card,

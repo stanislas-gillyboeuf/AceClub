@@ -20,7 +20,6 @@ import { GoogleSignin } from "@/lib/google-signin";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useActiveClub } from "@/hooks/use-active-club";
 import { OfflineSheet } from "@/components/offline-sheet";
-import { DiscoverFab } from "@/components/ui/discover-fab";
 
 /** Mounted once near the root purely to run `useActiveClub`'s init effect
  * (pick/repair the active club as soon as memberships are known). Every
@@ -68,7 +67,6 @@ function RootNavigator() {
           }}
         />
       </Stack>
-      <DiscoverFab />
       <OfflineSheet />
       <ActiveClubSync />
     </View>

@@ -62,6 +62,7 @@ export interface MyEvent extends EventSummary {
 
 export interface EventDetail extends EventSummary {
   userId: string;
+  creatorName: string | null;
   waitlistCount: number;
   userRegistrationStatus: RegistrationStatus | null;
 }

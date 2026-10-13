@@ -13,6 +13,7 @@ import { DiscoverFilters } from "@/features/discover/components/DiscoverFilters"
 import { useDiscoverList } from "@/features/discover/hooks/use-discover-list";
 import { EmptyState } from "@/components/ui/empty-state";
 import { JoinClubPrompt } from "@/components/ui/join-club-prompt";
+import { DiscoverFab } from "@/components/ui/discover-fab";
 import { colors, semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { MatchIntentWithUser } from "@/types/match-intent";
@@ -111,6 +112,7 @@ export default function DiscoverScreen() {
         ListFooterComponent={isFetchingMore ? <ActivityIndicator style={{ marginVertical: 16 }} /> : null}
         contentInsetAdjustmentBehavior="automatic"
       />
+      {hasClub ? <DiscoverFab sport={sport} /> : null}
     </>
   );
 }
