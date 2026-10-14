@@ -17,7 +17,7 @@ import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useSearchOrganizations } from "@/hooks/use-organization";
 import { useMatch, useUpdateVenue } from "@/hooks/use-match";
-import { colors, semanticColors, radii, spacing } from "@/constants/theme";
+import { semanticColors, radii, spacing } from "@/constants/theme";
 import type { Organization } from "@/types/organization";
 
 export default function ChangeVenueSheet() {
@@ -77,8 +77,10 @@ export default function ChangeVenueSheet() {
           {item.logo ? (
             <Image source={{ uri: item.logo }} style={styles.orgLogo} contentFit="cover" />
           ) : (
-            <View style={styles.orgLogoPlaceholder}>
-              <Text style={styles.orgLogoLetter}>
+            <View
+              style={[styles.orgLogoPlaceholder, { backgroundColor: `${semanticColors.accentGreen[scheme]}15` }]}
+            >
+              <Text style={[styles.orgLogoLetter, { color: semanticColors.accentGreen[scheme] }]}>
                 {item.name.charAt(0).toUpperCase()}
               </Text>
             </View>
@@ -100,7 +102,7 @@ export default function ChangeVenueSheet() {
             )}
           </View>
           {isSelected && (
-            <Check size={18} color={colors.accentGreen} strokeWidth={2.5} />
+            <Check size={18} color={semanticColors.accentGreen[scheme]} strokeWidth={2.5} />
           )}
         </GlassView>
       </Pressable>
@@ -129,7 +131,7 @@ export default function ChangeVenueSheet() {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           isLoading ? (
-            <ActivityIndicator style={styles.loader} color={colors.accentGreen} />
+            <ActivityIndicator style={styles.loader} color={semanticColors.accentGreen[scheme]} />
           ) : (
             <Text
               style={[styles.emptyText, { color: semanticColors.labelSecondary[scheme] }]}
@@ -205,14 +207,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: `${colors.accentGreen}15`,
     alignItems: "center",
     justifyContent: "center",
   },
   orgLogoLetter: {
     fontSize: 16,
     fontWeight: "600",
-    color: colors.accentGreen,
   },
   orgInfo: {
     flex: 1,

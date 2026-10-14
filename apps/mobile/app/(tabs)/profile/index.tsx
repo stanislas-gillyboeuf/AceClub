@@ -32,7 +32,7 @@ import { OrganizationCard } from "@/features/profile/components/organization-car
 import { InvitationList } from "@/features/profile/components/invitation-list";
 import { canAccessHub } from "@/features/profile/lib/role-permissions";
 import Button from "@/components/ui/button";
-import { semanticColors, spacing, colors } from "@/constants/theme";
+import { semanticColors, spacing } from "@/constants/theme";
 import type { MemberRole } from "@/types/common";
 import type { MatchWithParticipants } from "@/types/match";
 
@@ -215,7 +215,7 @@ export default function Profile() {
       <>
         <Stack.Screen options={{ title: "Profil", headerLargeTitle: true }} />
         <View style={[styles.loadingContainer, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-          <ActivityIndicator size="large" color={colors.accentGreen} />
+          <ActivityIndicator size="large" color={semanticColors.accentGreen[scheme]} />
         </View>
       </>
     );
@@ -232,7 +232,7 @@ export default function Profile() {
             Platform.OS === "android"
               ? () => (
                   <Pressable onPress={openSettings} hitSlop={8}>
-                    <MaterialIcons name="settings" size={24} color={colors.accentGreen} />
+                    <MaterialIcons name="settings" size={24} color={semanticColors.accentGreen[scheme]} />
                   </Pressable>
                 )
               : undefined,
@@ -241,7 +241,7 @@ export default function Profile() {
 
       {Platform.OS === "ios" && (
         <Stack.Toolbar placement="right">
-          <Stack.Toolbar.Button icon="gearshape" onPress={openSettings} tintColor={colors.accentGreen} />
+          <Stack.Toolbar.Button icon="gearshape" onPress={openSettings} tintColor={semanticColors.accentGreen[scheme]} />
         </Stack.Toolbar>
       )}
 

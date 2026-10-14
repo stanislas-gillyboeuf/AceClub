@@ -1,10 +1,12 @@
 import { Redirect } from "expo-router";
 import { NativeTabs } from "expo-router/unstable-native-tabs";
-import { colors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { authClient } from "@/lib/auth-client";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 
 export default function TabLayout() {
+  const scheme = useColorScheme();
   const { data: session, isPending } = authClient.useSession();
   const isReady = !!session?.user && !!session.user.onboardingCompleted;
 
@@ -23,7 +25,7 @@ export default function TabLayout() {
   }
 
   return (
-    <NativeTabs tintColor={colors.accentGreen} minimizeBehavior="onScrollDown" >
+    <NativeTabs tintColor={semanticColors.accentGreen[scheme]} minimizeBehavior="onScrollDown" >
       <NativeTabs.Trigger name="feed">
         <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
         <NativeTabs.Trigger.Label>Actus</NativeTabs.Trigger.Label>

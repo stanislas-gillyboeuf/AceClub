@@ -61,14 +61,14 @@ export default function MyBookingsScreen() {
       </Pressable>
 
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + tabBarClearance }]}>
-        <Text style={[styles.eyebrow, { color: bookingGreen.dim }]}>AceClub</Text>
+        <Text style={[styles.eyebrow, { color: bookingGreen.dim[scheme] }]}>AceClub</Text>
         <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>Mes réservations</Text>
         <Text style={[styles.subtitle, { color: semanticColors.labelSecondary[scheme] }]}>
           Tes créneaux, passés et à venir
         </Text>
 
         {isLoading ? (
-          <ActivityIndicator style={styles.loader} color={bookingGreen.bright} />
+          <ActivityIndicator style={styles.loader} color={bookingGreen.bright[scheme]} />
         ) : (
           <>
             <BookingCalendar

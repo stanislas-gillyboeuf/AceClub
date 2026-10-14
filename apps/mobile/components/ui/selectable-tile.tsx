@@ -4,7 +4,7 @@ import { GlassView } from "@/components/ui/glass-view";
 import { Check } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 
 interface SelectableTileProps {
   icon: ReactNode;
@@ -20,10 +20,11 @@ export function SelectableTile({
   label,
   isSelected,
   onPress,
-  accentColor = colors.accentGreen,
+  accentColor,
   iconSize = 80,
 }: SelectableTileProps) {
   const scheme = useColorScheme();
+  const effectiveAccentColor = accentColor ?? semanticColors.accentGreen[scheme];
 
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -40,7 +41,7 @@ export function SelectableTile({
     >
       <GlassView
         style={styles.tile}
-        tintColor={isSelected ? `${accentColor}20` : undefined}
+        tintColor={isSelected ? `${effectiveAccentColor}20` : undefined}
       >
         <View
           style={[
@@ -50,8 +51,8 @@ export function SelectableTile({
               height: iconSize,
               borderRadius: iconSize / 2,
               backgroundColor: isSelected
-                ? `${accentColor}26`
-                : `${accentColor}0F`,
+                ? `${effectiveAccentColor}26`
+                : `${effectiveAccentColor}0F`,
             },
           ]}
         >
@@ -63,7 +64,7 @@ export function SelectableTile({
             styles.label,
             {
               color: isSelected
-                ? accentColor
+                ? effectiveAccentColor
                 : semanticColors.labelPrimary[scheme],
             },
           ]}
@@ -72,8 +73,8 @@ export function SelectableTile({
         </Text>
 
         {isSelected && (
-          <View style={[styles.checkBadge, { backgroundColor: accentColor }]}>
-            <Check size={14} color={colors.onAccentGreen} strokeWidth={3} />
+          <View style={[styles.checkBadge, { backgroundColor: effectiveAccentColor }]}>
+            <Check size={14} color={semanticColors.onAccentGreen[scheme]} strokeWidth={3} />
           </View>
         )}
       </GlassView>

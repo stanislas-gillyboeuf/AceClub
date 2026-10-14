@@ -1,6 +1,7 @@
 import { DateSectionHeader } from "@/components/ui/date-section-header";
 import { BadgePill } from "@/components/ui/badge-pill";
-import { colors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { formatLongDate } from "@/lib/date";
 
 interface MatchDateHeaderProps {
@@ -9,11 +10,12 @@ interface MatchDateHeaderProps {
 }
 
 export function MatchDateHeader({ date, isToday }: MatchDateHeaderProps) {
+  const scheme = useColorScheme();
   return (
     <DateSectionHeader
       title={formatLongDate(date)}
-      dotColor={isToday ? colors.accentGreen : undefined}
-      titleColor={isToday ? colors.accentGreen : undefined}
+      dotColor={isToday ? semanticColors.accentGreen[scheme] : undefined}
+      titleColor={isToday ? semanticColors.accentGreen[scheme] : undefined}
       trailing={
         isToday ? <BadgePill label="Aujourd'hui" variant="success" /> : undefined
       }

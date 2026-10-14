@@ -14,7 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useConversations, useDeleteConversation } from "@/hooks/use-conversation";
 import { queryKeys } from "@/lib/query-keys";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ConversationRow } from "@/features/chat/components/ConversationRow";
 import { wsManager } from "@/lib/websocket-manager";
@@ -140,10 +140,10 @@ export default function ConversationListScreen() {
   const headerRight = useCallback(
     () => (
       <Pressable onPress={handleNewConversation}>
-        <SquarePen size={22} color={colors.accentGreen} />
+        <SquarePen size={22} color={semanticColors.accentGreen[scheme]} />
       </Pressable>
     ),
-    [handleNewConversation],
+    [handleNewConversation, scheme],
   );
 
   if (isLoading && !conversations) {
@@ -156,7 +156,7 @@ export default function ConversationListScreen() {
             headerRight,
           }}
         />
-        <ActivityIndicator color={colors.accentGreen} />
+        <ActivityIndicator color={semanticColors.accentGreen[scheme]} />
       </View>
     );
   }
@@ -193,7 +193,7 @@ export default function ConversationListScreen() {
             <RefreshControl
               refreshing={isLoading}
               onRefresh={refetch}
-              tintColor={colors.accentGreen}
+              tintColor={semanticColors.accentGreen[scheme]}
             />
           }
           contentContainerStyle={styles.listContent}

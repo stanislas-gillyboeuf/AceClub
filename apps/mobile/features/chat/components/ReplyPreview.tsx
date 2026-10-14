@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, Pressable } from "react-native";
 import { X } from "lucide-react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import type { ChatMessage } from "../types";
 
 interface InBubbleReplyPreviewProps {
@@ -23,7 +23,7 @@ export function InBubbleReplyPreview({
         ? "Photo"
         : replyTo.content;
 
-  const accentColor = isFromMe ? "rgba(255,255,255,0.5)" : colors.accentGreen;
+  const accentColor = isFromMe ? "rgba(255,255,255,0.5)" : semanticColors.accentGreen[scheme];
   const textColor = isFromMe
     ? "rgba(255,255,255,0.85)"
     : semanticColors.labelPrimary[scheme];
@@ -73,12 +73,12 @@ export function InputBarReplyPreview({
         },
       ]}
     >
-      <View style={styles.inputBarAccent} />
+      <View style={[styles.inputBarAccent, { backgroundColor: semanticColors.accentGreen[scheme] }]} />
       <View style={styles.inputBarContent}>
         <Text
           style={[
             styles.inputBarName,
-            { color: colors.accentGreen },
+            { color: semanticColors.accentGreen[scheme] },
           ]}
           numberOfLines={1}
         >
@@ -133,7 +133,6 @@ const styles = StyleSheet.create({
   inputBarAccent: {
     width: 3,
     alignSelf: "stretch",
-    backgroundColor: colors.accentGreen,
     borderRadius: 1.5,
     marginLeft: 10,
   },

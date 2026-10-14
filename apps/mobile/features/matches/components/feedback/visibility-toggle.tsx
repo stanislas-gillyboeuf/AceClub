@@ -24,7 +24,7 @@ export function VisibilityToggle({ value, onValueChange }: VisibilityToggleProps
       <Switch
         value={value}
         onValueChange={onValueChange}
-        trackColor={{ false: colors.gray300, true: colors.accentGreen }}
+        trackColor={{ false: colors.gray300, true: semanticColors.accentGreen[scheme] }}
       />
     </GlassView>
   );

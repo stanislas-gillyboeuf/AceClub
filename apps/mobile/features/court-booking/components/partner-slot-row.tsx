@@ -28,7 +28,7 @@ export function PartnerSlotRow({ label, name, onPress, onRemove }: PartnerSlotRo
         styles.row,
         {
           backgroundColor: semanticColors.systemGray6[scheme],
-          borderColor: name ? bookingGreen.bright : semanticColors.borderColor[scheme],
+          borderColor: name ? bookingGreen.bright[scheme] : semanticColors.borderColor[scheme],
           borderStyle: name ? "solid" : "dashed",
         },
       ]}
@@ -37,12 +37,12 @@ export function PartnerSlotRow({ label, name, onPress, onRemove }: PartnerSlotRo
         style={[
           styles.avatar,
           {
-            backgroundColor: name ? bookingGreen.bright : semanticColors.cardBackground[scheme],
-            borderColor: name ? bookingGreen.bright : semanticColors.borderColor[scheme],
+            backgroundColor: name ? bookingGreen.bright[scheme] : semanticColors.cardBackground[scheme],
+            borderColor: name ? bookingGreen.bright[scheme] : semanticColors.borderColor[scheme],
           },
         ]}
       >
-        <Text style={[styles.avatarText, { color: name ? bookingGreen.onBright : semanticColors.labelSecondary[scheme] }]}>
+        <Text style={[styles.avatarText, { color: name ? bookingGreen.onBright[scheme] : semanticColors.labelSecondary[scheme] }]}>
           {name ? initials(name) : "+"}
         </Text>
       </View>

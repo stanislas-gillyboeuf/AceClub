@@ -13,11 +13,13 @@ import {
 import type { MemberRole } from "@/types/common";
 import type { Member } from "@/types/organization";
 
-const ROLE_COLORS: Record<MemberRole, string> = {
-  owner: colors.accentOrange,
-  admin: colors.accentGreen,
-  member: colors.gray400,
-};
+function getRoleColors(scheme: "light" | "dark"): Record<MemberRole, string> {
+  return {
+    owner: colors.accentOrange,
+    admin: semanticColors.accentGreen[scheme],
+    member: colors.gray400,
+  };
+}
 
 interface ActionButton {
   text: string;
@@ -100,7 +102,7 @@ export function MemberRow({
     }
   };
 
-  const roleColor = ROLE_COLORS[targetRole];
+  const roleColor = getRoleColors(scheme)[targetRole];
 
   return (
     <GlassView style={styles.card}>

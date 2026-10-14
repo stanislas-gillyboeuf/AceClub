@@ -9,7 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { colors, radii } from "@/constants/theme";
+import { colors, semanticColors, radii } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { X, CheckCircle2 } from "lucide-react-native";
 import { useRequestClub } from "@/hooks/use-organization";
 import Button from "@/components/ui/button";
@@ -20,6 +21,7 @@ interface RequestClubModalProps {
 }
 
 export function RequestClubModal({ visible, onClose }: RequestClubModalProps) {
+  const scheme = useColorScheme();
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -61,7 +63,7 @@ export function RequestClubModal({ visible, onClose }: RequestClubModalProps) {
 
           {submitted ? (
             <View style={styles.successContainer}>
-              <CheckCircle2 size={56} color={colors.accentGreen} />
+              <CheckCircle2 size={56} color={semanticColors.accentGreen[scheme]} />
               <Text style={styles.successText}>
                 Ta demande a bien ete envoyee. Nous te tiendrons informe !
               </Text>

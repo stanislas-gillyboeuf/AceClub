@@ -2,7 +2,7 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import { GlassView } from "@/components/ui/glass-view";
 import * as Haptics from "expo-haptics";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 import type { TimeSlot } from "@/store/create-match-form";
 
 interface TimeSlotGridProps {
@@ -49,14 +49,14 @@ export function TimeSlotGrid({
           >
             <GlassView
               style={styles.chip}
-              tintColor={isSelected ? colors.accentGreen : undefined}
+              tintColor={isSelected ? semanticColors.accentGreen[scheme] : undefined}
             >
               <Text
                 style={[
                   styles.chipText,
                   {
                     color: isSelected
-                      ? colors.onAccentGreen
+                      ? semanticColors.onAccentGreen[scheme]
                       : semanticColors.labelPrimary[scheme],
                     fontWeight: isSelected ? "600" : "500",
                   },

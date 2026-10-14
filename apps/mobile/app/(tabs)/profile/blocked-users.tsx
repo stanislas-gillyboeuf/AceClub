@@ -2,7 +2,7 @@ import { View, Text, FlatList, StyleSheet, ActivityIndicator } from "react-nativ
 import { Stack } from "expo-router";
 import { useBlockedUsers, useUnblockUser } from "@/hooks/use-block";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { Avatar } from "@/components/ui/avatar";
 import Button from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -20,7 +20,7 @@ export default function BlockedUsersScreen() {
       <Stack.Screen options={{ title: "Utilisateurs bloqués" }} />
       {isLoading ? (
         <View style={styles.centered}>
-          <ActivityIndicator color={colors.accentGreen} />
+          <ActivityIndicator color={semanticColors.accentGreen[scheme]} />
         </View>
       ) : users.length === 0 ? (
         <EmptyState

@@ -51,9 +51,9 @@ export function SheetActionBar({
       <View style={styles.buttonsRow}>
         {isScheduled && (
           <ActionButton
-            icon={<Play size={16} color={colors.accentGreen} strokeWidth={2.5} />}
+            icon={<Play size={16} color={semanticColors.accentGreen[scheme]} strokeWidth={2.5} />}
             label="Démarrer"
-            color={colors.accentGreen}
+            color={semanticColors.accentGreen[scheme]}
             onPress={onStart}
             scheme={scheme}
           />
@@ -61,9 +61,9 @@ export function SheetActionBar({
 
         {isOngoing && (
           <ActionButton
-            icon={<Pencil size={16} color={colors.accentGreen} strokeWidth={2.5} />}
+            icon={<Pencil size={16} color={semanticColors.accentGreen[scheme]} strokeWidth={2.5} />}
             label="Scores"
-            color={colors.accentGreen}
+            color={semanticColors.accentGreen[scheme]}
             onPress={onEditScores}
             scheme={scheme}
           />
@@ -91,9 +91,9 @@ export function SheetActionBar({
 
         {isFinished && !hasUserCommented && (
           <ActionButton
-            icon={<MessageSquare size={16} color={colors.accentGreen} strokeWidth={2.5} />}
+            icon={<MessageSquare size={16} color={semanticColors.accentGreen[scheme]} strokeWidth={2.5} />}
             label="Commenter"
-            color={colors.accentGreen}
+            color={semanticColors.accentGreen[scheme]}
             onPress={onComment}
             scheme={scheme}
           />

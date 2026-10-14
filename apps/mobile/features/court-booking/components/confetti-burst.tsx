@@ -8,16 +8,18 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { bookingGreen } from "../theme";
 
-const COLORS = [bookingGreen.bright, colors.accentOrange, colors.gray400];
 const COUNT = 10;
 
 function Particle({ index }: { index: number }) {
+  const scheme = useColorScheme();
   const progress = useSharedValue(0);
   const left = 10 + Math.random() * 80;
   const delay = Math.random() * 150;
-  const color = COLORS[index % COLORS.length];
+  const particleColors = [bookingGreen.bright[scheme], colors.accentOrange, colors.gray400];
+  const color = particleColors[index % particleColors.length];
   const rotateTo = 300 + Math.random() * 80;
 
   useEffect(() => {

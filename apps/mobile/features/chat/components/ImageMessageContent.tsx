@@ -2,6 +2,7 @@ import { useState } from "react";
 import { View, StyleSheet, Pressable, Modal, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
 import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { X } from "lucide-react-native";
 import type { ChatMessage } from "./MessageBubble";
 
@@ -10,6 +11,7 @@ interface ImageMessageContentProps {
 }
 
 export function ImageMessageContent({ message }: ImageMessageContentProps) {
+  const scheme = useColorScheme();
   const [showFullScreen, setShowFullScreen] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -36,7 +38,7 @@ export function ImageMessageContent({ message }: ImageMessageContentProps) {
           {loading && (
             <View style={styles.loadingOverlay}>
               <ActivityIndicator
-                color={message.isFromMe ? colors.white : colors.accentGreen}
+                color={message.isFromMe ? colors.white : semanticColors.accentGreen[scheme]}
               />
             </View>
           )}

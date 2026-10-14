@@ -120,7 +120,7 @@ export default function ConfirmBookingScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <Text style={[styles.eyebrow, { color: bookingGreen.dim }]}>Réserver · {isPadel ? "Padel" : "Tennis"}</Text>
+      <Text style={[styles.eyebrow, { color: bookingGreen.dim[scheme] }]}>Réserver · {isPadel ? "Padel" : "Tennis"}</Text>
       <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>{`${hour}h–${hour + 1}h`}</Text>
       <Text style={[styles.subtitle, { color: semanticColors.labelSecondary[scheme] }]}>
         {params.courtName} · {params.courtTag} · {params.dateLabel}
@@ -199,14 +199,14 @@ export default function ConfirmBookingScreen() {
           style={[
             styles.confirmButton,
             canConfirm
-              ? { backgroundColor: bookingGreen.bright }
+              ? { backgroundColor: bookingGreen.bright[scheme] }
               : { backgroundColor: semanticColors.systemGray6[scheme], borderWidth: 1, borderColor: semanticColors.borderColor[scheme] },
           ]}
         >
           <Text
             style={[
               styles.confirmButtonText,
-              { color: canConfirm ? bookingGreen.onBright : semanticColors.labelTertiary[scheme] },
+              { color: canConfirm ? bookingGreen.onBright[scheme] : semanticColors.labelTertiary[scheme] },
             ]}
           >
             {createBooking.isPending ? "…" : "Confirmer"}

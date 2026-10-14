@@ -1,7 +1,7 @@
 import { View, StyleSheet } from "react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useCreateIntentStepperStore } from "@/store/create-intent-stepper";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 
 export function StepProgress() {
   const scheme = useColorScheme();
@@ -18,7 +18,7 @@ export function StepProgress() {
             {
               backgroundColor:
                 i <= currentStep
-                  ? colors.accentGreen
+                  ? semanticColors.accentGreen[scheme]
                   : semanticColors.borderColor[scheme],
             },
           ]}

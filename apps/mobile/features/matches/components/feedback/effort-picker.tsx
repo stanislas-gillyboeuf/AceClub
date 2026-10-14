@@ -13,7 +13,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
 import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, radii, spacing } from "@/constants/theme";
+import { semanticColors, radii, spacing } from "@/constants/theme";
 import { EFFORT_LEVELS } from "@/features/matches/constants/sensations";
 import { TennisBall } from "./tennis-ball";
 
@@ -127,7 +127,7 @@ export function EffortPicker({ selected, onSelect }: EffortPickerProps) {
                   {
                     backgroundColor:
                       selectedValue >= level.value
-                        ? colors.accentGreen
+                        ? semanticColors.accentGreen[scheme]
                         : semanticColors.labelTertiary[scheme],
                   },
                 ]}
@@ -156,6 +156,7 @@ function BallItem({
   index: number;
   selectedIndex: number;
 }) {
+  const scheme = useColorScheme();
   const animatedStyle = useAnimatedStyle(() => {
     const distance = Math.abs(index - selectedIndex);
     const parallax = interpolate(
@@ -178,7 +179,7 @@ function BallItem({
     <Animated.View style={[styles.ballWrapper, animatedStyle]}>
       <TennisBall
         size={BALL_SIZE}
-        color={isActive ? colors.accentGreen : INACTIVE_COLOR}
+        color={isActive ? semanticColors.accentGreen[scheme] : INACTIVE_COLOR}
       />
     </Animated.View>
   );

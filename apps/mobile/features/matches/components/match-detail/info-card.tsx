@@ -148,7 +148,7 @@ export function InfoCard({ matchDetail, isScheduled, onUpdateScheduledDate }: In
                     },
                   });
                 }}>
-                  <Text style={[styles.rowValue, { color: colors.accentGreen }]}>
+                  <Text style={[styles.rowValue, { color: semanticColors.accentGreen[scheme] }]}>
                     {formatDateFull(match.scheduledAt!)}
                   </Text>
                 </Pressable>
@@ -161,7 +161,7 @@ export function InfoCard({ matchDetail, isScheduled, onUpdateScheduledDate }: In
                   onChange={(_, date) => {
                     if (date) onUpdateScheduledDate!(date);
                   }}
-                  accentColor={colors.accentGreen}
+                  accentColor={semanticColors.accentGreen[scheme]}
                   themeVariant={scheme}
                   locale="fr-FR"
                 />

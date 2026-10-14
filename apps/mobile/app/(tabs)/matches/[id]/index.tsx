@@ -130,7 +130,7 @@ export default function MatchDetail() {
   if (isLoading && !matchDetail) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-        <ActivityIndicator size="large" color={colors.accentGreen} />
+        <ActivityIndicator size="large" color={semanticColors.accentGreen[scheme]} />
       </View>
     );
   }
@@ -168,7 +168,7 @@ export default function MatchDetail() {
             Platform.OS === "android"
               ? () => (
                   <Pressable onPress={() => router.dismiss()}>
-                    <MaterialIcons name="close" size={24} color={colors.accentGreen} />
+                    <MaterialIcons name="close" size={24} color={semanticColors.accentGreen[scheme]} />
                   </Pressable>
                 )
               : undefined,
@@ -184,13 +184,13 @@ export default function MatchDetail() {
             <Stack.Toolbar placement="bottom">
               {isScheduled && (
                 <>
-                  <Stack.Toolbar.Button icon="play.fill" onPress={handleStart} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Button icon="play.fill" onPress={handleStart} tintColor={semanticColors.accentGreen[scheme]} />
                   <Stack.Toolbar.Spacer />
                 </>
               )}
               {isOngoing && (
                 <>
-                  <Stack.Toolbar.Button icon="pencil" onPress={handleEditScores} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Button icon="pencil" onPress={handleEditScores} tintColor={semanticColors.accentGreen[scheme]} />
                   <Stack.Toolbar.Spacer />
                 </>
               )}
@@ -208,19 +208,19 @@ export default function MatchDetail() {
               )}
               {(isOngoing || isFinished) && !hasUserPhoto && (
                 <>
-                  <Stack.Toolbar.Button icon="camera" onPress={handleTakePhoto} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Button icon="camera" onPress={handleTakePhoto} tintColor={semanticColors.accentGreen[scheme]} />
                   <Stack.Toolbar.Spacer />
                 </>
               )}
               {isFinished && !matchDetail?.myFeedback && (
                 <>
-                  <Stack.Toolbar.Button icon="face.smiling" onPress={handleFeedback} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Button icon="face.smiling" onPress={handleFeedback} tintColor={semanticColors.accentGreen[scheme]} />
                   <Stack.Toolbar.Spacer />
                 </>
               )}
               {isFinished && !hasUserCommented && (
                 <>
-                  <Stack.Toolbar.Button icon="bubble.left" onPress={handleComment} tintColor={colors.accentGreen} />
+                  <Stack.Toolbar.Button icon="bubble.left" onPress={handleComment} tintColor={semanticColors.accentGreen[scheme]} />
                   <Stack.Toolbar.Spacer />
                 </>
               )}

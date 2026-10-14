@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import type { StructuredMatchScore } from "@/lib/format";
 
 interface SetScoresViewProps {
@@ -90,7 +90,7 @@ function PlayerScoreRow({
   gap: number;
   nameMaxWidth: number;
 }) {
-  const winnerColor = colors.accentGreen;
+  const winnerColor = semanticColors.accentGreen[scheme];
   const loserColor = semanticColors.labelTertiary[scheme];
   const textColor = isWinner ? winnerColor : loserColor;
 

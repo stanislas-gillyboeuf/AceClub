@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Image } from "expo-image";
-import { colors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 interface AvatarProps {
   imageUrl?: string | null;
@@ -23,8 +24,10 @@ function getInitials(name?: string | null): string {
 }
 
 export function Avatar({ imageUrl, name, size }: AvatarProps) {
+  const scheme = useColorScheme();
   const initials = getInitials(name);
   const fontSize = size * 0.35;
+  const accentGreen = semanticColors.accentGreen[scheme];
 
   const [attempt, setAttempt] = useState(0);
   const [failed, setFailed] = useState(false);
@@ -50,7 +53,7 @@ export function Avatar({ imageUrl, name, size }: AvatarProps) {
         source={{ uri: imageUrl }}
         style={[
           styles.image,
-          { width: size, height: size, borderRadius: size / 2 },
+          { width: size, height: size, borderRadius: size / 2, backgroundColor: `${accentGreen}26` },
         ]}
         contentFit="cover"
         transition={200}
@@ -64,25 +67,21 @@ export function Avatar({ imageUrl, name, size }: AvatarProps) {
     <View
       style={[
         styles.placeholder,
-        { width: size, height: size, borderRadius: size / 2 },
+        { width: size, height: size, borderRadius: size / 2, backgroundColor: `${accentGreen}26` },
       ]}
     >
-      <Text style={[styles.initials, { fontSize }]}>{initials}</Text>
+      <Text style={[styles.initials, { fontSize, color: accentGreen }]}>{initials}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  image: {
-    backgroundColor: `${colors.accentGreen}26`,
-  },
+  image: {},
   placeholder: {
-    backgroundColor: `${colors.accentGreen}26`,
     alignItems: "center",
     justifyContent: "center",
   },
   initials: {
-    color: colors.accentGreen,
     fontWeight: "600",
   },
 });

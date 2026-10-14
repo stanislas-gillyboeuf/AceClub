@@ -40,7 +40,7 @@ export default function TicketScreen() {
   if (isLoading || !booking) {
     return (
       <View style={[styles.loading, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-        <ActivityIndicator color={bookingGreen.bright} />
+        <ActivityIndicator color={bookingGreen.bright[scheme]} />
       </View>
     );
   }
@@ -89,8 +89,8 @@ export default function TicketScreen() {
             }}
           />
         )}
-        <Pressable onPress={() => router.back()} style={[styles.primaryButton, { backgroundColor: bookingGreen.bright }]}>
-          <Text style={styles.primaryButtonText}>Terminé</Text>
+        <Pressable onPress={() => router.back()} style={[styles.primaryButton, { backgroundColor: bookingGreen.bright[scheme] }]}>
+          <Text style={[styles.primaryButtonText, { color: bookingGreen.onBright[scheme] }]}>Terminé</Text>
         </Pressable>
         {!isPast && (
           <Pressable
@@ -140,7 +140,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   primaryButtonText: {
-    color: bookingGreen.onBright,
     fontWeight: "800",
     fontSize: 14,
   },

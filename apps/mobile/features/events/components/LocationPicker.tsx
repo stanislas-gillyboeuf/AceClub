@@ -11,7 +11,7 @@ import { AppleMaps } from "expo-maps";
 import { MapPin } from "lucide-react-native";
 import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 import { geocodeAddress, reverseGeocode } from "@/lib/geocoding";
 
 interface LocationPickerProps {
@@ -112,7 +112,7 @@ export function LocationPicker({
       <View style={styles.optionRow}>
         <MapPin
           size={20}
-          color={address ? colors.accentGreen : semanticColors.labelTertiary[scheme]}
+          color={address ? semanticColors.accentGreen[scheme] : semanticColors.labelTertiary[scheme]}
           strokeWidth={1.5}
         />
         <View style={{ flex: 1 }}>
@@ -171,6 +171,7 @@ const IOSMapPicker = memo(function IOSMapPicker({
   address: string;
   onMapPress: (coords: { latitude: number; longitude: number }) => void;
 }) {
+  const scheme = useColorScheme();
   // Default to Paris if no coords
   const lat = latitude ?? 48.8566;
   const lng = longitude ?? 2.3522;
@@ -190,7 +191,7 @@ const IOSMapPicker = memo(function IOSMapPicker({
                 {
                   coordinates: { latitude: lat, longitude: lng },
                   title: address || "Lieu de l'event",
-                  tintColor: colors.accentGreen,
+                  tintColor: semanticColors.accentGreen[scheme],
                   systemImage: "mappin.circle.fill",
                 },
               ]

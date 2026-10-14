@@ -72,8 +72,8 @@ export default function Step2() {
             style={[
               styles.checkbox,
               {
-                borderColor: isFlexibleDate ? colors.accentGreen : semanticColors.labelSecondary[scheme],
-                backgroundColor: isFlexibleDate ? colors.accentGreen : "transparent",
+                borderColor: isFlexibleDate ? semanticColors.accentGreen[scheme] : semanticColors.labelSecondary[scheme],
+                backgroundColor: isFlexibleDate ? semanticColors.accentGreen[scheme] : "transparent",
               },
             ]}
           />
@@ -111,7 +111,7 @@ export default function Step2() {
               onChange={(_, selected) => {
                 if (selected) setDate(selected);
               }}
-              accentColor={colors.accentGreen}
+              accentColor={semanticColors.accentGreen[scheme]}
               themeVariant={scheme}
               locale="fr-FR"
             />
@@ -147,7 +147,7 @@ export default function Step2() {
               onChange={(_, selected) => {
                 if (selected) setTime(selected);
               }}
-              accentColor={colors.accentGreen}
+              accentColor={semanticColors.accentGreen[scheme]}
               themeVariant={scheme}
               locale="fr-FR"
             />

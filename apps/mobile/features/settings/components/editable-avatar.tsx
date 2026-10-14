@@ -2,7 +2,8 @@ import { Pressable, View, Text, StyleSheet, ActivityIndicator, Alert } from "rea
 import { Image } from "expo-image";
 import { Camera } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
-import { colors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 interface EditableAvatarProps {
   imageUrl?: string | null;
@@ -30,6 +31,7 @@ export function EditableAvatar({
   isUploading = false,
   onImageSelected,
 }: EditableAvatarProps) {
+  const scheme = useColorScheme();
   const displayUri = localImageUri ?? imageUrl;
 
   const pickImage = async () => {
@@ -63,7 +65,7 @@ export function EditableAvatar({
           source={{ uri: displayUri }}
           style={[
             styles.image,
-            { width: size, height: size, borderRadius: size / 2 },
+            { width: size, height: size, borderRadius: size / 2, backgroundColor: `${semanticColors.accentGreen[scheme]}26` },
           ]}
           contentFit="cover"
           transition={200}
@@ -73,21 +75,26 @@ export function EditableAvatar({
         <View
           style={[
             styles.placeholder,
-            { width: size, height: size, borderRadius: size / 2 },
+            {
+              width: size,
+              height: size,
+              borderRadius: size / 2,
+              backgroundColor: `${semanticColors.accentGreen[scheme]}26`,
+            },
           ]}
         >
-          <Text style={[styles.initials, { fontSize: size * 0.3 }]}>
+          <Text style={[styles.initials, { fontSize: size * 0.3, color: semanticColors.accentGreen[scheme] }]}>
             {getInitials(name)}
           </Text>
         </View>
       )}
 
       {/* Camera badge */}
-      <View style={styles.cameraBadge}>
+      <View style={[styles.cameraBadge, { backgroundColor: semanticColors.accentGreen[scheme] }]}>
         {isUploading ? (
-          <ActivityIndicator size="small" color={colors.onAccentGreen} />
+          <ActivityIndicator size="small" color={semanticColors.onAccentGreen[scheme]} />
         ) : (
-          <Camera size={14} color={colors.onAccentGreen} strokeWidth={2} />
+          <Camera size={14} color={semanticColors.onAccentGreen[scheme]} strokeWidth={2} />
         )}
       </View>
     </Pressable>
@@ -98,16 +105,12 @@ const styles = StyleSheet.create({
   container: {
     alignSelf: "center",
   },
-  image: {
-    backgroundColor: `${colors.accentGreen}26`,
-  },
+  image: {},
   placeholder: {
-    backgroundColor: `${colors.accentGreen}26`,
     alignItems: "center",
     justifyContent: "center",
   },
   initials: {
-    color: colors.accentGreen,
     fontWeight: "600",
   },
   cameraBadge: {
@@ -117,7 +120,6 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,

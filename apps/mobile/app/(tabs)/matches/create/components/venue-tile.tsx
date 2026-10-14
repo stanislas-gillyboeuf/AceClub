@@ -3,7 +3,7 @@ import { GlassView } from "@/components/ui/glass-view";
 import { Building2, CheckCircle2 } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 import type { Organization } from "@/types/organization";
 
 interface VenueTileProps {
@@ -34,7 +34,7 @@ export function VenueTile({
     >
       <GlassView
         style={styles.tile}
-        tintColor={isSelected ? colors.accentGreen : undefined}
+        tintColor={isSelected ? semanticColors.accentGreen[scheme] : undefined}
       >
         {organization.logo ? (
           <Image
@@ -45,10 +45,10 @@ export function VenueTile({
           <View
             style={[
               styles.logoPlaceholder,
-              { backgroundColor: `${colors.accentGreen}26` },
+              { backgroundColor: `${semanticColors.accentGreen[scheme]}26` },
             ]}
           >
-            <Building2 size={18} color={colors.accentGreen} strokeWidth={2} />
+            <Building2 size={18} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
           </View>
         )}
 
@@ -78,8 +78,8 @@ export function VenueTile({
         {isSelected && (
           <CheckCircle2
             size={22}
-            color={colors.accentGreen}
-            fill={colors.accentGreen}
+            color={semanticColors.accentGreen[scheme]}
+            fill={semanticColors.accentGreen[scheme]}
             strokeWidth={0}
           />
         )}

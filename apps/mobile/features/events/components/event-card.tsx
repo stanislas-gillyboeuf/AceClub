@@ -7,7 +7,7 @@ import { AvatarStack } from "@/components/ui/avatar-stack";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useEventParticipants } from "@/hooks/use-event";
 import { formatShortDate, formatTime } from "@/lib/format";
-import { colors, semanticColors, radii, spacing, glass, eventCategoryColors } from "@/constants/theme";
+import { semanticColors, radii, spacing, glass, eventCategoryColors } from "@/constants/theme";
 import type { EventSummary, MyEvent, EventCategory } from "@/types/event";
 
 type EventCardVariant = "large" | "compact";
@@ -50,7 +50,7 @@ export function EventCard({ event, variant, onPress }: EventCardProps) {
         pressed && styles.pressed,
       ]}
     >
-      <Cover coverImage={event.coverImage} category={category} />
+      <Cover coverImage={event.coverImage} category={category} scheme={scheme} />
 
       {category ? (
         <BlurSurface intensity={40} style={[styles.categoryPill, { borderRadius: radii.xl }]}>
@@ -79,7 +79,7 @@ export function EventCard({ event, variant, onPress }: EventCardProps) {
         </Text>
 
         <View style={styles.dateRow}>
-          <Calendar size={14} color={colors.accentGreen} strokeWidth={2} />
+          <Calendar size={14} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
           <Text style={[styles.dateText, { color: semanticColors.labelSecondary[scheme] }]} numberOfLines={1}>
             {formatShortDate(event.startDate)} · {formatTime(event.startDate)}
           </Text>
@@ -110,7 +110,15 @@ export function EventCard({ event, variant, onPress }: EventCardProps) {
   );
 }
 
-function Cover({ coverImage, category }: { coverImage: string | null; category?: EventCategory }) {
+function Cover({
+  coverImage,
+  category,
+  scheme,
+}: {
+  coverImage: string | null;
+  category?: EventCategory;
+  scheme: "light" | "dark";
+}) {
   if (coverImage) {
     return <Image source={{ uri: coverImage }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />;
   }
@@ -125,7 +133,11 @@ function Cover({ coverImage, category }: { coverImage: string | null; category?:
   }
 
   const flatColor =
-    category === "party" ? eventCategoryColors.party : category === "camp" ? eventCategoryColors.camp : `${colors.accentGreen}26`;
+    category === "party"
+      ? eventCategoryColors.party
+      : category === "camp"
+        ? eventCategoryColors.camp
+        : `${semanticColors.accentGreen[scheme]}26`;
 
   return (
     <View style={[StyleSheet.absoluteFill, { backgroundColor: flatColor }]}>
@@ -157,13 +169,13 @@ function PriceBadge({
     <View
       style={[
         styles.priceBadge,
-        { backgroundColor: isFree ? semanticColors.cardBackground[scheme] : colors.accentGreen },
+        { backgroundColor: isFree ? semanticColors.cardBackground[scheme] : semanticColors.accentGreen[scheme] },
       ]}
     >
       <Text
         style={[
           styles.priceBadgeText,
-          { color: isFree ? semanticColors.labelPrimary[scheme] : colors.onAccentGreen },
+          { color: isFree ? semanticColors.labelPrimary[scheme] : semanticColors.onAccentGreen[scheme] },
         ]}
       >
         {label}

@@ -101,7 +101,7 @@ export default function CommentScreen() {
             <Pressable onPress={handleSubmit} disabled={!canSubmit} hitSlop={8}>
               <Check
                 size={24}
-                color={canSubmit ? colors.accentGreen : colors.gray400}
+                color={canSubmit ? semanticColors.accentGreen[scheme] : colors.gray400}
                 strokeWidth={2}
               />
             </Pressable>
@@ -156,7 +156,7 @@ export default function CommentScreen() {
           <View style={[styles.overlayCard, {
             backgroundColor: semanticColors.cardBackground[scheme],
           }]}>
-            <ActivityIndicator size="small" color={colors.accentGreen} />
+            <ActivityIndicator size="small" color={semanticColors.accentGreen[scheme]} />
             <Text style={[styles.overlayText, { color: semanticColors.labelSecondary[scheme] }]}>
               {deleteComment.isPending ? "Suppression..." : "Enregistrement..."}
             </Text>

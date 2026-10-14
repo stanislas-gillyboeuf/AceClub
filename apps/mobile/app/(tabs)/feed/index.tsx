@@ -32,7 +32,7 @@ import { TagChip } from "@/components/ui/tag-chip";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { formatSkillLevel } from "@/lib/skill-levels";
 
-import { colors, semanticColors, spacing } from "@/constants/theme";
+import { semanticColors, spacing } from "@/constants/theme";
 
 export default function Feed() {
   const scheme = useColorScheme();
@@ -98,7 +98,7 @@ export default function Feed() {
               ? () => (
                   <View style={styles.androidHeaderRight}>
                     <Pressable onPress={goToRanking}>
-                      <MaterialIcons name="emoji-events" size={24} color={colors.accentGreen} />
+                      <MaterialIcons name="emoji-events" size={24} color={semanticColors.accentGreen[scheme]} />
                     </Pressable>
                     <MessagesHeaderButton />
                   </View>
@@ -109,8 +109,8 @@ export default function Feed() {
 
       {Platform.OS === "ios" && (
         <Stack.Toolbar placement="right">
-          <Stack.Toolbar.Button icon="trophy" onPress={goToRanking} tintColor={colors.accentGreen} />
-          <Stack.Toolbar.Button onPress={() => router.push("/chat")} tintColor={colors.accentGreen}>
+          <Stack.Toolbar.Button icon="trophy" onPress={goToRanking} tintColor={semanticColors.accentGreen[scheme]} />
+          <Stack.Toolbar.Button onPress={() => router.push("/chat")} tintColor={semanticColors.accentGreen[scheme]}>
             <Stack.Toolbar.Icon sf="message" />
             {totalUnread > 0 && (
               <Stack.Toolbar.Badge>{totalUnread > 99 ? "99+" : String(totalUnread)}</Stack.Toolbar.Badge>
@@ -151,9 +151,9 @@ export default function Feed() {
                 <TagChip
                   icon={Gauge}
                   label={`${sportLabel} · ${skillLevelLabel}`}
-                  backgroundColor={`${colors.accentGreen}1A`}
-                  textColor={colors.accentGreen}
-                  iconColor={colors.accentGreen}
+                  backgroundColor={`${semanticColors.accentGreen[scheme]}1A`}
+                  textColor={semanticColors.accentGreen[scheme]}
+                  iconColor={semanticColors.accentGreen[scheme]}
                 />
                 {preferences?.skillLevelVerified ? <VerifiedBadge size={14} /> : null}
               </View>

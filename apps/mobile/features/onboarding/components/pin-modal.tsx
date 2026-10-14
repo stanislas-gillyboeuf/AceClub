@@ -9,7 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { colors, radii } from "@/constants/theme";
+import { colors, semanticColors, radii } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { X } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import Button from "@/components/ui/button";
@@ -33,6 +34,7 @@ export function PinModal({
   onVerify,
   onClose,
 }: PinModalProps) {
+  const scheme = useColorScheme();
   const [pin, setPin] = useState("");
   const inputRef = useRef<TextInput>(null);
 
@@ -85,7 +87,10 @@ export function PinModal({
                 key={i}
                 style={[
                   styles.pinCell,
-                  pin.length > i && styles.pinCellFilled,
+                  pin.length > i && {
+                    borderColor: semanticColors.accentGreen[scheme],
+                    backgroundColor: `${semanticColors.accentGreen[scheme]}10`,
+                  },
                   error && styles.pinCellError,
                 ]}
               >
@@ -177,10 +182,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.gray50,
-  },
-  pinCellFilled: {
-    borderColor: colors.accentGreen,
-    backgroundColor: `${colors.accentGreen}10`,
   },
   pinCellError: {
     borderColor: colors.red500,

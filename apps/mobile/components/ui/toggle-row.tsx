@@ -1,6 +1,6 @@
 import { View, Text, Switch, StyleSheet } from "react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 
 interface ToggleRowProps {
   icon?: React.ReactNode;
@@ -38,7 +38,7 @@ export function ToggleRow({
         value={value}
         onValueChange={onValueChange}
         disabled={disabled}
-        trackColor={{ false: semanticColors.labelTertiary[scheme], true: colors.accentGreen }}
+        trackColor={{ false: semanticColors.labelTertiary[scheme], true: semanticColors.accentGreen[scheme] }}
         thumbColor="#FFFFFF"
       />
     </View>

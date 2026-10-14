@@ -5,7 +5,7 @@ import { MapPin, Clock, Bell } from "lucide-react-native";
 import * as Location from "expo-location";
 import * as Haptics from "expo-haptics";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, spacing, radii } from "@/constants/theme";
+import { semanticColors, spacing, radii } from "@/constants/theme";
 import { MapPreview } from "@/features/matches/components/match-detail/map-preview";
 import {
   haversineDistance,
@@ -73,7 +73,7 @@ export default function VenueDetailSheet() {
       <>
         <Stack.Screen options={{ title: "Lieu" }} />
         <View style={[styles.center, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-          <ActivityIndicator size="small" color={colors.accentGreen} />
+          <ActivityIndicator size="small" color={semanticColors.accentGreen[scheme]} />
         </View>
       </>
     );
@@ -98,7 +98,7 @@ export default function VenueDetailSheet() {
           borderColor: semanticColors.borderColor[scheme],
         }]}>
           <View style={styles.row}>
-            <MapPin size={16} color={colors.accentGreen} strokeWidth={2} />
+            <MapPin size={16} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
             <View style={styles.textGroup}>
               <Text style={[styles.name, { color: semanticColors.labelPrimary[scheme] }]}>
                 {venue.name}
@@ -114,12 +114,12 @@ export default function VenueDetailSheet() {
           {/* Travel time */}
           {travelText && (
             <View style={styles.row}>
-              <Clock size={16} color={colors.accentGreen} strokeWidth={2} />
+              <Clock size={16} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
               <Text style={[styles.travelLabel, { color: semanticColors.labelPrimary[scheme] }]}>
                 Temps de trajet estimé
               </Text>
-              <View style={styles.travelBadge}>
-                <Text style={styles.travelText}>{travelText}</Text>
+              <View style={[styles.travelBadge, { backgroundColor: `${semanticColors.accentGreen[scheme]}18` }]}>
+                <Text style={[styles.travelText, { color: semanticColors.accentGreen[scheme] }]}>{travelText}</Text>
               </View>
             </View>
           )}
@@ -132,7 +132,7 @@ export default function VenueDetailSheet() {
             borderColor: semanticColors.borderColor[scheme],
           }]}>
             <View style={styles.reminderRow}>
-              <Bell size={16} color={colors.accentGreen} strokeWidth={2} />
+              <Bell size={16} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
               <View style={styles.reminderTextGroup}>
                 <Text style={[styles.reminderLabel, { color: semanticColors.labelPrimary[scheme] }]}>
                   Rappel de départ
@@ -144,7 +144,7 @@ export default function VenueDetailSheet() {
               <Switch
                 value={reminderEnabled}
                 onValueChange={handleToggleReminder}
-                trackColor={{ true: colors.accentGreen }}
+                trackColor={{ true: semanticColors.accentGreen[scheme] }}
               />
             </View>
           </View>
@@ -231,12 +231,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    backgroundColor: `${colors.accentGreen}18`,
   },
   travelText: {
     fontSize: 13,
     fontWeight: "600",
-    color: colors.accentGreen,
   },
   reminderRow: {
     flexDirection: "row",

@@ -13,7 +13,7 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import * as Haptics from "expo-haptics";
 import { useConversation } from "@/hooks/use-conversation";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { MessageBubble } from "@/features/chat/components/MessageBubble";
 import { ChatBottomBar } from "@/features/chat/components/ChatBottomBar";
 import { ConversationRequestBar } from "@/features/chat/components/ConversationRequestBar";
@@ -33,6 +33,7 @@ import type { ChatMessage } from "@/features/chat/types";
 import type { Conversation } from "@/types/conversation";
 
 export default function ChatScreen() {
+  const scheme = useColorScheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: session } = authClient.useSession();
   const currentUserId = session?.user?.id ?? "";
@@ -43,7 +44,7 @@ export default function ChatScreen() {
     return (
       <View style={styles.centered}>
         <Stack.Screen options={{ title: "" }} />
-        <ActivityIndicator color={colors.accentGreen} />
+        <ActivityIndicator color={semanticColors.accentGreen[scheme]} />
       </View>
     );
   }
@@ -177,10 +178,10 @@ function ChatContent({
     if (!hasMoreMessages || messages.length === 0) return null;
     return (
       <View style={styles.loadMore}>
-        <ActivityIndicator color={colors.accentGreen} />
+        <ActivityIndicator color={semanticColors.accentGreen[scheme]} />
       </View>
     );
-  }, [hasMoreMessages, messages.length]);
+  }, [hasMoreMessages, messages.length, scheme]);
 
   return (
     <View style={styles.container}>
@@ -197,7 +198,7 @@ function ChatContent({
       >
         {isInitialLoading && (
           <View style={styles.messagesLoading}>
-            <ActivityIndicator color={colors.accentGreen} />
+            <ActivityIndicator color={semanticColors.accentGreen[scheme]} />
           </View>
         )}
         <FlatList

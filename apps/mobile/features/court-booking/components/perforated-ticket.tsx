@@ -42,10 +42,10 @@ export function PerforatedTicket({ booking }: PerforatedTicketProps) {
       ]}
     >
       <View style={styles.top}>
-        <Text style={[styles.eyebrow, { color: bookingGreen.dim }]}>
+        <Text style={[styles.eyebrow, { color: bookingGreen.dim[scheme] }]}>
           AceClub · Billet {isPadel ? "Padel" : "Tennis"}
         </Text>
-        <Text style={[styles.courtName, { color: bookingGreen.dim }]}>{booking.courtName.toUpperCase()}</Text>
+        <Text style={[styles.courtName, { color: bookingGreen.dim[scheme] }]}>{booking.courtName.toUpperCase()}</Text>
         {!!tag && <Text style={[styles.tag, { color: semanticColors.labelSecondary[scheme] }]}>{tag}</Text>}
 
         <View style={styles.grid}>
@@ -66,8 +66,8 @@ export function PerforatedTicket({ booking }: PerforatedTicketProps) {
             {isPadel ? (
               <View style={styles.roster}>
                 <View style={styles.rosterSlot}>
-                  <View style={[styles.rosterCircle, { backgroundColor: semanticColors.systemGray6[scheme], borderWidth: 1.5, borderColor: bookingGreen.bright }]}>
-                    <Text style={[styles.rosterCircleText, { color: bookingGreen.dim }]}>VOUS</Text>
+                  <View style={[styles.rosterCircle, { backgroundColor: semanticColors.systemGray6[scheme], borderWidth: 1.5, borderColor: bookingGreen.bright[scheme] }]}>
+                    <Text style={[styles.rosterCircleText, { color: bookingGreen.dim[scheme] }]}>VOUS</Text>
                   </View>
                   <Text style={[styles.rosterLabel, { color: semanticColors.labelTertiary[scheme] }]}>Vous</Text>
                 </View>
@@ -77,14 +77,14 @@ export function PerforatedTicket({ booking }: PerforatedTicketProps) {
                       style={[
                         styles.rosterCircle,
                         p.name
-                          ? { backgroundColor: bookingGreen.bright }
+                          ? { backgroundColor: bookingGreen.bright[scheme] }
                           : { borderWidth: 1.5, borderStyle: "dashed", borderColor: semanticColors.borderColor[scheme] },
                       ]}
                     >
                       <Text
                         style={[
                           styles.rosterCircleText,
-                          { color: p.name ? bookingGreen.onBright : semanticColors.labelTertiary[scheme] },
+                          { color: p.name ? bookingGreen.onBright[scheme] : semanticColors.labelTertiary[scheme] },
                         ]}
                       >
                         {p.name ? initials(p.name) : "?"}
@@ -109,11 +109,11 @@ export function PerforatedTicket({ booking }: PerforatedTicketProps) {
             style={[
               styles.statusBanner,
               teamComplete
-                ? { backgroundColor: `${bookingGreen.bright}33`, borderWidth: 1, borderColor: `${bookingGreen.bright}88` }
+                ? { backgroundColor: `${bookingGreen.bright[scheme]}33`, borderWidth: 1, borderColor: `${bookingGreen.bright[scheme]}88` }
                 : { backgroundColor: `${colors.accentOrange}14`, borderWidth: 1, borderColor: `${colors.accentOrange}55` },
             ]}
           >
-            <View style={[styles.statusDot, { backgroundColor: teamComplete ? bookingGreen.bright : colors.accentOrange }]} />
+            <View style={[styles.statusDot, { backgroundColor: teamComplete ? bookingGreen.bright[scheme] : colors.accentOrange }]} />
             <Text style={[styles.statusText, { color: semanticColors.labelSecondary[scheme] }]}>
               {teamComplete ? (
                 <Text style={[styles.statusBold, { color: semanticColors.labelPrimary[scheme] }]}>Équipe complète</Text>

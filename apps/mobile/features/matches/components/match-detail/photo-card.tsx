@@ -73,10 +73,10 @@ export function PhotoCard({ matchDetail, currentUserId, isParticipant }: PhotoCa
             disabled={isPending}
           >
             {isPending ? (
-              <ActivityIndicator size="small" color={colors.accentGreen} />
+              <ActivityIndicator size="small" color={semanticColors.accentGreen[scheme]} />
             ) : (
               <>
-                <Camera size={24} color={colors.accentGreen} strokeWidth={1.5} />
+                <Camera size={24} color={semanticColors.accentGreen[scheme]} strokeWidth={1.5} />
                 <Text style={[styles.addPhotoText, { color: semanticColors.labelSecondary[scheme] }]}>
                   Ajouter une photo
                 </Text>

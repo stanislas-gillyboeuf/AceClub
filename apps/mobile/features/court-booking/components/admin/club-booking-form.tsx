@@ -88,12 +88,12 @@ export function ClubBookingForm({ date, onSubmit, onCancel, isLoading }: ClubBoo
               style={[
                 styles.suggestion,
                 {
-                  backgroundColor: active ? bookingGreen.bright : semanticColors.systemGray6[scheme],
-                  borderColor: active ? bookingGreen.bright : semanticColors.borderColor[scheme],
+                  backgroundColor: active ? bookingGreen.bright[scheme] : semanticColors.systemGray6[scheme],
+                  borderColor: active ? bookingGreen.bright[scheme] : semanticColors.borderColor[scheme],
                 },
               ]}
             >
-              <Text style={[styles.suggestionText, { color: active ? bookingGreen.onBright : semanticColors.labelPrimary[scheme] }]}>
+              <Text style={[styles.suggestionText, { color: active ? bookingGreen.onBright[scheme] : semanticColors.labelPrimary[scheme] }]}>
                 {s}
               </Text>
             </Pressable>
@@ -144,7 +144,7 @@ function TimeField({ label, time, onChange, show, onPress, onDismiss, scheme }: 
           display="compact"
           onChange={(_, d) => d && onChange(d)}
           locale="fr-FR"
-          accentColor={bookingGreen.bright}
+          accentColor={bookingGreen.bright[scheme]}
           themeVariant={scheme}
         />
       </View>

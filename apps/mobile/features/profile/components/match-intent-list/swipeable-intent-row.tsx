@@ -84,7 +84,7 @@ export function SwipeableIntentRow({
   }, [intent.id, onDelete]);
 
   const isMatch = intent.type === "match";
-  const accentColor = isMatch ? colors.accentGreen : colors.accentOrange;
+  const accentColor = isMatch ? semanticColors.accentGreen[scheme] : colors.accentOrange;
   const relativeLabel = intent.date ? getRelativeLabel(intent.date) : null;
 
   return (

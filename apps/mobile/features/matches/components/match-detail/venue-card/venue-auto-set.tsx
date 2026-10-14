@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { MapPin, Pencil } from "lucide-react-native";
 import { useRouter } from "expo-router";
-import { colors, semanticColors, spacing, radii } from "@/constants/theme";
+import { semanticColors, spacing, radii } from "@/constants/theme";
 import { useUpdateVenue } from "@/hooks/use-match";
 import type { Organization } from "@/types/organization";
 
@@ -42,15 +42,15 @@ export function VenueAutoSet({ matchId, organization, scheme, canChange }: Venue
           <Pressable
             onPress={() => router.push(`/matches/${matchId}/change-venue` as any)}
             hitSlop={8}
-            style={styles.changeButton}
+            style={[styles.changeButton, { backgroundColor: `${semanticColors.accentGreen[scheme]}18` }]}
           >
-            <Pencil size={12} color={colors.accentGreen} strokeWidth={2.5} />
-            <Text style={styles.changeText}>Modifier</Text>
+            <Pencil size={12} color={semanticColors.accentGreen[scheme]} strokeWidth={2.5} />
+            <Text style={[styles.changeText, { color: semanticColors.accentGreen[scheme] }]}>Modifier</Text>
           </Pressable>
         )}
       </View>
       <View style={styles.venueRow}>
-        <MapPin size={14} color={colors.accentGreen} strokeWidth={2} />
+        <MapPin size={14} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
         <View style={styles.venueInfo}>
           <Text style={[styles.venueName, { color: semanticColors.labelPrimary[scheme] }]}>
             {organization.name}
@@ -93,12 +93,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    backgroundColor: `${colors.accentGreen}18`,
   },
   changeText: {
     fontSize: 11,
     fontWeight: "600",
-    color: colors.accentGreen,
   },
   venueRow: {
     flexDirection: "row",

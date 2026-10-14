@@ -1,5 +1,6 @@
 import { View, StyleSheet } from "react-native";
-import { colors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import Animated, { useAnimatedStyle, withTiming, Easing } from "react-native-reanimated";
 
 interface ProgressBarProps {
@@ -8,6 +9,7 @@ interface ProgressBarProps {
 }
 
 export function ProgressBar({ currentStep, totalSteps }: ProgressBarProps) {
+  const scheme = useColorScheme();
   const progress = (currentStep + 1) / totalSteps;
 
   const fillStyle = useAnimatedStyle(() => ({
@@ -17,7 +19,7 @@ export function ProgressBar({ currentStep, totalSteps }: ProgressBarProps) {
   return (
     <View style={styles.container}>
       <View style={styles.track}>
-        <Animated.View style={[styles.fill, fillStyle]} />
+        <Animated.View style={[styles.fill, { backgroundColor: semanticColors.accentGreen[scheme] }, fillStyle]} />
       </View>
     </View>
   );
@@ -37,6 +39,5 @@ const styles = StyleSheet.create({
   fill: {
     height: "100%",
     borderRadius: 2,
-    backgroundColor: colors.accentGreen,
   },
 });

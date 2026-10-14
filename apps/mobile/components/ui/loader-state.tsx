@@ -1,7 +1,7 @@
 import { View, Text, ActivityIndicator, StyleSheet, type ViewStyle } from "react-native";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 interface LoaderStateProps {
@@ -47,7 +47,7 @@ export function LoaderState({
     }
     return (
       <View style={[styles.center, containerStyle]}>
-        <ActivityIndicator size="large" color={colors.accentGreen} />
+        <ActivityIndicator size="large" color={semanticColors.accentGreen[scheme]} />
       </View>
     );
   }

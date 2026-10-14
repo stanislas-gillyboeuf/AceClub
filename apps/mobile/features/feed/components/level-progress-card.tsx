@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { ChevronRight } from "lucide-react-native";
 import { Card } from "@/components/ui/card";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { formatAces } from "@/lib/format";
 import type { UserLevel } from "@/types/level";
 
@@ -43,9 +43,14 @@ export function LevelProgressCard({
         </View>
 
         {/* Level badge */}
-        <View style={styles.badge}>
+        <View
+          style={[
+            styles.badge,
+            { backgroundColor: `${semanticColors.accentGreen[scheme]}26`, borderColor: semanticColors.accentGreen[scheme] },
+          ]}
+        >
           <View style={styles.badgeInner}>
-            <Text style={styles.badgeNumber}>{level.level}</Text>
+            <Text style={[styles.badgeNumber, { color: semanticColors.accentGreen[scheme] }]}>{level.level}</Text>
           </View>
         </View>
       </View>
@@ -63,7 +68,7 @@ export function LevelProgressCard({
           <View
             style={[
               styles.progressFill,
-              { width: `${Math.min(level.progressPercent, 100)}%` },
+              { width: `${Math.min(level.progressPercent, 100)}%`, backgroundColor: semanticColors.accentGreen[scheme] },
             ]}
           />
         </View>
@@ -77,7 +82,7 @@ export function LevelProgressCard({
           >
             {level.currentLevelAces}/{level.currentLevelAces + level.acesToNextLevel} Aces
           </Text>
-          <Text style={styles.nextLevelText}>
+          <Text style={[styles.nextLevelText, { color: semanticColors.accentGreen[scheme] }]}>
             Niveau {level.level + 1}
           </Text>
         </View>
@@ -93,10 +98,10 @@ export function LevelProgressCard({
             ]}
           />
           <View style={styles.detailRow}>
-            <Text style={styles.detailText}>Voir ma progression</Text>
+            <Text style={[styles.detailText, { color: semanticColors.accentGreen[scheme] }]}>Voir ma progression</Text>
             <ChevronRight
               size={14}
-              color={`${colors.accentGreen}99`}
+              color={`${semanticColors.accentGreen[scheme]}99`}
               strokeWidth={2.5}
             />
           </View>
@@ -127,9 +132,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: `${colors.accentGreen}26`,
     borderWidth: 3,
-    borderColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -140,7 +143,6 @@ const styles = StyleSheet.create({
   badgeNumber: {
     fontSize: 24,
     fontWeight: "700",
-    color: colors.accentGreen,
   },
   progressSection: {
     gap: 8,
@@ -153,7 +155,6 @@ const styles = StyleSheet.create({
   progressFill: {
     height: 12,
     borderRadius: 6,
-    backgroundColor: colors.accentGreen,
   },
   progressLabels: {
     flexDirection: "row",
@@ -165,7 +166,6 @@ const styles = StyleSheet.create({
   nextLevelText: {
     fontSize: 12,
     fontWeight: "500",
-    color: colors.accentGreen,
   },
   detailSection: {
     marginTop: 16,
@@ -182,6 +182,5 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 15,
     fontWeight: "500",
-    color: colors.accentGreen,
   },
 });

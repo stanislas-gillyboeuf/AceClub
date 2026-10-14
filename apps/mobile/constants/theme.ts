@@ -1,23 +1,7 @@
 import { Platform } from "react-native";
 
-/**
- * The app's single accent green has two variants so it can be swapped app-wide for a visual
- * test by changing ONE line (`ACTIVE_ACCENT` below) — nothing else needs to change.
- * `dim` is a readable-as-plain-text shade (the bright variant is too light to read as text),
- * `onBright` is the color to draw TEXT/ICONS on top of a solid `bright` fill (never hardcode
- * white there — use `colors.onAccentGreen` so it follows the swap).
- */
-const accentGreenVariants = {
-  muted: { bright: "#21874D", dim: "#21874D", onBright: "#FFFFFF" },
-  flashy: { bright: "#d7ff3f", dim: "#8fae2a", onBright: "#081814" },
-};
-const ACTIVE_ACCENT = accentGreenVariants.muted;
-
 export const colors = {
   // Brand
-  accentGreen: ACTIVE_ACCENT.bright,
-  accentGreenDim: ACTIVE_ACCENT.dim,
-  onAccentGreen: ACTIVE_ACCENT.onBright,
   accentOrange: "#E8832A",
   accentOrangeDark: "#F09B3E",
 
@@ -62,6 +46,10 @@ export const sizes = {
   buttonHeight: 52,
 } as const;
 
+// Light mode: muted brand green. Dark mode: bright chartreuse. Declared once here (above
+// `semanticColors`) so `glass.accentTint`/`accentBorder` can derive from the same pair below.
+const accentGreenHex = { light: "#21874D", dark: "#d7ff3f" };
+
 /**
  * Frosted-glass (expo-blur BlurView) surfaces for photo-backed cards — the Liquid Glass
  * `GlassView` (expo-glass-effect, iOS 26+) is a different look reserved for standard controls;
@@ -72,10 +60,10 @@ export const glass = {
   panelBorder: { light: "rgba(255,255,255,0.4)", dark: "rgba(255,255,255,0.16)" },
   pillTint: { light: "rgba(255,255,255,0.35)", dark: "rgba(0,0,0,0.35)" },
   pillBorder: { light: "rgba(255,255,255,0.5)", dark: "rgba(255,255,255,0.2)" },
-  // Derived from the active accent (hex + alpha suffix, same convention as `${colors.red500}14`
-  // elsewhere) so these follow `ACTIVE_ACCENT` automatically instead of drifting out of sync.
-  accentTint: `${ACTIVE_ACCENT.bright}47`,
-  accentBorder: `${ACTIVE_ACCENT.bright}A6`,
+  // Hex + alpha suffix (same convention as `${colors.red500}14` elsewhere), one per scheme so
+  // these follow `accentGreenHex` automatically instead of drifting out of sync.
+  accentTint: { light: `${accentGreenHex.light}47`, dark: `${accentGreenHex.dark}47` },
+  accentBorder: { light: `${accentGreenHex.light}A6`, dark: `${accentGreenHex.dark}A6` },
   // Android fallback (BlurView support is inconsistent there): a flat, ~85%-opaque surface —
   // the alpha lives in the color itself, never as a View `opacity` (that would also fade content).
   panelTintAndroidFallback: { light: "rgba(255,255,255,0.85)", dark: "rgba(28,28,30,0.85)" },
@@ -89,7 +77,17 @@ export const eventCategoryColors = {
   camp: "#2B5A8C", // bleu (nouveau — aucun bleu existant dans la palette)
 } as const;
 
+/**
+ * The app's single accent green is a real light/dark pair (unlike every other `colors.*` brand
+ * token) — light mode keeps the original muted brand green, dark mode uses a bright chartreuse.
+ * `accentGreenDim` is a readable-as-plain-text shade (the dark-mode bright green is too light to
+ * read as text), `onAccentGreen` is the color to draw TEXT/ICONS on top of a solid accentGreen
+ * fill (never hardcode white there — use `semanticColors.onAccentGreen[scheme]`).
+ */
 export const semanticColors = {
+  accentGreen: accentGreenHex,
+  accentGreenDim: { light: "#21874D", dark: "#8fae2a" },
+  onAccentGreen: { light: "#FFFFFF", dark: "#081814" },
   cardBackground: { light: "#FFFFFF", dark: "#2C2C2E" },
   primaryBackground: { light: "#F2F2F7", dark: "#000000" },
   borderColor: { light: "#E5E5EA", dark: "#38383A" },

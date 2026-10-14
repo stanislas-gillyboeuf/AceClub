@@ -20,7 +20,7 @@ import { OrgHubSettingsCard } from "@/features/profile/components/OrgHubSettings
 import { OrgHubMembersCard } from "@/features/profile/components/OrgHubMembersCard";
 import { OrgHubEventsSection } from "@/features/profile/components/OrgHubEventsSection";
 import { GlassView } from "@/components/ui/glass-view";
-import { colors, semanticColors, spacing, radii } from "@/constants/theme";
+import { semanticColors, spacing, radii } from "@/constants/theme";
 import type { MemberRole } from "@/types/common";
 
 export default function AdminHub() {
@@ -53,7 +53,7 @@ export default function AdminHub() {
       <>
         <Stack.Screen options={{ title: "Mon Club" }} />
         <View style={[styles.loadingContainer, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-          <ActivityIndicator size="large" color={colors.accentGreen} />
+          <ActivityIndicator size="large" color={semanticColors.accentGreen[scheme]} />
         </View>
       </>
     );
@@ -188,7 +188,7 @@ function PinSection({ organizationId }: { organizationId: string }) {
           <Switch
             value={pinEnabled}
             onValueChange={handleToggle}
-            trackColor={{ false: semanticColors.labelTertiary[scheme], true: colors.accentGreen }}
+            trackColor={{ false: semanticColors.labelTertiary[scheme], true: semanticColors.accentGreen[scheme] }}
           />
         </View>
 

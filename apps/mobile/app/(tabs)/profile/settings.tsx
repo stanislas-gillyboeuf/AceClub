@@ -300,17 +300,17 @@ export default function Settings() {
           title: "Paramètres",
           headerLeft: () => (
             <Pressable onPress={() => router.dismiss()} hitSlop={8}>
-              <X size={24} color={colors.accentGreen} strokeWidth={2} />
+              <X size={24} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
             </Pressable>
           ),
           headerRight: () => (
             <Pressable onPress={handleSave} disabled={!canSave} hitSlop={8}>
               {isSaving ? (
-                <ActivityIndicator size="small" color={colors.accentGreen} />
+                <ActivityIndicator size="small" color={semanticColors.accentGreen[scheme]} />
               ) : (
                 <Check
                   size={24}
-                  color={colors.accentGreen}
+                  color={semanticColors.accentGreen[scheme]}
                   strokeWidth={2.5}
                   style={{ opacity: canSave ? 1 : 0.4 }}
                 />
@@ -336,8 +336,10 @@ export default function Settings() {
             </View>
           )}
           {successMessage && (
-            <View style={styles.successBanner}>
-              <Text style={styles.successBannerText}>{successMessage}</Text>
+            <View style={[styles.successBanner, { backgroundColor: `${semanticColors.accentGreen[scheme]}1A` }]}>
+              <Text style={[styles.successBannerText, { color: semanticColors.accentGreen[scheme] }]}>
+                {successMessage}
+              </Text>
             </View>
           )}
 
@@ -367,7 +369,7 @@ export default function Settings() {
 
           <SectionCard title="Club">
             <SettingsRow
-              icon={<Building2 size={20} color={colors.accentGreen} strokeWidth={1.5} />}
+              icon={<Building2 size={20} color={semanticColors.accentGreen[scheme]} strokeWidth={1.5} />}
               label={selectedOrganization?.name ?? "Sélectionner un club"}
               onPress={() =>
                 router.push({
@@ -395,12 +397,12 @@ export default function Settings() {
 
           <SectionCard title="Confidentialité">
             <SettingsRow
-              icon={<QrCode size={20} color={colors.accentGreen} strokeWidth={1.5} />}
+              icon={<QrCode size={20} color={semanticColors.accentGreen[scheme]} strokeWidth={1.5} />}
               label="Mon profil partageable"
               onPress={() => router.push("/(tabs)/profile/share-profile")}
             />
             <SettingsRow
-              icon={<ShieldOff size={20} color={colors.accentGreen} strokeWidth={1.5} />}
+              icon={<ShieldOff size={20} color={semanticColors.accentGreen[scheme]} strokeWidth={1.5} />}
               label="Utilisateurs bloqués"
               onPress={() => router.push("/(tabs)/profile/blocked-users")}
             />
@@ -452,12 +454,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   successBanner: {
-    backgroundColor: `${colors.accentGreen}1A`,
     padding: 12,
     borderRadius: radii.sm,
   },
   successBannerText: {
-    color: colors.accentGreen,
     fontSize: 14,
     textAlign: "center",
   },

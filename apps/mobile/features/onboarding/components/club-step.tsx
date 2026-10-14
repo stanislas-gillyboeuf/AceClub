@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { View, Text, TextInput, Pressable, Alert, StyleSheet } from "react-native";
 import { router } from "expo-router";
-import { colors } from "@/constants/theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { Search, Check, Lock } from "lucide-react-native";
 import { useVerifyPin } from "@/hooks/use-organization";
 import Animated, {
@@ -28,6 +29,7 @@ export function ClubStep({
   isPinVerified,
   onPinVerified,
 }: ClubStepProps) {
+  const scheme = useColorScheme();
   const [digits, setDigits] = useState<string[]>(Array(PIN_LENGTH).fill(""));
   const hiddenInputRef = useRef<TextInput>(null);
   const verifyPin = useVerifyPin();
@@ -125,13 +127,21 @@ export function ClubStep({
           <Animated.View
             style={[
               styles.card,
-              selectedOrganization ? styles.cardSelected : styles.cardDefault,
+              selectedOrganization
+                ? {
+                    backgroundColor: `${semanticColors.accentGreen[scheme]}08`,
+                    borderWidth: 1.5,
+                    borderColor: semanticColors.accentGreen[scheme],
+                  }
+                : styles.cardDefault,
             ]}
           >
             {selectedOrganization ? (
               <>
-                <View style={styles.cardAvatar}>
-                  <Text style={styles.cardAvatarText}>
+                <View
+                  style={[styles.cardAvatar, { backgroundColor: `${semanticColors.accentGreen[scheme]}15` }]}
+                >
+                  <Text style={[styles.cardAvatarText, { color: semanticColors.accentGreen[scheme] }]}>
                     {selectedOrganization.name.charAt(0).toUpperCase()}
                   </Text>
                 </View>
@@ -142,8 +152,8 @@ export function ClubStep({
                   <Text style={styles.cardSubtitle}>Club</Text>
                 </View>
                 {isPinVerified || !selectedOrganization.pinEnabled ? (
-                  <View style={styles.checkCircle}>
-                    <Check size={14} color={colors.onAccentGreen} />
+                  <View style={[styles.checkCircle, { backgroundColor: semanticColors.accentGreen[scheme] }]}>
+                    <Check size={14} color={semanticColors.onAccentGreen[scheme]} />
                   </View>
                 ) : (
                   <Lock size={14} color={colors.gray400} />
@@ -176,10 +186,21 @@ export function ClubStep({
                   key={i}
                   style={[
                     styles.otpBox,
-                    digit ? styles.otpBoxFilled : null,
+                    digit
+                      ? {
+                          backgroundColor: `${semanticColors.accentGreen[scheme]}12`,
+                          borderWidth: 1.5,
+                          borderColor: semanticColors.accentGreen[scheme],
+                        }
+                      : null,
                   ]}
                 >
-                  <Text style={[styles.otpDigit, digit ? styles.otpDigitFilled : null]}>
+                  <Text
+                    style={[
+                      styles.otpDigit,
+                      digit ? { color: semanticColors.accentGreen[scheme] } : null,
+                    ]}
+                  >
                     {digit}
                   </Text>
                 </View>
@@ -240,11 +261,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(120, 120, 128, 0.16)",
   },
-  cardSelected: {
-    backgroundColor: `${colors.accentGreen}08`,
-    borderWidth: 1.5,
-    borderColor: colors.accentGreen,
-  },
   cardPressed: {
     transform: [{ scale: 0.98 }],
   },
@@ -252,14 +268,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: `${colors.accentGreen}15`,
     alignItems: "center",
     justifyContent: "center",
   },
   cardAvatarText: {
     fontSize: 17,
     fontWeight: "600",
-    color: colors.accentGreen,
   },
   cardInfo: {
     flex: 1,
@@ -282,7 +296,6 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -310,18 +323,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  otpBoxFilled: {
-    backgroundColor: `${colors.accentGreen}12`,
-    borderWidth: 1.5,
-    borderColor: colors.accentGreen,
-  },
   otpDigit: {
     fontSize: 24,
     fontWeight: "600",
     color: colors.black,
-  },
-  otpDigitFilled: {
-    color: colors.accentGreen,
   },
   hiddenInput: {
     position: "absolute",

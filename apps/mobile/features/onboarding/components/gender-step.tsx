@@ -1,5 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { colors } from "@/constants/theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { Check } from "lucide-react-native";
 import { GlassView } from "@/components/ui/glass-view";
 import Animated, { FadeIn, useAnimatedStyle, withTiming, withDelay } from "react-native-reanimated";
@@ -71,6 +72,7 @@ function GenderCard({
   onPress: () => void;
   delay: number;
 }) {
+  const scheme = useColorScheme();
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: withTiming(isSelected ? 1.02 : 1, { duration: 200 }) }],
   }));
@@ -97,12 +99,17 @@ function GenderCard({
       >
         <GlassView style={styles.card}>
           {isSelected && (
-            <View style={styles.checkBadge}>
-              <Check size={14} color={colors.onAccentGreen} />
+            <View style={[styles.checkBadge, { backgroundColor: semanticColors.accentGreen[scheme] }]}>
+              <Check size={14} color={semanticColors.onAccentGreen[scheme]} />
             </View>
           )}
 
-          <View style={[styles.emojiCircle, isSelected && styles.emojiCircleSelected]}>
+          <View
+            style={[
+              styles.emojiCircle,
+              isSelected && { backgroundColor: `${semanticColors.accentGreen[scheme]}12` },
+            ]}
+          >
             <Text style={styles.emoji}>{emoji}</Text>
           </View>
 
@@ -152,7 +159,6 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -164,9 +170,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 14,
-  },
-  emojiCircleSelected: {
-    backgroundColor: `${colors.accentGreen}12`,
   },
   emoji: {
     fontSize: 36,

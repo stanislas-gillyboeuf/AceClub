@@ -1,15 +1,17 @@
 import { View, Pressable, Text, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { colors } from "@/constants/theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useUnreadMessagesCount } from "@/hooks/use-conversation";
 
 export function MessagesHeaderButton() {
+  const scheme = useColorScheme();
   const totalUnread = useUnreadMessagesCount();
 
   return (
     <Pressable onPress={() => router.push("/chat")} hitSlop={8} style={styles.wrap}>
-      <MaterialIcons name="chat-bubble-outline" size={24} color={colors.accentGreen} />
+      <MaterialIcons name="chat-bubble-outline" size={24} color={semanticColors.accentGreen[scheme]} />
       {totalUnread > 0 && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{totalUnread > 99 ? "99+" : String(totalUnread)}</Text>

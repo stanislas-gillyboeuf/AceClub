@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { GlassView } from "@/components/ui/glass-view";
 import { semanticColors, radii } from "@/constants/theme";
-import { EVENT_STATUS_CONFIG } from "@/features/events/lib/event-status";
+import { getEventStatusConfig } from "@/features/events/lib/event-status";
 import type { EventStatus } from "@/types/event";
 
 interface EventStatusSelectorProps {
@@ -17,7 +17,7 @@ export function EventStatusSelector({ value, onChange, scheme }: EventStatusSele
         STATUT
       </Text>
       <View style={styles.grid}>
-        {EVENT_STATUS_CONFIG.map((opt) => {
+        {getEventStatusConfig(scheme).map((opt) => {
           const isActive = value === opt.value;
           return (
             <Pressable

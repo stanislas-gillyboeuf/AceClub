@@ -13,7 +13,7 @@ import {
 import { GlassView } from "@/components/ui/glass-view";
 import { Search, X } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 import { EmptyState } from "@/components/ui/empty-state";
 
 interface SearchListProps<T> {
@@ -111,7 +111,7 @@ export function SearchList<T>({
       ListEmptyComponent={
         isLoading ? (
           <View style={styles.centered}>
-            <ActivityIndicator color={colors.accentGreen} />
+            <ActivityIndicator color={semanticColors.accentGreen[scheme]} />
           </View>
         ) : (
           <EmptyState

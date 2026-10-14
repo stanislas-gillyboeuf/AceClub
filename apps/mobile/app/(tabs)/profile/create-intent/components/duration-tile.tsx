@@ -3,7 +3,7 @@ import { GlassView } from "@/components/ui/glass-view";
 import { Clock, Check } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 import { formatDurationLabel } from "@/store/create-intent-form";
 
 interface DurationTileProps {
@@ -34,11 +34,11 @@ export function DurationTile({
     >
       <GlassView
         style={styles.tile}
-        tintColor={isSelected ? `${colors.accentGreen}20` : undefined}
+        tintColor={isSelected ? `${semanticColors.accentGreen[scheme]}20` : undefined}
       >
         <Clock
           size={24}
-          color={isSelected ? colors.accentGreen : semanticColors.labelSecondary[scheme]}
+          color={isSelected ? semanticColors.accentGreen[scheme] : semanticColors.labelSecondary[scheme]}
           strokeWidth={1.8}
         />
         <Text
@@ -46,7 +46,7 @@ export function DurationTile({
             styles.label,
             {
               color: isSelected
-                ? colors.accentGreen
+                ? semanticColors.accentGreen[scheme]
                 : semanticColors.labelPrimary[scheme],
             },
           ]}
@@ -55,8 +55,8 @@ export function DurationTile({
         </Text>
 
         {isSelected && (
-          <View style={styles.checkBadge}>
-            <Check size={12} color={colors.onAccentGreen} strokeWidth={3} />
+          <View style={[styles.checkBadge, { backgroundColor: semanticColors.accentGreen[scheme] }]}>
+            <Check size={12} color={semanticColors.onAccentGreen[scheme]} strokeWidth={3} />
           </View>
         )}
       </GlassView>
@@ -89,7 +89,6 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
   },

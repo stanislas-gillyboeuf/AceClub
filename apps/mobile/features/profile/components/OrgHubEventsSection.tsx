@@ -4,14 +4,14 @@ import { Plus, Calendar, Users } from "lucide-react-native";
 
 import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { EVENT_STATUS_MAP } from "@/features/events/lib/event-status";
+import { getEventStatusMap } from "@/features/events/lib/event-status";
 import { formatShortDate, formatTime } from "@/lib/format";
 import { colors, semanticColors, radii } from "@/constants/theme";
 import type { AdminEventItem } from "@/types/event";
 
 function EventRow({ item, onPress }: { item: AdminEventItem; onPress: () => void }) {
   const scheme = useColorScheme();
-  const statusConfig = EVENT_STATUS_MAP[item.status];
+  const statusConfig = getEventStatusMap(scheme)[item.status];
   const statusColor = statusConfig?.color ?? colors.gray400;
   const statusLabel = statusConfig?.label ?? item.status;
 
@@ -69,13 +69,13 @@ export function OrgHubEventsSection({ events, isLoading }: OrgHubEventsSectionPr
           onPress={() => router.push("/(tabs)/profile/admin/create-event")}
           hitSlop={8}
         >
-          <Plus size={22} color={colors.accentGreen} strokeWidth={2} />
+          <Plus size={22} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
         </Pressable>
       </View>
 
       {isLoading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="small" color={colors.accentGreen} />
+          <ActivityIndicator size="small" color={semanticColors.accentGreen[scheme]} />
         </View>
       ) : events.length === 0 ? (
         <View style={styles.center}>

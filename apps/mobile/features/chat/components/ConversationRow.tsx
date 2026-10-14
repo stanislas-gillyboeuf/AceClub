@@ -66,7 +66,7 @@ export function ConversationRow({ conversation }: ConversationRowProps) {
             <Text
               style={[
                 styles.time,
-                { color: hasUnread ? colors.accentGreen : semanticColors.labelSecondary[scheme] },
+                { color: hasUnread ? semanticColors.accentGreen[scheme] : semanticColors.labelSecondary[scheme] },
               ]}
             >
               {time}
@@ -104,8 +104,10 @@ export function ConversationRow({ conversation }: ConversationRowProps) {
               </View>
             )}
             {hasUnread && (
-              <View style={styles.unreadBadge}>
-                <Text style={styles.unreadText}>{conversation.unreadCount}</Text>
+              <View style={[styles.unreadBadge, { backgroundColor: semanticColors.accentGreen[scheme] }]}>
+                <Text style={[styles.unreadText, { color: semanticColors.onAccentGreen[scheme] }]}>
+                  {conversation.unreadCount}
+                </Text>
               </View>
             )}
             {conversation.isMuted && (
@@ -169,7 +171,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   unreadBadge: {
-    backgroundColor: colors.accentGreen,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -178,7 +179,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   unreadText: {
-    color: colors.onAccentGreen,
     fontSize: 12,
     fontWeight: "700",
   },

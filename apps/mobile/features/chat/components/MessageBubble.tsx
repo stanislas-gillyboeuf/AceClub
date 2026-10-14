@@ -140,7 +140,7 @@ export function MessageBubble({
                     getBubbleRadius(isFromMe, groupPosition),
                     {
                       backgroundColor: isFromMe
-                        ? colors.accentGreen
+                        ? semanticColors.accentGreen[scheme]
                         : semanticColors.incomingBubble[scheme],
                     },
                   ]}
@@ -212,7 +212,7 @@ function MessageContent({
             styles.textContent,
             {
               color: message.isFromMe
-                ? colors.onAccentGreen
+                ? semanticColors.onAccentGreen[scheme]
                 : semanticColors.labelPrimary[scheme],
             },
           ]}
@@ -242,7 +242,7 @@ function MatchRequestContent({
       <Text
         style={[
           styles.textContent,
-          { color: message.isFromMe ? colors.onAccentGreen : semanticColors.labelPrimary[scheme] },
+          { color: message.isFromMe ? semanticColors.onAccentGreen[scheme] : semanticColors.labelPrimary[scheme] },
         ]}
       >
         {message.content}
@@ -250,8 +250,10 @@ function MatchRequestContent({
     );
   }
 
-  const textColor = message.isFromMe ? colors.onAccentGreen : semanticColors.labelPrimary[scheme];
-  const subColor = message.isFromMe ? `${colors.onAccentGreen}BF` : semanticColors.labelSecondary[scheme];
+  const textColor = message.isFromMe ? semanticColors.onAccentGreen[scheme] : semanticColors.labelPrimary[scheme];
+  const subColor = message.isFromMe
+    ? `${semanticColors.onAccentGreen[scheme]}BF`
+    : semanticColors.labelSecondary[scheme];
   const level = formatSkillLevel(info.requesterSkillLevel, info.requesterSport);
 
   const handleAccept = async () => {
@@ -315,14 +317,16 @@ function MatchRequestContent({
             onPress={handleAccept}
             style={({ pressed }) => [
               styles.requestButton,
-              { backgroundColor: colors.accentGreen },
+              { backgroundColor: semanticColors.accentGreen[scheme] },
               pressed && { opacity: 0.85 },
             ]}
           >
             {isResponding ? (
-              <ActivityIndicator size="small" color={colors.onAccentGreen} />
+              <ActivityIndicator size="small" color={semanticColors.onAccentGreen[scheme]} />
             ) : (
-              <Text style={[styles.requestButtonText, { color: colors.onAccentGreen }]}>Accepter</Text>
+              <Text style={[styles.requestButtonText, { color: semanticColors.onAccentGreen[scheme] }]}>
+                Accepter
+              </Text>
             )}
           </Pressable>
         </View>

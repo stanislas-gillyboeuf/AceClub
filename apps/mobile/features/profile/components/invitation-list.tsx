@@ -2,7 +2,7 @@ import { View, Text, Pressable, StyleSheet, ActivityIndicator } from "react-nati
 import { Check, X } from "lucide-react-native";
 import { Card } from "@/components/ui/card";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import type { Invitation } from "@/types/invitation";
 
 interface InvitationListProps {
@@ -48,15 +48,15 @@ export function InvitationList({
               </Text>
             </View>
             {loadingId === invitation.id ? (
-              <ActivityIndicator size="small" color={colors.accentGreen} />
+              <ActivityIndicator size="small" color={semanticColors.accentGreen[scheme]} />
             ) : (
               <View style={styles.actions}>
                 <Pressable
                   onPress={() => onAccept(invitation.id)}
-                  style={[styles.actionButton, styles.acceptButton]}
+                  style={[styles.actionButton, { backgroundColor: semanticColors.accentGreen[scheme] }]}
                   hitSlop={4}
                 >
-                  <Check size={18} color={colors.onAccentGreen} strokeWidth={2.5} />
+                  <Check size={18} color={semanticColors.onAccentGreen[scheme]} strokeWidth={2.5} />
                 </Pressable>
                 <Pressable
                   onPress={() => onReject(invitation.id)}
@@ -110,9 +110,6 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     alignItems: "center",
     justifyContent: "center",
-  },
-  acceptButton: {
-    backgroundColor: colors.accentGreen,
   },
   rejectButton: {
     backgroundColor: "#fef2f2",

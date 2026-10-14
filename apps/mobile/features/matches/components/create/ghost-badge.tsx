@@ -1,17 +1,18 @@
 import { View, Text, StyleSheet } from "react-native";
-import { colors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 export function GhostBadge() {
+  const scheme = useColorScheme();
   return (
-    <View style={styles.ghostBadge}>
-      <Text style={styles.ghostBadgeText}>Externe</Text>
+    <View style={[styles.ghostBadge, { backgroundColor: `${semanticColors.accentGreen[scheme]}20` }]}>
+      <Text style={[styles.ghostBadgeText, { color: semanticColors.accentGreen[scheme] }]}>Externe</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   ghostBadge: {
-    backgroundColor: `${colors.accentGreen}20`,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
@@ -19,6 +20,5 @@ const styles = StyleSheet.create({
   ghostBadgeText: {
     fontSize: 12,
     fontWeight: "600",
-    color: colors.accentGreen,
   },
 });

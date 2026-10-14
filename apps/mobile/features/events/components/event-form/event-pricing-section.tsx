@@ -36,12 +36,15 @@ export function EventPricingSection({
         <View style={styles.picker}>
           <Pressable
             onPress={() => onIsFreeChange(true)}
-            style={[styles.option, isFree && styles.freeActive]}
+            style={[
+              styles.option,
+              isFree && { backgroundColor: semanticColors.accentGreen[scheme], borderRadius: 8 },
+            ]}
           >
             <Text
               style={[
                 styles.optionText,
-                { color: isFree ? colors.onAccentGreen : semanticColors.labelSecondary[scheme] },
+                { color: isFree ? semanticColors.onAccentGreen[scheme] : semanticColors.labelSecondary[scheme] },
               ]}
             >
               Gratuit
@@ -141,10 +144,6 @@ const styles = StyleSheet.create({
   option: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-  },
-  freeActive: {
-    backgroundColor: colors.accentGreen,
-    borderRadius: 8,
   },
   paidActive: {
     backgroundColor: colors.accentOrange,

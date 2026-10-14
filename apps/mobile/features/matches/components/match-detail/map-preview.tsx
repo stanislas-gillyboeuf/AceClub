@@ -1,6 +1,7 @@
 import { Platform, View, StyleSheet } from "react-native";
 import { AppleMaps } from "expo-maps";
-import { colors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 interface MapPreviewProps {
   latitude: number;
@@ -9,6 +10,7 @@ interface MapPreviewProps {
 }
 
 export function MapPreview({ latitude, longitude, title }: MapPreviewProps) {
+  const scheme = useColorScheme();
   if (Platform.OS !== "ios") return null;
 
   return (
@@ -23,7 +25,7 @@ export function MapPreview({ latitude, longitude, title }: MapPreviewProps) {
           {
             coordinates: { latitude, longitude },
             title,
-            tintColor: colors.accentGreen,
+            tintColor: semanticColors.accentGreen[scheme],
             systemImage: "tennisball.fill",
           },
         ]}

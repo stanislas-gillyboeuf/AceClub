@@ -41,14 +41,14 @@ export function CourtRow({ court, onEdit, onToggleActive, isToggling }: CourtRow
             .join(" · ")}
         </Text>
         {court.pricePerHour != null && (
-          <Text style={[styles.price, { color: colors.accentGreen }]}>{court.pricePerHour} € / heure</Text>
+          <Text style={[styles.price, { color: semanticColors.accentGreen[scheme] }]}>{court.pricePerHour} € / heure</Text>
         )}
       </View>
       <View style={styles.actions}>
         {court.isActive ? (
           <>
             <Pressable onPress={onEdit} style={styles.actionButton}>
-              <Text style={[styles.actionText, { color: colors.accentGreen }]}>Modifier</Text>
+              <Text style={[styles.actionText, { color: semanticColors.accentGreen[scheme] }]}>Modifier</Text>
             </Pressable>
             <Pressable onPress={onToggleActive} disabled={isToggling} style={styles.actionButton}>
               <Text style={[styles.destructiveText, { color: colors.red500 }]}>Désactiver</Text>
@@ -58,9 +58,9 @@ export function CourtRow({ court, onEdit, onToggleActive, isToggling }: CourtRow
           <Pressable
             onPress={onToggleActive}
             disabled={isToggling}
-            style={[styles.reactivateButton, { backgroundColor: colors.accentGreen }]}
+            style={[styles.reactivateButton, { backgroundColor: semanticColors.accentGreen[scheme] }]}
           >
-            <Text style={[styles.reactivateText, { color: colors.onAccentGreen }]}>Réactiver</Text>
+            <Text style={[styles.reactivateText, { color: semanticColors.onAccentGreen[scheme] }]}>Réactiver</Text>
           </Pressable>
         )}
       </View>

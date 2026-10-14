@@ -20,7 +20,7 @@ import {
 import { useCreateIntentStepperStore } from "@/store/create-intent-stepper";
 import { StepperNav } from "@/components/ui/stepper-nav";
 import Stepper, { useIntentStepperActions } from "./steps/stepper";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 
 export default function CreateIntent() {
   const scheme = useColorScheme();
@@ -152,7 +152,7 @@ export default function CreateIntent() {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   prev();
                 }}
-                tintColor={colors.accentGreen}
+                tintColor={semanticColors.accentGreen[scheme]}
               />
             </Stack.Toolbar>
           )}
@@ -194,7 +194,7 @@ export default function CreateIntent() {
               { backgroundColor: semanticColors.cardBackground[scheme] },
             ]}
           >
-            <ActivityIndicator size="small" color={colors.accentGreen} />
+            <ActivityIndicator size="small" color={semanticColors.accentGreen[scheme]} />
             <Text
               style={[
                 styles.overlayText,

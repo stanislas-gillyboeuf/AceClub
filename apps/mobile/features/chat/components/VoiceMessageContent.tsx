@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from "react-native";
 import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { Play, Pause } from "lucide-react-native";
 import type { ChatMessage } from "./MessageBubble";
 import { useAudioPlayer } from "../hooks/useAudioPlayer";
@@ -22,9 +23,10 @@ function formatDuration(seconds: number | null | undefined): string {
 }
 
 export function VoiceMessageContent({ message }: VoiceMessageContentProps) {
+  const scheme = useColorScheme();
   const { isPlaying, isLoading, progress, togglePlayback } = useAudioPlayer(message.id);
   const isFromMe = message.isFromMe;
-  const tintColor = isFromMe ? colors.white : colors.accentGreen;
+  const tintColor = isFromMe ? colors.white : semanticColors.accentGreen[scheme];
   const secondaryColor = isFromMe ? "rgba(255,255,255,0.8)" : semanticColors.labelSecondary.light;
 
   // Deterministic waveform heights based on message.id — avoids re-render jitter

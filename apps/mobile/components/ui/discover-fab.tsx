@@ -3,7 +3,8 @@ import { Plus } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GlassView } from "@/components/ui/glass-view";
-import { colors } from "@/constants/theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 interface DiscoverFabProps {
   sport: "tennis" | "padel";
@@ -17,8 +18,9 @@ const TAB_BAR_HEIGHT = Platform.select({ ios: 49, default: 64 });
 export function DiscoverFab({ sport }: DiscoverFabProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const accent = sport === "padel" ? colors.accentOrange : colors.accentGreen;
-  const onAccent = sport === "padel" ? colors.white : colors.onAccentGreen;
+  const scheme = useColorScheme();
+  const accent = sport === "padel" ? colors.accentOrange : semanticColors.accentGreen[scheme];
+  const onAccent = sport === "padel" ? colors.white : semanticColors.onAccentGreen[scheme];
 
   const bottom = insets.bottom + TAB_BAR_HEIGHT + 12;
 

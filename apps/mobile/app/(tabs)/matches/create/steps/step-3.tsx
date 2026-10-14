@@ -6,7 +6,7 @@ import { useMyOrganizations, useUserOrganizations } from "@/hooks/use-organizati
 import { useCreateMatchFormStore } from "@/store/create-match-form";
 import { useStepperActions } from "./steper";
 import { VenueTile } from "../components/venue-tile";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 
 export default function Step3() {
   const scheme = useColorScheme();
@@ -55,7 +55,7 @@ export default function Step3() {
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color={colors.accentGreen} />
+          <ActivityIndicator size="small" color={semanticColors.accentGreen[scheme]} />
         </View>
       ) : allOrgs.length === 0 ? (
         <View style={styles.emptyContainer}>

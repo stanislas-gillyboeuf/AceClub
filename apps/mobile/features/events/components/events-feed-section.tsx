@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { useMyEvents, useInfiniteEvents } from "@/hooks/use-event";
 import { useActiveClub } from "@/hooks/use-active-club";
 import { EventCard } from "./event-card";
-import { colors, semanticColors, spacing } from "@/constants/theme";
+import { semanticColors, spacing } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { EventSummary, MyEvent } from "@/types/event";
 
@@ -62,7 +62,7 @@ export function EventsFeedSection() {
       <View style={styles.header}>
         <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>{title}</Text>
         <Pressable onPress={goToEvents} hitSlop={8} style={styles.seeAllButton}>
-          <Text style={styles.seeAllText}>Tout voir</Text>
+          <Text style={[styles.seeAllText, { color: semanticColors.accentGreen[scheme] }]}>Tout voir</Text>
         </Pressable>
       </View>
 
@@ -89,7 +89,10 @@ export function EventsFeedSection() {
               style={[
                 styles.dot,
                 index === activeIndex ? styles.dotActive : styles.dotInactive,
-                { backgroundColor: index === activeIndex ? colors.accentGreen : semanticColors.borderColor[scheme] },
+                {
+                  backgroundColor:
+                    index === activeIndex ? semanticColors.accentGreen[scheme] : semanticColors.borderColor[scheme],
+                },
               ]}
             />
           ))}
@@ -124,7 +127,6 @@ const styles = StyleSheet.create({
   seeAllText: {
     fontSize: 13,
     fontWeight: "700",
-    color: colors.accentGreen,
   },
   listContent: {
     paddingHorizontal: spacing.horizontal,

@@ -6,7 +6,7 @@ import { useRouter } from "expo-router";
 import { GlassView } from "@/components/ui/glass-view";
 import { MapPreview } from "@/features/matches/components/match-detail/map-preview";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 import type { Organization } from "@/types/organization";
 
 interface OrgHubSettingsCardProps {
@@ -35,8 +35,8 @@ export function OrgHubSettingsCard({ organization }: OrgHubSettingsCardProps) {
               transition={200}
             />
           ) : (
-            <View style={styles.logoPlaceholder}>
-              <Building2 size={24} color={colors.accentGreen} strokeWidth={1.5} />
+            <View style={[styles.logoPlaceholder, { backgroundColor: `${semanticColors.accentGreen[scheme]}1A` }]}>
+              <Building2 size={24} color={semanticColors.accentGreen[scheme]} strokeWidth={1.5} />
             </View>
           )}
 
@@ -99,7 +99,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: radii.md,
-    backgroundColor: `${colors.accentGreen}1A`,
     alignItems: "center",
     justifyContent: "center",
   },

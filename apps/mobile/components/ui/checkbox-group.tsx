@@ -1,7 +1,7 @@
 import { Pressable, View, Text, StyleSheet } from "react-native";
 import { Check } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 
 interface CheckboxOption<T extends string> {
   value: T;
@@ -49,13 +49,13 @@ export function CheckboxGroup<T extends string>({
                 styles.checkbox,
                 {
                   borderColor: isSelected
-                    ? colors.accentGreen
+                    ? semanticColors.accentGreen[scheme]
                     : semanticColors.labelTertiary[scheme],
-                  backgroundColor: isSelected ? colors.accentGreen : "transparent",
+                  backgroundColor: isSelected ? semanticColors.accentGreen[scheme] : "transparent",
                 },
               ]}
             >
-              {isSelected && <Check size={14} color={colors.onAccentGreen} strokeWidth={2.5} />}
+              {isSelected && <Check size={14} color={semanticColors.onAccentGreen[scheme]} strokeWidth={2.5} />}
             </View>
           </Pressable>
         );

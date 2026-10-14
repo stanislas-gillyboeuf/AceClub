@@ -19,7 +19,7 @@ import {
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { MemberRow } from "@/features/profile/components/MemberRow";
 import { ROLE_LABELS } from "@/features/profile/lib/role-permissions";
-import { colors, semanticColors, spacing } from "@/constants/theme";
+import { semanticColors, spacing } from "@/constants/theme";
 import type { MemberRole } from "@/types/common";
 import type { Member } from "@/types/organization";
 
@@ -113,7 +113,7 @@ export default function MembersScreen() {
         ListEmptyComponent={
           isLoading ? (
             <View style={styles.center}>
-              <ActivityIndicator size="large" color={colors.accentGreen} />
+              <ActivityIndicator size="large" color={semanticColors.accentGreen[scheme]} />
             </View>
           ) : (
             <View style={styles.center}>

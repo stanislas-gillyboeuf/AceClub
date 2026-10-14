@@ -59,7 +59,7 @@ export function MatchRow({ match, onPress }: MatchRowProps) {
       {/* Header: time + status badge + duration */}
       <View style={styles.headerRow}>
         <View style={styles.timeRow}>
-          <Clock size={14} color={colors.accentGreen} strokeWidth={2} />
+          <Clock size={14} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
           <Text style={[styles.timeText, { color: semanticColors.labelSecondary[scheme] }]}>
             {displayTime}
           </Text>

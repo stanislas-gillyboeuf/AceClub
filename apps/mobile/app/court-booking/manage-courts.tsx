@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { View, Text, FlatList, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { Stack, router } from "expo-router";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, radii, spacing } from "@/constants/theme";
+import { semanticColors, radii, spacing } from "@/constants/theme";
 import { useMyOrganizations, useActiveMemberRole } from "@/hooks/use-organization";
 import { useAllCourtsForOrg, useUpdateCourt } from "@/hooks/use-court";
 import { CourtRow } from "@/features/court-booking/components/admin/court-row";
@@ -75,14 +75,14 @@ export default function ManageCourtsScreen() {
         ListHeaderComponent={
           <Pressable
             onPress={() => router.push("/court-booking/court-form")}
-            style={[styles.addButton, { backgroundColor: colors.accentGreen }]}
+            style={[styles.addButton, { backgroundColor: semanticColors.accentGreen[scheme] }]}
           >
-            <Text style={[styles.addButtonText, { color: colors.onAccentGreen }]}>+ Ajouter un court</Text>
+            <Text style={[styles.addButtonText, { color: semanticColors.onAccentGreen[scheme] }]}>+ Ajouter un court</Text>
           </Pressable>
         }
         ListEmptyComponent={
           isLoading ? (
-            <ActivityIndicator style={styles.loader} color={colors.accentGreen} />
+            <ActivityIndicator style={styles.loader} color={semanticColors.accentGreen[scheme]} />
           ) : (
             <View style={styles.empty}>
               <Text style={[styles.emptyTitle, { color: semanticColors.labelPrimary[scheme] }]}>

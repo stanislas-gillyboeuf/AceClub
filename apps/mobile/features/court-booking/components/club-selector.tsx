@@ -31,13 +31,13 @@ export function ClubSelector({ clubs, selectedId, onSelect }: ClubSelectorProps)
         hitSlop={6}
       >
         <Text
-          style={[styles.eyebrow, { color: bookingGreen.dim }]}
+          style={[styles.eyebrow, { color: bookingGreen.dim[scheme] }]}
           numberOfLines={1}
           ellipsizeMode="tail"
         >
           AceClub{selected ? ` · ${selected.name}` : ""}
         </Text>
-        {canSwitch && <ChevronDown size={12} color={bookingGreen.dim} strokeWidth={2.5} />}
+        {canSwitch && <ChevronDown size={12} color={bookingGreen.dim[scheme]} strokeWidth={2.5} />}
       </Pressable>
 
       <Modal transparent visible={open} animationType="fade" onRequestClose={() => setOpen(false)}>
@@ -64,7 +64,7 @@ export function ClubSelector({ clubs, selectedId, onSelect }: ClubSelectorProps)
                   >
                     {club.name}
                   </Text>
-                  {club.id === selectedId && <Check size={16} color={bookingGreen.dim} strokeWidth={2.5} />}
+                  {club.id === selectedId && <Check size={16} color={bookingGreen.dim[scheme]} strokeWidth={2.5} />}
                 </Pressable>
               ))}
             </View>

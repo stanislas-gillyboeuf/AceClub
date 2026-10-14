@@ -111,7 +111,7 @@ export default function NewConversationScreen() {
           },
           headerLeft: () => (
             <Pressable onPress={() => router.dismiss()}>
-              <X size={20} color={colors.accentGreen} />
+              <X size={20} color={semanticColors.accentGreen[scheme]} />
             </Pressable>
           ),
         }}
@@ -146,7 +146,7 @@ export default function NewConversationScreen() {
             />
           ) : isLoading ? (
             <View style={styles.centered}>
-              <ActivityIndicator color={colors.accentGreen} />
+              <ActivityIndicator color={semanticColors.accentGreen[scheme]} />
             </View>
           ) : (
             <EmptyState

@@ -46,7 +46,7 @@ export default function BookForClubScreen() {
         </Text>
 
         {isLoading ? (
-          <ActivityIndicator color={bookingGreen.bright} style={styles.loader} />
+          <ActivityIndicator color={bookingGreen.bright[scheme]} style={styles.loader} />
         ) : (
           <View style={styles.courtRow}>
             {(courts ?? []).map((court) => {
@@ -58,12 +58,12 @@ export default function BookForClubScreen() {
                   style={[
                     styles.courtChip,
                     {
-                      backgroundColor: active ? bookingGreen.bright : semanticColors.systemGray6[scheme],
-                      borderColor: active ? bookingGreen.bright : semanticColors.borderColor[scheme],
+                      backgroundColor: active ? bookingGreen.bright[scheme] : semanticColors.systemGray6[scheme],
+                      borderColor: active ? bookingGreen.bright[scheme] : semanticColors.borderColor[scheme],
                     },
                   ]}
                 >
-                  <Text style={[styles.courtChipText, { color: active ? bookingGreen.onBright : semanticColors.labelSecondary[scheme] }]}>
+                  <Text style={[styles.courtChipText, { color: active ? bookingGreen.onBright[scheme] : semanticColors.labelSecondary[scheme] }]}>
                     {court.name}
                   </Text>
                 </Pressable>

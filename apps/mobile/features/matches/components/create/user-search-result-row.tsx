@@ -2,7 +2,7 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Check } from "lucide-react-native";
 import { GlassView } from "@/components/ui/glass-view";
 import { Avatar } from "@/components/ui/avatar";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 import type { UserSearchItem } from "@/types/user";
 import { GhostBadge } from "./ghost-badge";
 
@@ -29,7 +29,7 @@ export function UserSearchResultRow({
     >
       <GlassView
         style={styles.card}
-        tintColor={isSelected ? `${colors.accentGreen}20` : undefined}
+        tintColor={isSelected ? `${semanticColors.accentGreen[scheme]}20` : undefined}
       >
         <Avatar imageUrl={user.image} name={user.name} size={46} />
         <View style={styles.info}>
@@ -44,8 +44,8 @@ export function UserSearchResultRow({
           </View>
         </View>
         {isSelected && (
-          <View style={styles.checkCircle}>
-            <Check size={14} color={colors.onAccentGreen} strokeWidth={3} />
+          <View style={[styles.checkCircle, { backgroundColor: semanticColors.accentGreen[scheme] }]}>
+            <Check size={14} color={semanticColors.onAccentGreen[scheme]} strokeWidth={3} />
           </View>
         )}
       </GlassView>
@@ -83,7 +83,6 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
   },

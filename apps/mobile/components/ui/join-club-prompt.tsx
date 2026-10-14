@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { UsersRound } from "lucide-react-native";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 /**
@@ -24,9 +24,13 @@ export function JoinClubPrompt() {
       </Text>
       <Pressable
         onPress={() => router.push("/(tabs)/profile/club-selection")}
-        style={({ pressed }) => [styles.button, pressed && { opacity: 0.8 }]}
+        style={({ pressed }) => [
+          styles.button,
+          { backgroundColor: semanticColors.accentGreen[scheme] },
+          pressed && { opacity: 0.8 },
+        ]}
       >
-        <Text style={styles.buttonText}>Rejoindre un club</Text>
+        <Text style={[styles.buttonText, { color: semanticColors.onAccentGreen[scheme] }]}>Rejoindre un club</Text>
       </Pressable>
     </View>
   );
@@ -51,13 +55,11 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 8,
-    backgroundColor: colors.accentGreen,
     borderRadius: 10,
     paddingHorizontal: 20,
     paddingVertical: 12,
   },
   buttonText: {
-    color: colors.onAccentGreen,
     fontSize: 15,
     fontWeight: "600",
   },

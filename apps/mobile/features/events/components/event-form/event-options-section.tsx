@@ -1,7 +1,7 @@
 import { View, Text, Pressable, TextInput, StyleSheet } from "react-native";
 import { Eye, Users } from "lucide-react-native";
 import { GlassView } from "@/components/ui/glass-view";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 import { VISIBILITY_OPTIONS } from "@/features/events/lib/event-status";
 import type { EventVisibility } from "@/types/event";
 
@@ -36,7 +36,10 @@ export function EventOptionsSection({
             <Pressable
               key={opt.value}
               onPress={() => onVisibilityChange(opt.value)}
-              style={[styles.option, visibility === opt.value && styles.optionActive]}
+              style={[
+                styles.option,
+                visibility === opt.value && { backgroundColor: semanticColors.accentGreen[scheme], borderRadius: 8 },
+              ]}
             >
               <Text
                 style={[
@@ -44,7 +47,7 @@ export function EventOptionsSection({
                   {
                     color:
                       visibility === opt.value
-                        ? colors.onAccentGreen
+                        ? semanticColors.onAccentGreen[scheme]
                         : semanticColors.labelSecondary[scheme],
                   },
                 ]}
@@ -105,10 +108,6 @@ const styles = StyleSheet.create({
   option: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-  },
-  optionActive: {
-    backgroundColor: colors.accentGreen,
-    borderRadius: 8,
   },
   optionText: {
     fontSize: 13,

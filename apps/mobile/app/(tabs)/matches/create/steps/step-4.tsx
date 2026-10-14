@@ -9,7 +9,7 @@ import {
   getAvailableSlots,
 } from "@/store/create-match-form";
 import { TimeSlotGrid } from "../components/time-slot-grid";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 
 const formatDate = (d: Date) =>
   d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
@@ -59,7 +59,7 @@ export default function Step4() {
           style={[
             styles.segmentedItem,
             !isPast && {
-              backgroundColor: colors.accentGreen,
+              backgroundColor: semanticColors.accentGreen[scheme],
             },
           ]}
         >
@@ -68,7 +68,7 @@ export default function Step4() {
               styles.segmentedLabel,
               {
                 color: !isPast
-                  ? colors.onAccentGreen
+                  ? semanticColors.onAccentGreen[scheme]
                   : semanticColors.labelSecondary[scheme],
               },
             ]}
@@ -81,7 +81,7 @@ export default function Step4() {
           style={[
             styles.segmentedItem,
             isPast && {
-              backgroundColor: colors.accentGreen,
+              backgroundColor: semanticColors.accentGreen[scheme],
             },
           ]}
         >
@@ -90,7 +90,7 @@ export default function Step4() {
               styles.segmentedLabel,
               {
                 color: isPast
-                  ? colors.onAccentGreen
+                  ? semanticColors.onAccentGreen[scheme]
                   : semanticColors.labelSecondary[scheme],
               },
             ]}
@@ -120,7 +120,7 @@ export default function Step4() {
             onChange={(_, date) => {
               if (date) setScheduledDate(date);
             }}
-            accentColor={colors.accentGreen}
+            accentColor={semanticColors.accentGreen[scheme]}
             themeVariant={scheme}
             locale="fr-FR"
           />

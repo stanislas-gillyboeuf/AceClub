@@ -1,7 +1,7 @@
 import { Text, StyleSheet } from "react-native";
 import { Building2 } from "lucide-react-native";
 import { GlassView } from "@/components/ui/glass-view";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 import type { Organization } from "@/types/organization";
 
 interface EventOrganizationRowProps {
@@ -15,7 +15,7 @@ export function EventOrganizationRow({ organization, isLoading, scheme }: EventO
     <GlassView style={styles.container}>
       <Building2
         size={20}
-        color={organization ? colors.accentGreen : semanticColors.labelTertiary[scheme]}
+        color={organization ? semanticColors.accentGreen[scheme] : semanticColors.labelTertiary[scheme]}
         strokeWidth={1.5}
       />
       <Text

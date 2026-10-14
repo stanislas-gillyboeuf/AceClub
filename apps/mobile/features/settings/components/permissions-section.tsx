@@ -1,7 +1,8 @@
 import { Bell, MapPin } from "lucide-react-native";
 import { SectionCard } from "@/components/ui/section-card";
 import { ToggleRow } from "@/components/ui/toggle-row";
-import { colors } from "@/constants/theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 interface PermissionsSectionProps {
   notificationsEnabled: boolean;
@@ -16,6 +17,7 @@ export function PermissionsSection({
   onNotificationsToggle,
   onLocationToggle,
 }: PermissionsSectionProps) {
+  const scheme = useColorScheme();
   return (
     <>
       <SectionCard title="Notifications">
@@ -30,7 +32,7 @@ export function PermissionsSection({
 
       <SectionCard title="Localisation">
         <ToggleRow
-          icon={<MapPin size={20} color={colors.accentGreen} strokeWidth={1.5} />}
+          icon={<MapPin size={20} color={semanticColors.accentGreen[scheme]} strokeWidth={1.5} />}
           label="Accès à la localisation"
           description="Permet de trouver des joueurs proches de vous"
           value={locationEnabled}

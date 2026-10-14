@@ -102,14 +102,15 @@ export function GhostForm({ initialName, onCreated, onBack, scheme }: GhostFormP
         disabled={!canSubmit || createGhost.isPending}
         style={({ pressed }) => [
           styles.submitButton,
+          { backgroundColor: semanticColors.accentGreen[scheme] },
           !canSubmit && styles.submitDisabled,
           pressed && canSubmit && { transform: [{ scale: 0.98 }] },
         ]}
       >
         {createGhost.isPending ? (
-          <ActivityIndicator color={colors.onAccentGreen} size="small" />
+          <ActivityIndicator color={semanticColors.onAccentGreen[scheme]} size="small" />
         ) : (
-          <Text style={styles.submitText}>Ajouter</Text>
+          <Text style={[styles.submitText, { color: semanticColors.onAccentGreen[scheme] }]}>Ajouter</Text>
         )}
       </Pressable>
 
@@ -152,7 +153,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   submitButton: {
-    backgroundColor: colors.accentGreen,
     borderRadius: radii.sm,
     height: 44,
     alignItems: "center",
@@ -164,7 +164,6 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   submitText: {
-    color: colors.onAccentGreen,
     fontSize: 16,
     fontWeight: "600",
   },

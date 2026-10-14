@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text, Pressable, Modal, StyleSheet } from "react-native";
 import { ChevronDown, Check } from "lucide-react-native";
-import { semanticColors, colors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 
 interface ClubOption {
@@ -71,7 +71,7 @@ export function ClubSwitcher({ clubs, selectedId, onSelect }: ClubSwitcherProps)
                   >
                     {club.name}
                   </Text>
-                  {club.id === selectedId && <Check size={16} color={colors.accentGreen} strokeWidth={2.5} />}
+                  {club.id === selectedId && <Check size={16} color={semanticColors.accentGreen[scheme]} strokeWidth={2.5} />}
                 </Pressable>
               ))}
             </View>

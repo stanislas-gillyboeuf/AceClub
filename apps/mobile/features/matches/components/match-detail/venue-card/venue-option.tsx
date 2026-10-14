@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { View, Text, Pressable, Platform, StyleSheet } from "react-native";
 import { Clock, Building2 } from "lucide-react-native";
 import { Image } from "expo-image";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 import { GlassView } from "@/components/ui/glass-view";
 import { MapPreview } from "../map-preview";
 import { haversineDistance, estimateTravelTime } from "@/lib/format";
@@ -61,10 +61,10 @@ export function VenueOption({ organization, userCoords, scheme, onPress }: Venue
               <View
                 style={[
                   styles.optionLogoPlaceholder,
-                  { backgroundColor: `${colors.accentGreen}26` },
+                  { backgroundColor: `${semanticColors.accentGreen[scheme]}26` },
                 ]}
               >
-                <Building2 size={16} color={colors.accentGreen} strokeWidth={2} />
+                <Building2 size={16} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
               </View>
             )}
             <View style={styles.optionTextGroup}>
@@ -86,9 +86,9 @@ export function VenueOption({ organization, userCoords, scheme, onPress }: Venue
           </View>
 
           {travelText && (
-            <View style={styles.travelBadge}>
-              <Clock size={11} color={colors.accentGreen} strokeWidth={2} />
-              <Text style={styles.travelText}>{travelText}</Text>
+            <View style={[styles.travelBadge, { backgroundColor: `${semanticColors.accentGreen[scheme]}18` }]}>
+              <Clock size={11} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
+              <Text style={[styles.travelText, { color: semanticColors.accentGreen[scheme] }]}>{travelText}</Text>
             </View>
           )}
         </View>
@@ -145,11 +145,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    backgroundColor: `${colors.accentGreen}18`,
   },
   travelText: {
     fontSize: 11,
     fontWeight: "600",
-    color: colors.accentGreen,
   },
 });

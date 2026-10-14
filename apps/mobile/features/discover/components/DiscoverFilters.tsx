@@ -26,8 +26,8 @@ export function DiscoverFilters({
 }: DiscoverFiltersProps) {
   const scheme = useColorScheme();
   const [showLevelMenu, setShowLevelMenu] = useState(false);
-  const accent = sport === "padel" ? colors.accentOrange : colors.accentGreen;
-  const onAccent = sport === "padel" ? colors.white : colors.onAccentGreen;
+  const accent = sport === "padel" ? colors.accentOrange : semanticColors.accentGreen[scheme];
+  const onAccent = sport === "padel" ? colors.white : semanticColors.onAccentGreen[scheme];
   const levels = getSkillLevels(sport);
 
   const levelButtonLabel =

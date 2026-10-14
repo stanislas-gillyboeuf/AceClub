@@ -24,7 +24,7 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SkeletonRow } from "@/components/ui/skeleton";
 
-import { colors, semanticColors, spacing } from "@/constants/theme";
+import { semanticColors, spacing } from "@/constants/theme";
 import type { LeaderboardEntry, WeeklyLeaderboardEntry } from "@/types/leaderboard";
 
 // The platform-wide "Global" leaderboard is now reserved to super-admins
@@ -111,7 +111,7 @@ export default function Ranking() {
             Platform.OS === "android"
               ? () => (
                   <Pressable onPress={goBack}>
-                    <MaterialIcons name="close" size={24} color={colors.accentGreen} />
+                    <MaterialIcons name="close" size={24} color={semanticColors.accentGreen[scheme]} />
                   </Pressable>
                 )
               : undefined,

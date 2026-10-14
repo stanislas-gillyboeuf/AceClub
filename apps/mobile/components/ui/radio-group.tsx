@@ -1,6 +1,6 @@
 import { Pressable, View, Text, StyleSheet } from "react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 
 interface RadioOption<T extends string> {
   value: T;
@@ -48,12 +48,14 @@ export function RadioGroup<T extends string>({
                 styles.radio,
                 {
                   borderColor: isSelected
-                    ? colors.accentGreen
+                    ? semanticColors.accentGreen[scheme]
                     : semanticColors.labelTertiary[scheme],
                 },
               ]}
             >
-              {isSelected && <View style={styles.radioInner} />}
+              {isSelected && (
+                <View style={[styles.radioInner, { backgroundColor: semanticColors.accentGreen[scheme] }]} />
+              )}
             </View>
           </Pressable>
         );
@@ -92,6 +94,5 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: colors.accentGreen,
   },
 });

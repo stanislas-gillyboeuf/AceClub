@@ -24,8 +24,8 @@ export function PartnerRequestCard({ item }: PartnerRequestCardProps) {
 
   const sport = (item.intent.sport ?? item.user?.sport) === "padel" ? "padel" : "tennis";
   const isPadel = sport === "padel";
-  const accent = isPadel ? colors.accentOrange : colors.accentGreen;
-  const onAccent = isPadel ? colors.white : colors.onAccentGreen;
+  const accent = isPadel ? colors.accentOrange : semanticColors.accentGreen[scheme];
+  const onAccent = isPadel ? colors.white : semanticColors.onAccentGreen[scheme];
   const displayName = item.user?.name ?? "Joueur";
   const level = formatSkillLevel(item.user?.skillLevel, item.user?.sport);
 

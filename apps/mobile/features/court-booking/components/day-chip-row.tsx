@@ -27,15 +27,15 @@ export function DayChipRow({ selectedDate, onSelect, dayCount = 7 }: DayChipRowP
             style={[
               styles.chip,
               {
-                borderColor: active ? bookingGreen.bright : semanticColors.borderColor[scheme],
-                backgroundColor: active ? bookingGreen.bright : semanticColors.systemGray6[scheme],
+                borderColor: active ? bookingGreen.bright[scheme] : semanticColors.borderColor[scheme],
+                backgroundColor: active ? bookingGreen.bright[scheme] : semanticColors.systemGray6[scheme],
               },
             ]}
           >
             <Text
               style={[
                 styles.dname,
-                { color: active ? bookingGreen.onBright : semanticColors.labelSecondary[scheme] },
+                { color: active ? bookingGreen.onBright[scheme] : semanticColors.labelSecondary[scheme] },
               ]}
             >
               {formatChipWeekday(date, index)}
@@ -43,7 +43,7 @@ export function DayChipRow({ selectedDate, onSelect, dayCount = 7 }: DayChipRowP
             <Text
               style={[
                 styles.dnum,
-                { color: active ? bookingGreen.onBright : semanticColors.labelPrimary[scheme] },
+                { color: active ? bookingGreen.onBright[scheme] : semanticColors.labelPrimary[scheme] },
               ]}
             >
               {date.getDate()}

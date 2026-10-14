@@ -2,7 +2,7 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import { ChevronRight } from "lucide-react-native";
 import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, spacing, radii } from "@/constants/theme";
+import { semanticColors, spacing, radii } from "@/constants/theme";
 import { EFFORT_MAP } from "@/features/matches/constants/sensations";
 import { TennisBall } from "@/features/matches/components/feedback/tennis-ball";
 import type { MatchFeedback } from "@/types/match";
@@ -31,7 +31,7 @@ export function FeedbackCard({ feedback, onEdit }: FeedbackCardProps) {
         style={({ pressed }) => [pressed && styles.pressed]}
       >
         <GlassView style={styles.feedbackRow}>
-          <TennisBall size={40} color={colors.accentGreen} />
+          <TennisBall size={40} color={semanticColors.accentGreen[scheme]} />
           <View style={styles.feedbackInfo}>
             <Text style={[styles.effortLabel, { color: semanticColors.labelPrimary[scheme] }]}>
               {effort.label}

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { View, Text, TextInput, Pressable, ScrollView, Alert, StyleSheet } from "react-native";
 import { Stack, router } from "expo-router";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, radii, spacing } from "@/constants/theme";
+import { semanticColors, radii, spacing } from "@/constants/theme";
 import { useMyOrganizations, useActiveMemberRole } from "@/hooks/use-organization";
 import { useCourtSettings, useUpsertSettings } from "@/hooks/use-court";
 import Button from "@/components/ui/button";
@@ -116,9 +116,9 @@ export default function BookingRulesScreen() {
               onChangeText={setOpeningHour}
               keyboardType="numeric"
               maxLength={2}
-              style={[styles.hourInput, { color: colors.accentGreen }]}
+              style={[styles.hourInput, { color: semanticColors.accentGreen[scheme] }]}
             />
-            <Text style={[styles.hourSuffix, { color: colors.accentGreen }]}>h</Text>
+            <Text style={[styles.hourSuffix, { color: semanticColors.accentGreen[scheme] }]}>h</Text>
           </View>
           <View
             style={[
@@ -132,9 +132,9 @@ export default function BookingRulesScreen() {
               onChangeText={setClosingHour}
               keyboardType="numeric"
               maxLength={2}
-              style={[styles.hourInput, { color: colors.accentGreen }]}
+              style={[styles.hourInput, { color: semanticColors.accentGreen[scheme] }]}
             />
-            <Text style={[styles.hourSuffix, { color: colors.accentGreen }]}>h</Text>
+            <Text style={[styles.hourSuffix, { color: semanticColors.accentGreen[scheme] }]}>h</Text>
           </View>
         </View>
 
@@ -199,12 +199,12 @@ function LimitField({ label, limited, onToggleLimited, value, onChangeValue }: L
         <View style={[styles.toggleRow, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
           <Pressable
             onPress={() => onToggleLimited(false)}
-            style={[styles.toggleOption, !limited && { backgroundColor: colors.accentGreen }]}
+            style={[styles.toggleOption, !limited && { backgroundColor: semanticColors.accentGreen[scheme] }]}
           >
             <Text
               style={[
                 styles.toggleText,
-                { color: !limited ? colors.onAccentGreen : semanticColors.labelSecondary[scheme] },
+                { color: !limited ? semanticColors.onAccentGreen[scheme] : semanticColors.labelSecondary[scheme] },
               ]}
             >
               Illimité
@@ -212,12 +212,12 @@ function LimitField({ label, limited, onToggleLimited, value, onChangeValue }: L
           </Pressable>
           <Pressable
             onPress={() => onToggleLimited(true)}
-            style={[styles.toggleOption, limited && { backgroundColor: colors.accentGreen }]}
+            style={[styles.toggleOption, limited && { backgroundColor: semanticColors.accentGreen[scheme] }]}
           >
             <Text
               style={[
                 styles.toggleText,
-                { color: limited ? colors.onAccentGreen : semanticColors.labelSecondary[scheme] },
+                { color: limited ? semanticColors.onAccentGreen[scheme] : semanticColors.labelSecondary[scheme] },
               ]}
             >
               Limité

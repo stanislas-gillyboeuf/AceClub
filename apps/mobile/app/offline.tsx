@@ -1,12 +1,12 @@
 import { StyleSheet, Text, View } from "react-native";
 import { WifiOff } from "lucide-react-native";
-import { colors } from "@/constants/theme";
+import { colors, semanticColors } from "@/constants/theme";
 
 export default function OfflineScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.iconWrap}>
-        <WifiOff size={40} color={colors.accentGreen} />
+        <WifiOff size={40} color={semanticColors.accentGreen.light} />
       </View>
       <Text style={styles.title}>Hors connexion</Text>
       <Text style={styles.subtitle}>

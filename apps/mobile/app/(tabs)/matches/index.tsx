@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { Stack, useRouter } from "expo-router";
 import { View, Platform, SectionList, RefreshControl, StyleSheet } from "react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, spacing } from "@/constants/theme";
+import { semanticColors, spacing } from "@/constants/theme";
 import { useInfiniteMatches } from "@/hooks/use-match";
 import { useUnreadMessagesCount } from "@/hooks/use-conversation";
 import { MatchRow } from "@/features/matches/components/match-row";
@@ -80,7 +80,7 @@ export default function Matches() {
       />
       {Platform.OS === "ios" && (
         <Stack.Toolbar placement="right">
-          <Stack.Toolbar.Button onPress={() => router.push("/chat")} tintColor={colors.accentGreen}>
+          <Stack.Toolbar.Button onPress={() => router.push("/chat")} tintColor={semanticColors.accentGreen[scheme]}>
             <Stack.Toolbar.Icon sf="message" />
             {totalUnread > 0 && (
               <Stack.Toolbar.Badge>{totalUnread > 99 ? "99+" : String(totalUnread)}</Stack.Toolbar.Badge>

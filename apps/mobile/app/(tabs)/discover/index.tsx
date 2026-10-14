@@ -14,7 +14,7 @@ import { useDiscoverList } from "@/features/discover/hooks/use-discover-list";
 import { EmptyState } from "@/components/ui/empty-state";
 import { JoinClubPrompt } from "@/components/ui/join-club-prompt";
 import { DiscoverFab } from "@/components/ui/discover-fab";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { MatchIntentWithUser } from "@/types/match-intent";
 import { MessagesHeaderButton } from "@/features/chat/components/MessagesHeaderButton";
@@ -66,7 +66,7 @@ export default function DiscoverScreen() {
       />
       {Platform.OS === "ios" && (
         <Stack.Toolbar placement="right">
-          <Stack.Toolbar.Button onPress={() => router.push("/chat")} tintColor={colors.accentGreen}>
+          <Stack.Toolbar.Button onPress={() => router.push("/chat")} tintColor={semanticColors.accentGreen[scheme]}>
             <Stack.Toolbar.Icon sf="message" />
             {totalUnread > 0 && (
               <Stack.Toolbar.Badge>{totalUnread > 99 ? "99+" : String(totalUnread)}</Stack.Toolbar.Badge>
@@ -95,7 +95,7 @@ export default function DiscoverScreen() {
             <JoinClubPrompt />
           ) : isLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={colors.accentGreen} />
+              <ActivityIndicator size="large" color={semanticColors.accentGreen[scheme]} />
             </View>
           ) : (
             <EmptyState

@@ -6,7 +6,7 @@ import { useBlockedUsers, useBlockUser, useUnblockUser } from "@/hooks/use-block
 import { useFindOrCreateConversation } from "@/hooks/use-conversation";
 import { useCreateMatchFormStore } from "@/store/create-match-form";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { Avatar } from "@/components/ui/avatar";
 import Button from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -60,7 +60,7 @@ export default function SharedProfileScreen() {
       <Stack.Screen options={{ title: "Profil" }} />
       {isLoading ? (
         <View style={styles.centered}>
-          <ActivityIndicator color={colors.accentGreen} />
+          <ActivityIndicator color={semanticColors.accentGreen[scheme]} />
         </View>
       ) : isError || !profile ? (
         <EmptyState

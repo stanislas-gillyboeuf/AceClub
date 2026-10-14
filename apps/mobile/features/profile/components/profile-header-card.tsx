@@ -104,7 +104,12 @@ export function ProfileHeaderCard({
               { backgroundColor: semanticColors.skeleton[scheme] },
             ]}
           >
-            <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${progressPercent}%`, backgroundColor: semanticColors.accentGreen[scheme] },
+              ]}
+            />
           </View>
         </View>
       )}
@@ -129,7 +134,7 @@ export function ProfileHeaderCard({
           style={[styles.statDivider, { backgroundColor: semanticColors.divider[scheme] }]}
         />
         <View style={styles.statItem}>
-          <TrendingUp size={16} color={colors.accentGreen} strokeWidth={2} />
+          <TrendingUp size={16} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
           <Text style={[styles.statValue, { color: semanticColors.labelPrimary[scheme] }]}>
             {matchStats.winRate}%
           </Text>
@@ -206,7 +211,6 @@ const styles = StyleSheet.create({
   progressFill: {
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.accentGreen,
   },
   statsRow: {
     flexDirection: "row",

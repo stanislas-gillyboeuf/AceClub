@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
-import { colors } from "@/constants/theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import type { LucideIcon } from "lucide-react-native";
 import Animated, { FadeIn, withTiming, withDelay } from "react-native-reanimated";
 
@@ -10,6 +11,8 @@ interface StepHeaderProps {
 }
 
 export function StepHeader({ icon: Icon, title, subtitle }: StepHeaderProps) {
+  const scheme = useColorScheme();
+
   return (
     <View style={styles.container}>
       <Animated.View
@@ -23,9 +26,9 @@ export function StepHeader({ icon: Icon, title, subtitle }: StepHeaderProps) {
             },
           };
         }}
-        style={styles.iconBox}
+        style={[styles.iconBox, { backgroundColor: `${semanticColors.accentGreen[scheme]}15` }]}
       >
-        <Icon size={36} color={colors.accentGreen} />
+        <Icon size={36} color={semanticColors.accentGreen[scheme]} />
       </Animated.View>
       <Animated.Text entering={FadeIn.delay(200).duration(400)} style={styles.title}>
         {title}
@@ -47,7 +50,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 20,
-    backgroundColor: `${colors.accentGreen}15`,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 20,

@@ -1,26 +1,26 @@
 import { useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Swords, Dumbbell, CircleDot } from "lucide-react-native";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useColorScheme, type ColorScheme } from "@/hooks/use-color-scheme";
 import { usePreferences } from "@/hooks/use-user";
 import { useCreateIntentFormStore } from "@/store/create-intent-form";
 import { SelectableTile } from "@/components/ui/selectable-tile";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import type { MatchIntentType } from "@/types/match-intent";
 import type { Sport } from "@/types/common";
 
 const ACTIVITY_TYPES: {
   value: MatchIntentType;
   label: string;
-  icon: (selected: boolean) => React.ReactNode;
+  icon: (selected: boolean, scheme: ColorScheme) => React.ReactNode;
 }[] = [
   {
     value: "match",
     label: "Match",
-    icon: (selected) => (
+    icon: (selected, scheme) => (
       <Swords
         size={28}
-        color={selected ? colors.accentGreen : "#8E8E93"}
+        color={selected ? semanticColors.accentGreen[scheme] : "#8E8E93"}
         strokeWidth={1.8}
       />
     ),
@@ -28,10 +28,10 @@ const ACTIVITY_TYPES: {
   {
     value: "training",
     label: "Entraînement",
-    icon: (selected) => (
+    icon: (selected, scheme) => (
       <Dumbbell
         size={28}
-        color={selected ? colors.accentGreen : "#8E8E93"}
+        color={selected ? semanticColors.accentGreen[scheme] : "#8E8E93"}
         strokeWidth={1.8}
       />
     ),
@@ -78,7 +78,7 @@ export default function Step1() {
                 icon={
                   <CircleDot
                     size={28}
-                    color={sport === option.value ? colors.accentGreen : "#8E8E93"}
+                    color={sport === option.value ? semanticColors.accentGreen[scheme] : "#8E8E93"}
                     strokeWidth={1.8}
                   />
                 }
@@ -102,7 +102,7 @@ export default function Step1() {
         {ACTIVITY_TYPES.map((type) => (
           <SelectableTile
             key={type.value}
-            icon={type.icon(intentType === type.value)}
+            icon={type.icon(intentType === type.value, scheme)}
             label={type.label}
             isSelected={intentType === type.value}
             onPress={() => setIntentType(type.value)}

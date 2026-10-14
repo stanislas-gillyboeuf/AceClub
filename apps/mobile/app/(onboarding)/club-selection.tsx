@@ -16,7 +16,7 @@ import { GlassView } from "@/components/ui/glass-view";
 import { Search, X, MapPin, Lock } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useSearchOrganizations, useRequestClub } from "@/hooks/use-organization";
-import { colors, semanticColors, radii, spacing } from "@/constants/theme";
+import { semanticColors, radii, spacing } from "@/constants/theme";
 import { FormField } from "@/components/ui/form-field";
 import { setPendingClubSelection } from "@/lib/pending-club-selection";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -98,8 +98,10 @@ export default function OnboardingClubSelection() {
             {item.logo ? (
               <Image source={{ uri: item.logo }} style={styles.orgLogo} contentFit="cover" />
             ) : (
-              <View style={styles.orgLogoPlaceholder}>
-                <Text style={styles.orgLogoLetter}>{item.name.charAt(0).toUpperCase()}</Text>
+              <View style={[styles.orgLogoPlaceholder, { backgroundColor: `${semanticColors.accentGreen[scheme]}15` }]}>
+                <Text style={[styles.orgLogoLetter, { color: semanticColors.accentGreen[scheme] }]}>
+                  {item.name.charAt(0).toUpperCase()}
+                </Text>
               </View>
             )}
             <View style={styles.orgInfo}>
@@ -204,11 +206,11 @@ export default function OnboardingClubSelection() {
         ]}
         ListEmptyComponent={
           isLoading ? (
-            <ActivityIndicator style={styles.loader} color={colors.accentGreen} />
+            <ActivityIndicator style={styles.loader} color={semanticColors.accentGreen[scheme]} />
           ) : debouncedQuery.length > 0 ? (
             <Animated.View entering={FadeIn.duration(350)} style={styles.emptyContainer}>
-              <View style={styles.emptyIconCircle}>
-                <Search size={32} color={colors.accentGreen} strokeWidth={1.5} />
+              <View style={[styles.emptyIconCircle, { backgroundColor: `${semanticColors.accentGreen[scheme]}12` }]}>
+                <Search size={32} color={semanticColors.accentGreen[scheme]} strokeWidth={1.5} />
               </View>
               <Text style={[styles.emptyTitle, { color: semanticColors.labelPrimary[scheme] }]}>
                 Aucun club trouve
@@ -294,14 +296,12 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: `${colors.accentGreen}15`,
     alignItems: "center",
     justifyContent: "center",
   },
   orgLogoLetter: {
     fontSize: 17,
     fontWeight: "600",
-    color: colors.accentGreen,
   },
   orgInfo: {
     flex: 1,
@@ -336,7 +336,6 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: `${colors.accentGreen}12`,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 8,

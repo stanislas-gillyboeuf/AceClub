@@ -19,7 +19,7 @@ import { OrgLogoEditor } from "@/features/profile/components/OrgLogoEditor";
 import { MapPreview } from "@/features/matches/components/match-detail/map-preview";
 import { GlassView } from "@/components/ui/glass-view";
 import Button from "@/components/ui/button";
-import { colors, semanticColors, spacing, radii } from "@/constants/theme";
+import { semanticColors, spacing, radii } from "@/constants/theme";
 
 export default function OrgSettings() {
   const scheme = useColorScheme();
@@ -92,7 +92,7 @@ export default function OrgSettings() {
       <>
         <Stack.Screen options={{ title: "Paramètres du club" }} />
         <View style={[styles.loadingContainer, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-          <ActivityIndicator size="large" color={colors.accentGreen} />
+          <ActivityIndicator size="large" color={semanticColors.accentGreen[scheme]} />
         </View>
       </>
     );
@@ -135,7 +135,7 @@ export default function OrgSettings() {
           <View style={styles.addressRow}>
             <MapPin
               size={20}
-              color={address ? colors.accentGreen : semanticColors.labelTertiary[scheme]}
+              color={address ? semanticColors.accentGreen[scheme] : semanticColors.labelTertiary[scheme]}
               strokeWidth={1.5}
             />
             <TextInput

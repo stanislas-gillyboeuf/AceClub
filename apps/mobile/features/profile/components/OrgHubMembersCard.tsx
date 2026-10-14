@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import { Avatar } from "@/components/ui/avatar";
 import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 import type { Member } from "@/types/organization";
 
 interface OrgHubMembersCardProps {
@@ -28,8 +28,10 @@ export function OrgHubMembersCard({ members }: OrgHubMembersCardProps) {
           <Text style={[styles.title, { color: semanticColors.labelPrimary[scheme] }]}>
             Membres
           </Text>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{members.length}</Text>
+          <View style={[styles.badge, { backgroundColor: semanticColors.accentGreen[scheme] }]}>
+            <Text style={[styles.badgeText, { color: semanticColors.onAccentGreen[scheme] }]}>
+              {members.length}
+            </Text>
           </View>
           <View style={{ flex: 1 }} />
           <ChevronRight
@@ -78,7 +80,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   badge: {
-    backgroundColor: colors.accentGreen,
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -86,7 +87,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   badgeText: {
-    color: colors.onAccentGreen,
     fontSize: 12,
     fontWeight: "700",
   },

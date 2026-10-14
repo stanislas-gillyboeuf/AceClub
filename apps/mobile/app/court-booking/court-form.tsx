@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useColorScheme, type ColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, radii, spacing } from "@/constants/theme";
+import { semanticColors, radii, spacing } from "@/constants/theme";
 import { useMyOrganizations } from "@/hooks/use-organization";
 import { useAllCourtsForOrg, useCreateCourt, useUpdateCourt } from "@/hooks/use-court";
 import Button from "@/components/ui/button";
@@ -275,15 +275,15 @@ function SegmentedOptions<T>({
             style={[
               styles.option,
               {
-                backgroundColor: isSelected ? colors.accentGreen : semanticColors.cardBackground[scheme],
-                borderColor: isSelected ? colors.accentGreen : semanticColors.borderColor[scheme],
+                backgroundColor: isSelected ? semanticColors.accentGreen[scheme] : semanticColors.cardBackground[scheme],
+                borderColor: isSelected ? semanticColors.accentGreen[scheme] : semanticColors.borderColor[scheme],
               },
             ]}
           >
             <Text
               style={[
                 styles.optionText,
-                { color: isSelected ? colors.onAccentGreen : semanticColors.labelPrimary[scheme] },
+                { color: isSelected ? semanticColors.onAccentGreen[scheme] : semanticColors.labelPrimary[scheme] },
               ]}
             >
               {option.label}

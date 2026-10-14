@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, spacing } from "@/constants/theme";
+import { semanticColors, spacing } from "@/constants/theme";
 import { startOfWeek, formatShortWeekday, formatDayKey, monthYearFormatter } from "@/lib/date";
 
 interface WeekDateStripProps {
@@ -52,10 +52,10 @@ export function WeekDateStrip({
           const key = formatDayKey(day);
           const isSelected = key === selectedKey;
           const hasMatches = (matchCountByDay.get(key) ?? 0) > 0;
-          const textColor = isSelected ? colors.onAccentGreen : undefined;
+          const textColor = isSelected ? semanticColors.onAccentGreen[scheme] : undefined;
 
           const Wrapper = isSelected ? GlassView : View;
-          const wrapperProps = isSelected ? { tintColor: colors.accentGreen } : {};
+          const wrapperProps = isSelected ? { tintColor: semanticColors.accentGreen[scheme] } : {};
 
           return (
             <Pressable
@@ -74,7 +74,7 @@ export function WeekDateStrip({
                   {day.getDate()}
                 </Text>
               </Wrapper>
-              {hasMatches && <View style={styles.dot} />}
+              {hasMatches && <View style={[styles.dot, { backgroundColor: semanticColors.accentGreen[scheme] }]} />}
             </Pressable>
           );
         })}
@@ -132,7 +132,6 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.accentGreen,
     marginTop: 2,
   },
 });

@@ -4,7 +4,7 @@ import { Building2, ChevronRight } from "lucide-react-native";
 import { Card } from "@/components/ui/card";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { ROLE_LABELS } from "@/features/profile/lib/role-permissions";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import type { MemberRole } from "@/types/common";
 import type { Organization } from "@/types/organization";
 
@@ -52,8 +52,10 @@ export function OrganizationCard({
             transition={200}
           />
         ) : (
-          <View style={styles.orgLogoPlaceholder}>
-            <Building2 size={20} color={colors.accentGreen} strokeWidth={1.5} />
+          <View
+            style={[styles.orgLogoPlaceholder, { backgroundColor: `${semanticColors.accentGreen[scheme]}1A` }]}
+          >
+            <Building2 size={20} color={semanticColors.accentGreen[scheme]} strokeWidth={1.5} />
           </View>
         )}
         <View style={styles.orgInfo}>
@@ -108,7 +110,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 10,
-    backgroundColor: `${colors.accentGreen}1A`,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -16,7 +16,7 @@ import { GlassView } from "@/components/ui/glass-view";
 import { Search, X, Lock, ChevronRight } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useSearchOrganizations, useVerifyPin, useRequestClub } from "@/hooks/use-organization";
-import { colors, semanticColors, radii, spacing } from "@/constants/theme";
+import { semanticColors, radii, spacing } from "@/constants/theme";
 import { FormField } from "@/components/ui/form-field";
 import { setPendingClubSelection } from "@/lib/pending-club-selection";
 import { setPendingVenueSelection } from "@/lib/pending-venue-selection";
@@ -129,8 +129,10 @@ export default function ClubSelection() {
           {item.logo ? (
             <Image source={{ uri: item.logo }} style={styles.orgLogo} contentFit="cover" />
           ) : (
-            <View style={styles.orgLogoPlaceholder}>
-              <Text style={styles.orgLogoLetter}>{item.name.charAt(0).toUpperCase()}</Text>
+            <View style={[styles.orgLogoPlaceholder, { backgroundColor: `${semanticColors.accentGreen[scheme]}15` }]}>
+              <Text style={[styles.orgLogoLetter, { color: semanticColors.accentGreen[scheme] }]}>
+                {item.name.charAt(0).toUpperCase()}
+              </Text>
             </View>
           )}
           <View style={styles.orgInfo}>
@@ -152,7 +154,9 @@ export default function ClubSelection() {
           {item.pinEnabled && (
             <Lock size={16} color={semanticColors.labelTertiary[scheme]} strokeWidth={1.5} />
           )}
-          {isSelected && <View style={styles.selectedDot} />}
+          {isSelected && (
+            <View style={[styles.selectedDot, { backgroundColor: semanticColors.accentGreen[scheme] }]} />
+          )}
         </GlassView>
       </Pressable>
     );
@@ -263,7 +267,7 @@ export default function ClubSelection() {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           isLoading ? (
-            <ActivityIndicator style={styles.loader} color={colors.accentGreen} />
+            <ActivityIndicator style={styles.loader} color={semanticColors.accentGreen[scheme]} />
           ) : (
             <Text
               style={[styles.emptyText, { color: semanticColors.labelSecondary[scheme] }]}
@@ -299,8 +303,8 @@ export default function ClubSelection() {
               pressed && styles.orgCardPressed,
             ]}
           >
-            <Text style={styles.requestText}>Proposer mon club</Text>
-            <ChevronRight size={16} color={colors.accentGreen} strokeWidth={2} />
+            <Text style={[styles.requestText, { color: semanticColors.accentGreen[scheme] }]}>Proposer mon club</Text>
+            <ChevronRight size={16} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
           </Pressable>
         }
       />
@@ -351,14 +355,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: `${colors.accentGreen}15`,
     alignItems: "center",
     justifyContent: "center",
   },
   orgLogoLetter: {
     fontSize: 16,
     fontWeight: "600",
-    color: colors.accentGreen,
   },
   orgInfo: {
     flex: 1,
@@ -375,7 +377,6 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: colors.accentGreen,
   },
   loader: {
     paddingVertical: 32,
@@ -395,7 +396,6 @@ const styles = StyleSheet.create({
   requestText: {
     fontSize: 15,
     fontWeight: "500",
-    color: colors.accentGreen,
   },
   pinContent: {
     padding: spacing.horizontal,

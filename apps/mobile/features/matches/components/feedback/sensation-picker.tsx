@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { GlassView } from "@/components/ui/glass-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import { SENSATIONS } from "@/features/matches/constants/sensations";
 
 interface SensationPickerProps {
@@ -27,7 +27,7 @@ export function SensationPicker({ selected, onSelect }: SensationPickerProps) {
           >
             <GlassView
               style={styles.button}
-              tintColor={isSelected ? colors.accentGreen : undefined}
+              tintColor={isSelected ? semanticColors.accentGreen[scheme] : undefined}
             >
               <Text style={styles.emoji}>{sensation.emoji}</Text>
             </GlassView>
@@ -36,7 +36,7 @@ export function SensationPicker({ selected, onSelect }: SensationPickerProps) {
                 styles.label,
                 {
                   color: isSelected
-                    ? colors.accentGreen
+                    ? semanticColors.accentGreen[scheme]
                     : semanticColors.labelSecondary[scheme],
                 },
               ]}

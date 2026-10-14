@@ -2,13 +2,15 @@ import { Pressable, StyleSheet } from "react-native";
 import { Plus } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GlassView } from "@/components/ui/glass-view";
-import { colors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 interface MatchFabProps {
   onPress: () => void;
 }
 
 export function MatchFab({ onPress }: MatchFabProps) {
+  const scheme = useColorScheme();
   const insets = useSafeAreaInsets();
 
   return (
@@ -16,8 +18,8 @@ export function MatchFab({ onPress }: MatchFabProps) {
       onPress={onPress}
       style={({ pressed }) => [styles.fab, { bottom: insets.bottom + 24 }, pressed && styles.fabPressed]}
     >
-      <GlassView style={styles.fabGlass} tintColor={colors.accentGreen}>
-        <Plus size={28} color={colors.onAccentGreen} />
+      <GlassView style={styles.fabGlass} tintColor={semanticColors.accentGreen[scheme]}>
+        <Plus size={28} color={semanticColors.onAccentGreen[scheme]} />
       </GlassView>
     </Pressable>
   );

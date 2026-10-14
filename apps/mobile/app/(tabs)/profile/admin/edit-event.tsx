@@ -153,7 +153,7 @@ export default function EditEvent() {
       <>
         <Stack.Screen options={{ title: "Modifier l'event" }} />
         <View style={[styles.loadingContainer, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-          <ActivityIndicator size="large" color={colors.accentGreen} />
+          <ActivityIndicator size="large" color={semanticColors.accentGreen[scheme]} />
         </View>
       </>
     );
@@ -194,7 +194,7 @@ export default function EditEvent() {
         <GlassView style={styles.rowCard}>
           <Building2
             size={20}
-            color={event?.organizationName ? colors.accentGreen : semanticColors.labelTertiary[scheme]}
+            color={event?.organizationName ? semanticColors.accentGreen[scheme] : semanticColors.labelTertiary[scheme]}
             strokeWidth={1.5}
           />
           <Text

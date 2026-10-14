@@ -1,18 +1,18 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Swords, Dumbbell } from "lucide-react-native";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useColorScheme, type ColorScheme } from "@/hooks/use-color-scheme";
 import { useCreateMatchFormStore } from "@/store/create-match-form";
 import { ActivityTile } from "../components/activity-tile";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 
 const ACTIVITY_TYPES = [
   {
     value: "match" as const,
     label: "Match",
-    icon: (selected: boolean) => (
+    icon: (selected: boolean, scheme: ColorScheme) => (
       <Swords
         size={32}
-        color={selected ? colors.accentGreen : "#8E8E93"}
+        color={selected ? semanticColors.accentGreen[scheme] : "#8E8E93"}
         strokeWidth={1.8}
       />
     ),
@@ -20,10 +20,10 @@ const ACTIVITY_TYPES = [
   {
     value: "training" as const,
     label: "Entraînement",
-    icon: (selected: boolean) => (
+    icon: (selected: boolean, scheme: ColorScheme) => (
       <Dumbbell
         size={32}
-        color={selected ? colors.accentGreen : "#8E8E93"}
+        color={selected ? semanticColors.accentGreen[scheme] : "#8E8E93"}
         strokeWidth={1.8}
       />
     ),
@@ -50,7 +50,7 @@ export default function Step1() {
         {ACTIVITY_TYPES.map((type) => (
           <ActivityTile
             key={type.value}
-            icon={type.icon(matchType === type.value)}
+            icon={type.icon(matchType === type.value, scheme)}
             label={type.label}
             isSelected={matchType === type.value}
             onPress={() => setMatchType(type.value)}

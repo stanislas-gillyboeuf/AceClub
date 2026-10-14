@@ -18,7 +18,7 @@ import { useCreateMatchFormStore, combineDateAndSlot } from "@/store/create-matc
 import { useCreateMatchStepperStore } from "@/store/create-match-stepper";
 import { StepperNav } from "@/components/ui/stepper-nav";
 import Stepper, { useStepperActions } from "./steps/steper";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 
 export default function CreateMatch() {
   const scheme = useColorScheme();
@@ -191,7 +191,7 @@ export default function CreateMatch() {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   prev();
                 }}
-                tintColor={colors.accentGreen}
+                tintColor={semanticColors.accentGreen[scheme]}
               />
             </Stack.Toolbar>
           )}
@@ -239,7 +239,7 @@ export default function CreateMatch() {
               },
             ]}
           >
-            <ActivityIndicator size="small" color={colors.accentGreen} />
+            <ActivityIndicator size="small" color={semanticColors.accentGreen[scheme]} />
             <Text
               style={[
                 styles.overlayText,

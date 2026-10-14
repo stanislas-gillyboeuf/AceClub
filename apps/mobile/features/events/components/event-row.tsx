@@ -5,7 +5,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { BadgePill } from "@/components/ui/badge-pill";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { formatTime } from "@/lib/format";
-import { colors, semanticColors, radii, spacing } from "@/constants/theme";
+import { semanticColors, radii, spacing } from "@/constants/theme";
 import type { EventSummary, MyEvent } from "@/types/event";
 
 interface EventRowProps {
@@ -55,11 +55,11 @@ export function EventRow({ event, onPress }: EventRowProps) {
           <View
             style={[
               StyleSheet.absoluteFill,
-              { backgroundColor: `${colors.accentGreen}26` },
+              { backgroundColor: `${semanticColors.accentGreen[scheme]}26` },
             ]}
           >
             <View style={styles.thumbnailPlaceholder}>
-              <Calendar size={22} color={colors.accentGreen} strokeWidth={1.5} />
+              <Calendar size={22} color={semanticColors.accentGreen[scheme]} strokeWidth={1.5} />
             </View>
           </View>
         )}

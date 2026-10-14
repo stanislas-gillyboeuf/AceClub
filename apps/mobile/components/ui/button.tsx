@@ -6,7 +6,8 @@ import {
   type ViewStyle,
 } from "react-native";
 import { GlassView } from "@/components/ui/glass-view";
-import { colors } from "@/constants/theme";
+import { colors, semanticColors } from "@/constants/theme";
+import { useColorScheme, type ColorScheme } from "@/hooks/use-color-scheme";
 
 type ButtonVariant = "primary" | "secondary" | "destructive";
 
@@ -20,26 +21,28 @@ interface ButtonProps {
   style?: ViewStyle;
 }
 
-const variantConfig = {
-  primary: {
-    tintColor: colors.accentGreen,
-    text: colors.onAccentGreen,
-    textDisabled: `${colors.onAccentGreen}80`,
-    loader: colors.onAccentGreen,
-  },
-  secondary: {
-    tintColor: undefined,
-    text: colors.gray500,
-    textDisabled: colors.gray400,
-    loader: colors.gray500,
-  },
-  destructive: {
-    tintColor: colors.red500,
-    text: "#FFFFFF",
-    textDisabled: "rgba(255,255,255,0.5)",
-    loader: "#FFFFFF",
-  },
-} as const;
+function getVariantConfig(scheme: ColorScheme) {
+  return {
+    primary: {
+      tintColor: semanticColors.accentGreen[scheme],
+      text: semanticColors.onAccentGreen[scheme],
+      textDisabled: `${semanticColors.onAccentGreen[scheme]}80`,
+      loader: semanticColors.onAccentGreen[scheme],
+    },
+    secondary: {
+      tintColor: undefined,
+      text: colors.gray500,
+      textDisabled: colors.gray400,
+      loader: colors.gray500,
+    },
+    destructive: {
+      tintColor: colors.red500,
+      text: "#FFFFFF",
+      textDisabled: "rgba(255,255,255,0.5)",
+      loader: "#FFFFFF",
+    },
+  } as const;
+}
 
 export default function Button({
   label,
@@ -50,7 +53,8 @@ export default function Button({
   fullWidth = true,
   style,
 }: ButtonProps) {
-  const v = variantConfig[variant];
+  const scheme = useColorScheme();
+  const v = getVariantConfig(scheme)[variant];
   const isDisabled = disabled || loading;
 
   return (

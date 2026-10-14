@@ -3,7 +3,7 @@ import { Clock, CheckCircle2 } from "lucide-react-native";
 import { Card } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import {
   getChallengeProgressPercent,
   getChallengeStatusColor,
@@ -24,7 +24,7 @@ export function ChallengeRow({ challenge }: ChallengeRowProps) {
     challenge.currentProgress,
     challenge.targetValue
   );
-  const statusColor = getChallengeStatusColor(challenge.status, colors.accentGreen);
+  const statusColor = getChallengeStatusColor(challenge.status, semanticColors.accentGreen[scheme]);
   const difficultyColor = getDifficultyColor(challenge.difficulty);
   const isCompleted = challenge.status === "completed";
   const isExpired = challenge.status === "expired";

@@ -40,7 +40,7 @@ function AgendaItem({ booking, scheme, onPress }: { booking: CourtBooking; schem
   const incomplete = !isPast && isPadel && filledCount < 4;
   const deadlineHour = Math.max(start.getHours() - PADEL_TEAM_COMPLETION_WINDOW_HOURS, 0);
 
-  const leftAccent = isPast ? semanticColors.labelTertiary[scheme] : incomplete ? colors.accentOrange : bookingGreen.dim;
+  const leftAccent = isPast ? semanticColors.labelTertiary[scheme] : incomplete ? colors.accentOrange : bookingGreen.dim[scheme];
 
   return (
     <Pressable
@@ -56,7 +56,7 @@ function AgendaItem({ booking, scheme, onPress }: { booking: CourtBooking; schem
       ]}
     >
       <View style={styles.dayBlock}>
-        <Text style={[styles.dayNumber, { color: isPast ? semanticColors.labelSecondary[scheme] : bookingGreen.dim }]}>
+        <Text style={[styles.dayNumber, { color: isPast ? semanticColors.labelSecondary[scheme] : bookingGreen.dim[scheme] }]}>
           {start.getDate()}
         </Text>
         <Text style={[styles.dayMonth, { color: semanticColors.labelTertiary[scheme] }]}>

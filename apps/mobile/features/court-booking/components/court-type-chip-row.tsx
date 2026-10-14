@@ -24,12 +24,12 @@ export function CourtTypeChipRow({ filters, selectedKey, onSelect }: CourtTypeCh
             style={[
               styles.chip,
               {
-                borderColor: active ? bookingGreen.bright : semanticColors.borderColor[scheme],
-                backgroundColor: active ? bookingGreen.bright : semanticColors.systemGray6[scheme],
+                borderColor: active ? bookingGreen.bright[scheme] : semanticColors.borderColor[scheme],
+                backgroundColor: active ? bookingGreen.bright[scheme] : semanticColors.systemGray6[scheme],
               },
             ]}
           >
-            <Text style={[styles.label, { color: active ? bookingGreen.onBright : semanticColors.labelSecondary[scheme] }]}>
+            <Text style={[styles.label, { color: active ? bookingGreen.onBright[scheme] : semanticColors.labelSecondary[scheme] }]}>
               {filter.label}
             </Text>
           </Pressable>

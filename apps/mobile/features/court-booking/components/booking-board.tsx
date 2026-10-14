@@ -126,12 +126,12 @@ function Cell({ cell, scheme, borderColor, onPress }: CellProps) {
 
   if (cell.status === "free") {
     content = `${cell.hour}h`;
-    cellStyle = { backgroundColor: bookingGreen.bright };
-    textStyle = { color: bookingGreen.onBright };
+    cellStyle = { backgroundColor: bookingGreen.bright[scheme] };
+    textStyle = { color: bookingGreen.onBright[scheme] };
   } else if (cell.status === "mine") {
     content = "VOUS";
-    cellStyle = { backgroundColor: semanticColors.systemGray6[scheme], borderWidth: 1.5, borderColor: bookingGreen.bright };
-    textStyle = { color: bookingGreen.dim };
+    cellStyle = { backgroundColor: semanticColors.systemGray6[scheme], borderWidth: 1.5, borderColor: bookingGreen.bright[scheme] };
+    textStyle = { color: bookingGreen.dim[scheme] };
   } else if (cell.status === "booked") {
     content = "●";
     const accent = cell.bookedAsClub ? colors.accentOrange : colors.red500;

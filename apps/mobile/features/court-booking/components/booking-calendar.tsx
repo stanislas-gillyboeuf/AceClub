@@ -86,13 +86,13 @@ export function BookingCalendar({
                 styles.day,
                 hasBooking && { backgroundColor: semanticColors.systemGray6[scheme] },
                 isToday && { borderWidth: 1.5, borderColor: semanticColors.labelSecondary[scheme] },
-                isSelected && { backgroundColor: bookingGreen.bright },
+                isSelected && { backgroundColor: bookingGreen.bright[scheme] },
               ]}
             >
               <Text
                 style={[
                   styles.dayNumber,
-                  { color: isSelected ? bookingGreen.onBright : semanticColors.labelSecondary[scheme] },
+                  { color: isSelected ? bookingGreen.onBright[scheme] : semanticColors.labelSecondary[scheme] },
                   isSelected && { fontWeight: "700" },
                 ]}
               >
@@ -104,10 +104,10 @@ export function BookingCalendar({
                     styles.calDot,
                     {
                       backgroundColor: isSelected
-                        ? bookingGreen.onBright
+                        ? bookingGreen.onBright[scheme]
                         : isPast
                           ? semanticColors.labelTertiary[scheme]
-                          : bookingGreen.bright,
+                          : bookingGreen.bright[scheme],
                     },
                   ]}
                 />
@@ -119,7 +119,7 @@ export function BookingCalendar({
 
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.calDot, { backgroundColor: bookingGreen.bright }]} />
+          <View style={[styles.calDot, { backgroundColor: bookingGreen.bright[scheme] }]} />
           <Text style={[styles.legendText, { color: semanticColors.labelSecondary[scheme] }]}>À venir</Text>
         </View>
         <View style={styles.legendItem}>

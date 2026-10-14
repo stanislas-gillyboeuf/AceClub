@@ -3,7 +3,8 @@ import { Image } from "expo-image";
 import { Building2, Camera } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 
-import { colors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 interface OrgLogoEditorProps {
   logoUri: string | null | undefined;
@@ -11,6 +12,7 @@ interface OrgLogoEditorProps {
 }
 
 export function OrgLogoEditor({ logoUri, onPick }: OrgLogoEditorProps) {
+  const scheme = useColorScheme();
   const handlePress = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -33,12 +35,14 @@ export function OrgLogoEditor({ logoUri, onPick }: OrgLogoEditorProps) {
           transition={200}
         />
       ) : (
-        <View style={styles.placeholder}>
-          <Building2 size={40} color={colors.accentGreen} strokeWidth={1.5} />
+        <View
+          style={[styles.placeholder, { backgroundColor: `${semanticColors.accentGreen[scheme]}1A` }]}
+        >
+          <Building2 size={40} color={semanticColors.accentGreen[scheme]} strokeWidth={1.5} />
         </View>
       )}
-      <View style={styles.cameraBadge}>
-        <Camera size={16} color={colors.onAccentGreen} strokeWidth={2} />
+      <View style={[styles.cameraBadge, { backgroundColor: semanticColors.accentGreen[scheme] }]}>
+        <Camera size={16} color={semanticColors.onAccentGreen[scheme]} strokeWidth={2} />
       </View>
     </Pressable>
   );
@@ -61,7 +65,6 @@ const styles = StyleSheet.create({
     width: LOGO_SIZE,
     height: LOGO_SIZE,
     borderRadius: radii.md,
-    backgroundColor: `${colors.accentGreen}1A`,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -72,7 +75,6 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
   },

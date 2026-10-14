@@ -30,12 +30,12 @@ export function SportToggle({ sport, onChange }: SportToggleProps) {
           <Pressable
             key={option.key}
             onPress={() => onChange(option.key)}
-            style={[styles.button, active && { backgroundColor: bookingGreen.bright }]}
+            style={[styles.button, active && { backgroundColor: bookingGreen.bright[scheme] }]}
           >
             <Text
               style={[
                 styles.label,
-                { color: active ? bookingGreen.onBright : semanticColors.labelSecondary[scheme] },
+                { color: active ? bookingGreen.onBright[scheme] : semanticColors.labelSecondary[scheme] },
               ]}
             >
               {option.label}

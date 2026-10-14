@@ -2,7 +2,7 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import * as Haptics from "expo-haptics";
 import { UserPlus } from "lucide-react-native";
 import { GlassView } from "@/components/ui/glass-view";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 
 interface AddGhostButtonProps {
   onPress: () => void;
@@ -23,9 +23,9 @@ export function AddGhostButton({ onPress, scheme }: AddGhostButtonProps) {
         pressed && { transform: [{ scale: 0.98 }] },
       ]}
     >
-      <GlassView style={styles.card} tintColor={`${colors.accentGreen}15`}>
-        <View style={styles.icon}>
-          <UserPlus size={22} color={colors.accentGreen} />
+      <GlassView style={styles.card} tintColor={`${semanticColors.accentGreen[scheme]}15`}>
+        <View style={[styles.icon, { backgroundColor: `${semanticColors.accentGreen[scheme]}15` }]}>
+          <UserPlus size={22} color={semanticColors.accentGreen[scheme]} />
         </View>
         <View style={styles.info}>
           <Text
@@ -62,7 +62,6 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 23,
-    backgroundColor: `${colors.accentGreen}15`,
     alignItems: "center",
     justifyContent: "center",
   },

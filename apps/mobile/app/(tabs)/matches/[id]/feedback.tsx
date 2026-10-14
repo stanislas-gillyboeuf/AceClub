@@ -16,7 +16,7 @@ import {
   useUpdateFeedback,
   useDeleteFeedback,
 } from "@/hooks/use-match";
-import { colors, semanticColors, spacing } from "@/constants/theme";
+import { semanticColors, spacing } from "@/constants/theme";
 import { EffortPicker } from "@/features/matches/components/feedback/effort-picker";
 
 export default function FeedbackScreen() {
@@ -93,17 +93,17 @@ export default function FeedbackScreen() {
           title: "Mon effort",
           headerLeft: () => (
             <Pressable onPress={() => router.dismiss()} disabled={isSaving} hitSlop={8}>
-              <X size={24} color={colors.accentGreen} strokeWidth={2} />
+              <X size={24} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
             </Pressable>
           ),
           headerRight: () => (
             <Pressable onPress={handleDone} disabled={!canSubmit} hitSlop={8}>
               {isSaving ? (
-                <ActivityIndicator size="small" color={colors.accentGreen} />
+                <ActivityIndicator size="small" color={semanticColors.accentGreen[scheme]} />
               ) : (
                 <Check
                   size={24}
-                  color={canSubmit ? colors.accentGreen : semanticColors.labelTertiary[scheme]}
+                  color={canSubmit ? semanticColors.accentGreen[scheme] : semanticColors.labelTertiary[scheme]}
                   strokeWidth={2.5}
                 />
               )}

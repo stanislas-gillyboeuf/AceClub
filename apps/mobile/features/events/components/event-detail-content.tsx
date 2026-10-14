@@ -13,7 +13,7 @@ import {
   ExternalLink,
   Ticket,
 } from "lucide-react-native";
-import { colors, semanticColors, radii, spacing } from "@/constants/theme";
+import { semanticColors, radii, spacing } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useEvent, useEventParticipants, useRegisterEvent, useCancelRegistration } from "@/hooks/use-event";
 import { formatFullDate, formatEventTime } from "@/lib/format";
@@ -90,13 +90,13 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
 
           {/* Date & time */}
           <View style={styles.infoRow}>
-            <Calendar size={16} color={colors.accentGreen} strokeWidth={2} />
+            <Calendar size={16} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
             <Text style={[styles.infoText, { color: semanticColors.labelPrimary[scheme] }]}>
               {formatFullDate(event.startDate)}
             </Text>
           </View>
           <View style={styles.infoRow}>
-            <Clock size={16} color={colors.accentGreen} strokeWidth={2} />
+            <Clock size={16} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
             <Text style={[styles.infoText, { color: semanticColors.labelPrimary[scheme] }]}>
               {formatEventTime(event.startDate, event.endDate)}
             </Text>
@@ -124,7 +124,7 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
               </Text>
               <GlassView style={styles.pricingCard}>
                 <View style={styles.infoRow}>
-                  <Ticket size={16} color={colors.accentGreen} strokeWidth={2} />
+                  <Ticket size={16} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
                   <Text style={[styles.infoText, { color: semanticColors.labelPrimary[scheme] }]}>
                     {event.price != null ? `${event.price} €` : "Payant"}
                   </Text>
@@ -132,11 +132,11 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
                 {event.paymentLink ? (
                   status === "registered" ? (
                     <Pressable onPress={() => Linking.openURL(event.paymentLink!)}>
-                      <View style={[styles.payButton, { backgroundColor: colors.accentGreen }]}>
-                        <Text style={styles.payButtonText}>
+                      <View style={[styles.payButton, { backgroundColor: semanticColors.accentGreen[scheme] }]}>
+                        <Text style={[styles.payButtonText, { color: semanticColors.onAccentGreen[scheme] }]}>
                           {event.paymentLink.toLowerCase().includes("lydia") ? "Payer avec Lydia" : "Payer"}
                         </Text>
-                        <ExternalLink size={16} color={colors.onAccentGreen} strokeWidth={2} />
+                        <ExternalLink size={16} color={semanticColors.onAccentGreen[scheme]} strokeWidth={2} />
                       </View>
                     </Pressable>
                   ) : (
@@ -261,7 +261,7 @@ function LocationSection({ event }: { event: NonNullable<ReturnType<typeof useEv
       <Pressable onPress={openInMaps}>
         <GlassView style={styles.locationCard}>
           <View style={styles.infoRow}>
-            <MapPin size={16} color={colors.accentGreen} strokeWidth={2} />
+            <MapPin size={16} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
             <Text
               style={[styles.infoText, { color: semanticColors.labelSecondary[scheme], flex: 1 }]}
               numberOfLines={2}
@@ -393,7 +393,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
   },
   payButtonText: {
-    color: colors.onAccentGreen,
     fontSize: 16,
     fontWeight: "600",
   },

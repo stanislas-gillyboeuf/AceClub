@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { MapPin, MapPinOff, ChevronRight, Pencil } from "lucide-react-native";
 import { useRouter } from "expo-router";
-import { colors, semanticColors, spacing, radii } from "@/constants/theme";
+import { semanticColors, spacing, radii } from "@/constants/theme";
 import type { MatchDetail } from "@/types/match";
 import type { Organization } from "@/types/organization";
 
@@ -40,9 +40,13 @@ export function VenueReadOnly({ matchDetail, venue, scheme, canChange }: VenueRe
           LIEU
         </Text>
         {canChange && (
-          <Pressable onPress={handleChange} hitSlop={8} style={styles.changeButton}>
-            <Pencil size={12} color={colors.accentGreen} strokeWidth={2.5} />
-            <Text style={styles.changeText}>Modifier</Text>
+          <Pressable
+            onPress={handleChange}
+            hitSlop={8}
+            style={[styles.changeButton, { backgroundColor: `${semanticColors.accentGreen[scheme]}18` }]}
+          >
+            <Pencil size={12} color={semanticColors.accentGreen[scheme]} strokeWidth={2.5} />
+            <Text style={[styles.changeText, { color: semanticColors.accentGreen[scheme] }]}>Modifier</Text>
           </Pressable>
         )}
       </View>
@@ -50,7 +54,7 @@ export function VenueReadOnly({ matchDetail, venue, scheme, canChange }: VenueRe
       <Pressable onPress={venue ? handlePress : canChange ? handleChange : undefined} disabled={!venue && !canChange}>
         {venue ? (
           <View style={styles.venueRow}>
-            <MapPin size={14} color={colors.accentGreen} strokeWidth={2} />
+            <MapPin size={14} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
             <View style={styles.venueInfo}>
               <Text style={[styles.venueName, { color: semanticColors.labelPrimary[scheme] }]}>
                 {venue.name}
@@ -106,12 +110,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    backgroundColor: `${colors.accentGreen}18`,
   },
   changeText: {
     fontSize: 11,
     fontWeight: "600",
-    color: colors.accentGreen,
   },
   venueRow: {
     flexDirection: "row",

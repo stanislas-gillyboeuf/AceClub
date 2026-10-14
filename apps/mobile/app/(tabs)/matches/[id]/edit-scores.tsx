@@ -123,7 +123,7 @@ export default function EditScores() {
   if (!matchDetail) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-        <ActivityIndicator size="large" color={colors.accentGreen} />
+        <ActivityIndicator size="large" color={semanticColors.accentGreen[scheme]} />
       </View>
     );
   }
@@ -136,7 +136,7 @@ export default function EditScores() {
             Platform.OS === "android"
               ? () => (
                   <Pressable onPress={() => router.dismiss()} disabled={isSaving}>
-                    <MaterialIcons name="close" size={24} color={colors.accentGreen} />
+                    <MaterialIcons name="close" size={24} color={semanticColors.accentGreen[scheme]} />
                   </Pressable>
                 )
               : undefined,
@@ -144,7 +144,7 @@ export default function EditScores() {
             Platform.OS === "android"
               ? () => (
                   <Pressable onPress={handleSave} disabled={isSaving || sets.length === 0}>
-                    <MaterialIcons name="check" size={24} color={isSaving ? colors.gray400 : colors.accentGreen} />
+                    <MaterialIcons name="check" size={24} color={isSaving ? colors.gray400 : semanticColors.accentGreen[scheme]} />
                   </Pressable>
                 )
               : undefined,
@@ -163,7 +163,7 @@ export default function EditScores() {
             <Stack.Toolbar.Button
               icon="checkmark"
               onPress={handleSave}
-              tintColor={colors.accentGreen}
+              tintColor={semanticColors.accentGreen[scheme]}
             />
           </Stack.Toolbar>
         </>
@@ -218,7 +218,7 @@ export default function EditScores() {
           <View style={[styles.overlayCard, {
             backgroundColor: semanticColors.cardBackground[scheme],
           }]}>
-            <ActivityIndicator size="small" color={colors.accentGreen} />
+            <ActivityIndicator size="small" color={semanticColors.accentGreen[scheme]} />
             <Text style={[styles.overlayText, { color: semanticColors.labelSecondary[scheme] }]}>
               Enregistrement...
             </Text>

@@ -2,7 +2,7 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import { MessageSquarePlus, MessageCircle } from "lucide-react-native";
 import { Avatar } from "@/components/ui/avatar";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors, semanticColors, spacing, radii } from "@/constants/theme";
+import { semanticColors, spacing, radii } from "@/constants/theme";
 import type { MatchDetail, MatchComment } from "@/types/match";
 
 interface CommentsCardProps {
@@ -72,8 +72,8 @@ export function CommentsCard({
 
       {!hasUserCommented && isParticipant && (
         <Pressable onPress={onAddComment} style={styles.addButton}>
-          <MessageSquarePlus size={14} color={colors.accentGreen} strokeWidth={2} />
-          <Text style={[styles.addButtonText, { color: colors.accentGreen }]}>
+          <MessageSquarePlus size={14} color={semanticColors.accentGreen[scheme]} strokeWidth={2} />
+          <Text style={[styles.addButtonText, { color: semanticColors.accentGreen[scheme] }]}>
             Ajouter un commentaire
           </Text>
         </Pressable>

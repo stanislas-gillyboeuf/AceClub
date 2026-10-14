@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, Pressable } from "react-native";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { colors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
 import type { ReactionGroup } from "@/types/conversation";
 
 interface ReactionBarProps {
@@ -48,7 +48,7 @@ export function ReactionBar({
                     ? "rgba(255,255,255,0.1)"
                     : "rgba(0,0,0,0.06)",
                 borderColor: reaction.hasReacted
-                  ? colors.accentGreen
+                  ? semanticColors.accentGreen[scheme]
                   : "transparent",
               },
             ]}
@@ -60,7 +60,7 @@ export function ReactionBar({
                   styles.count,
                   {
                     color: reaction.hasReacted
-                      ? colors.accentGreen
+                      ? semanticColors.accentGreen[scheme]
                       : scheme === "dark"
                         ? "#8E8E93"
                         : "#6B7280",

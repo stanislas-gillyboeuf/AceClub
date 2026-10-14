@@ -1,5 +1,6 @@
 import { BadgeCheck } from "lucide-react-native";
-import { colors } from "@/constants/theme";
+import { semanticColors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 interface VerifiedBadgeProps {
   size?: number;
@@ -7,6 +8,7 @@ interface VerifiedBadgeProps {
 }
 
 /** Small checkmark shown next to a skill level once a club admin has confirmed it. */
-export function VerifiedBadge({ size = 14, color = colors.accentGreen }: VerifiedBadgeProps) {
-  return <BadgeCheck size={size} color={color} strokeWidth={2.5} />;
+export function VerifiedBadge({ size = 14, color }: VerifiedBadgeProps) {
+  const scheme = useColorScheme();
+  return <BadgeCheck size={size} color={color ?? semanticColors.accentGreen[scheme]} strokeWidth={2.5} />;
 }

@@ -17,7 +17,7 @@ import { useMe, useSearchUsers } from "@/hooks/use-user";
 import { usePastPartners } from "@/hooks/use-past-partners";
 import { useCreateMatchFormStore } from "@/store/create-match-form";
 import { EmptyState } from "@/components/ui/empty-state";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 import { StepProgress } from "./step-progress";
 import { GhostForm } from "@/features/matches/components/create/ghost-form";
 import { AddGhostButton } from "@/features/matches/components/create/add-ghost-button";
@@ -174,7 +174,7 @@ export default function Step2() {
       ListEmptyComponent={
         showLoading && hasQuery ? (
           <View style={styles.centered}>
-            <ActivityIndicator color={colors.accentGreen} />
+            <ActivityIndicator color={semanticColors.accentGreen[scheme]} />
           </View>
         ) : hasQuery && results.length === 0 ? (
           <View>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { View, Text, Pressable, Platform, StyleSheet } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { GlassView } from "@/components/ui/glass-view";
-import { colors, semanticColors, radii } from "@/constants/theme";
+import { semanticColors, radii } from "@/constants/theme";
 import { formatShortDate, formatTime } from "@/lib/format";
 
 interface EventDateRangeFieldProps {
@@ -80,7 +80,7 @@ function DateRow({ label, date, onChange, minimumDate, showPicker, setShowPicker
           onChange={(_, d) => d && onChange(d)}
           minimumDate={minimumDate}
           locale="fr-FR"
-          accentColor={colors.accentGreen}
+          accentColor={semanticColors.accentGreen[scheme]}
         />
       </View>
     );

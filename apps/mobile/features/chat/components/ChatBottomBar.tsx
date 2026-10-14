@@ -227,8 +227,8 @@ export function ChatBottomBar({
               pressed && { transform: [{ scale: 0.9 }] },
             ]}
           >
-            <View style={styles.sendCircle}>
-              <ArrowUp size={18} color={colors.onAccentGreen} strokeWidth={2.5} />
+            <View style={[styles.sendCircle, { backgroundColor: semanticColors.accentGreen[scheme] }]}>
+              <ArrowUp size={18} color={semanticColors.onAccentGreen[scheme]} strokeWidth={2.5} />
             </View>
           </Pressable>
         ) : (
@@ -296,7 +296,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.accentGreen,
     alignItems: "center",
     justifyContent: "center",
   },

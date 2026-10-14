@@ -12,7 +12,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useSearchUsers } from "@/hooks/use-user";
 import { usePastPartners } from "@/hooks/use-past-partners";
 import { Avatar } from "@/components/ui/avatar";
-import { colors, semanticColors, radii, spacing } from "@/constants/theme";
+import { semanticColors, radii, spacing } from "@/constants/theme";
 import type { UserSearchItem } from "@/types/user";
 import type { PastPartner } from "@/types/user";
 
@@ -122,7 +122,7 @@ export function UserSearchField({
             )}
           </View>
           <Pressable onPress={handleClear} hitSlop={8}>
-            <X size={20} color={colors.accentGreen} />
+            <X size={20} color={semanticColors.accentGreen[scheme]} />
           </Pressable>
         </View>
       </View>
@@ -167,7 +167,7 @@ export function UserSearchField({
           returnKeyType="search"
         />
         {isLoading && query.length >= 2 && (
-          <ActivityIndicator size="small" color={colors.accentGreen} />
+          <ActivityIndicator size="small" color={semanticColors.accentGreen[scheme]} />
         )}
       </View>
 
