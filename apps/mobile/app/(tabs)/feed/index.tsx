@@ -10,9 +10,8 @@ import {
 } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Gauge } from "lucide-react-native";
 
-import { useMe, usePreferences } from "@/hooks/use-user";
+import { useMe } from "@/hooks/use-user";
 import { useInfiniteMatches } from "@/hooks/use-match";
 import { useActiveClub } from "@/hooks/use-active-club";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -25,16 +24,14 @@ import { FeedMatchRow } from "@/features/feed/components/feed-match-row";
 import { EventsFeedSection } from "@/features/events/components/events-feed-section";
 import { SectionHeader } from "@/components/ui/section-header";
 import { EmptyState } from "@/components/ui/empty-state";
-import { TagChip } from "@/components/ui/tag-chip";
-import { VerifiedBadge } from "@/components/ui/verified-badge";
-import { formatSkillLevel } from "@/lib/skill-levels";
 
 import { semanticColors, spacing } from "@/constants/theme";
+
+const HEADER_LOGO_SIZE = 32;
 
 export default function Feed() {
   const scheme = useColorScheme();
   const { data: me } = useMe();
-  const { data: preferences } = usePreferences();
   const router = useRouter();
   const totalUnread = useUnreadMessagesCount();
 
@@ -78,16 +75,21 @@ export default function Feed() {
     refetch();
   }, [refetch]);
 
-  const skillLevelLabel = preferences
-    ? formatSkillLevel(preferences.skillLevel, preferences.sport)
-    : null;
-  const sportLabel = preferences?.sport === "padel" ? "Padel" : "Tennis";
-
   return (
     <>
       <Stack.Screen
         options={{
           title: "Fil d'actus",
+          headerLargeTitle: true,
+          headerLeft: () => (
+            <ClubSwitcher
+              clubs={clubs.map((c) => ({ id: c.id, name: c.name, logo: c.logo }))}
+              selectedId={activeClubId}
+              onSelect={setActiveClub}
+              isLoading={!isClubReady}
+              logoSize={HEADER_LOGO_SIZE}
+            />
+          ),
           headerRight:
             Platform.OS === "android"
               ? () => (
@@ -128,31 +130,7 @@ export default function Feed() {
         onEndReachedThreshold={0.3}
         ListHeaderComponent={
           <View>
-            {/* Club identity — logo + name, top-left */}
-            <View style={styles.section}>
-              <ClubSwitcher
-                clubs={clubs.map((c) => ({ id: c.id, name: c.name, logo: c.logo }))}
-                selectedId={activeClubId}
-                onSelect={setActiveClub}
-                isLoading={!isClubReady}
-              />
-            </View>
-
             {hasNoClub ? <JoinClubPrompt /> : null}
-
-            {/* Skill level (FFT/padel), not the Aces/XP level on the profile card */}
-            {skillLevelLabel ? (
-              <View style={[styles.section, styles.skillLevelRow]}>
-                <TagChip
-                  icon={Gauge}
-                  label={`${sportLabel} · ${skillLevelLabel}`}
-                  backgroundColor={`${semanticColors.accentGreen[scheme]}1A`}
-                  textColor={semanticColors.accentGreen[scheme]}
-                  iconColor={semanticColors.accentGreen[scheme]}
-                />
-                {preferences?.skillLevelVerified ? <VerifiedBadge size={14} /> : null}
-              </View>
-            ) : null}
 
             {/* Events — now at the top of the page, where the level card used to be */}
             <EventsFeedSection />
@@ -205,12 +183,6 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: spacing.horizontal,
     paddingVertical: 8,
-  },
-  skillLevelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingBottom: 0,
   },
   matchRow: {
     paddingHorizontal: spacing.horizontal,

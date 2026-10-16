@@ -26,7 +26,7 @@ export function DiscoverFab({ sport }: DiscoverFabProps) {
 
   return (
     <Pressable
-      onPress={() => router.push("/(tabs)/profile/create-intent")}
+      onPress={() => router.push("/(tabs)/discover/create-intent")}
       style={({ pressed }) => [styles.fab, { bottom }, pressed && styles.fabPressed]}
     >
       <GlassView style={styles.fabGlass} tintColor={accent}>

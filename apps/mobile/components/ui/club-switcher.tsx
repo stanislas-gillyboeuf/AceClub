@@ -21,6 +21,9 @@ interface ClubSwitcherProps {
   /** True while memberships are still loading — renders a fixed-size placeholder instead of
    * `null` so the header doesn't jump once the real club appears. */
   isLoading?: boolean;
+  /** Defaults to 24 — bump it where the switcher needs more presence (e.g. a screen's own
+   * header, as opposed to sitting inline in a list). */
+  logoSize?: number;
 }
 
 /**
@@ -30,7 +33,13 @@ interface ClubSwitcherProps {
  * with the app's semantic colors instead of the booking screen's fixed green, so it can sit in
  * any header.
  */
-export function ClubSwitcher({ clubs, selectedId, onSelect, isLoading }: ClubSwitcherProps) {
+export function ClubSwitcher({
+  clubs,
+  selectedId,
+  onSelect,
+  isLoading,
+  logoSize = LOGO_SIZE,
+}: ClubSwitcherProps) {
   const scheme = useColorScheme();
   const [open, setOpen] = useState(false);
   const selected = clubs.find((c) => c.id === selectedId);
@@ -39,7 +48,7 @@ export function ClubSwitcher({ clubs, selectedId, onSelect, isLoading }: ClubSwi
   if (isLoading) {
     return (
       <View style={styles.trigger}>
-        <Skeleton width={LOGO_SIZE} height={LOGO_SIZE} borderRadius={LOGO_SIZE / 2} />
+        <Skeleton width={logoSize} height={logoSize} borderRadius={logoSize / 2} />
         <Skeleton width={120} height={16} borderRadius={4} />
       </View>
     );
@@ -55,7 +64,7 @@ export function ClubSwitcher({ clubs, selectedId, onSelect, isLoading }: ClubSwi
         style={styles.trigger}
         hitSlop={6}
       >
-        <Avatar imageUrl={selected.logo} name={selected.name} size={LOGO_SIZE} />
+        <Avatar imageUrl={selected.logo} name={selected.name} size={logoSize} />
         <Text
           style={[styles.label, { color: semanticColors.labelPrimary[scheme] }]}
           numberOfLines={1}

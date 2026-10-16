@@ -35,6 +35,13 @@
         "track": "production",
         "releaseStatus": "completed"
       }
+    },
+    "closedTesting": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "Test final ace club",
+        "releaseStatus": "completed"
+      }
     }
   }
 }

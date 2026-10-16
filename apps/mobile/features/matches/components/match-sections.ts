@@ -33,12 +33,12 @@ export function buildSections(matches: MatchWithParticipants[]): MatchSection[] 
     group.matches.sort((a, b) => {
       const aDate = new Date(a.scheduledAt ?? a.startedAt ?? a.createdAt).getTime();
       const bDate = new Date(b.scheduledAt ?? b.startedAt ?? b.createdAt).getTime();
-      return aDate - bDate;
+      return bDate - aDate;
     });
   }
 
   return Array.from(grouped.entries())
-    .sort(([, a], [, b]) => a.date.getTime() - b.date.getTime())
+    .sort(([, a], [, b]) => b.date.getTime() - a.date.getTime())
     .map(([key, { date, matches: sectionMatches }]) => ({
       key,
       date,

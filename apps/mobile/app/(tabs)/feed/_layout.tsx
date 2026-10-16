@@ -16,14 +16,6 @@ export default function FeedLayout() {
         }}
       />
       <Stack.Screen
-        name="progression"
-        options={{
-          presentation: "fullScreenModal",
-          title: "Progression",
-          headerLargeTitle: true,
-        }}
-      />
-      <Stack.Screen
         name="events"
         options={{
           title: "Evenements",

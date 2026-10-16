@@ -53,6 +53,15 @@ function RootNavigator() {
         <Stack.Screen name="conversation" />
         <Stack.Screen name="chat" />
         <Stack.Screen name="court-booking" />
+        <Stack.Screen
+          name="progression"
+          options={{
+            presentation: "fullScreenModal",
+            title: "Progression",
+            headerLargeTitle: true,
+            headerShown: true,
+          }}
+        />
         <Stack.Screen name="index" />
         <Stack.Screen
           name="offline"
