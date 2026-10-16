@@ -3,6 +3,7 @@ import { Trophy, TrendingUp, Clock } from "lucide-react-native";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
+import { LevelProgressCard } from "@/features/feed/components/level-progress-card";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
 import type { User, UserPreferences } from "@/types/user";
@@ -19,6 +20,9 @@ interface ProfileHeaderCardProps {
     winRate: number;
     totalPlaytimeMinutes: number;
   };
+  /** Navigates to the full progression screen — shown as a "Voir ma progression" row under
+   * the level section (same component/link used standalone on the feed before this merge). */
+  onPressProgression?: () => void;
 }
 
 function formatPlaytime(minutes: number): string {
@@ -34,14 +38,13 @@ export function ProfileHeaderCard({
   preferences,
   level,
   matchStats,
+  onPressProgression,
 }: ProfileHeaderCardProps) {
   const scheme = useColorScheme();
 
   const skillLabel = preferences
     ? getSkillLevelDisplayName(preferences.skillLevel, preferences.sport as Sport)
     : null;
-
-  const progressPercent = level ? Math.min(level.progressPercent, 100) : 0;
 
   return (
     <Card>
@@ -87,30 +90,16 @@ export function ProfileHeaderCard({
         </View>
       </View>
 
-      {/* Level progress */}
+      {/* Level progress — reuses the same card shown standalone on the progression screen,
+          rendered "bare" (no nested Card) since it's embedded in this one. */}
       {level && (
         <View style={styles.levelSection}>
-          <View style={styles.levelHeader}>
-            <Text style={[styles.levelLabel, { color: semanticColors.labelSecondary[scheme] }]}>
-              Niveau {level.level}
-            </Text>
-            <Text style={[styles.levelPercent, { color: semanticColors.labelSecondary[scheme] }]}>
-              {Math.round(progressPercent)}%
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.progressTrack,
-              { backgroundColor: semanticColors.skeleton[scheme] },
-            ]}
-          >
-            <View
-              style={[
-                styles.progressFill,
-                { width: `${progressPercent}%`, backgroundColor: semanticColors.accentGreen[scheme] },
-              ]}
-            />
-          </View>
+          <LevelProgressCard
+            level={level}
+            showDetailIndicator={!!onPressProgression}
+            onPress={onPressProgression}
+            bare
+          />
         </View>
       )}
 
@@ -188,29 +177,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   levelSection: {
-    gap: 6,
     marginBottom: 16,
-  },
-  levelHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  levelLabel: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-  levelPercent: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-  progressTrack: {
-    height: 8,
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: 8,
-    borderRadius: 4,
   },
   statsRow: {
     flexDirection: "row",

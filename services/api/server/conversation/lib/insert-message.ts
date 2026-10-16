@@ -5,6 +5,7 @@ import { eq, and, ne, sql, inArray } from "drizzle-orm";
 import { ulid } from "ulid";
 import { redis, CHAT_CHANNEL } from "../../../lib/redis";
 import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
+import { resolvePrimaryOrganizationId } from "../../../lib/notification-gate";
 import { isUserConnectedWs } from "../../ws/bun-chat-handler";
 
 interface MatchRequestCardInfo {
@@ -109,18 +110,21 @@ export async function insertSystemMessage(params: InsertSystemMessageParams) {
     }
   }
 
+  // This helper only ever sends "match_request" cards (see InsertSystemMessageParams) — always
+  // gated as match_request_update, distinct from real chat's new_message (send-message.ts).
   Promise.all(
     otherParticipants
       .filter((p) => !p.isMuted && !isUserConnectedWs(p.userId))
-      .map((p) =>
+      .map(async (p) =>
         sendNotificationToUser({
           userId: p.userId,
-          type: "new_message",
+          type: "match_request_update",
           title: notificationTitle,
           body: content,
           referenceId: conversationId,
           referenceType: "conversation",
           data: { conversationId, messageId: newMessage.id },
+          organizationId: await resolvePrimaryOrganizationId(p.userId),
         }).catch((error) => console.error(`[insert-message] Failed to notify user ${p.userId}:`, error)),
       ),
   ).catch(() => {});

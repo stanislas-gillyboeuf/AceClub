@@ -1,31 +1,49 @@
 import { useState } from "react";
 import { View, Text, Pressable, Modal, StyleSheet } from "react-native";
 import { ChevronDown, Check } from "lucide-react-native";
+import { Avatar } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+
+const LOGO_SIZE = 24;
 
 interface ClubOption {
   id: string;
   name: string;
+  logo?: string | null;
 }
 
 interface ClubSwitcherProps {
   clubs: ClubOption[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  /** True while memberships are still loading — renders a fixed-size placeholder instead of
+   * `null` so the header doesn't jump once the real club appears. */
+  isLoading?: boolean;
 }
 
 /**
- * Generic club switcher for player-facing screens (feed, discover, matches).
- * Same interaction pattern as `features/court-booking/components/club-selector`,
- * but themed with the app's semantic colors instead of the booking screen's
- * fixed green, so it can sit in any header.
+ * Generic club switcher for player-facing screens (feed, discover, matches) — shows the active
+ * club's logo (falling back to its initials, same as `Avatar` everywhere else) and name.
+ * Same interaction pattern as `features/court-booking/components/club-selector`, but themed
+ * with the app's semantic colors instead of the booking screen's fixed green, so it can sit in
+ * any header.
  */
-export function ClubSwitcher({ clubs, selectedId, onSelect }: ClubSwitcherProps) {
+export function ClubSwitcher({ clubs, selectedId, onSelect, isLoading }: ClubSwitcherProps) {
   const scheme = useColorScheme();
   const [open, setOpen] = useState(false);
   const selected = clubs.find((c) => c.id === selectedId);
   const canSwitch = clubs.length > 1;
+
+  if (isLoading) {
+    return (
+      <View style={styles.trigger}>
+        <Skeleton width={LOGO_SIZE} height={LOGO_SIZE} borderRadius={LOGO_SIZE / 2} />
+        <Skeleton width={120} height={16} borderRadius={4} />
+      </View>
+    );
+  }
 
   if (!selected) return null;
 
@@ -37,6 +55,7 @@ export function ClubSwitcher({ clubs, selectedId, onSelect }: ClubSwitcherProps)
         style={styles.trigger}
         hitSlop={6}
       >
+        <Avatar imageUrl={selected.logo} name={selected.name} size={LOGO_SIZE} />
         <Text
           style={[styles.label, { color: semanticColors.labelPrimary[scheme] }]}
           numberOfLines={1}
@@ -86,12 +105,12 @@ const styles = StyleSheet.create({
   trigger: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 8,
     flexShrink: 1,
   },
   label: {
-    fontSize: 15,
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "700",
     flexShrink: 1,
   },
   backdrop: {

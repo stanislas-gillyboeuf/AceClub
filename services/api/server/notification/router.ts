@@ -2,13 +2,15 @@ import { Hono } from "hono";
 import { requireAuth } from "../../middleware/auth";
 import type { HonoContext } from "../../types/hono";
 import { zValidator } from "@hono/zod-validator";
-import { listNotifications, getUnreadCount } from "./queries";
-import { registerToken, unregisterToken, markRead, markAllRead } from "./mutations";
+import { listNotifications, getUnreadCount, getClubSettings } from "./queries";
+import { registerToken, unregisterToken, markRead, markAllRead, upsertClubSettings } from "./mutations";
 import {
   registerDeviceTokenValidator,
   unregisterDeviceTokenValidator,
   listNotificationsValidator,
   markNotificationReadValidator,
+  clubNotificationSettingsQueryValidator,
+  upsertClubNotificationSettingsValidator,
 } from "./validators";
 
 export const notificationRouter = new Hono<HonoContext>();
@@ -32,3 +34,15 @@ notificationRouter.post(
 );
 notificationRouter.post("/mark-read", zValidator("json", markNotificationReadValidator), markRead);
 notificationRouter.post("/mark-all-read", markAllRead);
+
+// Club notification settings (dashboard)
+notificationRouter.get(
+  "/club-settings",
+  zValidator("query", clubNotificationSettingsQueryValidator),
+  getClubSettings,
+);
+notificationRouter.post(
+  "/club-settings/update",
+  zValidator("json", upsertClubNotificationSettingsValidator),
+  upsertClubSettings,
+);

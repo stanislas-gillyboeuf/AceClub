@@ -5,6 +5,7 @@ import type { ChallengeTemplate } from "../../../db/schema/challenge/type";
 import { user } from "../../../db/schema/auth/schema";
 import { userLevel } from "../../../db/schema/level/schema";
 import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
+import { resolvePrimaryOrganizationId } from "../../../lib/notification-gate";
 
 // Nombre de semaines à considérer pour éviter les répétitions
 const RECENT_WEEKS_TO_AVOID = 3;
@@ -250,6 +251,7 @@ export async function assignWeeklyChallenges(): Promise<void> {
         body: "Tes défis hebdomadaires sont disponibles. Relève-les pour gagner des Aces !",
         referenceId: u.userId,
         referenceType: "user",
+        organizationId: await resolvePrimaryOrganizationId(u.userId),
       });
     } catch (error) {
       console.error(`[CRON] Failed to assign challenges for user ${u.userId}:`, error);

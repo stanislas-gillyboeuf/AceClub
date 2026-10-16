@@ -13,7 +13,6 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Gauge } from "lucide-react-native";
 
 import { useMe, usePreferences } from "@/hooks/use-user";
-import { useMyLevel } from "@/hooks/use-level";
 import { useInfiniteMatches } from "@/hooks/use-match";
 import { useActiveClub } from "@/hooks/use-active-club";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -22,12 +21,10 @@ import { ClubSwitcher } from "@/components/ui/club-switcher";
 import { JoinClubPrompt } from "@/components/ui/join-club-prompt";
 
 import { MessagesHeaderButton } from "@/features/chat/components/MessagesHeaderButton";
-import { LevelProgressCard } from "@/features/feed/components/level-progress-card";
 import { FeedMatchRow } from "@/features/feed/components/feed-match-row";
 import { EventsFeedSection } from "@/features/events/components/events-feed-section";
 import { SectionHeader } from "@/components/ui/section-header";
 import { EmptyState } from "@/components/ui/empty-state";
-import { SkeletonRow } from "@/components/ui/skeleton";
 import { TagChip } from "@/components/ui/tag-chip";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { formatSkillLevel } from "@/lib/skill-levels";
@@ -37,15 +34,13 @@ import { semanticColors, spacing } from "@/constants/theme";
 export default function Feed() {
   const scheme = useColorScheme();
   const { data: me } = useMe();
-  const { data: level, isLoading: levelLoading } = useMyLevel();
   const { data: preferences } = usePreferences();
   const router = useRouter();
   const totalUnread = useUnreadMessagesCount();
 
   const goToRanking = () => router.push("/(tabs)/feed/ranking");
-  const goToProgression = () => router.push("/(tabs)/feed/progression");
 
-  const { activeClubId, clubs, hasMultipleClubs, hasNoClub, setActiveClub } = useActiveClub();
+  const { activeClubId, clubs, hasNoClub, isReady: isClubReady, setActiveClub } = useActiveClub();
   const organizationId = activeClubId ?? undefined;
 
   const {
@@ -133,19 +128,19 @@ export default function Feed() {
         onEndReachedThreshold={0.3}
         ListHeaderComponent={
           <View>
-            {hasMultipleClubs ? (
-              <View style={styles.section}>
-                <ClubSwitcher
-                  clubs={clubs.map((c) => ({ id: c.id, name: c.name }))}
-                  selectedId={activeClubId}
-                  onSelect={setActiveClub}
-                />
-              </View>
-            ) : null}
+            {/* Club identity — logo + name, top-left */}
+            <View style={styles.section}>
+              <ClubSwitcher
+                clubs={clubs.map((c) => ({ id: c.id, name: c.name, logo: c.logo }))}
+                selectedId={activeClubId}
+                onSelect={setActiveClub}
+                isLoading={!isClubReady}
+              />
+            </View>
 
             {hasNoClub ? <JoinClubPrompt /> : null}
 
-            {/* Skill level (FFT/padel), not the Aces/XP level below */}
+            {/* Skill level (FFT/padel), not the Aces/XP level on the profile card */}
             {skillLevelLabel ? (
               <View style={[styles.section, styles.skillLevelRow]}>
                 <TagChip
@@ -159,20 +154,7 @@ export default function Feed() {
               </View>
             ) : null}
 
-            {/* Level progress card */}
-            <View style={styles.section}>
-              {levelLoading ? (
-                <SkeletonRow showAvatar={false} lineCount={2} />
-              ) : level ? (
-                <LevelProgressCard
-                  level={level}
-                  showDetailIndicator
-                  onPress={goToProgression}
-                />
-              ) : null}
-            </View>
-
-            {/* Events */}
+            {/* Events — now at the top of the page, where the level card used to be */}
             <EventsFeedSection />
 
             {/* Recent matches section header */}

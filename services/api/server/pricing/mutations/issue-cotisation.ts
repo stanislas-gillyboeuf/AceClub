@@ -58,6 +58,7 @@ export const issueCotisation = async (c: Context<HonoContext>) => {
   }
 
   const email = await sendCotisationRequest({
+    organizationId: record.organizationId,
     clubName: orgRow.name,
     memberName: memberRow.name,
     memberEmail: contactEmail,

@@ -8,6 +8,7 @@ export type IssueEmailResult = { sent: true } | { sent: false; reason: string };
  * address (see resolve-contact-email.ts); null means nobody can be written to. Never throws: an
  * email failure must not undo (or block) the creation of the cotisation record itself. */
 export async function sendCotisationRequest(params: {
+  organizationId: string;
   clubName: string;
   memberName: string;
   memberEmail: string | null;
@@ -30,6 +31,8 @@ export async function sendCotisationRequest(params: {
       subject: email.subject,
       html: email.html,
       text: email.text,
+      organizationId: params.organizationId,
+      notificationKey: "cotisationRequestEmail",
     });
     return result.success ? { sent: true } : { sent: false, reason: result.reason ?? "unknown" };
   } catch (err) {

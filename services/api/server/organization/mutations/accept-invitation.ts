@@ -75,6 +75,7 @@ export const acceptInvitation = async (c: Context<HonoContext>) => {
       body: `${authUser.name ?? "Quelqu'un"} a rejoint ${org?.name ?? "ton club"}`,
       referenceId: newOrganizationId,
       referenceType: "organization",
+      organizationId: newOrganizationId,
     }).catch((err) => console.error("Failed to send notification:", err));
 
     return c.json(result);

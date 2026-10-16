@@ -3,6 +3,7 @@ import { db } from "../db";
 import { userStreak } from "../db/schema/streak/schema";
 import { eq, ne, and, or, isNull } from "drizzle-orm";
 import { sendNotificationToUser } from "../services/expo-push/notification-service";
+import { resolvePrimaryOrganizationId } from "../lib/notification-gate";
 
 function getCurrentWeekAndYear(): { week: number; year: number } {
   const now = new Date();
@@ -60,6 +61,7 @@ export const streakWarningTask = schedules.task({
           body: `Psss, t'as pas encore joué cette semaine ! Tu risques de perdre ta série de ${streak.currentStreak} semaines`,
           referenceId: streak.userId,
           referenceType: "user",
+          organizationId: await resolvePrimaryOrganizationId(streak.userId),
         });
         notificationsSent++;
       } catch (error) {

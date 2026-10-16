@@ -20,7 +20,7 @@ export const toggleLike = async (c: Context<HonoContext>) => {
 
   // Check if match exists
   const [foundMatch] = await db
-    .select({ id: match.id })
+    .select({ id: match.id, venueOrganizationId: match.venueOrganizationId })
     .from(match)
     .where(eq(match.id, matchId))
     .limit(1);
@@ -73,6 +73,7 @@ export const toggleLike = async (c: Context<HonoContext>) => {
           body: `${likerName} a aimé votre match`,
           referenceId: matchId,
           referenceType: "match",
+          organizationId: foundMatch.venueOrganizationId,
         }),
       ),
     ).catch((err) => {

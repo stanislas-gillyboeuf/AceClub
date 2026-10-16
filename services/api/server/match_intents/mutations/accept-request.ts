@@ -5,6 +5,7 @@ import { matchRequest, matchIntent, matchIntentTeammate, match, matchParticipant
 import { conversation } from "../../../db/schema/conversation/schema";
 import { and, eq, ne, sql } from "drizzle-orm";
 import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
+import { resolvePrimaryOrganizationId } from "../../../lib/notification-gate";
 import { broadcastMatchRequestUpdate } from "../lib/broadcast";
 import { findOrCreateDirectConversation } from "../lib/conversation";
 
@@ -105,15 +106,18 @@ async function acceptTennisRequest(c: Context<HonoContext>, request: RequestRow,
     .limit(1);
   const [receiverInfo] = await db.select({ name: user.name }).from(user).where(eq(user.id, userId)).limit(1);
 
-  sendNotificationToUser({
-    userId: request.requesterId,
-    type: "match_request_accepted",
-    title: "Match confirmé ! 🎾",
-    body: `Top ! ${receiverInfo?.name ?? "Un joueur"} a accepté ton match`,
-    referenceId: newMatch.id,
-    referenceType: "match",
-    data: { matchId: newMatch.id, conversationId },
-  }).catch((err) => console.error("[ACCEPT REQUEST] Failed to send notification:", err));
+  resolvePrimaryOrganizationId(request.requesterId).then((organizationId) =>
+    sendNotificationToUser({
+      userId: request.requesterId,
+      type: "match_request_update",
+      title: "Match confirmé ! 🎾",
+      body: `Top ! ${receiverInfo?.name ?? "Un joueur"} a accepté ton match`,
+      referenceId: newMatch.id,
+      referenceType: "match",
+      data: { matchId: newMatch.id, conversationId },
+      organizationId,
+    }),
+  ).catch((err) => console.error("[ACCEPT REQUEST] Failed to send notification:", err));
 
   broadcastMatchRequestUpdate(request.id, "accepted", [intent.userId, request.requesterId]);
 
@@ -197,15 +201,18 @@ async function acceptPadelSlotRequest(c: Context<HonoContext>, request: RequestR
   const conversationId = await findOrCreateDirectConversation(intent.userId, request.requesterId);
   const [receiverInfo] = await db.select({ name: user.name }).from(user).where(eq(user.id, userId)).limit(1);
 
-  sendNotificationToUser({
-    userId: request.requesterId,
-    type: "new_message",
-    title: receiverInfo?.name ?? "Padel",
-    body: "Ta demande pour rejoindre l'équipe a été acceptée !",
-    referenceId: conversationId,
-    referenceType: "conversation",
-    data: { conversationId },
-  }).catch((err) => console.error("[ACCEPT REQUEST] Failed to send notification:", err));
+  resolvePrimaryOrganizationId(request.requesterId).then((organizationId) =>
+    sendNotificationToUser({
+      userId: request.requesterId,
+      type: "match_request_update",
+      title: receiverInfo?.name ?? "Padel",
+      body: "Ta demande pour rejoindre l'équipe a été acceptée !",
+      referenceId: conversationId,
+      referenceType: "conversation",
+      data: { conversationId },
+      organizationId,
+    }),
+  ).catch((err) => console.error("[ACCEPT REQUEST] Failed to send notification:", err));
 
   broadcastMatchRequestUpdate(request.id, "accepted", [intent.userId, request.requesterId]);
 

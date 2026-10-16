@@ -21,6 +21,7 @@ export async function sendBookingReminders(): Promise<{ sent: number }> {
       kind: courtBooking.kind,
       courseId: courtBooking.courseId,
       courtName: court.name,
+      organizationId: court.organizationId,
     })
     .from(courtBooking)
     .innerJoin(court, eq(courtBooking.courtId, court.id))
@@ -62,6 +63,7 @@ export async function sendBookingReminders(): Promise<{ sent: number }> {
         title: booking.kind === "course" ? "Cours dans 2h" : "Réservation dans 2h",
         body: `${booking.courtName} à ${time}`,
         data: { referenceId: booking.id },
+        organizationId: booking.organizationId,
       });
       sent++;
     }

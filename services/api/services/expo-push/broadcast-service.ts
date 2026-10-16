@@ -3,6 +3,7 @@ import { db } from "../../db";
 import { deviceToken, notification } from "../../db/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import type { NotificationType } from "./notification-service";
+import { isNotificationEnabled, PUSH_TYPE_TO_SETTING_KEY } from "../../lib/notification-gate";
 
 const expo = new Expo();
 
@@ -11,6 +12,9 @@ export interface BroadcastParams {
   title: string;
   body: string;
   data?: Record<string, string>;
+  /** The club this batch is about — a broadcast/reminder is always scoped to one club, so a
+   * single gate check covers the whole batch. Omit only for notifications with no club context. */
+  organizationId?: string | null;
 }
 
 export interface BroadcastResult {
@@ -29,6 +33,11 @@ export async function sendBatchNotifications(
   params: BroadcastParams,
 ): Promise<BroadcastResult> {
   if (userIds.length === 0) return { sent: 0, failed: 0 };
+
+  const settingKey = PUSH_TYPE_TO_SETTING_KEY[params.type];
+  if (settingKey && !(await isNotificationEnabled(params.organizationId, settingKey))) {
+    return { sent: 0, failed: 0 };
+  }
 
   const notificationRows = await db
     .insert(notification)

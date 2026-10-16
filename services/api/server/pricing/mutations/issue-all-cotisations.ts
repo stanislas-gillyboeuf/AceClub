@@ -122,6 +122,7 @@ export const issueAllCotisations = async (c: Context<HonoContext>) => {
     const results = await Promise.all(
       batch.map((m) =>
         sendCotisationRequest({
+          organizationId: validated.organizationId,
           clubName: orgRow?.name ?? "",
           memberName: m.name,
           memberEmail: contactEmails.get(m.userId) ?? null,

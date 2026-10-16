@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { isTechnicalEmail } from "../../lib/technical-email";
+import { isNotificationEnabled, type NotificationSettingKey } from "../../lib/notification-gate";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -9,6 +10,12 @@ export interface SendEmailParams {
   html: string;
   text: string;
   replyTo?: string;
+  /** Only set these for a club-business-logic email a club can turn off (cotisation reminders,
+   * announcements, the member-alert digest...). Leave both unset for anything that must always
+   * go out regardless of club settings (e.g. password reset) — omitting either one skips the
+   * club-settings check entirely rather than looking anything up. */
+  organizationId?: string | null;
+  notificationKey?: NotificationSettingKey;
 }
 
 export interface SendEmailResult {
@@ -22,6 +29,14 @@ export async function sendEmail(params: SendEmailParams): Promise<SendEmailResul
   if (isTechnicalEmail(params.to)) {
     console.error("[Mailer] Refusing to send to a technical address");
     return { success: false, reason: "TechnicalAddress" };
+  }
+
+  if (
+    params.organizationId &&
+    params.notificationKey &&
+    !(await isNotificationEnabled(params.organizationId, params.notificationKey))
+  ) {
+    return { success: false, reason: "ClubDisabled" };
   }
 
   if (!resend) {
@@ -65,8 +80,26 @@ export interface SendBatchEmailResult {
   failed: number;
 }
 
+export interface SendBatchEmailOptions {
+  /** A batch is always one club's own broadcast/digest, so a single check gates the whole
+   * thing — same convention as `SendEmailParams`, see its comment. */
+  organizationId?: string | null;
+  notificationKey?: NotificationSettingKey;
+}
+
 /** Broadcast to many recipients at once via Resend's batch endpoint, chunked to its 100/call limit. */
-export async function sendBatchEmails(allEmails: SendBatchEmailParams[]): Promise<SendBatchEmailResult> {
+export async function sendBatchEmails(
+  allEmails: SendBatchEmailParams[],
+  options?: SendBatchEmailOptions,
+): Promise<SendBatchEmailResult> {
+  if (
+    options?.organizationId &&
+    options?.notificationKey &&
+    !(await isNotificationEnabled(options.organizationId, options.notificationKey))
+  ) {
+    return { sent: 0, failed: 0 };
+  }
+
   // Technical addresses are dropped from the batch and counted as failures.
   const emails = allEmails.filter((email) => !isTechnicalEmail(email.to));
   const refused = allEmails.length - emails.length;

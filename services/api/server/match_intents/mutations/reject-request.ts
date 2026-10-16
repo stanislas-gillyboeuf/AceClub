@@ -4,6 +4,7 @@ import { db } from "../../../db";
 import { matchRequest, user } from "../../../db/schema";
 import { and, eq } from "drizzle-orm";
 import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
+import { resolvePrimaryOrganizationId } from "../../../lib/notification-gate";
 import { findOrCreateDirectConversation } from "../lib/conversation";
 import { broadcastMatchRequestUpdate } from "../lib/broadcast";
 
@@ -39,15 +40,18 @@ export const rejectRequest = async (c: Context<HonoContext>) => {
     const [receiverInfo] = await db.select({ name: user.name }).from(user).where(eq(user.id, userId)).limit(1);
     const conversationId = await findOrCreateDirectConversation(userId, request.requesterId);
 
-    sendNotificationToUser({
-      userId: request.requesterId,
-      type: "new_message",
-      title: receiverInfo?.name ?? "Réponse",
-      body: "Ta demande a été déclinée.",
-      referenceId: conversationId,
-      referenceType: "conversation",
-      data: { conversationId },
-    }).catch((err) => console.error("[REJECT REQUEST] Failed to send notification:", err));
+    resolvePrimaryOrganizationId(request.requesterId).then((organizationId) =>
+      sendNotificationToUser({
+        userId: request.requesterId,
+        type: "match_request_update",
+        title: receiverInfo?.name ?? "Réponse",
+        body: "Ta demande a été déclinée.",
+        referenceId: conversationId,
+        referenceType: "conversation",
+        data: { conversationId },
+        organizationId,
+      }),
+    ).catch((err) => console.error("[REJECT REQUEST] Failed to send notification:", err));
 
     broadcastMatchRequestUpdate(request.id, "rejected", [userId, request.requesterId]);
 

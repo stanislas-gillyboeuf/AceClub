@@ -207,6 +207,7 @@ export default function Profile() {
   // Navigation
   const openSettings = () => router.push("/(tabs)/profile/settings");
   const openCreateIntent = () => router.push("/(tabs)/profile/create-intent");
+  const openProgression = () => router.push("/(tabs)/feed/progression");
 
   const isLoading = userLoading && !user;
 
@@ -260,6 +261,7 @@ export default function Profile() {
             preferences={preferences ?? null}
             level={level ?? null}
             matchStats={matchStats}
+            onPressProgression={openProgression}
           />
         )}
 

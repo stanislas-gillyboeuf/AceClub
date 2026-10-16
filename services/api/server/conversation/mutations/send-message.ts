@@ -11,6 +11,7 @@ import { eq, and, ne, sql, inArray } from "drizzle-orm";
 import { ulid } from "ulid";
 import { redis, CHAT_CHANNEL } from "../../../lib/redis";
 import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
+import { resolvePrimaryOrganizationId } from "../../../lib/notification-gate";
 import { isUserConnectedWs } from "../../ws/bun-chat-handler";
 import { decryptMessageContent } from "../lib/decrypt-content";
 import { canSendMessage } from "../lib/request-link";
@@ -306,7 +307,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
   Promise.all(
     otherParticipants
       .filter((p) => !p.isMuted && !isUserConnectedWs(p.userId))
-      .map((participant) =>
+      .map(async (participant) =>
         sendNotificationToUser({
           userId: participant.userId,
           type: "new_message",
@@ -318,6 +319,7 @@ export const sendMessage = async (c: Context<HonoContext>) => {
             conversationId,
             messageId: newMessage.id,
           },
+          organizationId: await resolvePrimaryOrganizationId(participant.userId),
         }).catch((error) =>
           console.error(
             `[SendMessage] Failed to send push notification to user ${participant.userId}:`,

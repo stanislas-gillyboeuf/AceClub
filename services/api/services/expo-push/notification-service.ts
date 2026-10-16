@@ -2,6 +2,7 @@ import { db } from "../../db";
 import { deviceToken, notification } from "../../db/schema";
 import { eq, and } from "drizzle-orm";
 import { sendPushNotification, isInvalidTokenError, type PushNotificationPayload } from "./index";
+import { isNotificationEnabled, PUSH_TYPE_TO_SETTING_KEY } from "../../lib/notification-gate";
 
 export type NotificationType =
   | "match_request_accepted"
@@ -16,7 +17,8 @@ export type NotificationType =
   | "booking_reminder"
   | "class_reminder"
   | "slot_suggestion"
-  | "coach_message";
+  | "coach_message"
+  | "match_request_update";
 
 interface SendNotificationParams {
   userId: string;
@@ -26,10 +28,19 @@ interface SendNotificationParams {
   referenceId?: string;
   referenceType?: string;
   data?: Record<string, string>;
+  /** The club this notification is about, if any — lets the club gate it off. Omit only for
+   * notifications with no natural club context. */
+  organizationId?: string | null;
 }
 
 export async function sendNotificationToUser(params: SendNotificationParams): Promise<void> {
-  const { userId, type, title, body, referenceId, referenceType, data } = params;
+  const { userId, type, title, body, referenceId, referenceType, data, organizationId } = params;
+
+  const settingKey = PUSH_TYPE_TO_SETTING_KEY[type];
+  if (settingKey && !(await isNotificationEnabled(organizationId, settingKey))) {
+    console.log(`[Notification] Skipped (disabled by club ${organizationId}): type ${type} for user ${userId}`);
+    return;
+  }
 
   console.log(`[Notification] Sending notification to user ${userId}`);
   console.log(`[Notification] Type: ${type}, Title: ${title}`);

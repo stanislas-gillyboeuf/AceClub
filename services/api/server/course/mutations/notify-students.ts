@@ -50,6 +50,7 @@ export const notifyStudents = async (c: Context<HonoContext>) => {
     title: validated.title || parentCourse.name,
     body: validated.body,
     data: { courseId: parentCourse.id },
+    organizationId: parentCourse.organizationId,
   });
 
   return c.json({ success: true, ...result });

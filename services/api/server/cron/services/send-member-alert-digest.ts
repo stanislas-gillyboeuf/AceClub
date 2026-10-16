@@ -40,7 +40,12 @@ export async function sendMemberAlertDigest(): Promise<{ clubsNotified: number; 
     });
 
     for (const to of orgAdminEmails) {
-      const result = await sendEmail({ to, ...email });
+      const result = await sendEmail({
+        to,
+        ...email,
+        organizationId: org.id,
+        notificationKey: "memberAlertDigestEmail",
+      });
       if (result.success) emailsSent++;
     }
     clubsNotified++;

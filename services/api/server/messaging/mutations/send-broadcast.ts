@@ -48,13 +48,19 @@ export const sendBroadcast = async (c: Context<HonoContext>) => {
     emailNoContactCount = noContact.length;
     await sendBatchEmails(
       emails.map((to) => ({ to, subject: email.subject, html: email.html, text: email.text })),
+      { organizationId: validated.organizationId, notificationKey: "clubAnnouncement" },
     );
   }
 
   if (validated.channel === "push" || validated.channel === "both") {
     await sendBatchNotifications(
       recipients.map((r) => r.userId),
-      { type: "club_announcement", title: validated.subject, body: validated.body },
+      {
+        type: "club_announcement",
+        title: validated.subject,
+        body: validated.body,
+        organizationId: validated.organizationId,
+      },
     );
   }
 

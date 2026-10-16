@@ -10,6 +10,7 @@ import {
   getWeekEndDate,
 } from "../../challenge/services/challenge-selector";
 import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
+import { resolvePrimaryOrganizationId } from "../../../lib/notification-gate";
 
 export const assignChallengeTemplateNow = async (c: Context<HonoContext>) => {
   const id = c.req.param("id");
@@ -78,14 +79,17 @@ export const assignChallengeTemplateNow = async (c: Context<HonoContext>) => {
 
   await Promise.allSettled(
     inserted.map((row) =>
-      sendNotificationToUser({
-        userId: row.userId,
-        type: "challenge_assigned",
-        title: "Nouveau défi disponible 🎯",
-        body: `${template.titleFr} — relève-le pour gagner ${template.acesReward} Aces !`,
-        referenceId: template.id,
-        referenceType: "challenge_template",
-      }).catch((err) => {
+      resolvePrimaryOrganizationId(row.userId).then((organizationId) =>
+        sendNotificationToUser({
+          userId: row.userId,
+          type: "challenge_assigned",
+          title: "Nouveau défi disponible 🎯",
+          body: `${template.titleFr} — relève-le pour gagner ${template.acesReward} Aces !`,
+          referenceId: template.id,
+          referenceType: "challenge_template",
+          organizationId,
+        }),
+      ).catch((err) => {
         console.error(`[assignChallengeTemplateNow] push failed for ${row.userId}`, err);
       }),
     ),

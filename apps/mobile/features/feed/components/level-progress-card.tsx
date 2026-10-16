@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { ChevronRight } from "lucide-react-native";
 import { Card } from "@/components/ui/card";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -10,17 +10,22 @@ interface LevelProgressCardProps {
   level: UserLevel;
   showDetailIndicator?: boolean;
   onPress?: () => void;
+  /** Render without the outer Card — for embedding inside another card (e.g. the profile
+   * header). The "Voir ma progression" row becomes its own tappable target instead of the
+   * whole block, since the surrounding card has other, unrelated content below it. */
+  bare?: boolean;
 }
 
 export function LevelProgressCard({
   level,
   showDetailIndicator = false,
   onPress,
+  bare = false,
 }: LevelProgressCardProps) {
   const scheme = useColorScheme();
 
-  return (
-    <Card onPress={onPress}>
+  const content = (
+    <>
       {/* Header: level title + badge */}
       <View style={styles.header}>
         <View style={styles.headerText}>
@@ -97,18 +102,33 @@ export function LevelProgressCard({
               { backgroundColor: semanticColors.divider[scheme] },
             ]}
           />
-          <View style={styles.detailRow}>
-            <Text style={[styles.detailText, { color: semanticColors.accentGreen[scheme] }]}>Voir ma progression</Text>
-            <ChevronRight
-              size={14}
-              color={`${semanticColors.accentGreen[scheme]}99`}
-              strokeWidth={2.5}
-            />
-          </View>
+          {bare ? (
+            <Pressable onPress={onPress} style={styles.detailRow} hitSlop={8}>
+              <Text style={[styles.detailText, { color: semanticColors.accentGreen[scheme] }]}>Voir ma progression</Text>
+              <ChevronRight
+                size={14}
+                color={`${semanticColors.accentGreen[scheme]}99`}
+                strokeWidth={2.5}
+              />
+            </Pressable>
+          ) : (
+            <View style={styles.detailRow}>
+              <Text style={[styles.detailText, { color: semanticColors.accentGreen[scheme] }]}>Voir ma progression</Text>
+              <ChevronRight
+                size={14}
+                color={`${semanticColors.accentGreen[scheme]}99`}
+                strokeWidth={2.5}
+              />
+            </View>
+          )}
         </View>
       )}
-    </Card>
+    </>
   );
+
+  if (bare) return content;
+
+  return <Card onPress={onPress}>{content}</Card>;
 }
 
 const styles = StyleSheet.create({

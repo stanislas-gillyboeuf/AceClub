@@ -75,6 +75,8 @@ export const sendCotisationReminder = async (c: Context<HonoContext>) => {
     subject: email.subject,
     html: email.html,
     text: email.text,
+    organizationId: record.organizationId,
+    notificationKey: "cotisationReminderEmail",
   });
 
   if (!sendResult.success) {
