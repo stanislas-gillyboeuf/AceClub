@@ -89,4 +89,7 @@ export const conversationService = {
 
   addGroupParticipant: (conversationId: string, userId: string) =>
     api.post<{ success: boolean }>(`/conversation/${conversationId}/add-participant`, { userId }),
+
+  removeGroupParticipant: (conversationId: string, userId: string) =>
+    api.post<{ success: boolean }>(`/conversation/${conversationId}/remove-participant`, { userId }),
 };

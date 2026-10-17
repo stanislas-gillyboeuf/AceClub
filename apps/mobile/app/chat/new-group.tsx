@@ -10,7 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { useRouter, Stack } from "expo-router";
-import { Check, X } from "lucide-react-native";
+import { X } from "lucide-react-native";
 import { useSearchUsers } from "@/hooks/use-user";
 import { useActiveClub } from "@/hooks/use-active-club";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -36,95 +36,92 @@ export default function NewGroupScreen() {
   const currentUserId = session?.user?.id ?? "";
   const [searchText, setSearchText] = useState("");
   const [groupName, setGroupName] = useState("");
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<ListEntry[]>([]);
   const [isCreating, setIsCreating] = useState(false);
 
   const trimmedSearch = searchText.trim();
   const { data: searchData, isLoading } = useSearchUsers(trimmedSearch, 20);
+  const selectedIds = useMemo(() => new Set(selected.map((s) => s.userId)), [selected]);
 
   const entries = useMemo<ListEntry[]>(() => {
     if (!searchData?.users) return [];
     return searchData.users
-      .filter((u) => u.id !== currentUserId && !u.isGhost)
+      .filter((u) => u.id !== currentUserId && !u.isGhost && !selectedIds.has(u.id))
       .map<ListEntry>((u: UserSearchItem) => ({
         id: u.id,
         userId: u.id,
         name: u.name,
         image: u.image,
       }));
-  }, [searchData, currentUserId]);
+  }, [searchData, currentUserId, selectedIds]);
 
   const showSearchHint = trimmedSearch.length < 2;
 
-  const toggleSelected = useCallback((userId: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(userId)) next.delete(userId);
-      else next.add(userId);
-      return next;
-    });
+  const handleAdd = useCallback((entry: ListEntry) => {
+    setSelected((prev) => [...prev, entry]);
+    setSearchText("");
+  }, []);
+
+  const handleRemove = useCallback((userId: string) => {
+    setSelected((prev) => prev.filter((s) => s.userId !== userId));
   }, []);
 
   const handleCreate = useCallback(async () => {
-    if (!activeClubId || !groupName.trim() || selectedIds.size === 0) return;
+    if (!activeClubId || !groupName.trim() || selected.length === 0) return;
     setIsCreating(true);
     try {
-      const result = await conversationService.createGroup(activeClubId, groupName.trim(), [
-        ...selectedIds,
-      ]);
+      const result = await conversationService.createGroup(
+        activeClubId,
+        groupName.trim(),
+        selected.map((s) => s.userId),
+      );
       router.replace(`/conversation/${result.conversationId}`);
     } catch {
       Alert.alert("Erreur", "Impossible de créer le groupe — vérifiez que chaque membre fait partie du club");
     } finally {
       setIsCreating(false);
     }
-  }, [activeClubId, groupName, selectedIds, router]);
+  }, [activeClubId, groupName, selected, router]);
 
-  const canCreate = !!groupName.trim() && selectedIds.size > 0 && !isCreating;
-
-  const renderItem = useCallback(
-    ({ item }: { item: ListEntry }) => {
-      const isSelected = selectedIds.has(item.userId);
-      return (
-        <Pressable
-          onPress={() => toggleSelected(item.userId)}
-          style={({ pressed }) => [
-            styles.memberRow,
-            { backgroundColor: pressed ? semanticColors.skeleton[scheme] : "transparent" },
-          ]}
-        >
-          <Avatar imageUrl={item.image} name={item.name} size={50} />
-          <View style={styles.memberInfo}>
-            <Text
-              style={[styles.memberName, { color: semanticColors.labelPrimary[scheme] }]}
-              numberOfLines={1}
-            >
-              {item.name}
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.checkbox,
-              {
-                borderColor: isSelected
-                  ? semanticColors.accentGreen[scheme]
-                  : semanticColors.labelSecondary[scheme],
-                backgroundColor: isSelected ? semanticColors.accentGreen[scheme] : "transparent",
-              },
-            ]}
-          >
-            {isSelected && <Check size={14} color={semanticColors.onAccentGreen[scheme]} strokeWidth={3} />}
-          </View>
+  const renderSelectedChip = useCallback(
+    ({ item }: { item: ListEntry }) => (
+      <View style={[styles.chip, { backgroundColor: semanticColors.skeleton[scheme] }]}>
+        <Avatar imageUrl={item.image} name={item.name} size={22} />
+        <Text style={[styles.chipText, { color: semanticColors.labelPrimary[scheme] }]} numberOfLines={1}>
+          {item.name}
+        </Text>
+        <Pressable onPress={() => handleRemove(item.userId)} hitSlop={8}>
+          <X size={14} color={semanticColors.labelSecondary[scheme]} />
         </Pressable>
-      );
-    },
-    [toggleSelected, selectedIds, scheme],
+      </View>
+    ),
+    [handleRemove, scheme],
+  );
+
+  const renderResultRow = useCallback(
+    ({ item }: { item: ListEntry }) => (
+      <Pressable
+        onPress={() => handleAdd(item)}
+        style={({ pressed }) => [
+          styles.memberRow,
+          { backgroundColor: pressed ? semanticColors.skeleton[scheme] : "transparent" },
+        ]}
+      >
+        <Avatar imageUrl={item.image} name={item.name} size={50} />
+        <Text style={[styles.memberName, { color: semanticColors.labelPrimary[scheme] }]} numberOfLines={1}>
+          {item.name}
+        </Text>
+      </Pressable>
+    ),
+    [handleAdd, scheme],
   );
 
   const renderSeparator = useCallback(
     () => <View style={[styles.separator, { backgroundColor: semanticColors.divider[scheme] }]} />,
     [scheme],
   );
+
+  const canCreate = !!groupName.trim() && selected.length > 0 && !isCreating;
 
   return (
     <>
@@ -136,18 +133,6 @@ export default function NewGroupScreen() {
               <X size={20} color={semanticColors.accentGreen[scheme]} />
             </Pressable>
           ),
-          headerRight: () => (
-            <Pressable onPress={handleCreate} disabled={!canCreate}>
-              <Text
-                style={[
-                  styles.createLabel,
-                  { color: canCreate ? semanticColors.accentGreen[scheme] : semanticColors.labelSecondary[scheme] },
-                ]}
-              >
-                Créer
-              </Text>
-            </Pressable>
-          ),
         }}
       />
 
@@ -157,45 +142,49 @@ export default function NewGroupScreen() {
         </View>
       )}
 
-      <View style={[styles.nameField, { borderColor: semanticColors.divider[scheme] }]}>
+      {/* Search bar — fixed at the top so it's always available to add more people. */}
+      <View style={[styles.searchField, { borderColor: semanticColors.divider[scheme] }]}>
         <TextInput
-          value={groupName}
-          onChangeText={setGroupName}
-          placeholder="Nom du groupe"
+          value={searchText}
+          onChangeText={setSearchText}
+          placeholder="Rechercher un membre"
           placeholderTextColor={semanticColors.labelSecondary[scheme]}
-          style={[styles.nameInput, { color: semanticColors.labelPrimary[scheme] }]}
+          style={[styles.searchInput, { color: semanticColors.labelPrimary[scheme] }]}
         />
       </View>
+
+      {/* Selected members — pinned right below the search bar, not mixed into the scroll. */}
+      {selected.length > 0 && (
+        <FlatList
+          horizontal
+          data={selected}
+          keyExtractor={(item) => item.id}
+          renderItem={renderSelectedChip}
+          contentContainerStyle={styles.chipRow}
+          showsHorizontalScrollIndicator={false}
+          style={[styles.chipList, { borderColor: semanticColors.divider[scheme] }]}
+        />
+      )}
 
       <FlatList
         style={[styles.list, { backgroundColor: semanticColors.primaryBackground[scheme] }]}
         contentContainerStyle={styles.listContent}
         data={entries}
         keyExtractor={(item) => item.id}
-        renderItem={renderItem}
+        renderItem={renderResultRow}
         ItemSeparatorComponent={renderSeparator}
-        contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
-        ListHeaderComponent={
-          <View style={styles.searchField}>
-            <TextInput
-              value={searchText}
-              onChangeText={setSearchText}
-              placeholder="Rechercher un membre"
-              placeholderTextColor={semanticColors.labelSecondary[scheme]}
-              style={[styles.searchInput, { color: semanticColors.labelPrimary[scheme] }]}
-            />
-          </View>
-        }
         ListEmptyComponent={
           showSearchHint ? (
-            <EmptyState
-              icon="Search"
-              title="Rechercher un membre"
-              description="Tapez au moins 2 caractères pour rechercher."
-              containerStyle={styles.emptyState}
-            />
+            selected.length === 0 ? (
+              <EmptyState
+                icon="Search"
+                title="Rechercher un membre"
+                description="Tapez au moins 2 caractères pour rechercher."
+                containerStyle={styles.emptyState}
+              />
+            ) : null
           ) : isLoading ? (
             <View style={styles.centered}>
               <ActivityIndicator color={semanticColors.accentGreen[scheme]} />
@@ -210,6 +199,29 @@ export default function NewGroupScreen() {
           )
         }
       />
+
+      {/* Naming comes once at least one member is selected. */}
+      {selected.length > 0 && (
+        <View style={[styles.nameBar, { borderColor: semanticColors.divider[scheme] }]}>
+          <TextInput
+            value={groupName}
+            onChangeText={setGroupName}
+            placeholder="Nom du groupe"
+            placeholderTextColor={semanticColors.labelSecondary[scheme]}
+            style={[styles.nameInput, { color: semanticColors.labelPrimary[scheme] }]}
+          />
+          <Pressable onPress={handleCreate} disabled={!canCreate} style={styles.createButton}>
+            <Text
+              style={[
+                styles.createLabel,
+                { color: canCreate ? semanticColors.accentGreen[scheme] : semanticColors.labelSecondary[scheme] },
+              ]}
+            >
+              Créer
+            </Text>
+          </Pressable>
+        </View>
+      )}
     </>
   );
 }
@@ -220,7 +232,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     flexGrow: 1,
-    paddingBottom: 32,
   },
   centered: {
     flex: 1,
@@ -228,21 +239,36 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 32,
   },
-  nameField: {
+  searchField: {
     paddingHorizontal: spacing.horizontal,
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  nameInput: {
+  searchInput: {
     fontSize: 17,
-    fontWeight: "600",
   },
-  searchField: {
+  chipList: {
+    maxHeight: 48,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  chipRow: {
     paddingHorizontal: spacing.horizontal,
     paddingVertical: 8,
+    gap: 8,
   },
-  searchInput: {
-    fontSize: 15,
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    maxWidth: 160,
+  },
+  chipText: {
+    fontSize: 13,
+    fontWeight: "600",
+    flexShrink: 1,
   },
   memberRow: {
     flexDirection: "row",
@@ -251,21 +277,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.horizontal,
     gap: 14,
   },
-  memberInfo: {
-    flex: 1,
-    gap: 4,
-  },
   memberName: {
     fontSize: 17,
     fontWeight: "600",
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
+    flex: 1,
   },
   separator: {
     height: StyleSheet.hairlineWidth,
@@ -273,6 +288,23 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     flex: 1,
+  },
+  nameBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: spacing.horizontal,
+    paddingVertical: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  nameInput: {
+    flex: 1,
+    fontSize: 17,
+    fontWeight: "600",
+  },
+  createButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 4,
   },
   createLabel: {
     fontSize: 17,

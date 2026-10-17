@@ -62,6 +62,14 @@ function RootNavigator() {
             headerShown: true,
           }}
         />
+        <Stack.Screen
+          name="group-members"
+          options={{
+            presentation: Platform.select({ ios: "formSheet", default: "modal" }),
+            title: "Membres",
+            headerShown: true,
+          }}
+        />
         <Stack.Screen name="index" />
         <Stack.Screen
           name="offline"

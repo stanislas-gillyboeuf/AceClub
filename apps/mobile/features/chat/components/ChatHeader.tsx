@@ -43,6 +43,10 @@ export function ChatHeader({
     if (isGroup) {
       Alert.alert(displayName, undefined, [
         {
+          text: "Voir les membres",
+          onPress: () => router.push(`/group-members?conversationId=${conversation.id}`),
+        },
+        {
           text: conversation.isMuted ? "R\u00e9activer" : "Mettre en sourdine",
           onPress: onToggleMute,
         },
@@ -97,6 +101,7 @@ export function ChatHeader({
   }, [
     isGroup,
     displayName,
+    conversation.id,
     conversation.isMuted,
     conversation.isAdmin,
     conversation.announcementsOnly,

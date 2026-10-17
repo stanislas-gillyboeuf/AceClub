@@ -31,6 +31,7 @@ import {
   pinMessage,
   toggleAnnouncementsOnly,
   addGroupParticipant,
+  removeGroupParticipant,
   archiveGroup,
 } from "./mutations";
 import { listConversations, getConversation, listMessages, listClubGroups } from "./queries";
@@ -101,6 +102,11 @@ conversationRouter.post(
   "/:id/add-participant",
   zValidator("json", addGroupParticipantValidator),
   addGroupParticipant,
+);
+conversationRouter.post(
+  "/:id/remove-participant",
+  zValidator("json", addGroupParticipantValidator),
+  removeGroupParticipant,
 );
 
 // Add a reaction to a message
