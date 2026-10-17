@@ -10,6 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { useRouter, Stack } from "expo-router";
+import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { X } from "lucide-react-native";
 import { useSearchUsers } from "@/hooks/use-user";
 import { useActiveClub } from "@/hooks/use-active-club";
@@ -194,9 +195,17 @@ export default function NewGroupScreen() {
         }
       />
 
-      {/* Naming comes once at least one member is selected. */}
+      {/* Naming comes once at least one member is selected. Sticks right above the keyboard
+          instead of sitting at a fixed screen position — a plain View here would end up
+          covered by (or fighting with) the keyboard once the name field or search bar is
+          focused, since it sits outside any scrollable content. */}
       {selected.length > 0 && (
-        <View style={[styles.nameBar, { borderColor: semanticColors.divider[scheme] }]}>
+        <KeyboardStickyView
+          style={[
+            styles.nameBar,
+            { borderColor: semanticColors.divider[scheme], backgroundColor: semanticColors.primaryBackground[scheme] },
+          ]}
+        >
           <TextInput
             value={groupName}
             onChangeText={setGroupName}
@@ -214,7 +223,7 @@ export default function NewGroupScreen() {
               Créer
             </Text>
           </Pressable>
-        </View>
+        </KeyboardStickyView>
       )}
     </>
   );
