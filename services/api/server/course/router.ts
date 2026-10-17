@@ -8,6 +8,7 @@ import {
   listMyCourses,
   listMyEnrollments,
   getOccurrenceAttendance,
+  getMessagingSettings,
 } from "./queries";
 import {
   createCourse,
@@ -18,6 +19,7 @@ import {
   unenrollMember,
   markAttendance,
   notifyStudents,
+  updateMessagingSettings,
 } from "./mutations";
 import {
   createCourseValidator,
@@ -32,6 +34,8 @@ import {
   getOccurrenceAttendanceValidator,
   markAttendanceValidator,
   notifyStudentsValidator,
+  messagingSettingsQueryValidator,
+  updateMessagingSettingsValidator,
 } from "./validators";
 
 export const courseRouter = new Hono<HonoContext>();
@@ -48,6 +52,11 @@ courseRouter.get(
   zValidator("query", getOccurrenceAttendanceValidator),
   getOccurrenceAttendance,
 );
+courseRouter.get(
+  "/messaging-settings",
+  zValidator("query", messagingSettingsQueryValidator),
+  getMessagingSettings,
+);
 
 // --- Mutations ---
 courseRouter.post("/create", zValidator("json", createCourseValidator), createCourse);
@@ -62,3 +71,8 @@ courseRouter.post("/enroll", zValidator("json", enrollMemberValidator), enrollMe
 courseRouter.post("/unenroll", zValidator("json", unenrollMemberValidator), unenrollMember);
 courseRouter.post("/mark-attendance", zValidator("json", markAttendanceValidator), markAttendance);
 courseRouter.post("/notify-students", zValidator("json", notifyStudentsValidator), notifyStudents);
+courseRouter.post(
+  "/messaging-settings",
+  zValidator("json", updateMessagingSettingsValidator),
+  updateMessagingSettings,
+);

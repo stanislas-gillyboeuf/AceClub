@@ -17,6 +17,8 @@ import { semanticColors } from "@/constants/theme";
 import { MessageBubble } from "@/features/chat/components/MessageBubble";
 import { ChatBottomBar } from "@/features/chat/components/ChatBottomBar";
 import { ConversationRequestBar } from "@/features/chat/components/ConversationRequestBar";
+import { AnnouncementsOnlyBar } from "@/features/chat/components/AnnouncementsOnlyBar";
+import { PinnedMessageBanner } from "@/features/chat/components/PinnedMessageBanner";
 import { ChatHeader } from "@/features/chat/components/ChatHeader";
 import { TypingIndicator } from "@/features/chat/components/TypingIndicator";
 import { MessageContextMenu } from "@/features/chat/components/MessageContextMenu";
@@ -80,6 +82,8 @@ function ChatContent({
     sendTypingIndicator,
     toggleMute,
     deleteConversation,
+    togglePin,
+    toggleAnnouncementsOnly,
     errorMessage,
     setErrorMessage,
     replyingTo,
@@ -183,13 +187,23 @@ function ChatContent({
     );
   }, [hasMoreMessages, messages.length, scheme]);
 
+  const canModerate = conversation.type === "group" && conversation.isAdmin;
+  const pinnedMessage = conversation.pinnedMessageId
+    ? messages.find((m) => m.id === conversation.pinnedMessageId) ?? null
+    : null;
+  const isAnnouncementsOnlyLocked =
+    conversation.type === "group" && conversation.announcementsOnly && !conversation.isAdmin;
+
   return (
     <View style={styles.container}>
       <ChatHeader
         conversation={conversation}
         onToggleMute={toggleMute}
         onDeleteConversation={deleteConversation}
+        onToggleAnnouncementsOnly={canModerate ? toggleAnnouncementsOnly : undefined}
       />
+
+      {pinnedMessage && <PinnedMessageBanner message={pinnedMessage} />}
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -221,6 +235,8 @@ function ChatContent({
 
         {conversation.status === "pending_request" ? (
           <ConversationRequestBar conversation={conversation} currentUserId={currentUserId} />
+        ) : isAnnouncementsOnlyLocked ? (
+          <AnnouncementsOnlyBar />
         ) : (
           <ChatBottomBar
             onSendText={handleSendText}
@@ -240,6 +256,9 @@ function ChatContent({
         onReply={handleContextMenuReply}
         onDelete={handleContextMenuDelete}
         onReaction={handleContextMenuReaction}
+        canModerate={canModerate}
+        isPinned={!!contextMenuMessage && contextMenuMessage.id === conversation.pinnedMessageId}
+        onTogglePin={togglePin}
       />
     </View>
   );

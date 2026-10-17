@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus } from "lucide-react"
+import Link from "next/link"
+import { MessageCircle, Plus } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -44,10 +45,18 @@ export default function ClubCoursesPage() {
     <div className="mx-auto max-w-5xl">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Cours</h1>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nouveau cours
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/club/courses/messaging">
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Messagerie des cours
+            </Link>
+          </Button>
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouveau cours
+          </Button>
+        </div>
       </div>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-[220px_1fr]">

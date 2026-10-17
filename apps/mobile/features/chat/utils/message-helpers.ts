@@ -7,6 +7,9 @@ export function getDisplayName(conversation: Conversation): string {
 }
 
 export function getAvatarUrl(conversation: Conversation): string | null {
+  // A group's avatar is never "whoever happens to be first in the list" — initials from the
+  // group's own name (via getDisplayName) instead.
+  if (conversation.type === "group") return null;
   return conversation.otherParticipants[0]?.user?.image ?? null;
 }
 

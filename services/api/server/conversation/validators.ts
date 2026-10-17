@@ -33,3 +33,29 @@ export const addReactionValidator = z.object({
 export const removeReactionValidator = z.object({
   emoji: z.string().min(1).max(50),
 });
+
+export const createGroupValidator = z.object({
+  organizationId: z.string().min(1),
+  name: z.string().min(1).max(100),
+  participantUserIds: z.array(z.string().min(1)).min(1).max(200),
+});
+
+export const pinMessageValidator = z.object({
+  messageId: z.string().min(1).nullable(),
+});
+
+export const toggleAnnouncementsOnlyValidator = z.object({
+  announcementsOnly: z.boolean(),
+});
+
+export const addGroupParticipantValidator = z.object({
+  userId: z.string().min(1),
+});
+
+export const listClubGroupsValidator = z.object({
+  organizationId: z.string().min(1),
+});
+
+export const archiveGroupValidator = z.object({
+  isArchived: z.boolean(),
+});

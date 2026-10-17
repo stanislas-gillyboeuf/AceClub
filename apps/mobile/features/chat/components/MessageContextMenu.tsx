@@ -4,7 +4,7 @@ import Animated, {
   FadeIn,
   ZoomIn,
 } from "react-native-reanimated";
-import { Reply, Copy, Trash2 } from "lucide-react-native";
+import { Reply, Copy, Trash2, Pin, PinOff } from "lucide-react-native";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
 import { QUICK_EMOJIS } from "../constants";
@@ -17,6 +17,10 @@ interface MessageContextMenuProps {
   onReply: (message: ChatMessage) => void;
   onDelete: (message: ChatMessage) => void;
   onReaction: (messageId: string, emoji: string) => void;
+  /** Group admin only — can pin/unpin and delete any message, not just their own. */
+  canModerate?: boolean;
+  isPinned?: boolean;
+  onTogglePin?: (message: ChatMessage) => void;
 }
 
 export function MessageContextMenu({
@@ -26,6 +30,9 @@ export function MessageContextMenu({
   onReply,
   onDelete,
   onReaction,
+  canModerate = false,
+  isPinned = false,
+  onTogglePin,
 }: MessageContextMenuProps) {
   const scheme = useColorScheme();
 
@@ -43,6 +50,11 @@ export function MessageContextMenu({
 
   const handleDelete = () => {
     onDelete(message);
+    onClose();
+  };
+
+  const handleTogglePin = () => {
+    onTogglePin?.(message);
     onClose();
   };
 
@@ -154,7 +166,40 @@ export function MessageContextMenu({
               </>
             )}
 
-            {message.isFromMe && (
+            {canModerate && (
+              <>
+                <Pressable
+                  onPress={handleTogglePin}
+                  style={({ pressed }) => [
+                    styles.menuItem,
+                    pressed && styles.menuItemPressed,
+                  ]}
+                >
+                  <Text style={[styles.menuItemText, { color: textColor }]}>
+                    {isPinned ? "Désépingler" : "Épingler"}
+                  </Text>
+                  {isPinned ? (
+                    <PinOff size={18} color={textColor} />
+                  ) : (
+                    <Pin size={18} color={textColor} />
+                  )}
+                </Pressable>
+
+                <View
+                  style={[
+                    styles.separator,
+                    {
+                      backgroundColor:
+                        scheme === "dark"
+                          ? "rgba(255,255,255,0.1)"
+                          : "rgba(0,0,0,0.08)",
+                    },
+                  ]}
+                />
+              </>
+            )}
+
+            {(message.isFromMe || canModerate) && (
               <Pressable
                 onPress={handleDelete}
                 style={({ pressed }) => [

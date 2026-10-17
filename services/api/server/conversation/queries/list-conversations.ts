@@ -22,6 +22,7 @@ export const listConversations = async (c: Context<HonoContext>) => {
       conversationId: conversationParticipant.conversationId,
       unreadCount: conversationParticipant.unreadCount,
       isMuted: conversationParticipant.isMuted,
+      isAdmin: conversationParticipant.isAdmin,
       lastReadAt: conversationParticipant.lastReadAt,
     })
     .from(conversationParticipant)
@@ -49,6 +50,8 @@ export const listConversations = async (c: Context<HonoContext>) => {
       lastMessageAt: conversation.lastMessageAt,
       lastMessagePreview: conversation.lastMessagePreview,
       lastMessageSenderId: conversation.lastMessageSenderId,
+      announcementsOnly: conversation.announcementsOnly,
+      isArchived: conversation.isArchived,
       createdAt: conversation.createdAt,
     })
     .from(conversation)
@@ -115,9 +118,12 @@ export const listConversations = async (c: Context<HonoContext>) => {
       lastMessageAt: conv.lastMessageAt?.toISOString() || null,
       lastMessagePreview: conv.lastMessagePreview,
       lastMessageSenderId: conv.lastMessageSenderId,
+      announcementsOnly: conv.announcementsOnly,
+      isArchived: conv.isArchived,
       createdAt: conv.createdAt.toISOString(),
       unreadCount: myParticipation?.unreadCount || 0,
       isMuted: myParticipation?.isMuted || false,
+      isAdmin: myParticipation?.isAdmin || false,
       otherParticipants: enrichedParticipants,
     };
   });

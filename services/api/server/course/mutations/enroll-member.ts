@@ -7,6 +7,7 @@ import { course, courseEnrollment } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { isOrgMember } from "../../../middleware/org-member";
 import { enrollMemberValidator } from "../validators";
+import { syncCourseGroupMembers } from "../lib/course-group-sync";
 
 export const enrollMember = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -38,6 +39,7 @@ export const enrollMember = async (c: Context<HonoContext>) => {
       .insert(courseEnrollment)
       .values({ courseId: validated.courseId, userId: validated.userId })
       .returning();
+    await syncCourseGroupMembers(validated.courseId);
     return c.json(created, 201);
   } catch (error: unknown) {
     if ((error as { code?: string }).code === "23505") {

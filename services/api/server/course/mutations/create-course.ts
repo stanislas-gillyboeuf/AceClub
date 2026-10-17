@@ -13,6 +13,7 @@ import {
   insertOccurrences,
 } from "../lib/occurrence-generator";
 import { getVacationDateRanges } from "../../vacation-period/lib/get-periods";
+import { syncCourseGroupMembers } from "../lib/course-group-sync";
 
 export const createCourse = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -85,6 +86,8 @@ export const createCourse = async (c: Context<HonoContext>) => {
         courseName: validated.name,
         slots,
       });
+
+      await syncCourseGroupMembers(newCourse.id, tx);
 
       return newCourse;
     });

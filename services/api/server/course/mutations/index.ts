@@ -6,3 +6,4 @@ export { enrollMember } from "./enroll-member";
 export { unenrollMember } from "./unenroll-member";
 export { markAttendance } from "./mark-attendance";
 export { notifyStudents } from "./notify-students";
+export { updateMessagingSettings } from "./update-messaging-settings";

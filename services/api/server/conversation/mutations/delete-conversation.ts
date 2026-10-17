@@ -31,11 +31,14 @@ export const deleteConversation = async (c: Context<HonoContext>) => {
   // Soft delete - only for this participant
   // The other participant keeps their history
   // If a new message is sent, the conversation will reappear for this user
+  // leftManually: a deliberate leave — for a course group, course-group-sync must never
+  // auto-restore this (see schema comment); meaningless for match/direct conversations.
   await db
     .update(conversationParticipant)
     .set({
       isDeleted: true,
       deletedAt: new Date(),
+      leftManually: true,
       // Also reset unread count since the user is "leaving" the conversation
       unreadCount: 0,
     })

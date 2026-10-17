@@ -97,6 +97,11 @@ export interface Conversation {
   status: ConversationStatus;
   /** Who called find-or-create — only meaningful while status is "pending_request". */
   initiatedByUserId?: string | null;
+  /** Group-only below — meaningless (always false/null) on direct/match conversations. */
+  isAdmin: boolean;
+  announcementsOnly: boolean;
+  isArchived: boolean;
+  pinnedMessageId?: string | null;
 }
 
 export interface SendMessageRequest {

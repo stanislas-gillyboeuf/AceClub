@@ -1,4 +1,4 @@
-import { index, integer, pgEnum, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgEnum, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { ulid } from "ulid";
 import { organization, user } from "../auth/schema";
 import { court, courtBooking } from "../court/schema";
@@ -65,6 +65,28 @@ export const courseEnrollment = pgTable(
     uniqueIndex("course_enrollment_courseId_userId_uidx").on(table.courseId, table.userId),
     index("course_enrollment_userId_idx").on(table.userId),
   ],
+);
+
+/** One row per club — whether a course's auto-managed discussion group gets created. No row =
+ * enabled (current behavior for every existing club). Disabling only stops NEW groups from being
+ * created; groups already created stay readable (see course-group-sync.ts). */
+export const courseMessagingSettings = pgTable(
+  "course_messaging_settings",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => ulid()),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    enabled: boolean("enabled").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [uniqueIndex("course_messaging_settings_organizationId_uidx").on(table.organizationId)],
 );
 
 /** One row per (occurrence, enrolled student) — marked by the assigned coach (or an admin)

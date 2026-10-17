@@ -10,9 +10,7 @@ import { user } from "../../../db/schema/auth/schema";
 import { eq, and, ne, sql, inArray } from "drizzle-orm";
 import { ulid } from "ulid";
 import { redis, CHAT_CHANNEL } from "../../../lib/redis";
-import { sendNotificationToUser } from "../../../services/expo-push/notification-service";
-import { resolvePrimaryOrganizationId } from "../../../lib/notification-gate";
-import { isUserConnectedWs } from "../../ws/bun-chat-handler";
+import { flushMessageNotification } from "../../../trigger/flush-message-notification";
 import { decryptMessageContent } from "../lib/decrypt-content";
 import { canSendMessage } from "../lib/request-link";
 import { isBlockedEitherWay } from "../../../lib/block";
@@ -54,14 +52,6 @@ export const sendMessage = async (c: Context<HonoContext>) => {
     return c.json({ error: "Forbidden", message: "Not a participant" }, 403);
   }
 
-  // If conversation was deleted by this user, restore it
-  if (myParticipation.isDeleted) {
-    await db
-      .update(conversationParticipant)
-      .set({ isDeleted: false, deletedAt: null })
-      .where(eq(conversationParticipant.id, myParticipation.id));
-  }
-
   // Get sender name and conversation encryption key in parallel
   const [[sender], [conv]] = await Promise.all([
     db
@@ -75,12 +65,40 @@ export const sendMessage = async (c: Context<HonoContext>) => {
         status: conversation.status,
         initiatedByUserId: conversation.initiatedByUserId,
         type: conversation.type,
+        courseId: conversation.courseId,
+        announcementsOnly: conversation.announcementsOnly,
+        isArchived: conversation.isArchived,
       })
       .from(conversation)
       .where(eq(conversation.id, conversationId))
       .limit(1),
   ]);
   const encryptionKey = conv?.encryptionKey ?? null;
+
+  if (conv?.isArchived) {
+    return c.json({ error: "Forbidden", message: "Ce groupe est archivé" }, 403);
+  }
+
+  if (myParticipation.isDeleted) {
+    // A deliberate "quitter le groupe" on a course group is never un-done by sending a message —
+    // only the coach/club can re-add (add-group-participant). Every other case (a direct
+    // conversation hidden by the user, a manual group they left before this rule existed) is
+    // restored as before.
+    if (conv?.courseId && myParticipation.leftManually) {
+      return c.json(
+        { error: "Forbidden", message: "Vous avez quitté ce groupe — seul le coach ou le club peut vous y réintégrer" },
+        403,
+      );
+    }
+    await db
+      .update(conversationParticipant)
+      .set({ isDeleted: false, deletedAt: null })
+      .where(eq(conversationParticipant.id, myParticipation.id));
+  }
+
+  if (conv?.type === "group" && conv.announcementsOnly && !myParticipation.isAdmin) {
+    return c.json({ error: "Forbidden", message: "Ce groupe est en mode annonces seulement" }, 403);
+  }
 
   // A direct conversation can go stale if either side blocks the other after it was created —
   // check on every send, not just at find-or-create time.
@@ -229,8 +247,6 @@ export const sendMessage = async (c: Context<HonoContext>) => {
     .select({
       id: conversationParticipant.id,
       userId: conversationParticipant.userId,
-      isMuted: conversationParticipant.isMuted,
-      isDeleted: conversationParticipant.isDeleted,
     })
     .from(conversationParticipant)
     .where(
@@ -297,36 +313,27 @@ export const sendMessage = async (c: Context<HonoContext>) => {
     }
   }
 
-  // Fire-and-forget push notifications (don't block response)
-  const notifBody =
-    msgType === "voice"
-      ? "Message vocal"
-      : msgType === "image"
-        ? "Photo"
-        : plaintextPreview || decryptedContent.substring(0, 100);
+  // One push per conversation burst, not one per message — see flush-message-notification.ts.
+  // A stable idempotency key per (conversation, participant) makes every message sent during
+  // the delay collapse into the single run Trigger.dev already scheduled for this pair.
   Promise.all(
-    otherParticipants
-      .filter((p) => !p.isMuted && !isUserConnectedWs(p.userId))
-      .map(async (participant) =>
-        sendNotificationToUser({
-          userId: participant.userId,
-          type: "new_message",
-          title: sender?.name || "Nouveau message",
-          body: notifBody,
-          referenceId: conversationId,
-          referenceType: "conversation",
-          data: {
-            conversationId,
-            messageId: newMessage.id,
+    otherParticipants.map((participant) =>
+      flushMessageNotification
+        .trigger(
+          { conversationId, participantUserId: participant.userId },
+          {
+            idempotencyKey: `flush-message-notification:${conversationId}:${participant.userId}`,
+            idempotencyKeyTTL: "60s",
+            delay: "45s",
           },
-          organizationId: await resolvePrimaryOrganizationId(participant.userId),
-        }).catch((error) =>
+        )
+        .catch((error) =>
           console.error(
-            `[SendMessage] Failed to send push notification to user ${participant.userId}:`,
+            `[SendMessage] Failed to schedule notification flush for user ${participant.userId}:`,
             error,
           ),
         ),
-      ),
+    ),
   ).catch(() => {});
 
   if (conv?.status === "pending_request" && conv.initiatedByUserId === currentUser.id) {

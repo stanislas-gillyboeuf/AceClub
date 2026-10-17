@@ -74,3 +74,12 @@ export const notifyStudentsValidator = z.object({
   title: z.string().max(100).optional(),
   body: z.string().min(1, "Message is required").max(300),
 });
+
+export const messagingSettingsQueryValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+});
+
+export const updateMessagingSettingsValidator = z.object({
+  organizationId: z.string().min(1, "Organization ID is required"),
+  enabled: z.boolean(),
+});

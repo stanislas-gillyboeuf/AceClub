@@ -8,6 +8,12 @@ import {
   findOrCreateConversationValidator,
   addReactionValidator,
   removeReactionValidator,
+  createGroupValidator,
+  pinMessageValidator,
+  toggleAnnouncementsOnlyValidator,
+  addGroupParticipantValidator,
+  listClubGroupsValidator,
+  archiveGroupValidator,
 } from "./validators";
 import {
   sendMessage,
@@ -21,8 +27,13 @@ import {
   removeReaction,
   acceptConversationRequest,
   rejectConversationRequest,
+  createGroup,
+  pinMessage,
+  toggleAnnouncementsOnly,
+  addGroupParticipant,
+  archiveGroup,
 } from "./mutations";
-import { listConversations, getConversation, listMessages } from "./queries";
+import { listConversations, getConversation, listMessages, listClubGroups } from "./queries";
 
 export const conversationRouter = new Hono<HonoContext>();
 
@@ -37,6 +48,17 @@ conversationRouter.post(
   "/find-or-create",
   zValidator("json", findOrCreateConversationValidator),
   findOrCreateConversation,
+);
+
+// Create a manual group (any club member)
+conversationRouter.post("/create-group", zValidator("json", createGroupValidator), createGroup);
+
+// Dashboard: list a club's groups (course-tied + manual), archive one
+conversationRouter.get("/club-groups", zValidator("query", listClubGroupsValidator), listClubGroups);
+conversationRouter.post(
+  "/:id/archive",
+  zValidator("json", archiveGroupValidator),
+  archiveGroup,
 );
 
 // Accept or reject a pending conversation request
@@ -65,8 +87,21 @@ conversationRouter.post(
   muteConversation,
 );
 
-// Delete (soft) a message (only sender can delete)
+// Delete (soft) a message (sender, or a group admin for any message)
 conversationRouter.delete("/:id/message/:messageId", deleteMessage);
+
+// Group moderation (admin-only, enforced in the handlers)
+conversationRouter.post("/:id/pin-message", zValidator("json", pinMessageValidator), pinMessage);
+conversationRouter.post(
+  "/:id/announcements-only",
+  zValidator("json", toggleAnnouncementsOnlyValidator),
+  toggleAnnouncementsOnly,
+);
+conversationRouter.post(
+  "/:id/add-participant",
+  zValidator("json", addGroupParticipantValidator),
+  addGroupParticipant,
+);
 
 // Add a reaction to a message
 conversationRouter.post(

@@ -96,7 +96,11 @@ export default function ConversationListScreen() {
   );
 
   const handleNewConversation = useCallback(() => {
-    router.push("/chat/new");
+    Alert.alert("Nouveau", undefined, [
+      { text: "Discussion", onPress: () => router.push("/chat/new") },
+      { text: "Groupe", onPress: () => router.push("/chat/new-group") },
+      { text: "Annuler", style: "cancel" },
+    ]);
   }, [router]);
 
   const filteredConversations = conversations

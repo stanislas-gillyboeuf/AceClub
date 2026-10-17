@@ -6,6 +6,7 @@ import { db } from "../../../db";
 import { course, courseEnrollment } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { unenrollMemberValidator } from "../validators";
+import { syncCourseGroupMembers } from "../lib/course-group-sync";
 
 export const unenrollMember = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user")!;
@@ -32,6 +33,8 @@ export const unenrollMember = async (c: Context<HonoContext>) => {
     .where(
       and(eq(courseEnrollment.courseId, validated.courseId), eq(courseEnrollment.userId, validated.userId)),
     );
+
+  await syncCourseGroupMembers(validated.courseId);
 
   return c.json({ success: true });
 };

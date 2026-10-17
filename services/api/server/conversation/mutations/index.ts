@@ -9,3 +9,8 @@ export { rejectConversationRequest } from "./reject-request";
 export { uploadAttachment } from "./upload-attachment";
 export { addReaction } from "./add-reaction";
 export { removeReaction } from "./remove-reaction";
+export { createGroup } from "./create-group";
+export { pinMessage } from "./pin-message";
+export { toggleAnnouncementsOnly } from "./toggle-announcements-only";
+export { addGroupParticipant } from "./add-group-participant";
+export { archiveGroup } from "./archive-group";

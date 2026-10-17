@@ -3,7 +3,7 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { course, court } from "../../../db/schema";
+import { course, court, conversation } from "../../../db/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { isOrgMember } from "../../../middleware/org-member";
 import { updateCourseValidator } from "../validators";
@@ -14,6 +14,7 @@ import {
   insertOccurrences,
 } from "../lib/occurrence-generator";
 import { getVacationDateRanges } from "../../vacation-period/lib/get-periods";
+import { reassignCourseGroupAdmin } from "../lib/course-group-sync";
 
 function toDateString(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -118,6 +119,13 @@ export const updateCourse = async (c: Context<HonoContext>) => {
         slots,
         excludeCourseId: existing.id,
       });
+
+      if (coachUserId !== existing.coachUserId) {
+        await reassignCourseGroupAdmin(existing.id, existing.coachUserId, coachUserId, tx);
+      }
+      if (name !== existing.name) {
+        await tx.update(conversation).set({ name }).where(eq(conversation.courseId, existing.id));
+      }
 
       return updatedCourse;
     });

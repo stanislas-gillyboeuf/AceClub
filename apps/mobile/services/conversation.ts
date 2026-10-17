@@ -69,4 +69,24 @@ export const conversationService = {
       { emoji },
     ),
 
+  createGroup: (organizationId: string, name: string, participantUserIds: string[]) =>
+    api.post<{ conversationId: string }>("/conversation/create-group", {
+      organizationId,
+      name,
+      participantUserIds,
+    }),
+
+  pinMessage: (conversationId: string, messageId: string | null) =>
+    api.post<{ pinnedMessageId: string | null }>(`/conversation/${conversationId}/pin-message`, {
+      messageId,
+    }),
+
+  toggleAnnouncementsOnly: (conversationId: string, announcementsOnly: boolean) =>
+    api.post<{ id: string; announcementsOnly: boolean }>(
+      `/conversation/${conversationId}/announcements-only`,
+      { announcementsOnly },
+    ),
+
+  addGroupParticipant: (conversationId: string, userId: string) =>
+    api.post<{ success: boolean }>(`/conversation/${conversationId}/add-participant`, { userId }),
 };

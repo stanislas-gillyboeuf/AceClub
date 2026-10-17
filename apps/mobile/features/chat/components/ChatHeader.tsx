@@ -16,12 +16,14 @@ interface ChatHeaderProps {
   conversation: Conversation;
   onToggleMute: () => void;
   onDeleteConversation: () => void;
+  onToggleAnnouncementsOnly?: () => void;
 }
 
 export function ChatHeader({
   conversation,
   onToggleMute,
   onDeleteConversation,
+  onToggleAnnouncementsOnly,
 }: ChatHeaderProps) {
   const scheme = useColorScheme();
   const router = useRouter();
@@ -35,7 +37,38 @@ export function ChatHeader({
   const otherUserId = conversation.otherParticipants[0]?.user.id ?? null;
   const isBlocked = !!otherUserId && blockedData?.users.some((u) => u.id === otherUserId);
 
+  const isGroup = conversation.type === "group";
+
   const handleProfilePress = useCallback(() => {
+    if (isGroup) {
+      Alert.alert(displayName, undefined, [
+        {
+          text: conversation.isMuted ? "R\u00e9activer" : "Mettre en sourdine",
+          onPress: onToggleMute,
+        },
+        ...(conversation.isAdmin && onToggleAnnouncementsOnly
+          ? [
+              {
+                text: conversation.announcementsOnly
+                  ? "D\u00e9sactiver le mode annonces"
+                  : "Activer le mode annonces",
+                onPress: onToggleAnnouncementsOnly,
+              },
+            ]
+          : []),
+        {
+          text: "Quitter le groupe",
+          style: "destructive" as const,
+          onPress: () => {
+            onDeleteConversation();
+            router.back();
+          },
+        },
+        { text: "Annuler", style: "cancel" as const },
+      ]);
+      return;
+    }
+
     Alert.alert(displayName, undefined, [
       {
         text: conversation.isMuted ? "R\u00e9activer" : "Mettre en sourdine",
@@ -62,9 +95,13 @@ export function ChatHeader({
       { text: "Annuler", style: "cancel" },
     ]);
   }, [
+    isGroup,
     displayName,
     conversation.isMuted,
+    conversation.isAdmin,
+    conversation.announcementsOnly,
     onToggleMute,
+    onToggleAnnouncementsOnly,
     onDeleteConversation,
     router,
     isBlocked,

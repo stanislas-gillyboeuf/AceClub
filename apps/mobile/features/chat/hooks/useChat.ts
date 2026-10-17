@@ -210,6 +210,29 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     }
   }, [conversation.id, queryClient]);
 
+  // Group moderation (admin-only, enforced server-side too)
+  const togglePin = useCallback(
+    async (message: ChatMessage) => {
+      const nextMessageId = conversation.pinnedMessageId === message.id ? null : message.id;
+      try {
+        await conversationService.pinMessage(conversation.id, nextMessageId);
+        queryClient.invalidateQueries({ queryKey: queryKeys.conversation.detail(conversation.id) });
+      } catch (error) {
+        setErrorMessageRef.current((error as Error).message);
+      }
+    },
+    [conversation.id, conversation.pinnedMessageId, queryClient],
+  );
+
+  const toggleAnnouncementsOnly = useCallback(async () => {
+    try {
+      await conversationService.toggleAnnouncementsOnly(conversation.id, !conversation.announcementsOnly);
+      queryClient.invalidateQueries({ queryKey: queryKeys.conversation.detail(conversation.id) });
+    } catch (error) {
+      setErrorMessageRef.current((error as Error).message);
+    }
+  }, [conversation.id, conversation.announcementsOnly, queryClient]);
+
   return {
     messages,
     isOtherUserTyping: ws.isOtherUserTyping,
@@ -224,6 +247,8 @@ export function useChat(conversation: Conversation, currentUserId: string) {
     sendTypingIndicator: ws.sendTypingIndicator,
     toggleMute,
     deleteConversation,
+    togglePin,
+    toggleAnnouncementsOnly,
     errorMessage: send.errorMessage,
     setErrorMessage: send.setErrorMessage,
     replyingTo: reply.replyingTo,

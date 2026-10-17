@@ -24,6 +24,7 @@ export const getConversation = async (c: Context<HonoContext>) => {
         id: conversationParticipant.id,
         unreadCount: conversationParticipant.unreadCount,
         isMuted: conversationParticipant.isMuted,
+        isAdmin: conversationParticipant.isAdmin,
       })
       .from(conversationParticipant)
       .where(
@@ -76,6 +77,10 @@ export const getConversation = async (c: Context<HonoContext>) => {
     createdAt: conv.createdAt.toISOString(),
     unreadCount: myParticipation.unreadCount,
     isMuted: myParticipation.isMuted,
+    isAdmin: myParticipation.isAdmin,
+    announcementsOnly: conv.announcementsOnly,
+    isArchived: conv.isArchived,
+    pinnedMessageId: conv.pinnedMessageId,
     encryptionKey: conv.encryptionKey || null,
     otherParticipants: enrichedParticipants,
   });

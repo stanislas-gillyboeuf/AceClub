@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
-import { conversationParticipant, message } from "../../../db/schema/conversation/schema";
+import { conversation, conversationParticipant, message } from "../../../db/schema/conversation/schema";
 import { eq, and } from "drizzle-orm";
 
 export const deleteMessage = async (c: Context<HonoContext>) => {
@@ -46,8 +46,8 @@ export const deleteMessage = async (c: Context<HonoContext>) => {
     return c.json({ error: "NotFound", message: "Message not found" }, 404);
   }
 
-  // Only the sender can delete their own message
-  if (existingMessage.senderId !== currentUser.id) {
+  // The sender can always delete their own message; a group admin can delete any message
+  if (existingMessage.senderId !== currentUser.id && !myParticipation.isAdmin) {
     return c.json({ error: "Forbidden", message: "You can only delete your own messages" }, 403);
   }
 
@@ -59,6 +59,12 @@ export const deleteMessage = async (c: Context<HonoContext>) => {
       deletedAt: new Date(),
     })
     .where(eq(message.id, messageId));
+
+  // Never leave the conversation pointing at a deleted message
+  await db
+    .update(conversation)
+    .set({ pinnedMessageId: null })
+    .where(and(eq(conversation.id, conversationId), eq(conversation.pinnedMessageId, messageId)));
 
   return c.json({ success: true });
 };

@@ -1,10 +1,11 @@
 import { Context } from "hono";
 import { z } from "zod";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import type { HonoContext } from "../../../types/hono";
 import { db } from "../../../db";
 import { invalidateUserClubIds } from "../../../lib/club-access";
 import { member, clubMemberProfile, clubMemberNote } from "../../../db/schema";
+import { conversation, conversationParticipant } from "../../../db/schema/conversation/schema";
 import { assertClubFullAdmin } from "../../../middleware/club-admin";
 import { removeMemberValidator } from "../validators";
 
@@ -51,6 +52,26 @@ export const removeMember = async (c: Context<HonoContext>) => {
         and(
           eq(clubMemberNote.organizationId, validated.organizationId),
           eq(clubMemberNote.userId, validated.userId),
+        ),
+      );
+
+    // Losing club membership loses access to this club's group history too (course groups and
+    // manual ones) — not just the course roster.
+    await tx
+      .update(conversationParticipant)
+      .set({ isDeleted: true, deletedAt: new Date(), unreadCount: 0 })
+      .where(
+        and(
+          eq(conversationParticipant.userId, validated.userId),
+          inArray(
+            conversationParticipant.conversationId,
+            tx
+              .select({ id: conversation.id })
+              .from(conversation)
+              .where(
+                and(eq(conversation.organizationId, validated.organizationId), eq(conversation.type, "group")),
+              ),
+          ),
         ),
       );
   });

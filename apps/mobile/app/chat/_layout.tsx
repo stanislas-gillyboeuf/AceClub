@@ -15,6 +15,14 @@ export default function ChatLayout() {
           sheetGrabberVisible: true,
         }}
       />
+      <Stack.Screen
+        name="new-group"
+        options={{
+          presentation: formSheet,
+          title: "Nouveau groupe",
+          sheetGrabberVisible: true,
+        }}
+      />
     </Stack>
   );
 }

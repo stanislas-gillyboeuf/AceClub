@@ -3,7 +3,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { colors, semanticColors } from "@/constants/theme";
 import type { Conversation } from "@/types/conversation";
-import { Mic, Image as ImageIcon, BellOff } from "lucide-react-native";
+import { Mic, Image as ImageIcon, BellOff, Megaphone } from "lucide-react-native";
 
 interface ConversationRowProps {
   conversation: Conversation;
@@ -16,6 +16,9 @@ function getDisplayName(conversation: Conversation): string {
 }
 
 function getAvatarUrl(conversation: Conversation): string | null {
+  // A group's avatar is never "whoever happens to be first in the list" — initials from the
+  // group's own name (via getDisplayName) instead.
+  if (conversation.type === "group") return null;
   return conversation.otherParticipants[0]?.user?.image ?? null;
 }
 
@@ -109,6 +112,9 @@ export function ConversationRow({ conversation }: ConversationRowProps) {
                   {conversation.unreadCount}
                 </Text>
               </View>
+            )}
+            {conversation.type === "group" && conversation.announcementsOnly && (
+              <Megaphone size={14} color={semanticColors.labelSecondary[scheme]} />
             )}
             {conversation.isMuted && (
               <BellOff size={14} color={semanticColors.labelSecondary[scheme]} />

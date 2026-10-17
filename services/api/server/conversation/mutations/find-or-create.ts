@@ -12,6 +12,7 @@ import { findOrCreateConversationValidator } from "../validators";
 import { getUserClubIds } from "../../../lib/club-access";
 import { initialConversationStatus } from "../lib/request-link";
 import { isBlockedEitherWay } from "../../../lib/block";
+import { isCoachMinorDirectBlocked } from "../../../lib/minor-safety";
 
 export const findOrCreateConversation = async (c: Context<HonoContext>) => {
   const currentUser = c.get("user");
@@ -42,6 +43,19 @@ export const findOrCreateConversation = async (c: Context<HonoContext>) => {
 
   if (await isBlockedEitherWay(currentUser.id, participantId)) {
     return c.json({ error: "Forbidden", message: "Action impossible" }, 403);
+  }
+
+  // A coach must never get a private conversation with a minor of a club they share — only
+  // groups (with a parent present) are allowed for that pairing. Checked before anything else
+  // so it also covers reopening an existing conversation, not just creating a new one.
+  const myClubIdsForGuard = await getUserClubIds(currentUser.id);
+  const theirClubIdsForGuard = myClubIdsForGuard.length > 0 ? await getUserClubIds(participantId) : [];
+  const sharedClubIdsForGuard = myClubIdsForGuard.filter((id) => theirClubIdsForGuard.includes(id));
+  if (await isCoachMinorDirectBlocked(currentUser.id, participantId, sharedClubIdsForGuard)) {
+    return c.json(
+      { error: "Forbidden", message: "Un coach ne peut pas avoir de conversation privée avec un mineur" },
+      403,
+    );
   }
 
   // Single query: find existing direct conversation between these two users
