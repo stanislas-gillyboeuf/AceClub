@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import {
   View,
+  Platform,
   FlatList,
   StyleSheet,
   Pressable,
@@ -9,8 +10,10 @@ import {
   TextInput,
   Alert,
 } from "react-native";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { Ionicons } from "@expo/vector-icons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { UserMinus } from "lucide-react-native";
 import { useConversation } from "@/hooks/use-conversation";
 import { useSearchUsers } from "@/hooks/use-user";
@@ -27,6 +30,7 @@ type ListEntry = { id: string; userId: string; name: string; image?: string | nu
 
 export default function GroupMembersScreen() {
   const scheme = useColorScheme();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { conversationId } = useLocalSearchParams<{ conversationId: string }>();
   const { data: session } = authClient.useSession();
@@ -148,10 +152,20 @@ export default function GroupMembersScreen() {
     [handleAdd, pendingUserId, scheme],
   );
 
+  const headerLeft = () => (
+    <Pressable onPress={() => router.back()} hitSlop={8} style={styles.backButton}>
+      {Platform.OS === "ios" ? (
+        <Ionicons name="chevron-back" size={28} color={semanticColors.labelPrimary[scheme]} />
+      ) : (
+        <MaterialIcons name="arrow-back" size={24} color={semanticColors.labelPrimary[scheme]} />
+      )}
+    </Pressable>
+  );
+
   if (isLoading || !conversation) {
     return (
       <View style={styles.centered}>
-        <Stack.Screen options={{ title: "Membres" }} />
+        <Stack.Screen options={{ title: "Membres", headerLeft }} />
         <ActivityIndicator color={semanticColors.accentGreen[scheme]} />
       </View>
     );
@@ -159,7 +173,7 @@ export default function GroupMembersScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
-      <Stack.Screen options={{ title: "Membres", headerLargeTitle: true }} />
+      <Stack.Screen options={{ title: "Membres", headerLargeTitle: true, headerLeft }} />
 
       <FlatList
         data={members}
@@ -219,6 +233,12 @@ const styles = StyleSheet.create({
   },
   centered: {
     flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backButton: {
+    width: 30,
+    height: 30,
     alignItems: "center",
     justifyContent: "center",
   },
