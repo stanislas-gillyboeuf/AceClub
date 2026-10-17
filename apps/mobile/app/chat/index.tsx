@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useState } from "react";
 import {
   View,
+  Platform,
   FlatList,
   StyleSheet,
   Pressable,
@@ -11,6 +12,8 @@ import {
 } from "react-native";
 import { useRouter, Stack } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { Ionicons } from "@expo/vector-icons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useConversations, useDeleteConversation } from "@/hooks/use-conversation";
 import { queryKeys } from "@/lib/query-keys";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -150,6 +153,21 @@ export default function ConversationListScreen() {
     [handleNewConversation, scheme],
   );
 
+  // Pushed from Feed/Matchs/Rechercher onto the root stack rather than a tab's own stack, so
+  // there's no previous screen in THIS stack for the navigator to auto-show a back button for.
+  const headerLeft = useCallback(
+    () => (
+      <Pressable onPress={() => router.back()} hitSlop={8} style={styles.backButton}>
+        {Platform.OS === "ios" ? (
+          <Ionicons name="chevron-back" size={28} color={semanticColors.accentGreen[scheme]} />
+        ) : (
+          <MaterialIcons name="arrow-back" size={24} color={semanticColors.accentGreen[scheme]} />
+        )}
+      </Pressable>
+    ),
+    [router, scheme],
+  );
+
   if (isLoading && !conversations) {
     return (
       <View style={[styles.centered, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
@@ -157,6 +175,7 @@ export default function ConversationListScreen() {
           options={{
             title: "Messages",
             headerLargeTitle: true,
+            headerLeft,
             headerRight,
           }}
         />
@@ -176,6 +195,7 @@ export default function ConversationListScreen() {
             onChangeText: (e) => setSearchText(e.nativeEvent.text),
             hideWhenScrolling: true,
           },
+          headerLeft,
           headerRight,
         }}
       />
@@ -213,6 +233,12 @@ const styles = StyleSheet.create({
   },
   centered: {
     flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backButton: {
+    width: 30,
+    height: 30,
     alignItems: "center",
     justifyContent: "center",
   },

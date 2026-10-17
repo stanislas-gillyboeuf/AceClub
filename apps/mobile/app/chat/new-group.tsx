@@ -133,6 +133,11 @@ export default function NewGroupScreen() {
               <X size={20} color={semanticColors.accentGreen[scheme]} />
             </Pressable>
           ),
+          headerSearchBarOptions: {
+            placeholder: "Rechercher un membre",
+            onChangeText: (e) => setSearchText(e.nativeEvent.text),
+            hideWhenScrolling: false,
+          },
         }}
       />
 
@@ -141,17 +146,6 @@ export default function NewGroupScreen() {
           <ActivityIndicator color={colors.white} size="large" />
         </View>
       )}
-
-      {/* Search bar — fixed at the top so it's always available to add more people. */}
-      <View style={[styles.searchField, { borderColor: semanticColors.divider[scheme] }]}>
-        <TextInput
-          value={searchText}
-          onChangeText={setSearchText}
-          placeholder="Rechercher un membre"
-          placeholderTextColor={semanticColors.labelSecondary[scheme]}
-          style={[styles.searchInput, { color: semanticColors.labelPrimary[scheme] }]}
-        />
-      </View>
 
       {/* Selected members — pinned right below the search bar, not mixed into the scroll. */}
       {selected.length > 0 && (
@@ -238,14 +232,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 32,
-  },
-  searchField: {
-    paddingHorizontal: spacing.horizontal,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  searchInput: {
-    fontSize: 17,
   },
   chipList: {
     maxHeight: 48,
