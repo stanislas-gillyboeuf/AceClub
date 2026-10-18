@@ -125,7 +125,7 @@ export default function NewGroupScreen() {
   const canCreate = !!groupName.trim() && selected.length > 0 && !isCreating;
 
   return (
-    <>
+    <View style={[styles.container, { backgroundColor: semanticColors.primaryBackground[scheme] }]}>
       <Stack.Screen
         options={{
           title: "Nouveau groupe",
@@ -225,11 +225,14 @@ export default function NewGroupScreen() {
           </Pressable>
         </KeyboardStickyView>
       )}
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   list: {
     flex: 1,
   },
