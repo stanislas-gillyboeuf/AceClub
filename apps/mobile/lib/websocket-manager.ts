@@ -61,6 +61,12 @@ class WebSocketManager {
   // Connection
   async connect(): Promise<void> {
     this.shouldBeConnected = true;
+    // Registered unconditionally, before any early return below, so the very first call always
+    // leaves something listening for a return to the foreground — previously this only happened
+    // after a WebSocket was actually created (see setupLifecycle's old call site), so a first
+    // attempt that bailed out early (no network yet, auth not restored yet) left the app with no
+    // way to ever retry again short of the user manually reopening a messaging screen.
+    this.setupLifecycle();
 
     if (this._connectionState === "connected" && this.ws?.readyState === WebSocket.OPEN) {
       return;
@@ -72,6 +78,7 @@ class WebSocketManager {
     const networkState = await Network.getNetworkStateAsync();
     if (!networkState.isConnected) {
       this.setConnectionState("disconnected");
+      this.scheduleReconnect();
       return;
     }
 
@@ -82,6 +89,7 @@ class WebSocketManager {
       const auth = await getAuthForWebSocket();
       if (!auth) {
         this.setConnectionState("disconnected");
+        this.scheduleReconnect();
         return;
       }
 
@@ -121,7 +129,6 @@ class WebSocketManager {
       };
 
       this.ws = ws;
-      this.setupLifecycle();
     } catch (error) {
       this.setConnectionState("disconnected");
       this.emit({ type: "error", error: error as Error });
