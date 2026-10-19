@@ -81,7 +81,10 @@ export function MemberCotisationTabContent() {
   const [selectedSeason, setSelectedSeason] = useState<string | undefined>(undefined)
   const effectiveSeason = selectedSeason ?? seasons[0]
 
-  const { data, isLoading } = useMemberCotisations(organizationId, effectiveSeason)
+  const { data, isLoading, isError, error, refetch, isRefetching } = useMemberCotisations(
+    organizationId,
+    effectiveSeason,
+  )
 
   const markPaid = useMarkCotisationPaid()
   const waive = useWaiveCotisation()
@@ -326,6 +329,18 @@ export function MemberCotisationTabContent() {
 
       {isLoading ? (
         <Skeleton className="h-64 w-full" />
+      ) : isError ? (
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-10 text-center text-sm">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+            <div className="text-muted-foreground">
+              Impossible de charger les cotisations{errorMessage(error) ? ` : ${errorMessage(error)}` : "."}
+            </div>
+            <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
+              {isRefetching ? "Nouvelle tentative..." : "Réessayer"}
+            </Button>
+          </CardContent>
+        </Card>
       ) : data?.gridId === null ? (
         <Card>
           <CardContent className="py-10 text-center text-sm text-muted-foreground">
