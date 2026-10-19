@@ -19,7 +19,6 @@
       }
     },
     "imageDebug": {
-      "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.ace-club.app",
         "EXPO_PUBLIC_IMAGE_DEBUG": "1"
