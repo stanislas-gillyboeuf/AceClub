@@ -8,6 +8,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useEventParticipants } from "@/hooks/use-event";
 import { formatShortDate, formatTime } from "@/lib/format";
 import { semanticColors, radii, spacing, glass, eventCategoryColors } from "@/constants/theme";
+import { logImageEvent } from "@/lib/image-debug";
 import type { EventSummary, MyEvent, EventCategory } from "@/types/event";
 
 type EventCardVariant = "large" | "compact";
@@ -120,7 +121,17 @@ function Cover({
   scheme: "light" | "dark";
 }) {
   if (coverImage) {
-    return <Image source={{ uri: coverImage }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />;
+    return (
+      <Image
+        source={{ uri: coverImage }}
+        style={StyleSheet.absoluteFill}
+        contentFit="cover"
+        transition={200}
+        onLoadStart={() => logImageEvent("EventCover", coverImage, "onLoadStart")}
+        onLoad={() => logImageEvent("EventCover", coverImage, "onLoad")}
+        onError={(error) => logImageEvent("EventCover", coverImage, "onError", error)}
+      />
+    );
   }
 
   if (category === "tournament") {

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { semanticColors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { logImageEvent } from "@/lib/image-debug";
 
 interface AvatarProps {
   imageUrl?: string | null;
@@ -37,7 +38,8 @@ export function Avatar({ imageUrl, name, size }: AvatarProps) {
     setFailed(false);
   }, [imageUrl]);
 
-  const handleError = () => {
+  const handleError = (error: unknown) => {
+    logImageEvent("Avatar", imageUrl, "onError", { attempt, error });
     if (attempt < MAX_RETRIES) {
       setTimeout(() => setAttempt((a) => a + 1), RETRY_DELAY_MS);
     } else {
@@ -58,6 +60,8 @@ export function Avatar({ imageUrl, name, size }: AvatarProps) {
         contentFit="cover"
         transition={200}
         cachePolicy="memory-disk"
+        onLoadStart={() => logImageEvent("Avatar", imageUrl, "onLoadStart", { attempt })}
+        onLoad={() => logImageEvent("Avatar", imageUrl, "onLoad", { attempt })}
         onError={handleError}
       />
     );

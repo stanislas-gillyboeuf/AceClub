@@ -8,6 +8,7 @@ import { PlayerView } from "@/components/ui/player-view";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useToggleLike } from "@/hooks/use-match";
 import { colors, semanticColors, radii } from "@/constants/theme";
+import { logImageEvent } from "@/lib/image-debug";
 import {
   formatMatchDate,
   formatMatchDuration,
@@ -103,6 +104,9 @@ export function FeedMatchRow({
           style={styles.singlePhoto}
           contentFit="cover"
           transition={200}
+          onLoadStart={() => logImageEvent("FeedMatchPhoto", photos[0].imageUrl, "onLoadStart")}
+          onLoad={() => logImageEvent("FeedMatchPhoto", photos[0].imageUrl, "onLoad")}
+          onError={(error) => logImageEvent("FeedMatchPhoto", photos[0].imageUrl, "onError", error)}
         />
       )}
       {photos.length > 1 && (
@@ -119,6 +123,9 @@ export function FeedMatchRow({
               style={styles.scrollPhoto}
               contentFit="cover"
               transition={200}
+              onLoadStart={() => logImageEvent("FeedMatchPhoto", photo.imageUrl, "onLoadStart")}
+              onLoad={() => logImageEvent("FeedMatchPhoto", photo.imageUrl, "onLoad")}
+              onError={(error) => logImageEvent("FeedMatchPhoto", photo.imageUrl, "onError", error)}
             />
           ))}
         </ScrollView>
