@@ -135,7 +135,11 @@ async function getRecentChallengesForUser(
   return recentChallenges;
 }
 
-export async function assignWeeklyChallengesForUser(userId: string, level: number): Promise<void> {
+/** Returns whether new challenges were actually created for this user this call — false means
+ * "already assigned this week" or "no eligible template", a pure no-op. Callers use this to
+ * decide whether a "new challenges" notification is warranted, so a replayed/duplicated job run
+ * never re-notifies someone nothing changed for. */
+export async function assignWeeklyChallengesForUser(userId: string, level: number): Promise<boolean> {
   const now = new Date();
   const weekInfo = getISOWeekInfo(now);
   const expiresAt = getWeekEndDate(now);
@@ -153,7 +157,7 @@ export async function assignWeeklyChallengesForUser(userId: string, level: numbe
     .limit(1);
 
   if (existing.length > 0) {
-    return;
+    return false;
   }
 
   const recentChallenges = await getRecentChallengesForUser(userId, weekInfo.week, weekInfo.year);
@@ -170,7 +174,7 @@ export async function assignWeeklyChallengesForUser(userId: string, level: numbe
     );
 
   if (eligibleTemplates.length === 0) {
-    return;
+    return false;
   }
 
   const byType: Record<string, ChallengeTemplate[]> = {
@@ -219,6 +223,8 @@ export async function assignWeeklyChallengesForUser(userId: string, level: numbe
       expiresAt,
     });
   }
+
+  return true;
 }
 
 /**
@@ -237,12 +243,19 @@ export async function assignWeeklyChallenges(): Promise<void> {
   console.log(`[CRON] Found ${allUsers.length} users to assign challenges to`);
 
   let assigned = 0;
+  let alreadyAssigned = 0;
   let skipped = 0;
 
   for (const u of allUsers) {
     const level = u.currentLevel ?? 1;
     try {
-      await assignWeeklyChallengesForUser(u.userId, level);
+      const created = await assignWeeklyChallengesForUser(u.userId, level);
+      if (!created) {
+        // Already assigned this week (or no eligible template) — a replayed/duplicated run must
+        // never re-notify for something that didn't actually change.
+        alreadyAssigned++;
+        continue;
+      }
       assigned++;
       await sendNotificationToUser({
         userId: u.userId,
@@ -259,5 +272,7 @@ export async function assignWeeklyChallenges(): Promise<void> {
     }
   }
 
-  console.log(`[CRON] Assigned challenges to ${assigned} users, skipped ${skipped}`);
+  console.log(
+    `[CRON] Assigned challenges to ${assigned} users, ${alreadyAssigned} already assigned, skipped ${skipped}`,
+  );
 }
