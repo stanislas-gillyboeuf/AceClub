@@ -25,3 +25,4 @@ export * from "./club-level";
 export * from "./club-tag";
 export * from "./pricing";
 export * from "./social";
+export * from "./demo-booking";

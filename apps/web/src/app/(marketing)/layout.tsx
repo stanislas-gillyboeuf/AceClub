@@ -1,5 +1,6 @@
 import { Footer } from "@/components/sections/footer";
 import { Header } from "@/components/sections/header";
+import { Providers } from "@/app/providers";
 
 export default function MarketingLayout({
   children,
@@ -8,9 +9,11 @@ export default function MarketingLayout({
 }) {
   return (
     <div className="marketing-theme min-h-screen flex flex-col bg-mkt-bg text-mkt-fg">
-      <Header />
-      <main className="flex-1">{children}</main>
-      <Footer />
+      <Providers>
+        <Header />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </Providers>
     </div>
   );
 }

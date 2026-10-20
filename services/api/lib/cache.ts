@@ -6,6 +6,7 @@ export const CacheTTL = {
   MEDIUM: 300, // 5 min — leaderboards
   LONG: 900, // 15 min — org stats
   E2EE_KEY: 3600, // 1h — public keys change very rarely
+  DEMO_GCAL_BUSY: 90, // 90s — Google freebusy for the demo-booking calendar
 } as const;
 
 // Cache key builders
@@ -32,6 +33,9 @@ export const CacheKeys = {
 
   // Game config
   gameConfig: () => "game:config",
+
+  // Demo booking
+  demoGcalBusy: () => "demo:gcal:busy",
 
   // Prefixes for bulk invalidation
   PREFIX_LEADERBOARD_GLOBAL: "leaderboard:global:",
