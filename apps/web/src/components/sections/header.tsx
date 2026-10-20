@@ -69,7 +69,7 @@ export function Header() {
               Se connecter
             </Link>
             <Link
-              href="/tarifs#demo"
+              href="/demo"
               className={cn(
                 buttonVariants({ size: "sm" }),
                 "rounded-full bg-mkt-accent px-5 text-mkt-accent-foreground hover:bg-mkt-accent/90"
@@ -131,7 +131,7 @@ export function Header() {
                 ))}
                 <div className="pt-3 pb-1">
                   <Link
-                    href="/tarifs#demo"
+                    href="/demo"
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
                       buttonVariants({ size: "lg" }),

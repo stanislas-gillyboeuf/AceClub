@@ -60,7 +60,7 @@ export const siteConfig = {
   pricing: [
     {
       name: "Petit Club",
-      href: "/tarifs#demo",
+      href: "/demo",
       price: "49€",
       period: "mois",
       features: [
@@ -77,7 +77,7 @@ export const siteConfig = {
     },
     {
       name: "Club Moyen",
-      href: "/tarifs#demo",
+      href: "/demo",
       price: "79€",
       period: "mois",
       features: [
@@ -94,7 +94,7 @@ export const siteConfig = {
     },
     {
       name: "Grand Club",
-      href: "/tarifs#demo",
+      href: "/demo",
       price: "129€",
       period: "mois",
       features: [

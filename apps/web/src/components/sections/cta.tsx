@@ -16,7 +16,7 @@ export function CTA() {
             s&apos;intégrer dès la prochaine saison.
           </p>
           <Link
-            href="/tarifs#demo"
+            href="/demo"
             className={cn(
               buttonVariants({ size: "lg" }),
               "mt-8 h-12 rounded-full bg-mkt-accent px-7 text-[15px] font-semibold text-mkt-accent-foreground hover:bg-mkt-accent/90"

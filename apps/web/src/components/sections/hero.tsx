@@ -50,7 +50,7 @@ export function Hero() {
           className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           <Link
-            href="/tarifs#demo"
+            href="/demo"
             className={cn(
               buttonVariants({ size: "lg" }),
               "h-12 rounded-full bg-mkt-accent px-7 text-[15px] font-semibold text-mkt-accent-foreground hover:bg-mkt-accent/90"
