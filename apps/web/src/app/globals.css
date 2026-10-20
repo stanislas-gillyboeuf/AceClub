@@ -51,6 +51,7 @@
   --color-mkt-fg: var(--mkt-fg);
   --color-mkt-fg-dim: var(--mkt-fg-dim);
   --color-mkt-accent: var(--mkt-accent);
+  --color-mkt-accent-2: var(--mkt-accent-2);
   --color-mkt-accent-foreground: var(--mkt-accent-foreground);
   --color-mkt-border: var(--mkt-border);
   /* Light-section tokens — pricing/FAQ flip to light for trust + readability. */
@@ -257,24 +258,29 @@
 }
 
 /*
- * Marketing site — dark-first, one saturated accent (chartreuse), never following the
- * admin dashboard's own theme. Pricing/FAQ opt into the light tokens below for
- * readability + a "moment of decision" contrast — see .mkt-light-section.
+ * Marketing site — light "flyer" identity: off-white with a faint green cast, very dark
+ * green text (never pure black), a vivid green-to-yellow-green gradient reserved for 2-3
+ * accent blocks per page (buttons, the trial banner, pill highlights) — never a full-page
+ * background. .mkt-light-section used to be an opt-in "light mode" for a few pages; now
+ * that the whole site is light by default, it's kept as an identical alias so every
+ * existing page that references it (/tarifs, /faq, /privacy, /terms, /demo) keeps working
+ * unchanged.
  */
 .marketing-theme {
-  --mkt-bg: oklch(0.16 0.02 130); /* #0A0C08-ish near-black, faint green cast */
-  --mkt-bg-raised: oklch(0.21 0.022 130); /* cards/raised surfaces on dark */
-  --mkt-fg: oklch(0.97 0.01 100); /* warm off-white */
-  --mkt-fg-dim: oklch(0.97 0.01 100 / 60%);
-  --mkt-accent: oklch(0.93 0.23 126); /* #D7FF3F chartreuse */
-  --mkt-accent-foreground: oklch(0.16 0.02 130);
-  --mkt-border: oklch(1 0 0 / 10%);
+  --mkt-bg: oklch(0.985 0.012 145); /* off-white, faint green cast */
+  --mkt-bg-raised: oklch(0.995 0.006 145); /* near-white — cards/raised surfaces */
+  --mkt-fg: oklch(0.24 0.05 152); /* very dark green — never pure black */
+  --mkt-fg-dim: oklch(0.24 0.05 152 / 65%);
+  --mkt-accent: oklch(0.62 0.19 150); /* vivid green */
+  --mkt-accent-2: oklch(0.8 0.19 118); /* green-yellow — gradient endpoint */
+  --mkt-accent-foreground: oklch(0.99 0.006 145);
+  --mkt-border: oklch(0.24 0.05 152 / 10%);
 
-  --mkt-light-bg: oklch(0.99 0.003 100);
-  --mkt-light-fg: oklch(0.16 0.02 130);
-  --mkt-light-fg-dim: oklch(0.16 0.02 130 / 60%);
-  --mkt-light-border: oklch(0.16 0.02 130 / 10%);
-  --mkt-light-raised: oklch(1 0 0);
+  --mkt-light-bg: var(--mkt-bg);
+  --mkt-light-fg: var(--mkt-fg);
+  --mkt-light-fg-dim: var(--mkt-fg-dim);
+  --mkt-light-border: var(--mkt-border);
+  --mkt-light-raised: var(--mkt-bg-raised);
 
   background-color: var(--mkt-bg);
   color: var(--mkt-fg);
@@ -283,6 +289,12 @@
 .mkt-light-section {
   background-color: var(--mkt-light-bg);
   color: var(--mkt-light-fg);
+}
+
+/* Reserved for 2-3 accent blocks per page — never a full-page background. */
+.mkt-gradient {
+  background-image: linear-gradient(135deg, var(--mkt-accent), var(--mkt-accent-2));
+  color: var(--mkt-accent-foreground);
 }
 
 /*

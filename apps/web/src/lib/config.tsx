@@ -1,5 +1,9 @@
 export const BLUR_FADE_DELAY = 0.15;
 
+/** No real pilot-club logos or usage numbers exist yet — the social-proof section stays
+ * hidden until this is flipped, rather than showing placeholder/fake data. */
+export const SHOW_SOCIAL_PROOF = false;
+
 export const siteConfig = {
   name: "Ace Club",
   description: "Un club vivant, c'est des joueurs qui jouent.",
