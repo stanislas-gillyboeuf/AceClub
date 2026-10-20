@@ -14,13 +14,13 @@ export function LegalSection({ scheme }: LegalSectionProps) {
       <SettingsRow
         icon={<FileText size={20} color={semanticColors.labelSecondary[scheme]} strokeWidth={1.5} />}
         label="Conditions Générales d'Utilisation"
-        onPress={() => Linking.openURL("https://aceclub.app/terms")}
+        onPress={() => Linking.openURL("https://ace-club.app/terms")}
       />
       <View style={[styles.divider, { backgroundColor: semanticColors.divider[scheme] }]} />
       <SettingsRow
         icon={<Hand size={20} color={semanticColors.labelSecondary[scheme]} strokeWidth={1.5} />}
         label="Politique de Confidentialité"
-        onPress={() => Linking.openURL("https://aceclub.app/privacy")}
+        onPress={() => Linking.openURL("https://ace-club.app/privacy")}
       />
     </SectionCard>
   );
