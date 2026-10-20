@@ -61,7 +61,13 @@ export function Header() {
               ))}
           </nav>
 
-          <div className="hidden lg:block">
+          <div className="hidden lg:flex items-center gap-5">
+            <Link
+              href="/login"
+              className="text-[14px] font-medium text-mkt-fg-dim transition-colors hover:text-mkt-fg"
+            >
+              Se connecter
+            </Link>
             <Link
               href="/tarifs#demo"
               className={cn(
@@ -104,6 +110,14 @@ export function Header() {
                   </Link>
                 ))}
                 <div className="my-2 border-t border-mkt-border" />
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between py-3 rounded-lg text-[14px] text-mkt-fg-dim"
+                >
+                  Se connecter
+                  <ChevronRight className="h-4 w-4 text-mkt-fg-dim" />
+                </Link>
                 {legalItems.map((item) => (
                   <Link
                     key={item.href}

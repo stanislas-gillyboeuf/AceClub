@@ -2,287 +2,439 @@ import { siteConfig } from "@/lib/config";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: `Politique de Confidentialité | ${siteConfig.name}`,
-  description: "Politique de confidentialité et protection des données personnelles - AceClub",
+  title: "Politique de Confidentialité",
+  description:
+    "Comment Ace Club collecte, utilise et protège vos données, y compris les données Google Agenda utilisées pour les rendez-vous de démonstration.",
 };
 
 export default function PrivacyPage() {
   return (
     <div className="mkt-light-section mx-auto max-w-3xl px-6 py-20 sm:py-28">
-        <h1 className="font-display text-5xl uppercase leading-none tracking-tight sm:text-6xl">Politique de Confidentialité</h1>
-        <p className="mt-5 text-[15px] text-foreground/50">
-          Dernière mise à jour : 20 octobre 2026
-        </p>
+      <h1 className="font-display text-5xl uppercase leading-none tracking-tight sm:text-6xl">
+        Politique de Confidentialité
+      </h1>
+      <p className="mt-5 text-[15px] text-foreground/50">Dernière mise à jour : 20 octobre 2026</p>
 
-        <div className="prose prose-lg mt-14 max-w-none space-y-10">
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">1. Introduction</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              AceClub SAS (ci-après "AceClub", "nous", "notre") s'engage à protéger la vie privée des
-              utilisateurs de son application mobile (ci-après "l'Application"). Cette politique de
-              confidentialité explique comment nous collectons, utilisons, partageons et protégeons
-              vos données personnelles conformément au Règlement Général sur la Protection des Données
-              (RGPD) et à la loi Informatique et Libertés.
+      <div className="prose prose-lg mt-14 max-w-none space-y-10">
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">1. Qui est responsable de vos données</h2>
+          <p className="text-foreground/80 leading-relaxed">
+            Ace Club (ci-après &laquo;&nbsp;Ace Club&nbsp;&raquo;, &laquo;&nbsp;nous&nbsp;&raquo;)
+            est édité par Stanislas Gillyboeuf, responsable du traitement des données décrites dans
+            cette politique, pour l&apos;application mobile Ace Club et le site{" "}
+            <a href="https://ace-club.app" className="text-primary hover:underline">
+              ace-club.app
+            </a>
+            , y compris sa page de prise de rendez-vous de démonstration.
+          </p>
+          <div className="bg-muted p-4 rounded-lg mt-4">
+            <p className="text-foreground/80">
+              <strong>Ace Club</strong> — Stanislas Gillyboeuf
+              <br />
+              Email :{" "}
+              <a href={`mailto:${siteConfig.links.email}`} className="text-primary hover:underline">
+                {siteConfig.links.email}
+              </a>
             </p>
-          </section>
+          </div>
+        </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">2. Responsable du Traitement</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              Le responsable du traitement de vos données personnelles est :
-            </p>
-            <div className="bg-muted p-4 rounded-lg mt-4">
-              <p className="text-foreground/80">
-                <strong>AceClub SAS</strong><br />
-                [Adresse]<br />
-                Email : <a href={`mailto:${siteConfig.links.email}`} className="text-primary hover:underline">{siteConfig.links.email}</a>
-              </p>
-            </div>
-          </section>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">2. Les données que nous collectons</h2>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">3. Données Collectées</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              Nous collectons les catégories de données suivantes :
-            </p>
-            <h3 className="text-xl font-medium mt-6 mb-3">3.1 Données d'identification</h3>
-            <ul className="list-disc pl-6 space-y-2 text-foreground/80">
-              <li>Nom et prénom</li>
-              <li>Adresse email</li>
-              <li>Photo de profil (optionnelle)</li>
-              <li>Numéro de téléphone (optionnel)</li>
-            </ul>
+          <h3 className="text-xl font-medium mt-6 mb-3">2.1 Compte dans l&apos;application</h3>
+          <p className="text-foreground/80 leading-relaxed">
+            Lors de la création d&apos;un compte, nous collectons votre nom, votre adresse email et
+            le ou les clubs auxquels vous appartenez. Vous pouvez aussi renseigner un numéro de
+            téléphone et une photo de profil, facultatifs. L&apos;usage de l&apos;application
+            génère en plus : niveau de jeu déclaré, disponibilités, historique des matchs
+            organisés, messages échangés avec d&apos;autres utilisateurs, participation aux défis.
+          </p>
 
-            <h3 className="text-xl font-medium mt-6 mb-3">3.2 Données relatives à l'utilisation</h3>
-            <ul className="list-disc pl-6 space-y-2 text-foreground/80">
-              <li>Club(s) d'appartenance</li>
-              <li>Niveau de jeu déclaré</li>
-              <li>Disponibilités</li>
-              <li>Historique des matchs organisés</li>
-              <li>Messages échangés avec d'autres utilisateurs</li>
-              <li>Participation aux défis</li>
-            </ul>
+          <h3 className="text-xl font-medium mt-6 mb-3">
+            2.2 Formulaire de demande de démonstration (site web)
+          </h3>
+          <p className="text-foreground/80 leading-relaxed">
+            Sur{" "}
+            <a href="/demo" className="text-primary hover:underline">
+              ace-club.app/demo
+            </a>
+            , pour réserver un rendez-vous de démonstration, nous collectons : votre nom et prénom,
+            votre adresse email, votre numéro de téléphone (facultatif), le nom de votre club,
+            votre rôle (président, gérant/directeur, enseignant, autre) et, si vous le souhaitez,
+            une note libre.
+          </p>
 
-            <h3 className="text-xl font-medium mt-6 mb-3">3.3 Données techniques</h3>
-            <ul className="list-disc pl-6 space-y-2 text-foreground/80">
-              <li>Identifiants de l'appareil</li>
-              <li>Adresse IP</li>
-              <li>Type et version du système d'exploitation</li>
-              <li>Données de connexion et d'utilisation de l'Application</li>
-            </ul>
-          </section>
+          <h3 className="text-xl font-medium mt-6 mb-3">2.3 Données Google Agenda</h3>
+          <p className="text-foreground/80 leading-relaxed">
+            Pour proposer des créneaux de rendez-vous et créer vos réservations de démonstration,
+            notre serveur se connecte à un seul agenda Google (celui du fondateur) et utilise
+            uniquement :
+          </p>
+          <ul className="list-disc pl-6 mt-4 space-y-2 text-foreground/80">
+            <li>
+              <strong>Les disponibilités de cet agenda, en lecture seule</strong> (autorisation{" "}
+              <code>calendar.freebusy</code>) : nous consultons seulement les plages
+              &laquo;&nbsp;occupé / libre&nbsp;&raquo;, jamais le titre, les participants ou le
+              contenu des autres événements de cet agenda.
+            </li>
+            <li>
+              <strong>La création d&apos;événements et de liens Google Meet</strong> (autorisation{" "}
+              <code>calendar.events</code>) : lorsqu&apos;une démonstration est réservée, un
+              événement est créé dans cet agenda avec les horaires choisis, vous-même comme invité
+              (nom et email), le nom de votre club, votre rôle, votre téléphone et votre note si
+              vous les avez renseignés, et un lien Google Meet généré automatiquement. Une
+              annulation supprime cet événement ; un report met à jour ses horaires.
+            </li>
+          </ul>
+          <p className="text-foreground/80 leading-relaxed mt-4">
+            Nous n&apos;utilisons aucune autre donnée de votre compte Google : ni vos contacts, ni
+            vos autres agendas, ni vos emails, ni aucun autre service Google.
+          </p>
+          <div className="bg-muted p-4 rounded-lg mt-4">
+            <p className="text-foreground/80 italic">
+              &laquo;&nbsp;L&apos;utilisation et le transfert par Ace Club des informations reçues
+              des API Google respecteront la Google API Services User Data Policy, y compris les
+              exigences d&apos;utilisation limitée.&nbsp;&raquo;
+            </p>
+          </div>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">4. Finalités du Traitement</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              Vos données personnelles sont traitées pour les finalités suivantes :
-            </p>
-            <ul className="list-disc pl-6 mt-4 space-y-2 text-foreground/80">
-              <li><strong>Gestion de votre compte :</strong> création, authentification et gestion de votre profil utilisateur</li>
-              <li><strong>Mise en relation :</strong> permettre la recherche de partenaires et l'organisation de matchs</li>
-              <li><strong>Communication :</strong> faciliter les échanges entre utilisateurs via la messagerie</li>
-              <li><strong>Gamification :</strong> gestion des défis, des récompenses et des classements</li>
-              <li><strong>Amélioration du service :</strong> analyse de l'utilisation pour améliorer l'Application</li>
-              <li><strong>Support client :</strong> répondre à vos questions et demandes</li>
-            </ul>
-          </section>
+          <h3 className="text-xl font-medium mt-6 mb-3">2.4 Données techniques d&apos;usage</h3>
+          <ul className="list-disc pl-6 space-y-2 text-foreground/80">
+            <li>Identifiants de l&apos;appareil</li>
+            <li>Adresse IP</li>
+            <li>Type et version du système d&apos;exploitation</li>
+            <li>Données de connexion et d&apos;utilisation de l&apos;application et du site</li>
+          </ul>
+        </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">5. Base Légale du Traitement</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              Le traitement de vos données repose sur :
-            </p>
-            <ul className="list-disc pl-6 mt-4 space-y-2 text-foreground/80">
-              <li><strong>L'exécution du contrat :</strong> pour fournir les services de l'Application</li>
-              <li><strong>Votre consentement :</strong> pour certaines fonctionnalités optionnelles</li>
-              <li><strong>Notre intérêt légitime :</strong> pour améliorer nos services et assurer la sécurité</li>
-              <li><strong>Nos obligations légales :</strong> pour respecter la réglementation applicable</li>
-            </ul>
-          </section>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">
+            3. Pourquoi nous utilisons ces données (finalités)
+          </h2>
+          <ul className="list-disc pl-6 mt-4 space-y-2 text-foreground/80">
+            <li>
+              <strong>Compte et profil :</strong> créer, authentifier et gérer votre compte
+            </li>
+            <li>
+              <strong>Mise en relation :</strong> recherche de partenaires et organisation de matchs
+            </li>
+            <li>
+              <strong>Communication :</strong> messagerie entre utilisateurs, emails liés à votre
+              compte ou à votre club
+            </li>
+            <li>
+              <strong>Gamification :</strong> défis, récompenses, classements
+            </li>
+            <li>
+              <strong>Démonstration commerciale :</strong> organiser un rendez-vous, calculer les
+              créneaux disponibles, créer l&apos;événement et le lien Google Meet correspondants,
+              envoyer les emails de confirmation et de rappel
+            </li>
+            <li>
+              <strong>Sécurité et amélioration du service</strong>
+            </li>
+          </ul>
+        </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">6. Destinataires des Données</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              Vos données peuvent être partagées avec :
-            </p>
-            <ul className="list-disc pl-6 mt-4 space-y-2 text-foreground/80">
-              <li>Les autres utilisateurs de l'Application (dans la limite des informations de votre profil public)</li>
-              <li>Les administrateurs de votre club</li>
-              <li>Nos sous-traitants techniques (hébergement, envoi d'emails, analytics)</li>
-            </ul>
-            <p className="text-foreground/80 leading-relaxed mt-4">
-              Nous ne vendons jamais vos données personnelles à des tiers.
-            </p>
-          </section>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">4. Base légale (RGPD)</h2>
+          <ul className="list-disc pl-6 mt-4 space-y-2 text-foreground/80">
+            <li>
+              <strong>Exécution du contrat :</strong> fournir les services de l&apos;application ou
+              répondre à votre demande de démonstration
+            </li>
+            <li>
+              <strong>Consentement :</strong> pour certaines fonctionnalités optionnelles
+              (téléphone, photo, note libre)
+            </li>
+            <li>
+              <strong>Intérêt légitime :</strong> sécurité, prévention de la fraude, amélioration du
+              service
+            </li>
+            <li>
+              <strong>Obligation légale :</strong> lorsque la réglementation l&apos;impose
+            </li>
+          </ul>
+        </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">7. Durée de Conservation</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              Vos données sont conservées pendant la durée de votre utilisation de l'Application,
-              puis archivées pendant une durée de 3 ans après la suppression de votre compte,
-              conformément aux délais de prescription légaux.
-            </p>
-          </section>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">5. Durée de conservation</h2>
+          <p className="text-foreground/80 leading-relaxed">
+            Les données de votre compte sont conservées pendant la durée de votre utilisation de
+            l&apos;application, puis archivées 3 ans après la suppression du compte, conformément
+            aux délais de prescription légaux. Les informations liées à une demande de
+            démonstration (nom, email, téléphone, club, rôle, note) sont conservées tant que
+            nécessaire à la gestion commerciale de ces demandes ; aucune purge automatique
+            n&apos;est en place à ce jour, mais vous pouvez en demander la suppression à tout
+            moment (voir section 8). Le jeton d&apos;accès à l&apos;agenda Google est conservé
+            chiffré jusqu&apos;à sa déconnexion par le fondateur.
+          </p>
+        </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">8. Vos Droits</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              Conformément au RGPD, vous disposez des droits suivants :
-            </p>
-            <ul className="list-disc pl-6 mt-4 space-y-2 text-foreground/80">
-              <li><strong>Droit d'accès :</strong> obtenir la confirmation que vos données sont traitées et y accéder</li>
-              <li><strong>Droit de rectification :</strong> demander la correction de données inexactes</li>
-              <li><strong>Droit à l'effacement :</strong> demander la suppression de vos données</li>
-              <li><strong>Droit à la limitation :</strong> demander la limitation du traitement</li>
-              <li><strong>Droit à la portabilité :</strong> recevoir vos données dans un format structuré</li>
-              <li><strong>Droit d'opposition :</strong> vous opposer au traitement de vos données</li>
-              <li><strong>Droit de retirer votre consentement :</strong> à tout moment, sans affecter la licéité du traitement antérieur</li>
-            </ul>
-            <p className="text-foreground/80 leading-relaxed mt-4">
-              Pour exercer ces droits, contactez-nous à : <a href={`mailto:${siteConfig.links.email}`} className="text-primary hover:underline">{siteConfig.links.email}</a>
-            </p>
-            <p className="text-foreground/80 leading-relaxed mt-4">
-              Pour exercer votre droit à l'effacement, vous pouvez également effectuer une{" "}
-              <a href="/delete-account" className="text-primary hover:underline">
-                demande de suppression de compte
-              </a>.
-            </p>
-          </section>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">
+            6. Avec qui nous partageons vos données
+          </h2>
+          <p className="text-foreground/80 leading-relaxed">
+            Vos données peuvent être partagées avec :
+          </p>
+          <ul className="list-disc pl-6 mt-4 space-y-2 text-foreground/80">
+            <li>Les autres utilisateurs de l&apos;application (profil public, messagerie)</li>
+            <li>Les administrateurs de votre club</li>
+            <li>
+              <strong>Railway</strong>, qui héberge notre base de données et nos serveurs
+            </li>
+            <li>
+              <strong>Resend</strong>, pour l&apos;envoi de nos emails
+            </li>
+            <li>
+              <strong>Google</strong>, pour Google Agenda et Google Meet lors d&apos;un rendez-vous
+              de démonstration
+            </li>
+          </ul>
+          <p className="text-foreground/80 leading-relaxed mt-4">
+            <strong>Nous ne vendons jamais vos données à des tiers.</strong> Nous n&apos;utilisons
+            jamais les données reçues des API Google à des fins publicitaires ni pour entraîner un
+            modèle d&apos;intelligence artificielle, conformément à la Google API Services User
+            Data Policy.
+          </p>
+        </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">9. Sécurité des Données</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              Nous mettons en oeuvre des mesures techniques et organisationnelles appropriées pour
-              protéger vos données contre tout accès non autorisé, perte, destruction ou altération :
-            </p>
-            <ul className="list-disc pl-6 mt-4 space-y-2 text-foreground/80">
-              <li>Chiffrement des données en transit (HTTPS/TLS)</li>
-              <li>Chiffrement des données sensibles au repos</li>
-              <li>Authentification sécurisée</li>
-              <li>Accès restreint aux données personnelles</li>
-              <li>Surveillance et audits réguliers</li>
-            </ul>
-          </section>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">7. Vos droits et comment les exercer</h2>
+          <p className="text-foreground/80 leading-relaxed">
+            Conformément au RGPD, vous disposez d&apos;un droit d&apos;accès, de rectification,
+            d&apos;effacement, de limitation, de portabilité et d&apos;opposition sur vos données,
+            ainsi que du droit de retirer votre consentement à tout moment. Pour les exercer,
+            contactez-nous à{" "}
+            <a href={`mailto:${siteConfig.links.email}`} className="text-primary hover:underline">
+              {siteConfig.links.email}
+            </a>
+            . Si vous avez un compte dans l&apos;application, vous pouvez aussi effectuer une{" "}
+            <a href="/delete-account" className="text-primary hover:underline">
+              demande de suppression de compte
+            </a>{" "}
+            directement depuis notre site.
+          </p>
+        </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">10. Transferts Internationaux</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              Vos données sont hébergées au sein de l'Union Européenne. Dans le cas où un transfert
-              vers un pays tiers serait nécessaire, nous nous assurons que des garanties appropriées
-              sont en place (clauses contractuelles types, décision d'adéquation).
-            </p>
-          </section>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">
+            8. Révoquer l&apos;accès à votre Google Agenda
+          </h2>
+          <p className="text-foreground/80 leading-relaxed">
+            Le fondateur peut déconnecter l&apos;agenda Google depuis le tableau de bord
+            administrateur à tout moment : cela supprime immédiatement le jeton chiffré de notre
+            base de données. Cette déconnexion ne révoque pas automatiquement l&apos;autorisation
+            côté Google — pour un retrait complet des droits accordés à Ace Club, rendez-vous sur{" "}
+            <a
+              href="https://myaccount.google.com/permissions"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              myaccount.google.com/permissions
+            </a>
+            .
+          </p>
+        </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">11. Cookies et Technologies Similaires</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              L'Application mobile n'utilise pas de cookies. Pour notre site web, veuillez consulter
-              notre politique cookies accessible sur aceclub.app.
-            </p>
-          </section>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">9. Sécurité des données</h2>
+          <ul className="list-disc pl-6 mt-4 space-y-2 text-foreground/80">
+            <li>Chiffrement des données en transit (HTTPS/TLS)</li>
+            <li>
+              Le jeton d&apos;accès à Google Agenda est chiffré au repos (AES-256-GCM) et
+              n&apos;est jamais renvoyé dans une réponse de notre API ni affiché dans un tableau de
+              bord
+            </li>
+            <li>Authentification sécurisée et accès restreint aux données personnelles</li>
+          </ul>
+        </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">12. Prise de Rendez-vous de Démonstration et Google Calendar</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              Cette section concerne spécifiquement la page publique de prise de rendez-vous
-              (<a href="/demo" className="text-primary hover:underline">ace-club.app/demo</a>),
-              utilisée par les responsables de club qui réservent une démonstration — et non les
-              utilisateurs de l&apos;Application mobile.
-            </p>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">10. Transferts internationaux</h2>
+          <p className="text-foreground/80 leading-relaxed">
+            Vos données sont hébergées au sein de l&apos;Union Européenne. Si un transfert vers un
+            pays tiers devenait nécessaire, nous nous assurerions que des garanties appropriées
+            soient en place (clauses contractuelles types, décision d&apos;adéquation).
+          </p>
+        </section>
 
-            <h3 className="text-xl font-medium mt-6 mb-3">12.1 Données Google Agenda consultées</h3>
-            <p className="text-foreground/80 leading-relaxed">
-              Pour calculer les créneaux disponibles, notre serveur interroge l&apos;agenda Google
-              du fondateur via l&apos;API Google Calendar, en lecture seule sur les
-              disponibilités (autorisation <code>calendar.freebusy</code>) : nous ne consultons que
-              les plages &laquo;&nbsp;occupé / libre&nbsp;&raquo; de cet agenda, jamais le titre,
-              les participants ou le contenu des autres événements qui s&apos;y trouvent.
-            </p>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">11. Réclamation</h2>
+          <p className="text-foreground/80 leading-relaxed">
+            Si vous estimez que le traitement de vos données ne respecte pas la réglementation,
+            vous pouvez introduire une réclamation auprès de la CNIL :{" "}
+            <a
+              href="https://www.cnil.fr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              www.cnil.fr
+            </a>
+          </p>
+        </section>
 
-            <h3 className="text-xl font-medium mt-6 mb-3">12.2 Données créées dans Google Agenda</h3>
-            <p className="text-foreground/80 leading-relaxed">
-              Lorsqu&apos;une démonstration est réservée, un événement est créé (autorisation{" "}
-              <code>calendar.events</code>) dans ce même agenda, avec les horaires choisis, votre
-              nom et votre email en tant qu&apos;invité, le nom de votre club, votre rôle, votre
-              téléphone et votre note si vous les avez renseignés, ainsi qu&apos;un lien Google Meet
-              généré automatiquement. En cas d&apos;annulation, cet événement est supprimé de
-              l&apos;agenda Google ; en cas de report, ses horaires sont mis à jour.
-            </p>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">12. Modifications de cette politique</h2>
+          <p className="text-foreground/80 leading-relaxed">
+            Nous pouvons modifier cette politique à tout moment. La date de dernière mise à jour
+            est indiquée en haut de ce document.
+          </p>
+        </section>
 
-            <h3 className="text-xl font-medium mt-6 mb-3">12.3 Chiffrement et accès</h3>
-            <p className="text-foreground/80 leading-relaxed">
-              Le jeton d&apos;accès (refresh token) à cet agenda est chiffré au repos (AES-256-GCM)
-              avant d&apos;être stocké en base de données ; il n&apos;est jamais renvoyé dans une
-              réponse de notre API ni affiché dans le tableau de bord. Seul le fondateur,
-              propriétaire unique de l&apos;agenda connecté, autorise cet accès ; les appels à
-              l&apos;API Google sont effectués automatiquement par notre serveur pour calculer les
-              disponibilités et gérer les événements, sans intervention manuelle ni accès par un
-              tiers.
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">13. Contact</h2>
+          <div className="bg-muted p-4 rounded-lg mt-4">
+            <p className="text-foreground/80">
+              Email :{" "}
+              <a href={`mailto:${siteConfig.links.email}`} className="text-primary hover:underline">
+                {siteConfig.links.email}
+              </a>
             </p>
+          </div>
+        </section>
 
-            <h3 className="text-xl font-medium mt-6 mb-3">12.4 Durée de conservation</h3>
-            <p className="text-foreground/80 leading-relaxed">
-              Les informations liées à une demande de démonstration (identité, email, téléphone,
-              club, rôle, note) sont conservées en base de données tant que nécessaire à la gestion
-              commerciale de ces demandes ; aucune purge automatique n&apos;est en place à ce jour.
-              Le jeton chiffré est conservé jusqu&apos;à la déconnexion de l&apos;agenda par le
-              fondateur.
-            </p>
+        <hr className="!my-16 border-foreground/15" />
 
-            <h3 className="text-xl font-medium mt-6 mb-3">12.5 Déconnexion et suppression</h3>
-            <p className="text-foreground/80 leading-relaxed">
-              Le fondateur peut déconnecter l&apos;agenda Google à tout moment depuis le tableau de
-              bord : cela supprime immédiatement le jeton chiffré de notre base de données. Cette
-              déconnexion ne révoque pas automatiquement l&apos;autorisation côté Google — pour un
-              retrait complet des droits accordés à AceClub, rendez-vous sur{" "}
-              <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                myaccount.google.com/permissions
-              </a>. Pour demander l&apos;accès, la rectification ou la suppression des données
-              liées à votre propre demande de démonstration, contactez-nous à{" "}
-              <a href={`mailto:${siteConfig.links.email}`} className="text-primary hover:underline">{siteConfig.links.email}</a>.
-            </p>
+        <section>
+          <h2 className="text-3xl font-semibold mb-6">English version</h2>
+          <p className="text-foreground/60 text-sm mb-8">Last updated: October 20, 2026</p>
 
-            <h3 className="text-xl font-medium mt-6 mb-3">12.6 Utilisation Limitée (Google API Services User Data Policy)</h3>
-            <p className="text-foreground/80 leading-relaxed">
-              L&apos;utilisation et le transfert, par AceClub, des informations reçues des API
-              Google vers toute autre application respectent la{" "}
-              <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                Politique relative aux données utilisateur des services API de Google
-              </a>, y compris les exigences d&apos;utilisation limitée (Limited Use requirements).
-            </p>
-          </section>
+          <h3 className="text-xl font-medium mt-6 mb-3">1. Who is responsible for your data</h3>
+          <p className="text-foreground/80 leading-relaxed">
+            Ace Club is published by Stanislas Gillyboeuf, the data controller for the Ace Club
+            mobile app and the{" "}
+            <a href="https://ace-club.app" className="text-primary hover:underline">
+              ace-club.app
+            </a>{" "}
+            website, including its demo-booking page. Contact:{" "}
+            <a href={`mailto:${siteConfig.links.email}`} className="text-primary hover:underline">
+              {siteConfig.links.email}
+            </a>
+            .
+          </p>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">13. Modifications de la Politique</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              Nous pouvons modifier cette politique de confidentialité à tout moment. Toute modification
-              substantielle vous sera notifiée via l'Application. La date de dernière mise à jour est
-              indiquée en haut de ce document.
+          <h3 className="text-xl font-medium mt-6 mb-3">2. Data we collect</h3>
+          <p className="text-foreground/80 leading-relaxed">
+            <strong>App account:</strong> name, email, club(s) you belong to; optionally a phone
+            number and profile photo; plus usage data (declared skill level, availability, match
+            history, messages, challenge participation).
+          </p>
+          <p className="text-foreground/80 leading-relaxed mt-4">
+            <strong>Demo request form (ace-club.app/demo):</strong> your first and last name,
+            email, phone number (optional), club name, role (president, manager/director, coach,
+            other), and an optional free-text note.
+          </p>
+          <p className="text-foreground/80 leading-relaxed mt-4">
+            <strong>Google Calendar data:</strong> to offer booking slots and create your demo
+            appointment, our server connects to a single Google Calendar (the founder&apos;s) and
+            uses only: (1) read-only availability (<code>calendar.freebusy</code>) — we only read
+            busy/free time blocks, never the title, attendees, or content of other events on that
+            calendar; and (2) event and Google Meet link creation (<code>calendar.events</code>) —
+            booking a demo creates an event with the chosen time, yourself as an attendee (name and
+            email), your club name, role, phone and note if provided, and an auto-generated Google
+            Meet link. Cancelling removes the event; rescheduling updates its time. We do not use
+            any other data from your Google account (no contacts, no other calendars, no emails, no
+            other Google service).
+          </p>
+          <div className="bg-muted p-4 rounded-lg mt-4">
+            <p className="text-foreground/80 italic">
+              &ldquo;Ace Club&apos;s use and transfer to any other app of information received from
+              Google APIs will adhere to the Google API Services User Data Policy, including the
+              Limited Use requirements.&rdquo;
             </p>
-          </section>
+          </div>
+          <p className="text-foreground/80 leading-relaxed mt-4">
+            <strong>Technical usage data:</strong> device identifiers, IP address, OS type and
+            version, connection and usage logs.
+          </p>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">14. Réclamation</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              Si vous estimez que le traitement de vos données ne respecte pas la réglementation,
-              vous pouvez introduire une réclamation auprès de la CNIL (Commission Nationale de
-              l'Informatique et des Libertés) : <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">www.cnil.fr</a>
-            </p>
-          </section>
+          <h3 className="text-xl font-medium mt-6 mb-3">3. Why we use this data</h3>
+          <p className="text-foreground/80 leading-relaxed">
+            To create and manage your account; to help members find partners and organize matches;
+            for in-app messaging and account/club-related emails; for challenges, rewards and
+            leaderboards; to schedule a demo call, compute available slots, create the
+            corresponding calendar event and Meet link, and send confirmation/reminder emails; and
+            for security and service improvement.
+          </p>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">15. Contact</h2>
-            <p className="text-foreground/80 leading-relaxed">
-              Pour toute question relative à cette politique de confidentialité ou à vos données
-              personnelles, contactez-nous :
-            </p>
-            <div className="bg-muted p-4 rounded-lg mt-4">
-              <p className="text-foreground/80">
-                Email : <a href={`mailto:${siteConfig.links.email}`} className="text-primary hover:underline">{siteConfig.links.email}</a>
-              </p>
-            </div>
-          </section>
-        </div>
+          <h3 className="text-xl font-medium mt-6 mb-3">4. Legal basis (GDPR)</h3>
+          <p className="text-foreground/80 leading-relaxed">
+            Contract performance (providing the app or responding to your demo request), consent
+            (optional fields such as phone, photo, or note), legitimate interest (security, fraud
+            prevention, service improvement), and legal obligation where applicable.
+          </p>
+
+          <h3 className="text-xl font-medium mt-6 mb-3">5. Retention</h3>
+          <p className="text-foreground/80 leading-relaxed">
+            Account data is kept for as long as you use the app, then archived for 3 years after
+            account deletion. Demo request data is kept as long as needed for business follow-up;
+            no automatic purge is currently in place, but you may request deletion at any time. The
+            encrypted Google Calendar access token is kept until the founder disconnects the
+            calendar.
+          </p>
+
+          <h3 className="text-xl font-medium mt-6 mb-3">6. Who we share data with</h3>
+          <p className="text-foreground/80 leading-relaxed">
+            Other app users (public profile, messaging), your club&apos;s administrators,{" "}
+            <strong>Railway</strong> (hosting our database and servers), <strong>Resend</strong>{" "}
+            (sending our emails), and <strong>Google</strong> (Google Calendar and Google Meet for
+            demo appointments). We never sell your data to third parties, and we never use data
+            received from Google APIs for advertising or to train AI models, in line with the
+            Google API Services User Data Policy.
+          </p>
+
+          <h3 className="text-xl font-medium mt-6 mb-3">7. Your rights</h3>
+          <p className="text-foreground/80 leading-relaxed">
+            Under the GDPR you have rights of access, rectification, erasure, restriction,
+            portability and objection, and may withdraw consent at any time. Contact{" "}
+            <a href={`mailto:${siteConfig.links.email}`} className="text-primary hover:underline">
+              {siteConfig.links.email}
+            </a>{" "}
+            to exercise them, or use our{" "}
+            <a href="/delete-account" className="text-primary hover:underline">
+              account deletion request
+            </a>{" "}
+            page if you have an app account.
+          </p>
+
+          <h3 className="text-xl font-medium mt-6 mb-3">8. Revoking Google access</h3>
+          <p className="text-foreground/80 leading-relaxed">
+            The founder can disconnect the Google Calendar at any time from the admin dashboard,
+            which immediately deletes the encrypted token from our database. This does not
+            automatically revoke the authorization on Google&apos;s side — to fully remove Ace
+            Club&apos;s access, visit{" "}
+            <a
+              href="https://myaccount.google.com/permissions"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              myaccount.google.com/permissions
+            </a>
+            .
+          </p>
+
+          <h3 className="text-xl font-medium mt-6 mb-3">9. Complaints</h3>
+          <p className="text-foreground/80 leading-relaxed">
+            If you believe our processing does not comply with applicable law, you may lodge a
+            complaint with the CNIL (France&apos;s data protection authority):{" "}
+            <a
+              href="https://www.cnil.fr"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              www.cnil.fr
+            </a>
+            .
+          </p>
+        </section>
+      </div>
     </div>
   );
 }

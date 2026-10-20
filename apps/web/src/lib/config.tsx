@@ -13,7 +13,7 @@ export const siteConfig = {
       { title: "FAQ", href: "/faq" },
     ],
     legalItems: [
-      { title: "CGU", href: "/cgu" },
+      { title: "Conditions d'utilisation", href: "/terms" },
       { title: "Confidentialité", href: "/privacy" },
     ],
   },
