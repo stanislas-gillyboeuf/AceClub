@@ -11,8 +11,9 @@ function getRedirectUri(): string {
   // Must land on the web app's own origin, not the API's: Google's redirect is a top-level
   // browser navigation and cannot carry the admin's api.ace-club.app session cookie — the web
   // callback page forwards the code to the API itself once it has it (see
-  // server/demo-booking/mutations/admin-google-exchange-code.ts).
-  const base = process.env.BETTER_AUTH_URL || "http://localhost:3000";
+  // server/demo-booking/mutations/admin-google-exchange-code.ts). BETTER_AUTH_URL points at the
+  // API itself in production (Better Auth's own routes live there), so it can't be reused here.
+  const base = process.env.DEMO_BOOKING_PUBLIC_URL || "https://ace-club.app";
   return `${base}/dashboard/demo-booking/google-callback`;
 }
 
