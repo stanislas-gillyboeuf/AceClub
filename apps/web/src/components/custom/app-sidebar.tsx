@@ -4,7 +4,6 @@ import * as React from "react"
 import {
   Award,
   Building2,
-  CalendarClock,
   CalendarDays,
   LayoutDashboard,
   Settings,
@@ -80,11 +79,6 @@ const navMain = [
     title: "Badges",
     url: "/dashboard/badges",
     icon: Award,
-  },
-  {
-    title: "RDV démo",
-    url: "/dashboard/demo-booking",
-    icon: CalendarClock,
   },
 ]
 

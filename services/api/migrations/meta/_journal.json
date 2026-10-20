@@ -400,6 +400,13 @@
       "when": 1792488130820,
       "tag": "0057_blue_gabe_jones",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1792513269389,
+      "tag": "0058_fantastic_tarot",
+      "breakpoints": true
     }
   ]
 }
