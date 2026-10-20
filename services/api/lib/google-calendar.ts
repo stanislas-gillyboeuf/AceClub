@@ -18,10 +18,12 @@ function getRedirectUri(): string {
 }
 
 function getClientCredentials(): { clientId: string; clientSecret: string } {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  // Dedicated OAuth client for Calendar access — separate from GOOGLE_CLIENT_ID/SECRET, which
+  // Better Auth uses for "Sign in with Google" and carries different scopes/consent.
+  const clientId = process.env.GOOGLE_CALENDAR_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
   if (!clientId || !clientSecret) {
-    throw new Error("GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET are not configured");
+    throw new Error("GOOGLE_CALENDAR_CLIENT_ID / GOOGLE_CALENDAR_CLIENT_SECRET are not configured");
   }
   return { clientId, clientSecret };
 }
