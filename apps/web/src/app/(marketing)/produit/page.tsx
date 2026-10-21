@@ -1,9 +1,6 @@
+import { AdherentFeatures } from "@/components/sections/adherent-features";
+import { ClubDashboard } from "@/components/sections/club-dashboard";
 import { CTA } from "@/components/sections/cta";
-import {
-  ADHERENT_FEATURES,
-  CLUB_FEATURES,
-  FeatureShowcase,
-} from "@/components/sections/feature-showcase";
 import { constructMetadata } from "@/lib/utils";
 
 export const metadata = constructMetadata({
@@ -22,7 +19,7 @@ function PartTitle({
   as?: "h1" | "h2";
 }) {
   return (
-    <div className="mx-auto max-w-2xl px-6 pb-8 pt-20 text-center sm:pt-28">
+    <div className="mx-auto max-w-2xl px-6 pb-4 pt-20 text-center sm:pt-28">
       <span className="text-sm font-semibold uppercase tracking-[0.15em] text-mkt-accent">
         {eyebrow}
       </span>
@@ -37,12 +34,10 @@ export default function ProduitPage() {
   return (
     <>
       <PartTitle as="h1" eyebrow="Produit" title="Pour vos adhérents" />
-      <FeatureShowcase features={ADHERENT_FEATURES} />
+      <AdherentFeatures />
 
-      <div className="border-t border-mkt-border">
-        <PartTitle eyebrow="Produit" title="Pour votre club" />
-        <FeatureShowcase features={CLUB_FEATURES} />
-      </div>
+      <PartTitle eyebrow="Produit" title="Pour votre club" />
+      <ClubDashboard />
 
       <CTA />
     </>

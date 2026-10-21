@@ -11,7 +11,7 @@ export default function FAQPage() {
   return (
     <>
       <div className="mkt-light-section">
-        <FAQ />
+        <FAQ level="h1" />
       </div>
       <CTA />
     </>
