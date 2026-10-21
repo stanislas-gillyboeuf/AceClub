@@ -259,9 +259,10 @@
 
 /*
  * Marketing site — light "flyer" identity: off-white with a faint green cast, very dark
- * green text (never pure black), a vivid green-to-yellow-green gradient reserved for 2-3
- * accent blocks per page (buttons, the trial banner, pill highlights) — never a full-page
- * background. .mkt-light-section used to be an opt-in "light mode" for a few pages; now
+ * green text (never pure black), a deep-green gradient (dark enough for AA-contrast
+ * near-white text at every point) reserved for 2-3 accent blocks per page (buttons, the
+ * launch offer, the club-dashboard block) — never a full-page background. .mkt-light-section
+ * used to be an opt-in "light mode" for a few pages; now
  * that the whole site is light by default, it's kept as an identical alias so every
  * existing page that references it (/tarifs, /faq, /privacy, /terms, /demo) keeps working
  * unchanged.
@@ -271,8 +272,8 @@
   --mkt-bg-raised: oklch(0.995 0.006 145); /* near-white — cards/raised surfaces */
   --mkt-fg: oklch(0.24 0.05 152); /* very dark green — never pure black */
   --mkt-fg-dim: oklch(0.24 0.05 152 / 65%);
-  --mkt-accent: oklch(0.62 0.19 150); /* vivid green */
-  --mkt-accent-2: oklch(0.8 0.19 118); /* green-yellow — gradient endpoint */
+  --mkt-accent: oklch(0.4 0.14 150); /* deep green — AA-safe with near-white text */
+  --mkt-accent-2: oklch(0.46 0.14 130); /* warmer dark green — gradient endpoint */
   --mkt-accent-foreground: oklch(0.99 0.006 145);
   --mkt-border: oklch(0.24 0.05 152 / 10%);
 
