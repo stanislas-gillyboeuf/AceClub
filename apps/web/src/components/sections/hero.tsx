@@ -2,6 +2,7 @@
 
 import { CourtLines } from "@/components/graphics/court-lines";
 import { buttonVariants } from "@/components/ui/button";
+import { DeviceMockup } from "@/components/ui/device-mockup";
 import { easeOutCubic } from "@/lib/animation";
 import { siteConfig } from "@/lib/config";
 import { MotionDiv, MotionP } from "@/lib/motion";
@@ -11,7 +12,7 @@ import Link from "next/link";
 export function Hero() {
   return (
     <section className="relative w-full overflow-hidden pt-24 sm:pt-32">
-      <CourtLines className="absolute inset-x-0 top-0 -z-10 h-full w-full text-mkt-fg/[0.05]" />
+      <CourtLines className="absolute inset-x-0 top-0 -z-10 h-full w-full text-mkt-fg/[0.04]" />
 
       <div className="mx-auto max-w-[var(--max-container-width)] px-6 text-center">
         <MotionP
@@ -20,7 +21,7 @@ export function Hero() {
           transition={{ duration: 0.5, ease: easeOutCubic }}
           className="text-sm font-semibold uppercase tracking-[0.15em] text-mkt-accent"
         >
-          Un club vivant, c&apos;est
+          Pour les dirigeants de clubs de tennis et padel
         </MotionP>
 
         <MotionDiv
@@ -29,7 +30,7 @@ export function Hero() {
           transition={{ duration: 0.7, delay: 0.05, ease: easeOutCubic }}
           className="mx-auto mt-2 max-w-4xl text-balance font-display text-6xl uppercase leading-[0.95] tracking-tight sm:text-7xl md:text-8xl"
         >
-          des joueurs qui jouent.
+          Remplissez vos courts. Simplifiez votre club.
         </MotionDiv>
 
         <MotionP
@@ -38,33 +39,24 @@ export function Hero() {
           transition={{ duration: 0.7, delay: 0.15, ease: easeOutCubic }}
           className="mx-auto mt-8 max-w-xl text-balance text-lg text-mkt-fg-dim sm:text-xl"
         >
-          Ace Club est l&apos;appli qui répond à tous les besoins de vos
-          adhérents : réservation, recherche de partenaire, inscription aux
-          événements et suivi de leur activité.
+          L&apos;appli qui fait jouer vos adhérents, et le dashboard qui vous
+          fait gagner du temps chaque semaine.
         </MotionP>
 
         <MotionDiv
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.25, ease: easeOutCubic }}
-          className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row"
+          className="mt-9 flex items-center justify-center"
         >
           <Link
             href="/demo"
             className={cn(
               buttonVariants({ size: "lg" }),
-              "h-12 rounded-full bg-mkt-accent px-7 text-[15px] font-semibold text-mkt-accent-foreground hover:bg-mkt-accent/90"
+              "mkt-gradient h-12 rounded-full px-8 text-[15px] font-semibold hover:opacity-90"
             )}
           >
             {siteConfig.cta}
-          </Link>
-          <Link
-            href={siteConfig.appLinks.ios}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[14px] font-medium text-mkt-fg-dim underline underline-offset-4 hover:text-mkt-fg"
-          >
-            Voir l&apos;app sur l&apos;App Store
           </Link>
         </MotionDiv>
       </div>
@@ -73,14 +65,12 @@ export function Hero() {
         initial={{ opacity: 0, y: 60 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.9, delay: 0.35, ease: easeOutCubic }}
-        className="relative mx-auto mt-16 flex max-w-3xl justify-center gap-5 px-6 sm:mt-20"
+        className="mt-16 sm:mt-20"
       >
-        <div className="w-40 -rotate-3 overflow-hidden rounded-[24px] border border-mkt-border bg-mkt-bg-raised shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] sm:w-52">
-          <img src="/screenshot-club.png" alt="Mon club dans Ace Club" className="aspect-[1170/2532] w-full object-contain" />
-        </div>
-        <div className="mt-8 w-40 rotate-2 overflow-hidden rounded-[24px] border border-mkt-border bg-mkt-bg-raised shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] sm:w-52">
-          <img src="/screenshot-booking.png" alt="Réservation de terrain dans Ace Club" className="aspect-[1170/2532] w-full object-contain" />
-        </div>
+        <DeviceMockup
+          tabletAlt="Le dashboard club dans Ace Club"
+          phoneAlt="L'application Ace Club"
+        />
       </MotionDiv>
     </section>
   );
