@@ -4,7 +4,7 @@ import { CourtLines } from "@/components/graphics/court-lines";
 import { buttonVariants } from "@/components/ui/button";
 import { DeviceMockup } from "@/components/ui/device-mockup";
 import { easeOutCubic } from "@/lib/animation";
-import { MotionDiv, MotionP } from "@/lib/motion";
+import { MotionDiv, MotionH1, MotionP } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -20,17 +20,17 @@ export function Hero() {
           transition={{ duration: 0.5, ease: easeOutCubic }}
           className="text-sm font-semibold uppercase tracking-[0.15em] text-mkt-accent"
         >
-          Conçu par un enseignant de tennis, pour les clubs
+          Créé par un joueur et enseignant de tennis, pour les clubs
         </MotionP>
 
-        <MotionDiv
+        <MotionH1
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.05, ease: easeOutCubic }}
           className="mx-auto mt-2 max-w-4xl text-balance font-display text-6xl uppercase leading-[0.95] tracking-tight sm:text-7xl md:text-8xl"
         >
-          L&apos;appli qui fait jouer vos adhérents.
-        </MotionDiv>
+          L&apos;application qui anime votre club de tennis &amp; padel.
+        </MotionH1>
 
         <MotionP
           initial={{ opacity: 0, y: 20 }}
@@ -38,9 +38,12 @@ export function Hero() {
           transition={{ duration: 0.7, delay: 0.15, ease: easeOutCubic }}
           className="mx-auto mt-8 max-w-xl text-balance text-lg text-mkt-fg-dim sm:text-xl"
         >
-          Réservation, partenaires de niveau, événements, classement : Ace
-          Club donne envie de jouer à vos adhérents, et vous donne un tableau
-          de bord pour animer votre club.
+          Réservation de courts, partenaires de niveau, événements, classement.
+          Un tableau de bord pour piloter votre club, synchronisé avec ADOC en
+          5 minutes.{" "}
+          <span className="font-semibold text-mkt-fg">
+            Pensé pour que vos adhérents jouent plus.
+          </span>
         </MotionP>
 
         <MotionDiv
@@ -56,16 +59,16 @@ export function Hero() {
               "mkt-gradient h-12 rounded-full px-8 text-[15px] font-semibold hover:opacity-90"
             )}
           >
-            Réserver une démo de 20 min
+            Réserver une démo
           </Link>
           <a
-            href="#comment-ca-marche"
+            href="#fonctionnalites"
             className={cn(
               buttonVariants({ size: "lg", variant: "outline" }),
               "h-12 rounded-full border-2 border-mkt-fg px-8 text-[15px] font-semibold text-mkt-fg hover:bg-mkt-fg hover:text-mkt-bg"
             )}
           >
-            Voir comment ça marche
+            Voir les fonctionnalités
           </a>
         </MotionDiv>
 
@@ -75,8 +78,7 @@ export function Hero() {
           transition={{ duration: 0.7, delay: 0.3, ease: easeOutCubic }}
           className="mt-5 text-[14px] font-medium text-mkt-fg-dim"
         >
-          3 mois offerts pour démarrer · Synchronisation avec ADOC en 5
-          minutes
+          3 mois offerts · Démo de 30 min · Synchronisation ADOC en 5 min
         </MotionP>
       </div>
 
