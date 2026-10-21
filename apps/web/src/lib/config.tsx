@@ -115,55 +115,74 @@ export const siteConfig = {
     },
   ],
   faqs: [
+    // Mise en place
     {
-      question: "Comment mon club peut-il rejoindre Ace Club ?",
+      category: "Mise en place",
+      showOnHome: true,
+      question: "Faut-il changer de logiciel de gestion ?",
       answer:
-        "Réservez une démo. On échange sur les besoins de votre club et on établit un devis adapté à sa taille — sans engagement de durée.",
+        "Non : Ace Club se synchronise avec ADOC en environ 5 minutes et récupère vos adhérents et la structure de votre club, sans ressaisie.",
     },
     {
-      question: "Combien de temps pour déployer Ace Club dans mon club ?",
+      category: "Mise en place",
+      showOnHome: true,
+      question: "Combien de temps pour être opérationnel ?",
       answer:
         "Votre espace club est prêt en quelques heures. Vos adhérents rejoignent ensuite via un QR code ou un lien, opérationnels en moins d'une minute — aucune formation nécessaire.",
     },
     {
-      question: "Est-ce que ça remplace notre système de réservation actuel ?",
+      category: "Mise en place",
+      question: "Comment se passe la migration depuis notre ancien outil ?",
       answer:
-        "Oui. Ace Club gère les disponibilités de vos terrains en temps réel, les réservations (seul, entre membres, ou en équipe pour le padel) et les règles de votre club, directement dans l'app.",
+        "On s'occupe de la reprise de vos données (adhérents, structure du club) avec vous pendant la démo, pour un démarrage sans ressaisie manuelle.",
+    },
+    // Prix
+    {
+      category: "Prix",
+      showOnHome: true,
+      question: "Combien ça coûte après les 3 mois offerts ?",
+      answer:
+        "Entre 49€ et 129€ par mois selon la taille de votre club — gratuit pour tous vos adhérents. Détail sur la page Tarifs.",
     },
     {
+      category: "Prix",
+      showOnHome: true,
+      question: "Y a-t-il un engagement ?",
+      answer:
+        "Non, aucun engagement de durée. Vous pouvez arrêter à tout moment, sans frais de sortie.",
+    },
+    // Données
+    {
+      category: "Données",
+      showOnHome: true,
+      question: "À qui appartiennent les données de mes adhérents ?",
+      answer:
+        "À vous. Vos données vous appartiennent, ne sont jamais vendues, et vous pouvez en demander l'export ou la suppression à tout moment — voir notre politique de confidentialité.",
+    },
+    {
+      category: "Données",
+      question: "Nos données et celles de nos adhérents sont-elles en sécurité ?",
+      answer:
+        "Ace Club respecte le RGPD. Les données de vos adhérents sont chiffrées et ne sont jamais partagées avec des tiers sans consentement explicite.",
+    },
+    // Utilisation
+    {
+      category: "Utilisation",
       question: "L'application est-elle vraiment gratuite pour les membres ?",
       answer:
         "Oui, 100% gratuite pour tous les membres des clubs partenaires. Seul le club est facturé, selon sa taille.",
     },
     {
-      question: "Nos données et celles de nos adhérents sont-elles en sécurité ?",
+      category: "Utilisation",
+      question: "Est-ce que ça remplace notre système de réservation actuel ?",
       answer:
-        "Ace Club respecte le RGPD. Les données de vos adhérents sont chiffrées et ne sont jamais partagées avec des tiers sans consentement explicite.",
+        "Oui. Ace Club gère les disponibilités de vos terrains en temps réel, les réservations (seul, entre membres, ou en équipe pour le padel) et les règles de votre club, directement dans l'app.",
     },
     {
+      category: "Utilisation",
       question: "Quels sports sont supportés ?",
       answer:
         "Le tennis et le padel, y compris les clubs qui proposent les deux. On travaille à étendre l'offre à d'autres sports de raquette.",
-    },
-    {
-      question: "Dois-je m'engager sur une durée ?",
-      answer:
-        "Non, aucun engagement de durée. Vous pouvez arrêter à tout moment, sans frais de sortie.",
-    },
-    {
-      question: "Comment se passe la migration depuis notre ancien outil ?",
-      answer:
-        "On s'occupe de la reprise de vos données (adhérents, structure du club) avec vous pendant la démo, pour un démarrage sans ressaisie manuelle.",
-    },
-    {
-      question: "Qui est propriétaire des données de mon club et de mes adhérents ?",
-      answer:
-        "Vous. Vos données vous appartiennent, ne sont jamais vendues, et vous pouvez en demander l'export ou la suppression à tout moment — voir notre politique de confidentialité.",
-    },
-    {
-      question: "Ace Club se synchronise-t-il avec ADOC ?",
-      answer:
-        "Oui. La synchronisation avec ADOC prend environ 5 minutes et récupère vos adhérents et la structure de votre club sans ressaisie.",
     },
   ],
 };

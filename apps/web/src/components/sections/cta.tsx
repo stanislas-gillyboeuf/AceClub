@@ -1,4 +1,5 @@
 import { buttonVariants } from "@/components/ui/button";
+import { TodoNote } from "@/components/ui/todo-note";
 import { siteConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -19,11 +20,18 @@ export function CTA() {
             href="/demo"
             className={cn(
               buttonVariants({ size: "lg" }),
-              "mt-8 h-12 rounded-full bg-mkt-accent px-7 text-[15px] font-semibold text-mkt-accent-foreground hover:bg-mkt-accent/90"
+              "mkt-gradient mt-8 h-12 rounded-full px-7 text-[15px] font-semibold hover:opacity-90"
             )}
           >
             {siteConfig.cta}
           </Link>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[14px] text-mkt-fg-dim">
+            <a href={`mailto:${siteConfig.links.email}`} className="hover:text-mkt-fg">
+              {siteConfig.links.email}
+            </a>
+            <span className="text-mkt-border">·</span>
+            <TodoNote>téléphone du fondateur</TodoNote>
+          </div>
         </div>
       </div>
     </section>
