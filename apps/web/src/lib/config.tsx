@@ -14,6 +14,7 @@ export const siteConfig = {
       { title: "Accueil", href: "/" },
       { title: "Produit", href: "/produit" },
       { title: "Tarifs", href: "/tarifs" },
+      { title: "À propos", href: "/a-propos" },
       { title: "FAQ", href: "/faq" },
     ],
     legalItems: [

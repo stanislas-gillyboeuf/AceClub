@@ -5,18 +5,22 @@ import { MotionDiv } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { BookingStepsPhone } from "./booking-steps-phone";
+import { ImageSlot, type ImageSlotRatio } from "@/components/ui/image-slot";
 
-interface Feature {
+export interface Feature {
   id: string;
   eyebrow: string;
   title: string;
   description: string;
   points: string[];
-  image: string;
+  /** A real screenshot path (e.g. "/screenshot-x.png"). Omit to show a neutral ImageSlot
+   * placeholder instead (see IMAGES.md for the expected file). */
+  image?: string;
+  imageRatio?: ImageSlotRatio;
   align: "left" | "right";
 }
 
-const FEATURES: Feature[] = [
+export const ADHERENT_FEATURES: Feature[] = [
   {
     id: "partenaire",
     eyebrow: "Trouver un partenaire",
@@ -58,6 +62,79 @@ const FEATURES: Feature[] = [
     ],
     image: "/screenshot-matchlog.png",
     align: "left",
+  },
+  {
+    id: "classement",
+    eyebrow: "Défis & classement",
+    title: "Ça donne envie de revenir",
+    description:
+      "Des défis réguliers, un classement du club et des récompenses pour chaque étape franchie : la régularité compte autant que la performance, et jouer devient un réflexe plutôt qu'une corvée à organiser.",
+    points: [
+      "Défis hebdomadaires pour garder le rythme",
+      "Classement du club par niveau",
+      "Récompenses et badges pour chaque étape",
+    ],
+    image: "/screenshot-leaderboard.png",
+    align: "right",
+  },
+];
+
+export const CLUB_FEATURES: Feature[] = [
+  {
+    id: "adoc",
+    eyebrow: "Mise en place",
+    title: "Synchronisation ADOC en 5 minutes",
+    description:
+      "Vos adhérents et la structure de votre club sont repris automatiquement depuis ADOC. Rien à ressaisir, votre club est prêt à animer dès la démo terminée.",
+    points: [
+      "Reprise des adhérents existants",
+      "Structure du club conservée",
+      "Aucune ressaisie manuelle",
+    ],
+    imageRatio: "tablet",
+    align: "left",
+  },
+  {
+    id: "courts-regles",
+    eyebrow: "Gestion des courts",
+    title: "Vos règles, appliquées automatiquement",
+    description:
+      "Définissez vos courts, vos créneaux et vos règles de réservation une seule fois — Ace Club les applique ensuite à chaque réservation, sans intervention manuelle de votre part.",
+    points: [
+      "Courts et créneaux configurables",
+      "Règles de réservation du club respectées",
+      "Blocages manuels pour l'entretien ou les cours",
+    ],
+    imageRatio: "tablet",
+    align: "right",
+  },
+  {
+    id: "communication",
+    eyebrow: "Communication",
+    title: "Un seul endroit pour parler à vos adhérents",
+    description:
+      "Annonces, événements, messages du club : vos adhérents reçoivent tout au même endroit, dans l'app qu'ils ouvrent déjà pour réserver — fini les messages qui se perdent entre trois canaux.",
+    points: [
+      "Annonces centralisées",
+      "Notifications ciblées",
+      "Un seul canal, pas trois",
+    ],
+    imageRatio: "phone",
+    align: "left",
+  },
+  {
+    id: "activite",
+    eyebrow: "Vue d'activité",
+    title: "Votre club, en un coup d'œil",
+    description:
+      "Taux d'occupation des courts, membres les plus actifs, cours du jour : un tableau de bord lisible pour savoir où en est votre club sans avoir à le demander.",
+    points: [
+      "Taux d'occupation des courts",
+      "Membres les plus actifs",
+      "Cours et événements du jour",
+    ],
+    imageRatio: "tablet",
+    align: "right",
   },
 ];
 
@@ -106,7 +183,7 @@ function FeatureRow({ feature }: { feature: Feature }) {
       >
         {feature.id === "reservation" ? (
           <BookingStepsPhone />
-        ) : (
+        ) : feature.image ? (
           <div className="overflow-hidden rounded-[28px] border border-mkt-border bg-mkt-bg-raised shadow-[0_30px_80px_-30px_rgba(0,0,0,0.5)]">
             <img
               src={feature.image}
@@ -114,16 +191,18 @@ function FeatureRow({ feature }: { feature: Feature }) {
               className="aspect-[1170/2532] w-full object-contain"
             />
           </div>
+        ) : (
+          <ImageSlot ratio={feature.imageRatio ?? "phone"} alt={feature.title} className="rounded-[28px]" />
         )}
       </MotionDiv>
     </div>
   );
 }
 
-export function FeatureShowcase() {
+export function FeatureShowcase({ features }: { features: Feature[] }) {
   return (
     <section className="mx-auto max-w-[var(--max-container-width)] divide-y divide-mkt-border px-6">
-      {FEATURES.map((feature) => (
+      {features.map((feature) => (
         <FeatureRow key={feature.id} feature={feature} />
       ))}
     </section>
