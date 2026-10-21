@@ -11,7 +11,7 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 
 export const metadata: Metadata = constructMetadata({
-  title: `${siteConfig.name} | ${siteConfig.description}`,
+  title: siteConfig.description,
 });
 
 export const viewport: Viewport = {

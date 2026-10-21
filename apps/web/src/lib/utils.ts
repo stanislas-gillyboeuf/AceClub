@@ -12,7 +12,7 @@ function absoluteUrl(path: string) {
 }
 
 export function constructMetadata({
-  title = siteConfig.name,
+  title,
   description = siteConfig.description,
   image = absoluteUrl("/og"),
   ...props
@@ -22,15 +22,16 @@ export function constructMetadata({
   image?: string;
   [key: string]: Metadata[keyof Metadata];
 }): Metadata {
+  // Every page gets its own full, unique title — previously `title` only fed openGraph.title
+  // and the real <title> tag silently always fell back to just "Ace Club" on every page.
+  const resolvedTitle = title ? `${title} | ${siteConfig.name}` : siteConfig.name;
+
   return {
-    title: {
-      template: "%s | " + siteConfig.name,
-      default: siteConfig.name,
-    },
+    title: resolvedTitle,
     description: description || siteConfig.description,
     keywords: siteConfig.keywords,
     openGraph: {
-      title,
+      title: resolvedTitle,
       description,
       url: siteConfig.url,
       siteName: siteConfig.name,
@@ -39,11 +40,11 @@ export function constructMetadata({
           url: image,
           width: 1200,
           height: 630,
-          alt: title,
+          alt: resolvedTitle,
         },
       ],
       type: "website",
-      locale: "en_US",
+      locale: "fr_FR",
     },
     icons: "/favicon.ico",
     metadataBase: new URL(siteConfig.url),

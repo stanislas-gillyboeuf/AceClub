@@ -40,11 +40,23 @@ function Footerdemo() {
           </nav>
         </div>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-mkt-border pt-6 text-[13px] text-mkt-fg-dim sm:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-mkt-border pt-6 text-[13px] text-mkt-fg-dim sm:flex-row">
           <p>© {currentYear} {siteConfig.name}. Tous droits réservés.</p>
-          <a href={`mailto:${siteConfig.links.email}`} className="hover:text-mkt-fg">
-            {siteConfig.links.email}
-          </a>
+          <div className="flex items-center gap-4">
+            <a href={`mailto:${siteConfig.links.email}`} className="hover:text-mkt-fg">
+              {siteConfig.links.email}
+            </a>
+            <a
+              href={siteConfig.appLinks.ios}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Télécharger Ace Club sur l'App Store"
+              className="opacity-80 transition-opacity hover:opacity-100"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/download-black.svg" alt="Télécharger sur l'App Store" className="h-8 w-auto" width={120} height={40} />
+            </a>
+          </div>
         </div>
       </div>
     </footer>
