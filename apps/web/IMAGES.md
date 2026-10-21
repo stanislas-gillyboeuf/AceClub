@@ -11,29 +11,22 @@ Aucune photo de joueur professionnel ni image sous droits ne doit être utilisé
 |---|---|---|
 | `hero-tablet.png` | 16:11 | Capture du dashboard club, Hero (tablette, à l'arrière) |
 | `hero-phone.png` | 9:19.5 | Capture du fil d'actus de l'app, Hero (téléphone, au premier plan) |
-| `adherent-feed-phone.png` | 9:19.5 | Capture du fil d'actus de l'app, bas de la section "Côté adhérents" (accueil) |
-| `club-dashboard-tablet.png` | 16:11 | Capture du dashboard club avec le taux d'occupation mis en avant, section "Le dashboard" (accueil) |
-| `founder-photo.jpg` | 1:1 (rond) | Photo de Stanislas — "Qui est derrière Ace Club" (accueil) et `/a-propos` |
-| `club-logo-1.png` … `club-logo-6.png` | transparent, largeur libre | Logos des clubs pilotes, section "Preuve" — n'apparaît que lorsque `SHOW_SOCIAL_PROOF` est passé à `true` dans `src/lib/config.tsx` |
+| `adherent-feed-phone.png` | 9:19.5 | Capture du fil d'actus, section "L'application de vos adhérents" (accueil + `/produit`) |
+| `club-dashboard-tablet.png` | 16:11 | Capture du dashboard club avec le taux d'occupation des courts sur 7 jours, section "Le tableau de bord du club" (accueil + `/produit`) |
+| `founder-photo.jpg` | 1:1 (carré, pas de rond) | Photo de Stanislas, en grand — "Qui est derrière Ace Club" (accueil) et `/a-propos` |
+| `club-logo-1.png` … `club-logo-6.png` | transparent, largeur libre | Logos des clubs fondateurs, bandeau "Programme clubs fondateurs" — n'apparaît que lorsque `SHOW_SOCIAL_PROOF` est passé à `true` dans `src/lib/config.tsx` |
 
-## `/produit` — captures manquantes côté club
+## Captures déjà réelles, actuellement inutilisées
 
-Les 4 lignes "Pour votre club" dans `feature-showcase.tsx` (`CLUB_FEATURES`) n'ont pas encore
-de capture réelle et affichent un `ImageSlot` neutre. Noms suggérés, à déposer puis à passer
-en prop `image` sur l'entrée correspondante :
-
-| Fichier | Ratio | Feature (`id`) |
-|---|---|---|
-| `produit-adoc-tablet.png` | 16:11 | `adoc` — synchronisation ADOC |
-| `produit-courts-tablet.png` | 16:11 | `courts-regles` — gestion des courts et règles |
-| `produit-communication-phone.png` | 9:19.5 | `communication` — annonces et notifications |
-| `produit-activite-tablet.png` | 16:11 | `activite` — vue d'activité du club |
-
-Les 4 lignes "Pour vos adhérents" (`ADHERENT_FEATURES`) utilisent déjà de vraies captures
-(`/screenshot-partner.png`, `/screenshot-booking.png`, `/screenshot-matchlog.png`,
-`/screenshot-leaderboard.png`, déjà présentes dans `public/`).
+`/public/screenshot-partner.png`, `/public/screenshot-booking.png`,
+`/public/screenshot-matchlog.png` et `/public/screenshot-leaderboard.png` sont de vraies
+captures de l'app (pas des placeholders) mais ne sont référencées dans aucun composant depuis
+la refonte v2 — `/produit` réutilise directement les sections `AdherentFeatures` /
+`ClubDashboard` de l'accueil (un seul visuel générique chacune) plutôt que des lignes dédiées
+par fonctionnalité. Elles pourraient remplacer un `ImageSlot` ci-dessus une fois l'alt text
+vérifié pour correspondre au contenu réel de la capture.
 
 Une fois un fichier déposé dans `public/images/`, mettre à jour le composant correspondant
 (`hero.tsx`, `adherent-features.tsx`, `club-dashboard.tsx`, `founder-story.tsx`,
-`feature-showcase.tsx`, `social-proof.tsx`) pour passer le chemin `/images/<fichier>` en prop
-`src` / `phoneSrc` / `tabletSrc` / `image`.
+`founding-clubs-banner.tsx`) pour passer le chemin `/images/<fichier>` en prop
+`src` / `phoneSrc` / `tabletSrc`.
