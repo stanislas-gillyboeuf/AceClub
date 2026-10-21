@@ -145,6 +145,26 @@ export const siteConfig = {
       answer:
         "Le tennis et le padel, y compris les clubs qui proposent les deux. On travaille à étendre l'offre à d'autres sports de raquette.",
     },
+    {
+      question: "Dois-je m'engager sur une durée ?",
+      answer:
+        "Non, aucun engagement de durée. Vous pouvez arrêter à tout moment, sans frais de sortie.",
+    },
+    {
+      question: "Comment se passe la migration depuis notre ancien outil ?",
+      answer:
+        "On s'occupe de la reprise de vos données (adhérents, structure du club) avec vous pendant la démo, pour un démarrage sans ressaisie manuelle.",
+    },
+    {
+      question: "Qui est propriétaire des données de mon club et de mes adhérents ?",
+      answer:
+        "Vous. Vos données vous appartiennent, ne sont jamais vendues, et vous pouvez en demander l'export ou la suppression à tout moment — voir notre politique de confidentialité.",
+    },
+    {
+      question: "Ace Club se synchronise-t-il avec ADOC ?",
+      answer:
+        "Oui. La synchronisation avec ADOC prend environ 5 minutes et récupère vos adhérents et la structure de votre club sans ressaisie.",
+    },
   ],
 };
 
